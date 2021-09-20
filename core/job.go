@@ -40,15 +40,15 @@ type Job struct {
 // where timestamp is date and time the job was created.
 func (job *Job) Title() string {
 	var name = fmt.Sprintf("Job of %s", time.Now().Format(time.RFC3339))
-	if !name && job.PackageOp && job.PackageOp.PackageName {
-		name = path.Basename(job.PackageOp.PackageName)
+	if name == "" && job.PackageOp != nil && job.PackageOp.PackageName != "" {
+		name = path.Base(job.PackageOp.PackageName)
 	}
-	if !name && len(job.UploadOps) > 0 && len(job.UploadOps[0].sourceFiles) > 0 {
-		name = path.Basename(job.UploadOps[0].SourceFiles[0])
+	if name == "" && len(job.UploadOps) > 0 && len(job.UploadOps[0].SourceFiles) > 0 {
+		name = path.Base(job.UploadOps[0].SourceFiles[0])
 	}
 	// Try to get a title from the bag.
-	if name == "" && job.BagItProfile {
-		for _, tagName := range titleTags {
+	if name == "" && job.BagItProfile != nil {
+		for _, tagName := range TitleTags {
 			tag := job.BagItProfile.FirstMatchingTag("tagName", tagName)
 			if tag != nil && tag.userValue != "" {
 				name = tag.userValue
@@ -63,7 +63,7 @@ func (job *Job) Title() string {
 // operation completed.
 func (job *Job) PackagedAt() time.Time {
 	if job.PackageOp != nil && job.PackageOp.Result != nil {
-		packagedAt = job.PackageOp.Result.Completed
+		return job.PackageOp.Result.Completed
 	}
 	return time.Time{}
 }
@@ -92,7 +92,7 @@ func (job *Job) PackageSucceeded() bool {
 // operation completed.
 func (job *Job) ValidatedAt() time.Time {
 	if job.ValidationOp != nil && job.ValidationOp.Result != nil {
-		validatedAt = job.ValidationOp.Result.Completed
+		return job.ValidationOp.Result.Completed
 	}
 	return time.Time{}
 }
@@ -118,7 +118,7 @@ func (job *Job) ValidationSucceeded() bool {
 // UploadedAt returns the datetime on which this job's last upload
 // operation completed.
 func (job *Job) UploadedAt() time.Time {
-	var uploadedAt = null
+	uploadedAt := time.Time{}
 	if len(job.UploadOps) > 0 {
 		for _, uploadOp := range job.UploadOps {
 			for _, result := range uploadOp.Results {
@@ -174,17 +174,17 @@ func (job *Job) Validate() bool {
 	if job.PackageOp != nil {
 		job.PackageOp.Validate()
 		job.Errors = job.PackageOp.Errors
-		if job.PackageOp.PackageFormat == "BagIt" && job.BagItProfile == null {
+		if job.PackageOp.PackageFormat == "BagIt" && job.BagItProfile == nil {
 			job.Errors["Job.bagItProfile"] = "BagIt packaging requires a BagItProfile."
 		}
 	}
-	if job.ValidationOp {
+	if job.ValidationOp != nil {
 		job.ValidationOp.Validate()
 		for key, value := range job.ValidationOp.Errors {
 			job.Errors[key] = value
 		}
-		if !job.bagItProfile && result.Errors["Job.BagItProfile"] == "" {
-			result.Errors["Job.BagItProfile"] = "Validation requires a BagItProfile."
+		if job.BagItProfile == nil && job.ValidationOp.Result.Errors["Job.BagItProfile"] == "" {
+			job.Errors["Job.BagItProfile"] = "Validation requires a BagItProfile."
 		}
 	}
 	opNum := 1
