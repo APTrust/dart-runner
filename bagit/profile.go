@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 )
 
 // Profile represents a DART-type Profile, as described at
@@ -17,19 +20,38 @@ import (
 // as described in https://aptrust.github.io/dart-docs/users/bagit/importing/
 // and https://aptrust.github.io/dart-docs/users/bagit/exporting/.
 type Profile struct {
-	AcceptBagItVersion   []string         `json:"acceptBagItVersion"`
-	AcceptSerialization  []string         `json:"acceptSerialization"`
-	AllowFetchTxt        bool             `json:"allowFetchTxt"`
-	BagItProfileInfo     ProfileInfo      `json:"bagItProfileInfo"`
-	Description          string           `json:"description"`
-	ManifestsAllowed     []string         `json:"manifestsAllowed"`
-	ManifestsRequired    []string         `json:"manifestsRequired"`
-	Name                 string           `json:"name"`
-	Serialization        string           `json:"serialization"`
-	TagFilesAllowed      []string         `json:"tagFilesAllowed"`
-	TagManifestsAllowed  []string         `json:"tagManifestsAllowed"`
-	TagManifestsRequired []string         `json:"tagManifestsRequired"`
-	Tags                 []*TagDefinition `json:"tags"`
+	AcceptBagItVersion   []string          `json:"acceptBagItVersion"`
+	AcceptSerialization  []string          `json:"acceptSerialization"`
+	AllowFetchTxt        bool              `json:"allowFetchTxt"`
+	BagItProfileInfo     ProfileInfo       `json:"bagItProfileInfo"`
+	Description          string            `json:"description"`
+	Errors               map[string]string `json:"-"`
+	ManifestsAllowed     []string          `json:"manifestsAllowed"`
+	ManifestsRequired    []string          `json:"manifestsRequired"`
+	Name                 string            `json:"name"`
+	Serialization        string            `json:"serialization"`
+	TagFilesAllowed      []string          `json:"tagFilesAllowed"`
+	TagManifestsAllowed  []string          `json:"tagManifestsAllowed"`
+	TagManifestsRequired []string          `json:"tagManifestsRequired"`
+	Tags                 []*TagDefinition  `json:"tags"`
+}
+
+func NewProfile() *Profile {
+	profile := &Profile{
+		AllowFetchTxt:        false,
+		BagItProfileInfo:     ProfileInfo{},
+		Errors:               make(map[string]string),
+		ManifestsAllowed:     make([]string, 0),
+		ManifestsRequired:    make([]string, 0),
+		Serialization:        constants.SerializationOptional,
+		TagFilesAllowed:      make([]string, 0),
+		TagManifestsAllowed:  make([]string, 0),
+		TagManifestsRequired: make([]string, 0),
+		Tags:                 make([]*TagDefinition, 0),
+	}
+	copy(profile.AcceptBagItVersion, constants.AcceptBagItVersion)
+	copy(profile.AcceptSerialization, constants.AcceptSerialization)
+	return profile
 }
 
 // ProfileLoad loads a BagIt Profile from the specified file.
@@ -147,4 +169,37 @@ func (p *Profile) FirstMatchingTag(property, value string) (*TagDefinition, erro
 		}
 	}
 	return nil, nil
+}
+
+func (p *Profile) HasTagFile(name string) bool {
+	tagDef, _ := p.FirstMatchingTag("tagFile", name)
+	return tagDef != nil
+}
+
+// Validate returns true if this profile is valid. This is not to be
+// confused with bag validation. We're just making sure the profile itself
+// is complete and makes sense.
+func (p *Profile) Validate() bool {
+	p.Errors = make(map[string]string)
+	if util.IsEmptyStringList(p.AcceptBagItVersion) {
+		p.Errors["BagItProfile.AcceptBagItVersion"] = "Profile must accept at least one BagIt version."
+	}
+	if util.IsEmptyStringList(p.ManifestsAllowed) {
+		p.Errors["BagItProfile.ManifestsAllowed"] = "Profile must allow at least one manifest algorithm."
+	}
+	if !p.HasTagFile("bagit.txt") {
+		p.Errors["BagItProfile.BagIt"] = "Profile lacks requirements for bagit.txt tag file."
+	}
+	if !p.HasTagFile("bag-info.txt") {
+		p.Errors["BagItProfile.BagInfo"] = "Profile lacks requirements for bag-info.txt tag file."
+	}
+	if !util.StringListContains(constants.SerializationOptions, p.Serialization) {
+		p.Errors["BagItProfile.Serialization"] = fmt.Sprintf("Serialization must be one of: %s.", strings.Join(constants.SerializationOptions, ","))
+	}
+	if p.Serialization == constants.SerializationOptional || p.Serialization == constants.SerializationRequired {
+		if util.IsEmptyStringList(p.AcceptSerialization) {
+			p.Errors["BagItProfile.AcceptSerialization"] = "When serialization is allowed, you must specify at least one serialization format."
+		}
+	}
+	return len(p.Errors) == 0
 }

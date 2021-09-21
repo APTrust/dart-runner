@@ -18,4 +18,22 @@ const (
 	MaxS3ObjectSize          = int64(5497558138880) // 5TB
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30
+	SerializationForbidden   = "forbidden"
+	SerializationOptional    = "optional"
+	SerializationRequired    = "required"
 )
+
+var AcceptBagItVersion = []string{
+	"0.97",
+	"1.0",
+}
+
+var AcceptSerialization = []string{
+	".tar",
+}
+
+var SerializationOptions = []string{
+	SerializationForbidden,
+	SerializationOptional,
+	SerializationRequired,
+}

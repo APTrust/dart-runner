@@ -334,6 +334,8 @@ func TestCleanBagName(t *testing.T) {
 }
 
 func TestIsEmptyStringList(t *testing.T) {
+	assert.True(t, util.IsEmptyStringList(nil))
+
 	list1 := make([]string, 0)
 	assert.True(t, util.IsEmptyStringList(list1))
 
