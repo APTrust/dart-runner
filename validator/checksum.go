@@ -36,6 +36,15 @@ var algNames = []string{
 	"sha512",
 }
 
+func AlgToEnum(name string) (DigestAlgorithm, error) {
+	for i, alg := range algNames {
+		if alg == name {
+			return DigestAlgorithm(i), nil
+		}
+	}
+	return 0, fmt.Errorf("unsupported digest algorithm: %s", name)
+}
+
 type Checksum struct {
 	Source    ChecksumSource
 	Algorithm DigestAlgorithm
