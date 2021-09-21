@@ -49,9 +49,9 @@ func (job *Job) Title() string {
 	// Try to get a title from the bag.
 	if name == "" && job.BagItProfile != nil {
 		for _, tagName := range TitleTags {
-			tag := job.BagItProfile.FirstMatchingTag("tagName", tagName)
-			if tag != nil && tag.userValue != "" {
-				name = tag.userValue
+			tag, _ := job.BagItProfile.FirstMatchingTag("tagName", tagName)
+			if tag != nil && tag.UserValue != "" {
+				name = tag.UserValue
 				break
 			}
 		}

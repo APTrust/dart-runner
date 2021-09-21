@@ -332,3 +332,18 @@ func TestCleanBagName(t *testing.T) {
 	assert.Equal(t, expected, util.CleanBagName("some.file.tar"))
 	assert.Equal(t, expected, util.CleanBagName("some.file"))
 }
+
+func TestIsEmptyStringList(t *testing.T) {
+	list1 := make([]string, 0)
+	assert.True(t, util.IsEmptyStringList(list1))
+
+	list2 := make([]string, 5)
+	assert.True(t, util.IsEmptyStringList(list2))
+
+	list3 := []string{
+		"",
+		"not empty",
+		"",
+	}
+	assert.False(t, util.IsEmptyStringList(list3))
+}

@@ -38,6 +38,20 @@ func StringListContainsAll(masterList []string, listToCheck []string) bool {
 	return true
 }
 
+// IsEmptyStringList returns true if list contains no items or if all
+// items in list are empty strings.
+func IsEmptyStringList(list []string) bool {
+	if len(list) == 0 {
+		return true
+	}
+	for _, s := range list {
+		if s != "" {
+			return false
+		}
+	}
+	return true
+}
+
 func LooksLikeManifest(name string) bool {
 	return strings.HasPrefix(name, "manifest-") && strings.HasSuffix(name, ".txt")
 }

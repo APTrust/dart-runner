@@ -27,3 +27,44 @@ func NewOperationResult(operation, provider string) *OperationResult {
 		Provider:  provider,
 	}
 }
+
+func (r *OperationResult) Reset() {
+	r.Started = time.Time{}
+	r.Completed = time.Time{}
+	r.FileSize = 0
+	r.FileMTime = time.Time{}
+	r.RemoteChecksum = ""
+	r.RemoteURL = ""
+	r.Info = ""
+	r.Warning = ""
+	r.Errors = make(map[string]string)
+}
+
+func (r *OperationResult) Start() {
+	r.Reset()
+	r.Started = time.Now()
+	r.Attempt += 1
+}
+
+func (r *OperationResult) Finish(errors map[string]string) {
+	r.Completed = time.Now()
+	for key, value := range errors {
+		r.Errors[key] = value
+	}
+}
+
+func (r *OperationResult) HasErrors() bool {
+	return len(r.Errors) > 0
+}
+
+func (r *OperationResult) WasAttempted() bool {
+	return r.Attempt > 0
+}
+
+func (r *OperationResult) WasCompleted() bool {
+	return !r.Started.IsZero() && !r.Completed.IsZero() && r.Completed.After(r.Started)
+}
+
+func (r *OperationResult) Succeeded() bool {
+	return r.WasAttempted() && r.WasCompleted() && !r.HasErrors()
+}

@@ -2,6 +2,7 @@ package bagit
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -81,4 +82,69 @@ func (p *Profile) GetTagDef(tagFile, tagName string) *TagDefinition {
 		}
 	}
 	return nil
+}
+
+func (p *Profile) FindMatchingTags(property, value string) ([]*TagDefinition, error) {
+	matches := make([]*TagDefinition, 0)
+	for _, tagDef := range p.Tags {
+		var match *TagDefinition
+		switch property {
+		case "DefaultValue":
+			if tagDef.DefaultValue == value {
+				match = tagDef
+			}
+		case "ID":
+			if tagDef.ID == value {
+				match = tagDef
+			}
+		case "TagFile":
+			if tagDef.TagFile == value {
+				match = tagDef
+			}
+		case "TagName":
+			if tagDef.TagName == value {
+				match = tagDef
+			}
+		case "UserValue":
+			if tagDef.UserValue == value {
+				match = tagDef
+			}
+		default:
+			return nil, fmt.Errorf("search property not supported")
+		}
+		if match != nil {
+			matches = append(matches, match)
+		}
+	}
+	return matches, nil
+}
+
+func (p *Profile) FirstMatchingTag(property, value string) (*TagDefinition, error) {
+	for _, tagDef := range p.Tags {
+		switch property {
+		case "DefaultValue":
+			if tagDef.DefaultValue == value {
+				return tagDef, nil
+			}
+		case "ID":
+			if tagDef.ID == value {
+				return tagDef, nil
+			}
+		case "TagFile":
+			if tagDef.TagFile == value {
+				return tagDef, nil
+			}
+		case "TagName":
+			if tagDef.TagName == value {
+				return tagDef, nil
+			}
+		case "UserValue":
+			if tagDef.UserValue == value {
+				return tagDef, nil
+			}
+		default:
+			return nil, fmt.Errorf("search property not supported")
+		}
+	}
+	return nil, nil
 }
