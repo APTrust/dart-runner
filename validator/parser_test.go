@@ -1,9 +1,9 @@
-package bagit_test
+package validator_test
 
 import (
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/APTrust/dart-runner/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -28,18 +28,11 @@ var tagValues = []string{
 	"uva-internal-id-0001",
 }
 
-var digests = []string{
-	"248fac506a5c46b3c760312b99827b6fb5df4698d6cf9a9cdc4c54746728ab99",
-	"8e3634d207017f3cfc8c97545b758c9bcd8a7f772448d60e196663ac4b62456a",
-	"299e1c23e398ec6699976cae63ef08167201500fa64bcf18062111e0c81d6a13",
-	"cf9cbce80062932e10ee9cd70ec05ebc24019deddfea4e54b8788decd28b4bc7",
-}
-
-var paths = []string{
-	"data/datastream-DC",
-	"data/datastream-MARC",
-	"data/datastream-RELS-EXT",
-	"data/datastream-descMetadata",
+var expectedChecksums = map[string]string{
+	"data/datastream-DC":           "248fac506a5c46b3c760312b99827b6fb5df4698d6cf9a9cdc4c54746728ab99",
+	"data/datastream-MARC":         "8e3634d207017f3cfc8c97545b758c9bcd8a7f772448d60e196663ac4b62456a",
+	"data/datastream-RELS-EXT":     "299e1c23e398ec6699976cae63ef08167201500fa64bcf18062111e0c81d6a13",
+	"data/datastream-descMetadata": "cf9cbce80062932e10ee9cd70ec05ebc24019deddfea4e54b8788decd28b4bc7",
 }
 
 func TestParseTagFile(t *testing.T) {
@@ -47,7 +40,7 @@ func TestParseTagFile(t *testing.T) {
 	file, err := os.Open(tagfile)
 	require.Nil(t, err)
 	defer file.Close()
-	tags, err := bagit.ParseTagFile(file, "bag-info.txt")
+	tags, err := validator.ParseTagFile(file, "bag-info.txt")
 	require.Nil(t, err)
 	assert.Equal(t, len(tagNames), len(tags))
 	for i, tag := range tags {
@@ -67,13 +60,11 @@ func TestParseManifest(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, constants.AlgSha256, alg)
 
-	checksums, err := bagit.ParseManifest(file, alg)
+	checksums, err := validator.ParseManifest(file)
 	require.Nil(t, err)
 
-	assert.Equal(t, len(digests), len(checksums))
-	for i, cs := range checksums {
-		assert.Equal(t, constants.AlgSha256, cs.Algorithm)
-		assert.Equal(t, digests[i], cs.Digest)
-		assert.Equal(t, paths[i], cs.Path)
+	assert.Equal(t, len(expectedChecksums), len(checksums))
+	for filepath, digest := range expectedChecksums {
+		assert.Equal(t, expectedChecksums[filepath], digest)
 	}
 }

@@ -1,4 +1,4 @@
-package bagit
+package validator
 
 import (
 	"bufio"
@@ -6,6 +6,8 @@ import (
 	"io"
 	"regexp"
 	"strings"
+
+	"github.com/APTrust/dart-runner/bagit"
 )
 
 // ParseTagFile parses the tags in a tag file that conforms to the
@@ -23,11 +25,11 @@ import (
 // This returns a slice of Tag objects as parsed from the bag. Note that
 // the BagIt spec permits some tags to appear more than once in a file,
 // so you may get multiple tags with the same label.
-func ParseTagFile(reader io.Reader, relFilePath string) ([]*Tag, error) {
+func ParseTagFile(reader io.Reader, relFilePath string) ([]*bagit.Tag, error) {
 	re := regexp.MustCompile(`^(\S*\:)?(\s*.*)?$`)
-	tags := make([]*Tag, 0)
+	tags := make([]*bagit.Tag, 0)
 	scanner := bufio.NewScanner(reader)
-	var tag *Tag
+	var tag *bagit.Tag
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.TrimSpace(line) == "" {
@@ -41,7 +43,7 @@ func ParseTagFile(reader io.Reader, relFilePath string) ([]*Tag, error) {
 				if tag != nil && tag.TagName != "" {
 					tags = append(tags, tag)
 				}
-				tag = NewTag(relFilePath, data[1], strings.TrimSpace(data[2]))
+				tag = bagit.NewTag(relFilePath, data[1], strings.TrimSpace(data[2]))
 				continue
 			}
 			value := strings.TrimSpace(data[2])
@@ -67,10 +69,10 @@ func ParseTagFile(reader io.Reader, relFilePath string) ([]*Tag, error) {
 }
 
 // ParseManifest parses a checksum manifest, returning a slice of
-// Checksums. Param reader should be an open reader. Param algorithm
-// should be name of the digest algorithm ("md5", "sha256", etc).
-func ParseManifest(reader io.Reader, algorithm string) ([]*Checksum, error) {
-	checksums := make([]*Checksum, 0)
+// Checksums. Param reader should be an open reader. Returns a map
+// in which file paths are keys and digests are values.
+func ParseManifest(reader io.Reader) (map[string]string, error) {
+	checksums := make(map[string]string)
 	re := regexp.MustCompile(`^(\S*)\s*(.*)`)
 	scanner := bufio.NewScanner(reader)
 	lineNum := 1
@@ -81,12 +83,9 @@ func ParseManifest(reader io.Reader, algorithm string) ([]*Checksum, error) {
 		}
 		if re.MatchString(line) {
 			data := re.FindStringSubmatch(line)
-			checksum := &Checksum{
-				Algorithm: algorithm,
-				Digest:    data[1],
-				Path:      data[2],
-			}
-			checksums = append(checksums, checksum)
+			digest := data[1]
+			filepath := data[2]
+			checksums[filepath] = digest
 		} else {
 			return nil, fmt.Errorf("Unable to parse line %d: %s", lineNum, line)
 		}
