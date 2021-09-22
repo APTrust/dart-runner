@@ -4,14 +4,6 @@ import (
 	"fmt"
 )
 
-// prefixFor is used in formatting errors messages.
-var prefixFor = []string{
-	"",
-	"",
-	"",
-	"tag-",
-}
-
 // MaxErrors is the maximum number of errors the validator will
 // collect before quitting and returning the error list. We don't
 // quit at the first error because when developing a bagging
@@ -40,10 +32,6 @@ func NewFileMap(fileType string) *FileMap {
 // FileMap. Param algs is a list of algorithms for manifests found
 // in the bag.
 func (fm *FileMap) ValidateChecksums(algs []string) []error {
-
-	// TODO: If fm.Type is TagFile, it doesn't have to be included
-	// in the tag manifests, so we can do looser validation here.
-
 	errors := make([]error, 0)
 	for name, file := range fm.Files {
 		err := file.Validate(fm.Type, algs)
