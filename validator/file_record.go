@@ -59,7 +59,11 @@ func (fr *FileRecord) Validate(fileType string, algs []string) error {
 			continue // tag files don't have to appear in tag manifests
 		}
 		if manifestChecksum == nil {
-			return fmt.Errorf("file is missing from manifest manifest-%s.txt", alg)
+			manifestName := "manifest"
+			if srcFile == constants.FileTypeTag {
+				manifestName = "tagmanifest"
+			}
+			return fmt.Errorf("file is missing from %s-%s.txt", manifestName, alg)
 		}
 		if fileChecksum.Digest != manifestChecksum.Digest {
 			return fmt.Errorf("Digest %s in %s does not match digest %s in %s", manifestChecksum.Digest, manifestChecksum.SourceName(), fileChecksum.Digest, fileChecksum.SourceName())

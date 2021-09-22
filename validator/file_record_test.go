@@ -44,7 +44,7 @@ func TestFileRecordValidate(t *testing.T) {
 	fr.AddChecksum(constants.FileTypePayload, constants.AlgSha512, "9999")
 	err = fr.Validate(constants.FileTypePayload, xtra)
 	require.NotNil(t, err)
-	assert.Equal(t, "file is missing from manifest manifest-sha512.txt", err.Error())
+	assert.Equal(t, "file is missing from manifest-sha512.txt", err.Error())
 
 	// Test mismatched checksums. File digest doesn't match manifest digest.
 	fr.AddChecksum(constants.FileTypeManifest, constants.AlgSha512, "0000")
@@ -69,7 +69,20 @@ func TestFileRecordValidate(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, "file is missing from bag", err.Error())
 
-	// TODO: Test tag file...
+	// Test tag file. It's OK for a tag file to appear in the bag
+	// and be omitted from the tag manifest.
+	fr3 := validator.NewFileRecord()
+	fr3.AddChecksum(constants.FileTypeTag, constants.AlgSha256, "5678")
+	err = fr3.Validate(constants.FileTypeTag, sha256)
+	assert.Nil(t, err)
+
+	// Not OK for a tag file to be listed in a manifest if the tag
+	// file is missing from the bag.
+	fr4 := validator.NewFileRecord()
+	fr4.AddChecksum(constants.FileTypeTagManifest, constants.AlgSha256, "5678")
+	err = fr4.Validate(constants.FileTypeTag, sha256)
+	require.NotNil(t, err)
+	assert.Equal(t, "file is missing from bag", err.Error())
 }
 
 func TestFileRecordGetChecksum(t *testing.T) {
