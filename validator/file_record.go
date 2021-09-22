@@ -13,6 +13,7 @@ var ErrFileMissingFromBag = fmt.Errorf("file is missing from bag")
 
 // FileRecord contains a collection of checksums for a single file.
 type FileRecord struct {
+	Size      int64
 	Checksums []*Checksum
 }
 

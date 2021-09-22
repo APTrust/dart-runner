@@ -44,3 +44,19 @@ func (fm *FileMap) ValidateChecksums(algs []string) []error {
 	}
 	return errors
 }
+
+func (fm *FileMap) FileCount() int {
+	return len(fm.Files)
+}
+
+func (fm *FileMap) TotalBytes() int64 {
+	sum := int64(0)
+	for _, fr := range fm.Files {
+		sum += fr.Size
+	}
+	return sum
+}
+
+func (fm *FileMap) Oxum() string {
+	return fmt.Sprintf("%d.%d", fm.TotalBytes(), fm.FileCount())
+}
