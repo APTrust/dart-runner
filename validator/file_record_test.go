@@ -3,6 +3,7 @@ package validator_test
 import (
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,10 +11,10 @@ import (
 
 func getTestFileRecord() *validator.FileRecord {
 	fr := validator.NewFileRecord()
-	fr.AddChecksum(validator.SourcePayloadFile, validator.AlgMd5, "1234")
-	fr.AddChecksum(validator.SourcePayloadFile, validator.AlgSha256, "5678")
-	fr.AddChecksum(validator.SourceManifest, validator.AlgMd5, "1234")
-	fr.AddChecksum(validator.SourceManifest, validator.AlgSha256, "5678")
+	fr.AddChecksum(constants.FileTypePayload, constants.AlgMd5, "1234")
+	fr.AddChecksum(constants.FileTypePayload, constants.AlgSha256, "5678")
+	fr.AddChecksum(constants.FileTypeManifest, constants.AlgMd5, "1234")
+	fr.AddChecksum(constants.FileTypeManifest, constants.AlgSha256, "5678")
 	return fr
 }
 
@@ -29,59 +30,61 @@ func TestAddChecksum(t *testing.T) {
 }
 
 func TestFileRecordValidate(t *testing.T) {
-	algs := []validator.DigestAlgorithm{
-		validator.AlgMd5,
-		validator.AlgSha256,
+	algs := []string{
+		constants.AlgMd5,
+		constants.AlgSha256,
 	}
 	fr := getTestFileRecord()
-	err := fr.Validate(validator.FileTypePayload, algs)
+	err := fr.Validate(constants.FileTypePayload, algs)
 	assert.Nil(t, err)
 
 	// Test digest missing from manifest. We have a sha512 checksum
 	// for the file, but there's no checksum in sha512 manifest.
-	xtra := append(algs, validator.AlgSha512)
-	fr.AddChecksum(validator.SourcePayloadFile, validator.AlgSha512, "9999")
-	err = fr.Validate(validator.FileTypePayload, xtra)
+	xtra := append(algs, constants.AlgSha512)
+	fr.AddChecksum(constants.FileTypePayload, constants.AlgSha512, "9999")
+	err = fr.Validate(constants.FileTypePayload, xtra)
 	require.NotNil(t, err)
 	assert.Equal(t, "file is missing from manifest manifest-sha512.txt", err.Error())
 
 	// Test mismatched checksums. File digest doesn't match manifest digest.
-	fr.AddChecksum(validator.SourceManifest, validator.AlgSha512, "0000")
-	err = fr.Validate(validator.FileTypePayload, xtra)
+	fr.AddChecksum(constants.FileTypeManifest, constants.AlgSha512, "0000")
+	err = fr.Validate(constants.FileTypePayload, xtra)
 	require.NotNil(t, err)
 	assert.Equal(t, "Digest 0000 in manifest-sha512.txt does not match digest 9999 in payload file", err.Error())
 
 	// Test algorithm missing. In this case, the validator never
 	// even calculated the requested digest.
-	sha1 := []validator.DigestAlgorithm{validator.AlgSha1}
-	err = fr.Validate(validator.FileTypePayload, sha1)
+	sha1 := []string{constants.AlgSha1}
+	err = fr.Validate(constants.FileTypePayload, sha1)
 	require.NotNil(t, err)
 	assert.Equal(t, "Digest sha1 was not calculated", err.Error())
 
 	// Test payload file missing. In this case, the sha256 manifest
 	// has a digest for the file, but we have no digest calculated
 	// from the file itself (i.e. where source = SourcePayloadFile)
-	sha256 := []validator.DigestAlgorithm{validator.AlgSha256}
+	sha256 := []string{constants.AlgSha256}
 	fr2 := validator.NewFileRecord()
-	fr2.AddChecksum(validator.SourceManifest, validator.AlgSha256, "5678")
-	err = fr2.Validate(validator.FileTypePayload, sha256)
+	fr2.AddChecksum(constants.FileTypeManifest, constants.AlgSha256, "5678")
+	err = fr2.Validate(constants.FileTypePayload, sha256)
 	require.NotNil(t, err)
 	assert.Equal(t, "file is missing from bag", err.Error())
+
+	// TODO: Test tag file...
 }
 
 func TestFileRecordGetChecksum(t *testing.T) {
 	fr := getTestFileRecord()
 
-	cs := fr.GetChecksum(validator.AlgMd5, validator.SourceManifest)
+	cs := fr.GetChecksum(constants.AlgMd5, constants.FileTypeManifest)
 	assert.NotNil(t, cs)
-	assert.Equal(t, validator.AlgMd5, cs.Algorithm)
-	assert.Equal(t, validator.SourceManifest, cs.Source)
+	assert.Equal(t, constants.AlgMd5, cs.Algorithm)
+	assert.Equal(t, constants.FileTypeManifest, cs.Source)
 
-	cs = fr.GetChecksum(validator.AlgSha256, validator.SourcePayloadFile)
+	cs = fr.GetChecksum(constants.AlgSha256, constants.FileTypePayload)
 	assert.NotNil(t, cs)
-	assert.Equal(t, validator.AlgSha256, cs.Algorithm)
-	assert.Equal(t, validator.SourcePayloadFile, cs.Source)
+	assert.Equal(t, constants.AlgSha256, cs.Algorithm)
+	assert.Equal(t, constants.FileTypePayload, cs.Source)
 
-	cs = fr.GetChecksum(validator.AlgSha256, validator.SourceTagFile)
+	cs = fr.GetChecksum(constants.AlgSha256, constants.FileTypeTag)
 	assert.Nil(t, cs)
 }

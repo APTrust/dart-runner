@@ -4,16 +4,6 @@ import (
 	"fmt"
 )
 
-// FileType describes the type of file in a bag.
-type FileType int
-
-const (
-	FileTypePayload FileType = iota
-	FileTypeManifest
-	FileTypeTagFile
-	FileTypeTagManifest
-)
-
 // prefixFor is used in formatting errors messages.
 var prefixFor = []string{
 	"",
@@ -34,12 +24,12 @@ const MaxErrors = 30
 // FileMap contains a map of FileRecord objects and some methods to
 // help validate those records.
 type FileMap struct {
-	Type  FileType
+	Type  string
 	Files map[string]*FileRecord
 }
 
 // NewFileMap returns a pointer to a new FileMap object.
-func NewFileMap(fileType FileType) *FileMap {
+func NewFileMap(fileType string) *FileMap {
 	return &FileMap{
 		Type:  fileType,
 		Files: make(map[string]*FileRecord),
@@ -49,7 +39,7 @@ func NewFileMap(fileType FileType) *FileMap {
 // ValidateChecksums validates all checksums for all files in this
 // FileMap. Param algs is a list of algorithms for manifests found
 // in the bag.
-func (fm *FileMap) ValidateChecksums(algs []DigestAlgorithm) []error {
+func (fm *FileMap) ValidateChecksums(algs []string) []error {
 
 	// TODO: If fm.Type is TagFile, it doesn't have to be included
 	// in the tag manifests, so we can do looser validation here.

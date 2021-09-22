@@ -12,9 +12,9 @@ const (
 	EmptyUUID                = "00000000-0000-0000-0000-000000000000"
 	FileTypeFetchTxt         = "fetch.txt"
 	FileTypeManifest         = "manifest"
-	FileTypePayload          = "payload_file"
-	FileTypeTag              = "tag_file"
-	FileTypeTagManifest      = "tag_manifest"
+	FileTypePayload          = "payload file"
+	FileTypeTag              = "tag file"
+	FileTypeTagManifest      = "tag manifest"
 	MaxS3ObjectSize          = int64(5497558138880) // 5TB
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30

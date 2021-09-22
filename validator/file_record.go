@@ -2,6 +2,9 @@ package validator
 
 import (
 	"fmt"
+
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 )
 
 // ErrFileMissingFromBag indicates that a file present in a payload
@@ -21,7 +24,7 @@ func NewFileRecord() *FileRecord {
 }
 
 // AddChecksum adds a checksum to this FileRecord.
-func (fr *FileRecord) AddChecksum(source ChecksumSource, alg DigestAlgorithm, digest string) {
+func (fr *FileRecord) AddChecksum(source, alg, digest string) {
 	fr.Checksums = append(fr.Checksums, NewChecksum(source, alg, digest))
 }
 
@@ -35,28 +38,28 @@ func (fr *FileRecord) AddChecksum(source ChecksumSource, alg DigestAlgorithm, di
 //
 // Validate returns true if the checksums we calculated for the
 // file match the checksums in the manifests.
-func (fr *FileRecord) Validate(fileType FileType, algs []DigestAlgorithm) error {
+func (fr *FileRecord) Validate(fileType string, algs []string) error {
 	existingAlgorithms := fr.DigestAlgorithms()
-	srcFile := SourcePayloadFile
-	srcManifest := SourceManifest
-	if fileType == FileTypeTagFile {
-		srcFile = SourceTagFile
-		srcManifest = SourceTagManifest
+	srcFile := constants.FileTypePayload
+	srcManifest := constants.FileTypeManifest
+	if fileType == constants.FileTypeTag {
+		srcFile = constants.FileTypeTag
+		srcManifest = constants.FileTypeTagManifest
 	}
 	for _, alg := range algs {
-		if !fr.hasAlg(existingAlgorithms, alg) {
-			return fmt.Errorf("Digest %s was not calculated", algNames[alg])
+		if !util.StringListContains(existingAlgorithms, alg) {
+			return fmt.Errorf("Digest %s was not calculated", alg)
 		}
 		fileChecksum := fr.GetChecksum(alg, srcFile)
 		if fileChecksum == nil {
 			return ErrFileMissingFromBag
 		}
 		manifestChecksum := fr.GetChecksum(alg, srcManifest)
-		if srcManifest == SourceTagManifest && manifestChecksum == nil {
+		if srcManifest == constants.FileTypeTagManifest && manifestChecksum == nil {
 			continue // tag files don't have to appear in tag manifests
 		}
 		if manifestChecksum == nil {
-			return fmt.Errorf("file is missing from manifest manifest-%s.txt", algNames[alg])
+			return fmt.Errorf("file is missing from manifest manifest-%s.txt", alg)
 		}
 		if fileChecksum.Digest != manifestChecksum.Digest {
 			return fmt.Errorf("Digest %s in %s does not match digest %s in %s", manifestChecksum.Digest, manifestChecksum.SourceName(), fileChecksum.Digest, fileChecksum.SourceName())
@@ -67,7 +70,7 @@ func (fr *FileRecord) Validate(fileType FileType, algs []DigestAlgorithm) error 
 
 // GetChecksum returns the checksum with the specified algorithm
 // and source.
-func (fr *FileRecord) GetChecksum(alg DigestAlgorithm, source ChecksumSource) *Checksum {
+func (fr *FileRecord) GetChecksum(alg, source string) *Checksum {
 	for _, cs := range fr.Checksums {
 		if cs.Algorithm == alg && cs.Source == source {
 			return cs
@@ -78,9 +81,9 @@ func (fr *FileRecord) GetChecksum(alg DigestAlgorithm, source ChecksumSource) *C
 
 // DigestAlgorithms returns a list of digest algorithms calculated for
 // this file.
-func (fr *FileRecord) DigestAlgorithms() []DigestAlgorithm {
-	alreadyAdded := make(map[DigestAlgorithm]bool)
-	algs := make([]DigestAlgorithm, 0)
+func (fr *FileRecord) DigestAlgorithms() []string {
+	alreadyAdded := make(map[string]bool)
+	algs := make([]string, 0)
 	for _, cs := range fr.Checksums {
 		if !alreadyAdded[cs.Algorithm] {
 			algs = append(algs, cs.Algorithm)
@@ -88,17 +91,4 @@ func (fr *FileRecord) DigestAlgorithms() []DigestAlgorithm {
 		}
 	}
 	return algs
-}
-
-// hasAlg returns true if alg is in list of algs.
-func (fr *FileRecord) hasAlg(algs []DigestAlgorithm, alg DigestAlgorithm) bool {
-	if algs == nil {
-		return false
-	}
-	for _, digestAlg := range algs {
-		if digestAlg == alg {
-			return true
-		}
-	}
-	return false
 }

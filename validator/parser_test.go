@@ -68,21 +68,3 @@ func TestParseManifest(t *testing.T) {
 		assert.Equal(t, expectedChecksums[filepath], digest)
 	}
 }
-
-func TestAlgToEnum(t *testing.T) {
-	enum, err := validator.AlgToEnum("md5")
-	require.Nil(t, err)
-	assert.Equal(t, validator.AlgMd5, enum)
-
-	enum, err = validator.AlgToEnum("sha1")
-	require.Nil(t, err)
-	assert.Equal(t, validator.AlgSha1, enum)
-
-	enum, err = validator.AlgToEnum("sha256")
-	require.Nil(t, err)
-	assert.Equal(t, validator.AlgSha256, enum)
-
-	enum, err = validator.AlgToEnum("sha512")
-	require.Nil(t, err)
-	assert.Equal(t, validator.AlgSha512, enum)
-}

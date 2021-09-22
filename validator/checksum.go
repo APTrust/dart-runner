@@ -2,58 +2,18 @@ package validator
 
 import (
 	"fmt"
+
+	"github.com/APTrust/dart-runner/constants"
 )
-
-type ChecksumSource int
-type DigestAlgorithm int
-
-const (
-	SourceManifest ChecksumSource = iota
-	SourceTagManifest
-	SourcePayloadFile
-	SourceTagFile
-)
-
-var sourceNames = []string{
-	"manifest",
-	"tagmanifest",
-	"payload file",
-	"tag file",
-}
-
-const (
-	AlgMd5 DigestAlgorithm = iota
-	AlgSha1
-	AlgSha256
-	AlgSha512
-)
-
-// Match algorithm enum to human-readable name.
-var algNames = []string{
-	"md5",
-	"sha1",
-	"sha256",
-	"sha512",
-}
-
-// AlgToEnum translates an algorithm's string name to its enum value.
-func AlgToEnum(name string) (DigestAlgorithm, error) {
-	for i, alg := range algNames {
-		if alg == name {
-			return DigestAlgorithm(i), nil
-		}
-	}
-	return 0, fmt.Errorf("unsupported digest algorithm: %s", name)
-}
 
 // Checksum records information about a file's checksum.
 type Checksum struct {
-	Source    ChecksumSource
-	Algorithm DigestAlgorithm
+	Source    string
+	Algorithm string
 	Digest    string
 }
 
-func NewChecksum(source ChecksumSource, alg DigestAlgorithm, digest string) *Checksum {
+func NewChecksum(source, alg, digest string) *Checksum {
 	return &Checksum{
 		Source:    source,
 		Algorithm: alg,
@@ -61,9 +21,13 @@ func NewChecksum(source ChecksumSource, alg DigestAlgorithm, digest string) *Che
 	}
 }
 
-func (c *Checksum) SourceName() string {
-	if c.Source == SourcePayloadFile || c.Source == SourceTagFile {
-		return sourceNames[c.Source]
+func (cs *Checksum) SourceName() string {
+	switch cs.Source {
+	case constants.FileTypeManifest:
+		return fmt.Sprintf("manifest-%s.txt", cs.Algorithm)
+	case constants.FileTypeTagManifest:
+		return fmt.Sprintf("tagmanifest-%s.txt", cs.Algorithm)
+	default:
+		return cs.Source
 	}
-	return fmt.Sprintf("%s-%s.txt", sourceNames[c.Source], algNames[c.Algorithm])
 }
