@@ -1,11 +1,11 @@
-package validator_test
+package validation_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/validator"
+	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +21,7 @@ var fmDigests = []string{
 }
 
 func TestNewFileMap(t *testing.T) {
-	fm := validator.NewFileMap(constants.FileTypePayload)
+	fm := validation.NewFileMap(constants.FileTypePayload)
 	require.NotNil(t, fm)
 	assert.Equal(t, constants.FileTypePayload, fm.Type)
 	require.NotNil(t, fm.Files)
@@ -63,19 +63,19 @@ func TestValidateTagFileChecksums(t *testing.T) {
 	assert.Equal(t, 0, len(errs))
 }
 
-func makePayloadFileMap() *validator.FileMap {
+func makePayloadFileMap() *validation.FileMap {
 	return makeFileMap(constants.FileTypePayload, constants.FileTypeManifest, "data/file")
 }
 
-func makeTagFileMap() *validator.FileMap {
+func makeTagFileMap() *validation.FileMap {
 	return makeFileMap(constants.FileTypeTag, constants.FileTypeTagManifest, "tagfile")
 }
 
-func makeFileMap(fileType, manifestType, filename string) *validator.FileMap {
-	fileMap := validator.NewFileMap(fileType)
+func makeFileMap(fileType, manifestType, filename string) *validation.FileMap {
+	fileMap := validation.NewFileMap(fileType)
 	for i := 0; i < 5; i++ {
 		filename := fmt.Sprintf("%s%d", filename, i)
-		fr := validator.NewFileRecord()
+		fr := validation.NewFileRecord()
 		for j, alg := range fmAlgs {
 			fr.AddChecksum(fileType, alg, fmDigests[j])
 			fr.AddChecksum(manifestType, alg, fmDigests[j])
@@ -85,11 +85,11 @@ func makeFileMap(fileType, manifestType, filename string) *validator.FileMap {
 	return fileMap
 }
 
-func makeTagFileMapWithoutManifestEntries() *validator.FileMap {
-	fileMap := validator.NewFileMap(constants.FileTypeTag)
+func makeTagFileMapWithoutManifestEntries() *validation.FileMap {
+	fileMap := validation.NewFileMap(constants.FileTypeTag)
 	for i := 0; i < 5; i++ {
 		filename := fmt.Sprintf("tagfile%d", i)
-		fr := validator.NewFileRecord()
+		fr := validation.NewFileRecord()
 		for j, alg := range fmAlgs {
 			fr.AddChecksum(constants.FileTypeTag, alg, fmDigests[j])
 		}

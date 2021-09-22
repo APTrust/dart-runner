@@ -1,4 +1,4 @@
-package validator
+package validation
 
 import (
 	"os"
@@ -52,6 +52,8 @@ func (v *Validator) Validate() bool {
 	// Validate tag file checksums
 	// Validate payload oxum
 	// Validate tags
+
+	return true
 }
 
 // ScanBag scans the bag's metadata and payload, recording file names,

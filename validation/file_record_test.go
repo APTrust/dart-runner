@@ -1,16 +1,16 @@
-package validator_test
+package validation_test
 
 import (
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/validator"
+	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func getTestFileRecord() *validator.FileRecord {
-	fr := validator.NewFileRecord()
+func getTestFileRecord() *validation.FileRecord {
+	fr := validation.NewFileRecord()
 	fr.AddChecksum(constants.FileTypePayload, constants.AlgMd5, "1234")
 	fr.AddChecksum(constants.FileTypePayload, constants.AlgSha256, "5678")
 	fr.AddChecksum(constants.FileTypeManifest, constants.AlgMd5, "1234")
@@ -19,7 +19,7 @@ func getTestFileRecord() *validator.FileRecord {
 }
 
 func TestNewFileRecord(t *testing.T) {
-	fr := validator.NewFileRecord()
+	fr := validation.NewFileRecord()
 	assert.NotNil(t, fr)
 	assert.NotNil(t, fr.Checksums)
 }
@@ -63,7 +63,7 @@ func TestFileRecordValidate(t *testing.T) {
 	// has a digest for the file, but we have no digest calculated
 	// from the file itself (i.e. where source = SourcePayloadFile)
 	sha256 := []string{constants.AlgSha256}
-	fr2 := validator.NewFileRecord()
+	fr2 := validation.NewFileRecord()
 	fr2.AddChecksum(constants.FileTypeManifest, constants.AlgSha256, "5678")
 	err = fr2.Validate(constants.FileTypePayload, sha256)
 	require.NotNil(t, err)
@@ -71,14 +71,14 @@ func TestFileRecordValidate(t *testing.T) {
 
 	// Test tag file. It's OK for a tag file to appear in the bag
 	// and be omitted from the tag manifest.
-	fr3 := validator.NewFileRecord()
+	fr3 := validation.NewFileRecord()
 	fr3.AddChecksum(constants.FileTypeTag, constants.AlgSha256, "5678")
 	err = fr3.Validate(constants.FileTypeTag, sha256)
 	assert.Nil(t, err)
 
 	// Not OK for a tag file to be listed in a manifest if the tag
 	// file is missing from the bag.
-	fr4 := validator.NewFileRecord()
+	fr4 := validation.NewFileRecord()
 	fr4.AddChecksum(constants.FileTypeTagManifest, constants.AlgSha256, "5678")
 	err = fr4.Validate(constants.FileTypeTag, sha256)
 	require.NotNil(t, err)
