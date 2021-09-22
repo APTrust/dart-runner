@@ -1,12 +1,14 @@
 package util_test
 
 import (
-	"github.com/APTrust/dart-runner/util"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStringListContains(t *testing.T) {
@@ -85,6 +87,22 @@ func TestLooksLikeTagManifest(t *testing.T) {
 	assert.False(t, util.LooksLikeTagManifest("bag-info.txt"))
 	// No: is payload file
 	assert.False(t, util.LooksLikeTagManifest("data/manifest-sha256.txt"))
+}
+
+func TestLooksLikePayloadFile(t *testing.T) {
+	assert.True(t, util.LooksLikePayloadFile("data/file.txt"))
+	assert.True(t, util.LooksLikePayloadFile("data/nested/file.txt"))
+	assert.False(t, util.LooksLikePayloadFile("tagmanifest-sha256.txt"))
+	assert.False(t, util.LooksLikePayloadFile("manifest-md5.txt"))
+	assert.False(t, util.LooksLikePayloadFile("bag-info.txt"))
+	assert.False(t, util.LooksLikePayloadFile("bagit.txt"))
+}
+
+func TestBagFileType(t *testing.T) {
+	assert.Equal(t, constants.FileTypePayload, util.BagFileType("data/file.pdf"))
+	assert.Equal(t, constants.FileTypeManifest, util.BagFileType("manifest-sha256.txt"))
+	assert.Equal(t, constants.FileTypeTagManifest, util.BagFileType("tagmanifest-sha256.txt"))
+	assert.Equal(t, constants.FileTypeTag, util.BagFileType("ramdom_file.xml"))
 }
 
 func TestContainsControlCharacter(t *testing.T) {

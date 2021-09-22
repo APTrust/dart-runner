@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"unicode"
+
+	"github.com/APTrust/dart-runner/constants"
 )
 
 // StringListContains returns true if the list of strings contains item.
@@ -70,6 +72,21 @@ func LooksLikeManifest(name string) bool {
 
 func LooksLikeTagManifest(name string) bool {
 	return strings.HasPrefix(name, "tagmanifest-") && strings.HasSuffix(name, ".txt")
+}
+
+func LooksLikePayloadFile(name string) bool {
+	return strings.HasPrefix(name, "data/")
+}
+
+func BagFileType(name string) string {
+	if LooksLikePayloadFile(name) {
+		return constants.FileTypePayload
+	} else if LooksLikeManifest(name) {
+		return constants.FileTypeManifest
+	} else if LooksLikeTagManifest(name) {
+		return constants.FileTypeTagManifest
+	}
+	return constants.FileTypeTag
 }
 
 // LooksLikeURL returns true if url looks like a URL.
