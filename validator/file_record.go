@@ -32,9 +32,11 @@ func (fr *FileRecord) AddChecksum(source ChecksumSource, alg DigestAlgorithm, di
 //   specified algorithms.
 // * the checksums that the validator calculated on the file itself
 //   match the checksums in the manifests.
+//
 // Validate returns true if the checksums we calculated for the
 // file match the checksums in the manifests.
 func (fr *FileRecord) Validate(fileType FileType, algs []DigestAlgorithm) error {
+	existingAlgorithms := fr.DigestAlgorithms()
 	srcFile := SourcePayloadFile
 	srcManifest := SourceManifest
 	if fileType == FileTypeTagFile {
@@ -42,6 +44,9 @@ func (fr *FileRecord) Validate(fileType FileType, algs []DigestAlgorithm) error 
 		srcManifest = SourceTagManifest
 	}
 	for _, alg := range algs {
+		if !fr.hasAlg(existingAlgorithms, alg) {
+			return fmt.Errorf("Digest %s was not calculated", algNames[alg])
+		}
 		fileChecksum := fr.GetChecksum(alg, srcFile)
 		if fileChecksum == nil {
 			return ErrFileMissingFromBag
@@ -69,4 +74,31 @@ func (fr *FileRecord) GetChecksum(alg DigestAlgorithm, source ChecksumSource) *C
 		}
 	}
 	return nil
+}
+
+// DigestAlgorithms returns a list of digest algorithms calculated for
+// this file.
+func (fr *FileRecord) DigestAlgorithms() []DigestAlgorithm {
+	alreadyAdded := make(map[DigestAlgorithm]bool)
+	algs := make([]DigestAlgorithm, 0)
+	for _, cs := range fr.Checksums {
+		if !alreadyAdded[cs.Algorithm] {
+			algs = append(algs, cs.Algorithm)
+			alreadyAdded[cs.Algorithm] = true
+		}
+	}
+	return algs
+}
+
+// hasAlg returns true if alg is in list of algs.
+func (fr *FileRecord) hasAlg(algs []DigestAlgorithm, alg DigestAlgorithm) bool {
+	if algs == nil {
+		return false
+	}
+	for _, digestAlg := range algs {
+		if digestAlg == alg {
+			return true
+		}
+	}
+	return false
 }

@@ -52,6 +52,18 @@ func IsEmptyStringList(list []string) bool {
 	return true
 }
 
+// IntListContains returns true if list contains item.
+func IntListContains(list []int, item int) bool {
+	if list != nil {
+		for i := range list {
+			if list[i] == item {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func LooksLikeManifest(name string) bool {
 	return strings.HasPrefix(name, "manifest-") && strings.HasSuffix(name, ".txt")
 }

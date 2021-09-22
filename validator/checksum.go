@@ -36,6 +36,7 @@ var algNames = []string{
 	"sha512",
 }
 
+// AlgToEnum translates an algorithm's string name to its enum value.
 func AlgToEnum(name string) (DigestAlgorithm, error) {
 	for i, alg := range algNames {
 		if alg == name {
@@ -45,6 +46,7 @@ func AlgToEnum(name string) (DigestAlgorithm, error) {
 	return 0, fmt.Errorf("unsupported digest algorithm: %s", name)
 }
 
+// Checksum records information about a file's checksum.
 type Checksum struct {
 	Source    ChecksumSource
 	Algorithm DigestAlgorithm

@@ -26,6 +26,14 @@ func TestStringListContainsAll(t *testing.T) {
 	assert.False(t, util.StringListContainsAll(list1, list3))
 }
 
+func TestIntListContains(t *testing.T) {
+	list := []int{3, 5, 7}
+	assert.True(t, util.IntListContains(list, 3))
+	assert.False(t, util.IntListContains(list, 8))
+	// Don't crash on nil list
+	assert.False(t, util.IntListContains(nil, 3))
+}
+
 func TestAlgorithmFromManifestName(t *testing.T) {
 	names := map[string]string{
 		"manifest-md5.txt":       "md5",
