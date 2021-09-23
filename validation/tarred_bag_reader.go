@@ -56,7 +56,15 @@ func (r *TarredBagReader) ScanMetadata() error {
 func (r *TarredBagReader) ScanPayload() error {
 	r.reader.Seek(0, io.SeekStart)
 	r.tarReader = tar.NewReader(r.reader)
-
+	for {
+		err := r.processPayloadEntry()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -73,38 +81,25 @@ func (r *TarredBagReader) processMetaEntry() error {
 		fileType := util.BagFileType(pathInBag)
 		switch fileType {
 		case constants.FileTypeManifest:
-			r.addOrUpdateFileRecord(r.validator.PayloadManifests, pathInBag, header.Size)
-
 			err = r.parseManifest(pathInBag, r.validator.PayloadFiles)
 		case constants.FileTypeTagManifest:
-			r.addOrUpdateFileRecord(r.validator.TagManifests, pathInBag, header.Size)
 			err = r.parseManifest(pathInBag, r.validator.TagFiles)
 		case constants.FileTypeTag:
-			r.addOrUpdateFileRecord(r.validator.TagFiles, pathInBag, header.Size)
 			r.parseTagFile(pathInBag)
-		default:
-			// skip payload files for now
 		}
+		fileMap := r.validator.MapForPath(pathInBag)
+		r.addOrUpdateFileRecord(fileMap, pathInBag, header.Size)
 	}
 	return err
 }
 
-func (r *TarredBagReader) processNextEntry() error {
+func (r *TarredBagReader) processPayloadEntry() error {
 	header, err := r.tarReader.Next()
 	if err != nil {
 		return err
 	}
 	if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeRegA {
-		return r.processFileEntry(header)
-	}
-	return nil
-}
-
-// Process a single file in the tarball.
-func (r *TarredBagReader) processFileEntry(header *tar.Header) error {
-	err := r.ensureFileRecord(header)
-	if err != nil {
-		return err
+		err = r.ensureFileRecord(header)
 	}
 	return nil
 }
@@ -114,27 +109,9 @@ func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 	if err != nil {
 		return err
 	}
-	fileType := util.BagFileType(pathInBag)
-	switch fileType {
-	case constants.FileTypeManifest:
-		r.addOrUpdateFileRecord(r.validator.PayloadManifests, pathInBag, header.Size)
-		err = r.parseManifest(pathInBag, r.validator.PayloadFiles)
-		if err != nil {
-			return err
-		}
-	case constants.FileTypePayload:
-		r.addOrUpdateFileRecord(r.validator.PayloadFiles, pathInBag, header.Size)
-	case constants.FileTypeTagManifest:
-		r.addOrUpdateFileRecord(r.validator.TagManifests, pathInBag, header.Size)
-		err = r.parseManifest(pathInBag, r.validator.TagFiles)
-		if err != nil {
-			return err
-		}
-	default:
-		r.addOrUpdateFileRecord(r.validator.TagFiles, pathInBag, header.Size)
-		r.parseTagFile(pathInBag)
-	}
-	return nil
+	fileMap := r.validator.MapForPath(pathInBag)
+	fileRecord := r.addOrUpdateFileRecord(fileMap, pathInBag, header.Size)
+	return r.addChecksums(pathInBag, fileRecord)
 }
 
 func (r *TarredBagReader) addOrUpdateFileRecord(fileMap *FileMap, pathInBag string, size int64) *FileRecord {
@@ -178,7 +155,7 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord)
 	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha256,
 		fmt.Sprintf("%x", sha256Hash.Sum(nil)))
 	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha512,
-		fmt.Sprintf("%x", sha256Hash.Sum(nil)))
+		fmt.Sprintf("%x", sha512Hash.Sum(nil)))
 
 	return nil
 }

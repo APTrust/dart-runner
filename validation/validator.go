@@ -18,13 +18,14 @@ type Validator struct {
 	Tags               []*bagit.Tag
 	UnparsableTagFiles []string
 	Errors             []error
+	mapForType         map[string]*FileMap
 }
 
 func NewValidator(pathToBag string) (*Validator, error) {
 	if !util.FileExists(pathToBag) {
 		return nil, os.ErrNotExist
 	}
-	return &Validator{
+	validator := &Validator{
 		PathToBag:          pathToBag,
 		PayloadFiles:       NewFileMap(constants.FileTypePayload),
 		PayloadManifests:   NewFileMap(constants.FileTypeManifest),
@@ -33,7 +34,18 @@ func NewValidator(pathToBag string) (*Validator, error) {
 		Tags:               make([]*bagit.Tag, 0),
 		UnparsableTagFiles: make([]string, 0),
 		Errors:             make([]error, 0),
-	}, nil
+	}
+	validator.mapForType = map[string]*FileMap{
+		constants.FileTypePayload:     validator.PayloadFiles,
+		constants.FileTypeManifest:    validator.PayloadManifests,
+		constants.FileTypeTag:         validator.TagFiles,
+		constants.FileTypeTagManifest: validator.TagManifests,
+	}
+	return validator, nil
+}
+
+func (v *Validator) MapForPath(pathInBag string) *FileMap {
+	return v.mapForType[util.BagFileType(pathInBag)]
 }
 
 func (v *Validator) PayloadManifestAlgs() ([]string, error) {
