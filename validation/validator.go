@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -33,6 +34,7 @@ func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) 
 		PathToBag:          pathToBag,
 		PayloadFiles:       NewFileMap(constants.FileTypePayload),
 		PayloadManifests:   NewFileMap(constants.FileTypeManifest),
+		Profile:            profile,
 		TagFiles:           NewFileMap(constants.FileTypeTag),
 		TagManifests:       NewFileMap(constants.FileTypeTagManifest),
 		Tags:               make([]*bagit.Tag, 0),
@@ -341,4 +343,19 @@ func (v *Validator) validateTags() bool {
 		}
 	}
 	return valid
+}
+
+func (v *Validator) ErrorString() string {
+	errs := make([]string, len(v.Errors))
+	i := 0
+	for k, v := range v.Errors {
+		errs[i] = fmt.Sprintf("%s -> %s", k, v)
+		i++
+	}
+	return strings.Join(errs, "\n")
+}
+
+func (v *Validator) ErrorJSON() string {
+	data, _ := json.Marshal(v.Errors)
+	return string(data)
 }

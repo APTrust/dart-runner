@@ -172,7 +172,7 @@ func (p *Profile) FirstMatchingTag(property, value string) (*TagDefinition, erro
 }
 
 func (p *Profile) HasTagFile(name string) bool {
-	tagDef, _ := p.FirstMatchingTag("tagFile", name)
+	tagDef, _ := p.FirstMatchingTag("TagFile", name)
 	return tagDef != nil
 }
 

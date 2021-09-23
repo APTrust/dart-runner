@@ -1,23 +1,31 @@
 package validation_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/APTrust/dart-runner/util"
 	"github.com/APTrust/dart-runner/validation"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func getValidator(t *testing.T, bag, profile string) *validation.Validator {
+	bagItProfile, err := loadProfile(profile)
+	require.Nil(t, err)
+
+	pathToBag := util.PathToUnitTestBag(bag)
+	validator, err := validation.NewValidator(pathToBag, bagItProfile)
+	require.Nil(t, err)
+	return validator
+}
 
 func TestValidator_ScanBag(t *testing.T) {
 	expected, err := loadValidatorFromJson("tagsample_good_metadata.json")
 	require.Nil(t, err)
 	require.NotNil(t, expected)
 
-	profile, err := loadProfile("aptrust-v2.2.json")
-	require.Nil(t, err)
-
-	pathToBag := util.PathToUnitTestBag("example.edu.tagsample_good.tar")
-	validator, err := validation.NewValidator(pathToBag, profile)
+	validator := getValidator(t, "example.edu.tagsample_good.tar", "aptrust-v2.2.json")
 
 	err = validator.ScanBag()
 	require.Nil(t, err)
@@ -31,4 +39,15 @@ func TestValidator_ScanBag(t *testing.T) {
 	tarReaderTestFileMaps(t, expected.TagManifests, validator.TagManifests)
 
 	tarReaderTestTags(t, expected.Tags, validator.Tags)
+}
+
+func TestValidator_ValidateBasic(t *testing.T) {
+	validator := getValidator(t, "example.edu.tagsample_good.tar", "aptrust-v2.2.json")
+	err := validator.ScanBag()
+	require.Nil(t, err)
+
+	isValid := validator.Validate()
+	fmt.Println(validator.ErrorString())
+	fmt.Println(validator.ErrorJSON())
+	assert.True(t, isValid)
 }
