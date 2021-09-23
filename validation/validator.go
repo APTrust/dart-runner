@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -22,7 +23,7 @@ type Validator struct {
 	mapForType         map[string]*FileMap
 }
 
-func NewValidator(pathToBag string) (*Validator, error) {
+func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) {
 	if !util.FileExists(pathToBag) {
 		return nil, os.ErrNotExist
 	}
@@ -57,18 +58,6 @@ func (v *Validator) TagManifestAlgs() ([]string, error) {
 	return v.manifestAlgs(v.TagManifests)
 }
 
-func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
-	algs := make([]string, 0)
-	for name, _ := range fileMap.Files {
-		alg, err := util.AlgorithmFromManifestName(name)
-		if err != nil {
-			return nil, err
-		}
-		algs = append(algs, alg)
-	}
-	return algs, nil
-}
-
 // Validate validates the bag and returns true if it's valid.
 // If this returns false, check the errors in Validator.Errors.
 // The validator quits after 30 errors.
@@ -94,13 +83,31 @@ func (v *Validator) Validate() bool {
 // ScanBag scans the bag's metadata and payload, recording file names,
 // tag values, checksums, and errors.
 func (v *Validator) ScanBag() error {
+	reader, err := v.getReader()
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	err = reader.ScanMetadata()
+	if err != nil {
+		return err
+	}
 
-	return nil
+	// If Payload-Oxum doesn't match, there's no sense in doing
+	// the heavy work of calculating checksums on the payload.
+	ok, err := v.OxumsMatch()
+	if !ok && err != nil {
+		return fmt.Errorf("Payload-Oxum does not match payload")
+	}
+	return reader.ScanPayload()
 }
 
-func (v *Validator) CompareOxums() error {
-
-	return nil
+func (v *Validator) OxumsMatch() (bool, error) {
+	tags := v.GetTags("bag-info.txt", "Payload-Oxum")
+	if len(tags) == 0 {
+		return false, ErrTagNotFound
+	}
+	return v.PayloadFiles.Oxum() == tags[0].Value, nil
 }
 
 func (v *Validator) GetTags(tagFile, tagName string) []*bagit.Tag {
@@ -113,4 +120,23 @@ func (v *Validator) GetTags(tagFile, tagName string) []*bagit.Tag {
 		}
 	}
 	return tags
+}
+
+func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
+	algs := make([]string, 0)
+	for name, _ := range fileMap.Files {
+		alg, err := util.AlgorithmFromManifestName(name)
+		if err != nil {
+			return nil, err
+		}
+		algs = append(algs, alg)
+	}
+	return algs, nil
+}
+
+// In future, this will return a reader based on the file type.
+// For now, we only support tar files, so this always returns a
+// tar reader.
+func (v *Validator) getReader() (BagReader, error) {
+	return NewTarredBagReader(v)
 }

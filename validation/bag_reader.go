@@ -13,8 +13,11 @@ type BagReader interface {
 	// If you want to do a quick validation, you can scan the metadata
 	// and then compare the Validator's oxum against the one in bag-info.txt.
 	// If that's bad, you can skip the expensive payload scan.
-	ScanMetadata(v *Validator) error
+	ScanMetadata() error
 
 	// ScanPayload calculates checksums on the payload and tag files.
-	ScanPayload(v *Validator) error
+	ScanPayload() error
+
+	// Close closes the underlying reader.
+	Close()
 }

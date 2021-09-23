@@ -252,10 +252,10 @@ func (r *TarredBagReader) parseTagFile(pathInBag string) {
 	}
 }
 
-// CloseReader closes the io.ReadCloser() that was passed into
-// NewTarredBagReader. If you neglect this call in a long-running
+// Close closes the underlying reader (the file).
+// If you neglect this call in a long-running
 // worker process, you'll run the system out of filehandles.
-func (r *TarredBagReader) CloseReader() {
+func (r *TarredBagReader) Close() {
 	if r.reader != nil {
 		r.reader.Close()
 	}

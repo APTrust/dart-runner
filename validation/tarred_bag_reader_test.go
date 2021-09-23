@@ -15,6 +15,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func loadProfile(jsonFile string) (*bagit.Profile, error) {
+	filePath := path.Join(util.ProjectRoot(), "profiles", jsonFile)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	profile := &bagit.Profile{}
+	err = json.Unmarshal(data, profile)
+	return profile, err
+}
+
 // We have json files containing metadata that a read should
 // find when scanning a bag. We test our reader results against
 // this known good data.
@@ -30,6 +45,9 @@ func loadValidatorFromJson(jsonFile string) (*validation.Validator, error) {
 	}
 	validator := &validation.Validator{}
 	err = json.Unmarshal(data, validator)
+	if err != nil {
+		validator.Profile, err = loadProfile("aptrust-v2.2.json")
+	}
 	return validator, err
 }
 
@@ -38,8 +56,10 @@ func TestTarredBagScanner(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, expected)
 
+	profile, err := loadProfile("aptrust-v2.2.json")
+	require.Nil(t, err)
 	pathToBag := util.PathToUnitTestBag("example.edu.tagsample_good.tar")
-	validator, err := validation.NewValidator(pathToBag)
+	validator, err := validation.NewValidator(pathToBag, profile)
 	require.Nil(t, err)
 	reader, err := validation.NewTarredBagReader(validator)
 	require.Nil(t, err)
