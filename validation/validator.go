@@ -9,14 +9,15 @@ import (
 )
 
 type Validator struct {
-	PathToBag        string
-	Profile          *bagit.Profile
-	PayloadFiles     *FileMap
-	PayloadManifests *FileMap
-	TagFiles         *FileMap
-	TagManifests     *FileMap
-	Tags             []*bagit.Tag
-	Errors           []error
+	PathToBag          string
+	Profile            *bagit.Profile
+	PayloadFiles       *FileMap
+	PayloadManifests   *FileMap
+	TagFiles           *FileMap
+	TagManifests       *FileMap
+	Tags               []*bagit.Tag
+	UnparsableTagFiles []string
+	Errors             []error
 }
 
 func NewValidator(pathToBag string) (*Validator, error) {
@@ -24,14 +25,35 @@ func NewValidator(pathToBag string) (*Validator, error) {
 		return nil, os.ErrNotExist
 	}
 	return &Validator{
-		PathToBag:        pathToBag,
-		PayloadFiles:     NewFileMap(constants.FileTypePayload),
-		PayloadManifests: NewFileMap(constants.FileTypeManifest),
-		TagFiles:         NewFileMap(constants.FileTypeTag),
-		TagManifests:     NewFileMap(constants.FileTypeTagManifest),
-		Tags:             make([]*bagit.Tag, 0),
-		Errors:           make([]error, 0),
+		PathToBag:          pathToBag,
+		PayloadFiles:       NewFileMap(constants.FileTypePayload),
+		PayloadManifests:   NewFileMap(constants.FileTypeManifest),
+		TagFiles:           NewFileMap(constants.FileTypeTag),
+		TagManifests:       NewFileMap(constants.FileTypeTagManifest),
+		Tags:               make([]*bagit.Tag, 0),
+		UnparsableTagFiles: make([]string, 0),
+		Errors:             make([]error, 0),
 	}, nil
+}
+
+func (v *Validator) PayloadManifestAlgs() ([]string, error) {
+	return v.manifestAlgs(v.PayloadManifests)
+}
+
+func (v *Validator) TagManifestAlgs() ([]string, error) {
+	return v.manifestAlgs(v.TagManifests)
+}
+
+func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
+	algs := make([]string, 0)
+	for name, _ := range fileMap.Files {
+		alg, err := util.AlgorithmFromManifestName(name)
+		if err != nil {
+			return nil, err
+		}
+		algs = append(algs, alg)
+	}
+	return algs, nil
 }
 
 // Validate validates the bag and returns true if it's valid.
