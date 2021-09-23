@@ -9,6 +9,10 @@ type BagReader interface {
 	// different manifest algorithms, but the bag may contain only one
 	// or two from the allowed list. We won't know what they are until
 	// we look.
+	//
+	// If you want to do a quick validation, you can scan the metadata
+	// and then compare the Validator's oxum against the one in bag-info.txt.
+	// If that's bad, you can skip the expensive payload scan.
 	ScanMetadata(v *Validator) error
 
 	// ScanPayload calculates checksums on the payload and tag files.

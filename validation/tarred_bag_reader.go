@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
+	"hash"
 	"io"
 	"os"
 	"strings"
@@ -35,10 +36,12 @@ func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 	}, nil
 }
 
+// ScanMetadata does the following:
+//
+// * gets a list of all files and creates a FileRecord for each
+// * parses all payload and tag manifests
+// * parses all parsable tag files
 func (r *TarredBagReader) ScanMetadata() error {
-	// Get a list of all files and create a FileRecord for each.
-	// Parse all payload and tag manifests.
-	// Parse all tag files.
 	r.reader.Seek(0, io.SeekStart)
 	r.tarReader = tar.NewReader(r.reader)
 	for {
@@ -53,6 +56,7 @@ func (r *TarredBagReader) ScanMetadata() error {
 	return nil
 }
 
+// ScanPayload scans the entire bad, adding checksums for all files.
 func (r *TarredBagReader) ScanPayload() error {
 	r.reader.Seek(0, io.SeekStart)
 	r.tarReader = tar.NewReader(r.reader)
@@ -68,6 +72,7 @@ func (r *TarredBagReader) ScanPayload() error {
 	return nil
 }
 
+// processMetaEntry parses manifests and tag files.
 func (r *TarredBagReader) processMetaEntry() error {
 	header, err := r.tarReader.Next()
 	if err != nil {
@@ -93,6 +98,8 @@ func (r *TarredBagReader) processMetaEntry() error {
 	return err
 }
 
+// processPayloadEntry adds files and checksums to our validator.
+// See ensureFileRecord below.
 func (r *TarredBagReader) processPayloadEntry() error {
 	header, err := r.tarReader.Next()
 	if err != nil {
@@ -104,6 +111,9 @@ func (r *TarredBagReader) processPayloadEntry() error {
 	return nil
 }
 
+// ensureFileRecord makes sure we have a FileRecord in the right
+// FileMap. It also calculates and stores the required checksums
+// for the file.
 func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 	pathInBag, err := util.TarPathToBagPath(header.Name)
 	if err != nil {
@@ -111,11 +121,26 @@ func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 	}
 	fileMap := r.validator.MapForPath(pathInBag)
 	fileRecord := r.addOrUpdateFileRecord(fileMap, pathInBag, header.Size)
-	return r.addChecksums(pathInBag, fileRecord)
+	fileType := util.BagFileType(pathInBag)
+	var algs []string
+	if fileType == constants.FileTypePayload {
+		algs, err = r.validator.PayloadManifestAlgs()
+	} else {
+		algs, err = r.validator.TagManifestAlgs()
+	}
+	if err != nil {
+		return err
+	}
+	return r.addChecksums(pathInBag, fileRecord, algs)
 }
 
+// addOrUpdateFileRecord adds or updates a FileRecord in fileMap.
+// We call this when scanning manifests and when scanning the payload
+// because some files may exist in one but not the other. If that's
+// the case, we want to know because mismatched file lists can mean
+// the bag is invalid.
 func (r *TarredBagReader) addOrUpdateFileRecord(fileMap *FileMap, pathInBag string, size int64) *FileRecord {
-	// avoid multiple hash lookups
+	// avoid multiple map lookups
 	fileRecord := fileMap.Files[pathInBag]
 	if fileRecord == nil {
 		fileRecord = NewFileRecord()
@@ -131,38 +156,67 @@ func (r *TarredBagReader) addOrUpdateFileRecord(fileMap *FileMap, pathInBag stri
 	return fileRecord
 }
 
-func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord) error {
-	md5Hash := md5.New()
-	sha1Hash := sha1.New()
-	sha256Hash := sha256.New()
-	sha512Hash := sha512.New()
-	writers := []io.Writer{
-		md5Hash,
-		sha1Hash,
-		sha256Hash,
-		sha512Hash,
+// addChecksums calculates checksums on a file stream and adds those
+// checksums to the FileRecord. We calculate one checksum for each
+// known manifest algorithm. For example, if the  bag has md5, sha1,
+// sha256, and sha512 manifests, we'll calculate all those checksums.
+// If it has only md5 and sha256, we'll calculate just those two.
+//
+// We use a MultiWriter to calculate all of a file's checksums in a
+// single read.
+func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord, algs []string) error {
+	var md5Hash hash.Hash
+	var sha1Hash hash.Hash
+	var sha256Hash hash.Hash
+	var sha512Hash hash.Hash
+	writers := make([]io.Writer, 0)
+
+	if util.StringListContains(algs, constants.AlgMd5) {
+		md5Hash = md5.New()
+		writers = append(writers, md5Hash)
 	}
+	if util.StringListContains(algs, constants.AlgSha1) {
+		sha1Hash = sha1.New()
+		writers = append(writers, sha1Hash)
+	}
+	if util.StringListContains(algs, constants.AlgSha256) {
+		sha256Hash = sha256.New()
+		writers = append(writers, sha256Hash)
+	}
+	if util.StringListContains(algs, constants.AlgSha512) {
+		sha512Hash = sha512.New()
+		writers = append(writers, sha512Hash)
+	}
+
 	multiWriter := io.MultiWriter(writers...)
 	_, err := io.Copy(multiWriter, r.tarReader)
 	if err != nil {
 		return err
 	}
 
-	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgMd5,
-		fmt.Sprintf("%x", md5Hash.Sum(nil)))
-	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha1,
-		fmt.Sprintf("%x", sha1Hash.Sum(nil)))
-	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha256,
-		fmt.Sprintf("%x", sha256Hash.Sum(nil)))
-	fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha512,
-		fmt.Sprintf("%x", sha512Hash.Sum(nil)))
-
+	if md5Hash != nil {
+		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgMd5,
+			fmt.Sprintf("%x", md5Hash.Sum(nil)))
+	}
+	if sha1Hash != nil {
+		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha1,
+			fmt.Sprintf("%x", sha1Hash.Sum(nil)))
+	}
+	if sha256Hash != nil {
+		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha256,
+			fmt.Sprintf("%x", sha256Hash.Sum(nil)))
+	}
+	if sha512Hash != nil {
+		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha512,
+			fmt.Sprintf("%x", sha512Hash.Sum(nil)))
+	}
 	return nil
 }
 
-// Parse entries in manifest and add them to the right file map.
-// Payload manifest entries are added to the map of payload files.
-// Tag manifest entries are added to the map of tag files.
+// parseManifest parses manifest entries in manifest and adds them
+// to the right file map. Payload manifest entries are added to the
+// map of payload files. Tag manifest entries are added to the map
+// of tag files.
 func (r *TarredBagReader) parseManifest(pathInBag string, fileMap *FileMap) error {
 	alg, err := util.AlgorithmFromManifestName(pathInBag)
 	if err != nil {
@@ -179,6 +233,13 @@ func (r *TarredBagReader) parseManifest(pathInBag string, fileMap *FileMap) erro
 	return nil
 }
 
+// parseTagFile tries to parse a tag file if it has a .txt extension.
+// It skips other file formats. If it can't parse a .txt tag file, it
+// adds that file to the list of unparsables. This may or may not be
+// an error, depending on the BagIt profile. The validator will determine
+// that later. If a required tag file is unparsable, that's an error.
+// If the profile says no tags from that file are required, it's not
+// an error.
 func (r *TarredBagReader) parseTagFile(pathInBag string) {
 	if !strings.HasSuffix(pathInBag, ".txt") {
 		return

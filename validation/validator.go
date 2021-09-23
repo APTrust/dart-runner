@@ -2,6 +2,7 @@ package validation
 
 import (
 	"os"
+	"strings"
 
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
@@ -95,4 +96,21 @@ func (v *Validator) Validate() bool {
 func (v *Validator) ScanBag() error {
 
 	return nil
+}
+
+func (v *Validator) CompareOxums() error {
+
+	return nil
+}
+
+func (v *Validator) GetTags(tagFile, tagName string) []*bagit.Tag {
+	tags := make([]*bagit.Tag, 0)
+	for _, tag := range v.Tags {
+		if tag.TagFile == tagFile && tag.TagName == tagName {
+			tags = append(tags, tag)
+		} else if tag.TagFile == tagFile && strings.EqualFold(tag.TagName, tagName) {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
 }
