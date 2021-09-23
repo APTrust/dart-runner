@@ -31,12 +31,12 @@ func NewFileMap(fileType string) *FileMap {
 // ValidateChecksums validates all checksums for all files in this
 // FileMap. Param algs is a list of algorithms for manifests found
 // in the bag.
-func (fm *FileMap) ValidateChecksums(algs []string) []error {
-	errors := make([]error, 0)
+func (fm *FileMap) ValidateChecksums(algs []string) map[string]string {
+	errors := make(map[string]string)
 	for name, file := range fm.Files {
 		err := file.Validate(fm.Type, algs)
 		if err != nil {
-			errors = append(errors, fmt.Errorf("File %s: %s", name, err.Error()))
+			errors[name] = err.Error()
 			if len(errors) >= MaxErrors {
 				break
 			}

@@ -8,6 +8,7 @@ import (
 // required, what values are allowed, etc.
 type TagDefinition struct {
 	DefaultValue string   `json:"defaultValue"`
+	EmptyOK      bool     `json:"emptyOK"`
 	Help         string   `json:"help"`
 	ID           string   `json:"id"`
 	Required     bool     `json:"required"`

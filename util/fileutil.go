@@ -1,10 +1,12 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path"
 	"strings"
 )
 
@@ -15,6 +17,15 @@ func FileExists(path string) bool {
 		return false
 	}
 	return true
+}
+
+// Returns true if path is a directory.
+func IsDirectory(path string) bool {
+	stat, err := os.Stat(path)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+	return stat.IsDir()
 }
 
 // Expands the tilde in a directory path to the current
@@ -73,3 +84,27 @@ func ReadFile(filepath string) ([]byte, error) {
 	return ioutil.ReadAll(file)
 }
 
+func HasValidExtensionForMimeType(filename, mimeType string) (bool, error) {
+	var err error
+	valid := false
+	ext := strings.ToLower(path.Ext(filename))
+	switch mimeType {
+	case "application/x-7z-compressed":
+		valid = (ext == ".7z")
+	case "application/tar", "application/x-tar":
+		valid = (ext == ".tar")
+	case "application/zip":
+		valid = (ext == ".zip")
+	case "application/gzip":
+		valid = (ext == ".gz" || ext == ".gzip")
+	case "application/x-rar-compressed":
+		valid = (ext == ".rar")
+	case "application/tar+gzip":
+		valid = (ext == ".tgz" || strings.HasSuffix(filename, ".tar.gz"))
+	default:
+		if !valid {
+			err = fmt.Errorf("dart-runner doesn't know about serialization type %s", mimeType)
+		}
+	}
+	return valid, err
+}

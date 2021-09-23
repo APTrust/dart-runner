@@ -3,6 +3,8 @@ package validation
 import (
 	"fmt"
 	"os"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/APTrust/dart-runner/bagit"
@@ -19,7 +21,7 @@ type Validator struct {
 	TagManifests       *FileMap
 	Tags               []*bagit.Tag
 	UnparsableTagFiles []string
-	Errors             []error
+	Errors             map[string]string
 	mapForType         map[string]*FileMap
 }
 
@@ -35,7 +37,7 @@ func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) 
 		TagManifests:       NewFileMap(constants.FileTypeTagManifest),
 		Tags:               make([]*bagit.Tag, 0),
 		UnparsableTagFiles: make([]string, 0),
-		Errors:             make([]error, 0),
+		Errors:             make(map[string]string),
 	}
 	validator.mapForType = map[string]*FileMap{
 		constants.FileTypePayload:     validator.PayloadFiles,
@@ -63,19 +65,66 @@ func (v *Validator) TagManifestAlgs() ([]string, error) {
 // The validator quits after 30 errors.
 func (v *Validator) Validate() bool {
 	// Make sure BagItProfile is present and valid.
+	if !v.Profile.IsValid() {
+		v.Errors = v.Profile.Errors
+		return false
+	}
 	// Make sure bag has valid serialization format, per profile.
+	if !v.validateSerialization() {
+		return false
+	}
 
 	// Scan the bag.
 
 	// Make sure required manifests are present.
+	if !v.hasRequiredManifests() {
+		return false
+	}
 	// Make sure required tag manifests are present.
+	if !v.hasRequiredTagManifests() {
+		return false
+	}
+
 	// Make sure all existing manifests are allowed.
+	if v.hasForbiddenManifests() {
+		return false
+	}
+
 	// Make sure all existing tag manifests are allowed.
+	if v.hasForbiddenTagManifests() {
+		return false
+	}
+
+	// Make sure we have all required tag files
+	if !v.hasRequiredTagFiles() {
+		return false
+	}
+
 	// Make sure existing tag files are allowed.
-	// Validate payload checksums
-	// Validate tag file checksums
-	// Validate payload oxum
+	if v.hasForbiddenTagFiles() {
+		return false
+	}
+
 	// Validate tags
+	if !v.validateTags() {
+		return false
+	}
+
+	// Validate payload checksums
+	algs, _ := v.PayloadManifestAlgs()
+	errors := v.PayloadFiles.ValidateChecksums(algs)
+	if len(errors) > 0 {
+		v.Errors = errors
+		return false
+	}
+
+	// Validate tag file checksums
+	algs, _ = v.TagManifestAlgs()
+	errors = v.TagFiles.ValidateChecksums(algs)
+	if len(errors) > 0 {
+		v.Errors = errors
+		return false
+	}
 
 	return true
 }
@@ -139,4 +188,157 @@ func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
 // tar reader.
 func (v *Validator) getReader() (BagReader, error) {
 	return NewTarredBagReader(v)
+}
+
+func (v *Validator) validateSerialization() bool {
+	bagIsDirectory := util.IsDirectory(v.PathToBag)
+	if v.Profile.Serialization == constants.SerializationRequired && bagIsDirectory {
+		v.Errors["Serialization"] = "Profile says bag must be serialized, but it is a directory."
+		return false
+	} else if v.Profile.Serialization == constants.SerializationForbidden && !bagIsDirectory {
+		v.Errors["Serialization"] = "Profile says bag must not be serialized, but bag is not a directory."
+		return false
+	}
+	if !bagIsDirectory {
+		var err error
+		var ok bool
+		for _, mimeType := range v.Profile.AcceptSerialization {
+			ok, err = util.HasValidExtensionForMimeType(v.PathToBag, mimeType)
+			if ok {
+				break
+			}
+		}
+		if err != nil {
+			v.Errors["Serialization"] = err.Error()
+			return false
+		} else if !ok {
+			ext := path.Ext(v.PathToBag)
+			v.Errors["Serialization"] = fmt.Sprintf("Bag has extension %s, but profile says it must be serialized as of one of the following types: %s.", ext, strings.Join(v.Profile.AcceptSerialization, ","))
+			return false
+		}
+	}
+	return true
+}
+
+func (v *Validator) hasRequiredManifests() bool {
+	valid := true
+	for _, filename := range v.Profile.ManifestsRequired {
+		if _, ok := v.PayloadManifests.Files[filename]; !ok {
+			v.Errors[filename] = "Required manifest is missing."
+			valid = false
+		}
+	}
+	return valid
+}
+
+func (v *Validator) hasRequiredTagManifests() bool {
+	valid := true
+	for _, filename := range v.Profile.TagManifestsRequired {
+		if _, ok := v.TagManifests.Files[filename]; !ok {
+			v.Errors[filename] = "Required tag manifest is missing."
+			valid = false
+		}
+	}
+	return valid
+}
+
+func (v *Validator) hasForbiddenManifests() bool {
+	hasForbidden := false
+	// We can ignore error here. We would have hit it earlier,
+	// while scanning the bag.
+	algs, _ := v.PayloadManifestAlgs()
+	for _, alg := range algs {
+		if !util.StringListContains(v.Profile.ManifestsAllowed, alg) {
+			filename := fmt.Sprintf("manifest-%s.txt", alg)
+			v.Errors[filename] = "Payload manifest is forbidden by profile."
+			hasForbidden = true
+		}
+	}
+	return hasForbidden
+}
+
+func (v *Validator) hasForbiddenTagManifests() bool {
+	hasForbidden := false
+	// We can ignore error here. We would have hit it earlier,
+	// while scanning the bag.
+	algs, _ := v.TagManifestAlgs()
+	for _, alg := range algs {
+		if !util.StringListContains(v.Profile.TagManifestsAllowed, alg) {
+			filename := fmt.Sprintf("tagmanifest-%s.txt", alg)
+			v.Errors[filename] = "Tag manifest is forbidden by profile."
+			hasForbidden = true
+		}
+	}
+	return hasForbidden
+}
+
+func (v *Validator) hasRequiredTagFiles() bool {
+	valid := true
+	for _, filename := range v.Profile.TagFilesAllowed {
+		if _, ok := v.TagFiles.Files[filename]; !ok {
+			v.Errors[filename] = "Required tag file is missing."
+			valid = false
+		}
+	}
+	return valid
+}
+
+func (v *Validator) hasForbiddenTagFiles() bool {
+	for _, pattern := range v.Profile.TagFilesAllowed {
+		if strings.TrimSpace(pattern) == "*" {
+			return false
+		}
+	}
+	hasForbidden := false
+	for filename, _ := range v.TagFiles.Files {
+		var err error
+		fileMatches := false
+		fileWasTested := false
+		for _, pattern := range v.Profile.TagFilesAllowed {
+			if strings.TrimSpace(pattern) == "" {
+				continue
+			}
+			fileMatches, err = regexp.MatchString(pattern, filename)
+			if err != nil {
+				v.Errors[pattern] = "Cannot match tag file names against this pattern."
+				return false // no use continuing if we can't do our job
+			}
+			if fileMatches {
+				break
+			}
+		}
+		if fileWasTested && !fileMatches {
+			v.Errors[filename] = fmt.Sprintf("Tag file %s is not in the list of allowed tag files.", filename)
+			hasForbidden = true
+		}
+	}
+	return hasForbidden
+}
+
+func (v *Validator) validateTags() bool {
+	valid := true
+	for _, tagDef := range v.Profile.Tags {
+		key := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
+		tags := v.GetTags(tagDef.TagFile, tagDef.TagName)
+		if len(tags) == 0 && tagDef.Required {
+			v.Errors[key] = "Required tag is missing."
+			valid = false
+			continue
+		}
+		hasValue := false
+		for _, tag := range tags {
+			if tag.Value != "" {
+				hasValue = true
+			}
+			if !tagDef.IsLegalValue(tag.Value) {
+				v.Errors[key] = fmt.Sprintf("Tag has illegal value '%s'. Allowed values are: %s", tag.Value, strings.Join(tagDef.Values, ","))
+				valid = false
+			}
+		}
+		if tagDef.Required && !tagDef.EmptyOK && !hasValue {
+			v.Errors[key] = "Required tag is present but has no value."
+			valid = false
+		}
+	}
+	return valid
 }

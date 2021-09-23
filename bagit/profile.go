@@ -176,10 +176,10 @@ func (p *Profile) HasTagFile(name string) bool {
 	return tagDef != nil
 }
 
-// Validate returns true if this profile is valid. This is not to be
+// IsValid returns true if this profile is valid. This is not to be
 // confused with bag validation. We're just making sure the profile itself
 // is complete and makes sense.
-func (p *Profile) Validate() bool {
+func (p *Profile) IsValid() bool {
 	p.Errors = make(map[string]string)
 	if util.IsEmptyStringList(p.AcceptBagItVersion) {
 		p.Errors["BagItProfile.AcceptBagItVersion"] = "Profile must accept at least one BagIt version."
