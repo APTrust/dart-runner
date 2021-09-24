@@ -69,3 +69,74 @@ func TestValidator_ValidateBasic(t *testing.T) {
 		}
 	}
 }
+
+func TestValidator_BadOxum(t *testing.T) {
+	profiles := []string{
+		"aptrust-v2.2.json",
+		"empty_profile.json",
+		"btr-v1.0.json",
+	}
+	errMsg := "Payload-Oxum does not match payload"
+	// We should get bad oxum error regardless of the
+	// profile. Also, this error occurs before we even
+	// get to scan the payload.
+	for _, profile := range profiles {
+		validator := getValidator(t, "example.edu.sample_bad_oxum.tar", profile)
+		err := validator.ScanBag()
+		require.NotNil(t, err)
+		assert.Equal(t, errMsg, err.Error())
+		assert.Equal(t, 1, len(validator.Errors))
+		assert.Equal(t, errMsg, validator.Errors["Payload-Oxum"])
+	}
+}
+
+// ---------------------------------------------------------------------
+// Uncomment serialization test when we have a working zip reader.
+// Until then, we can't run this.
+// ---------------------------------------------------------------------
+
+// func TestValidator_BadSerialization(t *testing.T) {
+// 	// APTrust profile doesn't permit zip, only tar.
+// 	validator := getValidator(t, "example.edu.sample_good.zip", "aptrust-v2.2.json")
+// 	err := validator.ScanBag()
+// 	require.Nil(t, err)
+
+// 	assert.False(t, validator.Validate())
+// 	assert.Equal(t, 1, len(validator.Errors))
+// 	assert.True(t, strings.HasPrefix(validator.Errors["Serialization"], "Bag has extension"))
+// }
+
+func TestValidator_MissingPayloadFile(t *testing.T) {
+	validator := getValidator(t, "example.edu.sample_missing_data_file.tar", "empty_profile.json")
+	err := validator.ScanBag()
+	require.Nil(t, err)
+	isValid := validator.Validate()
+	assert.False(t, isValid)
+	assert.Equal(t, 1, len(validator.Errors))
+	assert.Equal(t, "file is missing from bag", validator.Errors["data/datastream-DC"])
+}
+
+func TestValidator_MissingBagInfoFile(t *testing.T) {
+	validator := getValidator(t, "example.edu.sample_no_bag_info.tar", "aptrust-v2.2.json")
+	validator.Profile.ManifestsRequired = []string{}
+	err := validator.ScanBag()
+	require.Nil(t, err)
+	isValid := validator.Validate()
+	assert.False(t, isValid)
+	assert.Equal(t, 3, len(validator.Errors))
+	fmt.Println(validator.ErrorString())
+
+	assert.Equal(t, "Required tag is missing.", validator.Errors["aptrust-info.txt/Storage-Option"])
+	assert.Equal(t, "Required tag is missing.", validator.Errors["bag-info.txt/Source-Organization"])
+	assert.Equal(t, "Required tag is missing.", validator.Errors["aptrust-info.txt/Access"])
+
+	// This bag is valid with the empty profile, because it doesn't
+	// require any tags from the bag-info.txt file.
+	validator = getValidator(t, "example.edu.sample_no_bag_info.tar", "empty_profile.json")
+	validator.Profile.ManifestsRequired = []string{}
+	err = validator.ScanBag()
+	require.Nil(t, err)
+	isValid = validator.Validate()
+	assert.True(t, isValid)
+	assert.Equal(t, 0, len(validator.Errors))
+}

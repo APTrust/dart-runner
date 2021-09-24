@@ -148,7 +148,9 @@ func (v *Validator) ScanBag() error {
 	// the heavy work of calculating checksums on the payload.
 	ok, err := v.OxumsMatch()
 	if !ok && err == nil {
-		return fmt.Errorf("Payload-Oxum does not match payload")
+		err := fmt.Errorf("Payload-Oxum does not match payload")
+		v.Errors["Payload-Oxum"] = err.Error()
+		return err
 	}
 	return reader.ScanPayload()
 }
