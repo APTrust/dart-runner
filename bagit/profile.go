@@ -31,6 +31,7 @@ type Profile struct {
 	Name                 string            `json:"name"`
 	Serialization        string            `json:"serialization"`
 	TagFilesAllowed      []string          `json:"tagFilesAllowed"`
+	TagFilesRequired     []string          `json:"tagFilesRequired"`
 	TagManifestsAllowed  []string          `json:"tagManifestsAllowed"`
 	TagManifestsRequired []string          `json:"tagManifestsRequired"`
 	Tags                 []*TagDefinition  `json:"tags"`

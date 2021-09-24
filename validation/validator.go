@@ -276,7 +276,7 @@ func (v *Validator) hasForbiddenTagManifests() bool {
 
 func (v *Validator) hasRequiredTagFiles() bool {
 	valid := true
-	for _, filename := range v.Profile.TagFilesAllowed {
+	for _, filename := range v.Profile.TagFilesRequired {
 		if _, ok := v.TagFiles.Files[filename]; !ok {
 			v.Errors[filename] = "Required tag file is missing."
 			valid = false
@@ -300,7 +300,10 @@ func (v *Validator) hasForbiddenTagFiles() bool {
 			if strings.TrimSpace(pattern) == "" {
 				continue
 			}
-			fileMatches, err = regexp.MatchString(pattern, filename)
+			// Should probably replace * with .* in pattern
+			// to get a valid regex match.
+			rePattern := strings.ReplaceAll(pattern, "*", ".*")
+			fileMatches, err = regexp.MatchString(rePattern, filename)
 			if err != nil {
 				v.Errors[pattern] = "Cannot match tag file names against this pattern."
 				return false // no use continuing if we can't do our job
