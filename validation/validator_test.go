@@ -43,11 +43,15 @@ func TestValidator_ScanBag(t *testing.T) {
 
 func TestValidator_ValidateBasic(t *testing.T) {
 	validator := getValidator(t, "example.edu.tagsample_good.tar", "aptrust-v2.2.json")
+	// APTrust profile actually requires an md5 manifest,
+	// which is not part of this bag. Let's test without
+	// that requirement.
+	validator.Profile.ManifestsRequired = []string{}
+
 	err := validator.ScanBag()
 	require.Nil(t, err)
 
 	isValid := validator.Validate()
 	fmt.Println(validator.ErrorString())
-	fmt.Println(validator.ErrorJSON())
 	assert.True(t, isValid)
 }

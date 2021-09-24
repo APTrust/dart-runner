@@ -69,7 +69,23 @@ func (r *TarredBagReader) ScanPayload() error {
 			return err
 		}
 	}
+	r.mergePayloadManifestChecksums()
 	return nil
+}
+
+// Because payload manifests may have entries in tag manifest
+// files, we need to make sure their file records and checksums
+// appear in TagFiles map as well as the PayloadManifests map.
+func (r *TarredBagReader) mergePayloadManifestChecksums() {
+	for name, fileRecord := range r.validator.PayloadManifests.Files {
+		tagFileRecord := r.validator.TagFiles.Files[name]
+		if tagFileRecord != nil {
+			tagFileRecord.Size = fileRecord.Size
+			for _, cs := range fileRecord.Checksums {
+				tagFileRecord.Checksums = append(tagFileRecord.Checksums, cs)
+			}
+		}
+	}
 }
 
 // processMetaEntry parses manifests and tag files.
@@ -121,6 +137,7 @@ func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 	}
 	fileMap := r.validator.MapForPath(pathInBag)
 	fileRecord := r.addOrUpdateFileRecord(fileMap, pathInBag, header.Size)
+
 	fileType := util.BagFileType(pathInBag)
 	var algs []string
 	if fileType == constants.FileTypePayload {
@@ -194,20 +211,29 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord,
 		return err
 	}
 
+	// Record where the checksum came from: tag file
+	// or payload file. In this context, manifests count
+	// as tag files because their checksums may appear
+	// in tag manifests.
+	fileType := util.BagFileType(pathInBag)
+	if strings.Contains(fileType, "manifest") {
+		fileType = constants.FileTypeTag
+	}
+
 	if md5Hash != nil {
-		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgMd5,
+		fileRecord.AddChecksum(fileType, constants.AlgMd5,
 			fmt.Sprintf("%x", md5Hash.Sum(nil)))
 	}
 	if sha1Hash != nil {
-		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha1,
+		fileRecord.AddChecksum(fileType, constants.AlgSha1,
 			fmt.Sprintf("%x", sha1Hash.Sum(nil)))
 	}
 	if sha256Hash != nil {
-		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha256,
+		fileRecord.AddChecksum(fileType, constants.AlgSha256,
 			fmt.Sprintf("%x", sha256Hash.Sum(nil)))
 	}
 	if sha512Hash != nil {
-		fileRecord.AddChecksum(constants.FileTypePayload, constants.AlgSha512,
+		fileRecord.AddChecksum(fileType, constants.AlgSha512,
 			fmt.Sprintf("%x", sha512Hash.Sum(nil)))
 	}
 	return nil
