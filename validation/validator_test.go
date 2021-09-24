@@ -42,16 +42,30 @@ func TestValidator_ScanBag(t *testing.T) {
 }
 
 func TestValidator_ValidateBasic(t *testing.T) {
-	validator := getValidator(t, "example.edu.tagsample_good.tar", "aptrust-v2.2.json")
-	// APTrust profile actually requires an md5 manifest,
-	// which is not part of this bag. Let's test without
-	// that requirement.
-	validator.Profile.ManifestsRequired = []string{}
+	goodBags := []string{
+		"example.edu.sample_good.tar",
+		"example.edu.tagsample_good.tar",
+	}
+	profiles := []string{
+		"aptrust-v2.2.json",
+		"empty_profile.json",
+	}
+	for _, bag := range goodBags {
+		for _, profile := range profiles {
+			validator := getValidator(t, bag, profile)
+			// APTrust profile actually requires an md5 manifest,
+			// which is not part of this bag. Let's test without
+			// that requirement.
+			validator.Profile.ManifestsRequired = []string{}
 
-	err := validator.ScanBag()
-	require.Nil(t, err)
+			message := fmt.Sprintf("Bag %s, Profile %s", bag, profile)
+			err := validator.ScanBag()
+			require.Nil(t, err, message)
 
-	isValid := validator.Validate()
-	fmt.Println(validator.ErrorString())
-	assert.True(t, isValid)
+			isValid := validator.Validate()
+			fmt.Println(validator.ErrorString())
+			assert.True(t, isValid, message)
+			assert.Empty(t, validator.Errors, message)
+		}
+	}
 }
