@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var aptrustProfile = "aptrust-v2.2.json"
+var btrProfile = "btr-v1.0.json"
+var emptyProfile = "empty_profile.json"
+
 func getValidator(t *testing.T, bag, profile string) *validation.Validator {
 	bagItProfile, err := loadProfile(profile)
 	require.Nil(t, err)
@@ -25,7 +29,7 @@ func TestValidator_ScanBag(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, expected)
 
-	v := getValidator(t, "example.edu.tagsample_good.tar", "aptrust-v2.2.json")
+	v := getValidator(t, "example.edu.tagsample_good.tar", aptrustProfile)
 
 	err = v.ScanBag()
 	require.Nil(t, err)
@@ -47,8 +51,8 @@ func TestValidator_ValidateBasic(t *testing.T) {
 		"example.edu.tagsample_good.tar",
 	}
 	profiles := []string{
-		"aptrust-v2.2.json",
-		"empty_profile.json",
+		aptrustProfile,
+		emptyProfile,
 	}
 	for _, bag := range goodBags {
 		for _, profile := range profiles {
@@ -63,7 +67,6 @@ func TestValidator_ValidateBasic(t *testing.T) {
 			require.Nil(t, err, message)
 
 			isValid := v.Validate()
-			fmt.Println(v.ErrorString())
 			assert.True(t, isValid, message)
 			assert.Empty(t, v.Errors, message)
 		}
@@ -72,9 +75,9 @@ func TestValidator_ValidateBasic(t *testing.T) {
 
 func TestValidator_BadOxum(t *testing.T) {
 	profiles := []string{
-		"aptrust-v2.2.json",
-		"empty_profile.json",
-		"btr-v1.0.json",
+		aptrustProfile,
+		emptyProfile,
+		btrProfile,
 	}
 	errMsg := "Payload-Oxum does not match payload"
 	// We should get bad oxum error regardless of the
@@ -97,7 +100,7 @@ func TestValidator_BadOxum(t *testing.T) {
 
 // func TestValidator_BadSerialization(t *testing.T) {
 // 	// APTrust profile doesn't permit zip, only tar.
-// 	v := getValidator(t, "example.edu.sample_good.zip", "aptrust-v2.2.json")
+// 	v := getValidator(t, "example.edu.sample_good.zip", aptrustProfile)
 // 	err := v.ScanBag()
 // 	require.Nil(t, err)
 
@@ -107,7 +110,7 @@ func TestValidator_BadOxum(t *testing.T) {
 // }
 
 func TestValidator_MissingPayloadFile(t *testing.T) {
-	v := getValidator(t, "example.edu.sample_missing_data_file.tar", "empty_profile.json")
+	v := getValidator(t, "example.edu.sample_missing_data_file.tar", emptyProfile)
 	err := v.ScanBag()
 	require.Nil(t, err)
 	isValid := v.Validate()
@@ -117,14 +120,13 @@ func TestValidator_MissingPayloadFile(t *testing.T) {
 }
 
 func TestValidator_MissingBagInfoFile(t *testing.T) {
-	v := getValidator(t, "example.edu.sample_no_bag_info.tar", "aptrust-v2.2.json")
+	v := getValidator(t, "example.edu.sample_no_bag_info.tar", aptrustProfile)
 	v.Profile.ManifestsRequired = []string{}
 	err := v.ScanBag()
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
 	assert.Equal(t, 3, len(v.Errors))
-	fmt.Println(v.ErrorString())
 
 	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
 	assert.Equal(t, "Required tag is missing.", v.Errors["bag-info.txt/Source-Organization"])
@@ -132,7 +134,7 @@ func TestValidator_MissingBagInfoFile(t *testing.T) {
 
 	// This bag is valid with the empty profile, because it doesn't
 	// require any tags from the bag-info.txt file.
-	v = getValidator(t, "example.edu.sample_no_bag_info.tar", "empty_profile.json")
+	v = getValidator(t, "example.edu.sample_no_bag_info.tar", emptyProfile)
 	v.Profile.ManifestsRequired = []string{}
 	err = v.ScanBag()
 	require.Nil(t, err)
@@ -142,7 +144,7 @@ func TestValidator_MissingBagInfoFile(t *testing.T) {
 }
 
 func TestValidator_MissingDataDir(t *testing.T) {
-	v := getValidator(t, "example.edu.sample_no_data_dir.tar", "empty_profile.json")
+	v := getValidator(t, "example.edu.sample_no_data_dir.tar", emptyProfile)
 	err := v.ScanBag()
 	require.Nil(t, err)
 
@@ -155,7 +157,7 @@ func TestValidator_MissingDataDir(t *testing.T) {
 }
 
 func TestValidator_MissingManifest(t *testing.T) {
-	v := getValidator(t, "example.edu.sample_no_md5_manifest.tar", "aptrust-v2.2.json")
+	v := getValidator(t, "example.edu.sample_no_md5_manifest.tar", aptrustProfile)
 	err := v.ScanBag()
 	require.Nil(t, err)
 	isValid := v.Validate()
@@ -165,9 +167,54 @@ func TestValidator_MissingManifest(t *testing.T) {
 	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
 }
 
+func TestValidator_BadTags(t *testing.T) {
+	v := getValidator(t, "example.edu.tagsample_bad.tar", aptrustProfile)
+	err := v.ScanBag()
+	require.Nil(t, err)
+	isValid := v.Validate()
+	assert.False(t, isValid)
+	assert.Equal(t, 1, len(v.Errors))
+	assert.Equal(t, "file is missing from bag", v.Errors["custom_tags/tag_file_xyz.pdf"])
+
+	// This bag has the required tag files but is missing
+	// some required tags.
+	v = getValidator(t, "virginia.edu.uva-lib_2278801.tar", aptrustProfile)
+	err = v.ScanBag()
+	require.Nil(t, err)
+	isValid = v.Validate()
+	assert.False(t, isValid)
+	fmt.Println(v.ErrorString())
+	assert.Equal(t, 3, len(v.Errors))
+	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
+	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Access"])
+	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
+}
+
+func TestValidator_GoodBTRBags(t *testing.T) {
+	bags := []string{
+		"test.edu.btr-glacier-deep-oh.tar",
+		"test.edu.btr-wasabi-or.tar",
+		"test.edu.btr_good_sha256.tar",
+		"test.edu.btr_good_sha512.tar",
+	}
+	profiles := []string{
+		btrProfile,
+		emptyProfile,
+	}
+	for _, bag := range bags {
+		for _, profile := range profiles {
+			v := getValidator(t, bag, profile)
+			message := fmt.Sprintf("Bag %s, Profile %s", bag, profile)
+			err := v.ScanBag()
+			require.Nil(t, err, message)
+			isValid := v.Validate()
+			assert.True(t, isValid, message)
+			assert.Empty(t, v.Errors, message)
+		}
+	}
+}
+
 // TODO:
-// example.edu.sample_wrong_folder_name.tar
-// example.edu.tagsample_bad.tar
 // BTR bags
 // UVA bag
 // bag with illegal control characters
