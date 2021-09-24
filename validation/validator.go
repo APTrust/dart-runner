@@ -24,6 +24,7 @@ type Validator struct {
 	UnparsableTagFiles []string
 	Errors             map[string]string
 	mapForType         map[string]*FileMap
+	IgnoreOxumMismatch bool
 }
 
 func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) {
@@ -40,6 +41,7 @@ func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) 
 		Tags:               make([]*bagit.Tag, 0),
 		UnparsableTagFiles: make([]string, 0),
 		Errors:             make(map[string]string),
+		IgnoreOxumMismatch: false,
 	}
 	validator.mapForType = map[string]*FileMap{
 		constants.FileTypePayload:     validator.PayloadFiles,
@@ -87,25 +89,35 @@ func (v *Validator) Validate() bool {
 	v.checkForbiddenTagFiles()
 	v.validateTags()
 
+	// Do this at the validation stage whether user says to
+	// ignore mismatch or not. Ignoring only allows us to do
+	// a full scan during the ScanBag() stage.
+	v.AssertOxumsMatch()
+
 	// Validate payload checksums
 	algs, _ := v.PayloadManifestAlgs()
 	errors := v.PayloadFiles.ValidateChecksums(algs)
-	if len(errors) > 0 {
-		v.Errors = errors
+	for key, value := range errors {
+		v.Errors[key] = value
 	}
 
 	// Validate tag file checksums
 	algs, _ = v.TagManifestAlgs()
 	errors = v.TagFiles.ValidateChecksums(algs)
-	if len(errors) > 0 {
-		v.Errors = errors
+	for key, value := range errors {
+		v.Errors[key] = value
 	}
 
 	return len(v.Errors) == 0
 }
 
 // ScanBag scans the bag's metadata and payload, recording file names,
-// tag values, checksums, and errors.
+// tag values, checksums, and errors. This will not run checksums on
+// the payload if Payload-Oxum doesn't match because that's expensive.
+// You can force checksum calculation here by setting
+// Validator.IgnoreOxumMismatch to true. We will still flag the Oxum
+// mismatch when you call Validate(), but you'll get to see which
+// extra or missing files may be triggering the Oxum mismatch.
 func (v *Validator) ScanBag() error {
 	reader, err := v.getReader()
 	if err != nil {
@@ -119,21 +131,26 @@ func (v *Validator) ScanBag() error {
 
 	// If Payload-Oxum doesn't match, there's no sense in doing
 	// the heavy work of calculating checksums on the payload.
-	ok, err := v.OxumsMatch()
-	if !ok && err == nil {
+	// But user may want a full scan anyway. We can ignore this
+	// now, but we'll flag it in Validate().
+	if !v.IgnoreOxumMismatch {
+		err = v.AssertOxumsMatch()
+		if err != nil {
+			return err
+		}
+	}
+
+	return reader.ScanPayload()
+}
+
+func (v *Validator) AssertOxumsMatch() error {
+	tags := v.GetTags("bag-info.txt", "Payload-Oxum")
+	if len(tags) > 0 && v.PayloadFiles.Oxum() != tags[0].Value {
 		err := fmt.Errorf("Payload-Oxum does not match payload")
 		v.Errors["Payload-Oxum"] = err.Error()
 		return err
 	}
-	return reader.ScanPayload()
-}
-
-func (v *Validator) OxumsMatch() (bool, error) {
-	tags := v.GetTags("bag-info.txt", "Payload-Oxum")
-	if len(tags) == 0 {
-		return false, ErrTagNotFound
-	}
-	return v.PayloadFiles.Oxum() == tags[0].Value, nil
+	return nil
 }
 
 func (v *Validator) GetTags(tagFile, tagName string) []*bagit.Tag {

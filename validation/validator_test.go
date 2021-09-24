@@ -173,8 +173,15 @@ func TestValidator_BadTags(t *testing.T) {
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
-	assert.Equal(t, 1, len(v.Errors))
+	//fmt.Println(v.ErrorString())
+	assert.Equal(t, 7, len(v.Errors))
 	assert.Equal(t, "file is missing from bag", v.Errors["custom_tags/tag_file_xyz.pdf"])
+	assert.Equal(t, "Required tag is present but has no value.", v.Errors["aptrust-info.txt/Title"])
+	assert.Equal(t, "Tag has illegal value 'acksess'. Allowed values are: Consortia,Institution,Restricted", v.Errors["aptrust-info.txt/Access"])
+	assert.Equal(t, "Tag has illegal value 'Cardboard-Box'. Allowed values are: Standard,Glacier-OH,Glacier-OR,Glacier-VA,Glacier-Deep-OH,Glacier-Deep-OR,Glacier-Deep-VA,Wasabi-OR,Wasabi-VA", v.Errors["aptrust-info.txt/Storage-Option"])
+	assert.Equal(t, "Digest This-checksum-is-bad-on-purpose.-The-validator-should-catch-it!! in manifest-sha256.txt does not match digest cf9cbce80062932e10ee9cd70ec05ebc24019deddfea4e54b8788decd28b4bc7 in payload file", v.Errors["data/datastream-descMetadata"])
+	assert.Equal(t, "Digest md5 was not calculated", v.Errors["data/file-not-in-bag"])
+	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
 
 	// This bag has the required tag files but is missing
 	// some required tags.
@@ -229,6 +236,19 @@ func TestValidator_BTRExtraFile(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, 1, len(v.Errors))
 	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+
+	// Validator should flag the bad file explicitly if
+	// we set IgnoreOxumMismatch to true.
+	v = getValidator(t, "test.edu.btr_bad_extraneous_file.tar", btrProfile)
+	v.IgnoreOxumMismatch = true
+	err = v.ScanBag()
+	require.Nil(t, err)
+	isValid := v.Validate()
+	assert.False(t, isValid)
+	fmt.Println(v.ErrorString())
+	assert.Equal(t, 2, len(v.Errors))
+	assert.Equal(t, "file is missing from manifest-sha512.txt", v.Errors["data/nsqd.dat"])
+	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
 }
 
 func TestValidator_BTRMissingPayloadFile(t *testing.T) {
@@ -237,6 +257,19 @@ func TestValidator_BTRMissingPayloadFile(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, 1, len(v.Errors))
 	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+
+	// Get a more specific error with IgnoreOxumMismatch to true.
+	v = getValidator(t, "test.edu.btr_bad_missing_payload_file.tar", btrProfile)
+	v.IgnoreOxumMismatch = true
+	err = v.ScanBag()
+	require.Nil(t, err)
+	isValid := v.Validate()
+	assert.False(t, isValid)
+	fmt.Println(v.ErrorString())
+	assert.Equal(t, 2, len(v.Errors))
+	assert.Equal(t, "file is missing from bag", v.Errors["data/netutil/listen.go"])
+	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+
 }
 
 func TestValidator_BTRMissingTags(t *testing.T) {
@@ -259,8 +292,3 @@ func TestValidator_IllegalControlCharacter(t *testing.T) {
 	// good practices. Sections 5 and 6 give some guidance:
 	// https://datatracker.ietf.org/doc/html/rfc8493
 }
-
-// TODO:
-// BTR bags
-// UVA bag
-// bag with illegal control characters
