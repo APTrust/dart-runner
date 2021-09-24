@@ -158,11 +158,16 @@ func TestValidator_MissingManifest(t *testing.T) {
 	v := getValidator(t, "example.edu.sample_no_md5_manifest.tar", "aptrust-v2.2.json")
 	err := v.ScanBag()
 	require.Nil(t, err)
-
 	isValid := v.Validate()
 	assert.False(t, isValid)
-
-	expected := `md5 -> Required manifest is missing.
-aptrust-info.txt/Storage-Option -> Required tag is missing.`
-	assert.Equal(t, expected, v.ErrorString())
+	assert.Equal(t, 2, len(v.Errors))
+	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
+	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
 }
+
+// TODO:
+// example.edu.sample_wrong_folder_name.tar
+// example.edu.tagsample_bad.tar
+// BTR bags
+// UVA bag
+// bag with illegal control characters

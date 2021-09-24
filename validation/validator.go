@@ -64,7 +64,8 @@ func (v *Validator) TagManifestAlgs() ([]string, error) {
 
 // Validate validates the bag and returns true if it's valid.
 // If this returns false, check the errors in Validator.Errors.
-// The validator quits after 30 errors.
+// That collection should contain an exhaustive list of errors,
+// though it maxes out at 30 checksum validation errors.
 func (v *Validator) Validate() bool {
 	// Make sure BagItProfile is present and valid.
 	if !v.Profile.IsValid() {
@@ -78,62 +79,12 @@ func (v *Validator) Validate() bool {
 
 	// Scan the bag.
 
-	// // Make sure required manifests are present.
-	// if !v.hasRequiredManifests() {
-	// 	return false
-	// }
-	// // Make sure required tag manifests are present.
-	// if !v.hasRequiredTagManifests() {
-	// 	return false
-	// }
-
-	// // Make sure all existing manifests are allowed.
-	// if v.hasForbiddenManifests() {
-	// 	return false
-	// }
-
-	// // Make sure all existing tag manifests are allowed.
-	// if v.hasForbiddenTagManifests() {
-	// 	return false
-	// }
-
-	// // Make sure we have all required tag files
-	// if !v.hasRequiredTagFiles() {
-	// 	return false
-	// }
-
-	// // Make sure existing tag files are allowed.
-	// if v.hasForbiddenTagFiles() {
-	// 	return false
-	// }
-
-	// // Validate tags
-	// if !v.validateTags() {
-	// 	return false
-	// }
-
-	// // Validate payload checksums
-	// algs, _ := v.PayloadManifestAlgs()
-	// errors := v.PayloadFiles.ValidateChecksums(algs)
-	// if len(errors) > 0 {
-	// 	v.Errors = errors
-	// 	return false
-	// }
-
-	// // Validate tag file checksums
-	// algs, _ = v.TagManifestAlgs()
-	// errors = v.TagFiles.ValidateChecksums(algs)
-	// if len(errors) > 0 {
-	// 	v.Errors = errors
-	// 	return false
-	// }
-
-	v.hasRequiredManifests()
-	v.hasRequiredTagManifests()
-	v.hasForbiddenManifests()
-	v.hasForbiddenTagManifests()
-	v.hasRequiredTagFiles()
-	v.hasForbiddenTagFiles()
+	v.checkRequiredManifests()
+	v.checkRequiredTagManifests()
+	v.checkForbiddenManifests()
+	v.checkForbiddenTagManifests()
+	v.checkRequiredTagFiles()
+	v.checkForbiddenTagFiles()
 	v.validateTags()
 
 	// Validate payload checksums
@@ -246,7 +197,7 @@ func (v *Validator) validateSerialization() bool {
 	return true
 }
 
-func (v *Validator) hasRequiredManifests() bool {
+func (v *Validator) checkRequiredManifests() bool {
 	valid := true
 	for _, filename := range v.Profile.ManifestsRequired {
 		if _, ok := v.PayloadManifests.Files[filename]; !ok {
@@ -257,7 +208,7 @@ func (v *Validator) hasRequiredManifests() bool {
 	return valid
 }
 
-func (v *Validator) hasRequiredTagManifests() bool {
+func (v *Validator) checkRequiredTagManifests() bool {
 	valid := true
 	for _, filename := range v.Profile.TagManifestsRequired {
 		if _, ok := v.TagManifests.Files[filename]; !ok {
@@ -268,7 +219,7 @@ func (v *Validator) hasRequiredTagManifests() bool {
 	return valid
 }
 
-func (v *Validator) hasForbiddenManifests() bool {
+func (v *Validator) checkForbiddenManifests() bool {
 	hasForbidden := false
 	// We can ignore error here. We would have hit it earlier,
 	// while scanning the bag.
@@ -283,7 +234,7 @@ func (v *Validator) hasForbiddenManifests() bool {
 	return hasForbidden
 }
 
-func (v *Validator) hasForbiddenTagManifests() bool {
+func (v *Validator) checkForbiddenTagManifests() bool {
 	hasForbidden := false
 	// We can ignore error here. We would have hit it earlier,
 	// while scanning the bag.
@@ -298,7 +249,7 @@ func (v *Validator) hasForbiddenTagManifests() bool {
 	return hasForbidden
 }
 
-func (v *Validator) hasRequiredTagFiles() bool {
+func (v *Validator) checkRequiredTagFiles() bool {
 	valid := true
 	for _, filename := range v.Profile.TagFilesRequired {
 		if _, ok := v.TagFiles.Files[filename]; !ok {
@@ -309,7 +260,7 @@ func (v *Validator) hasRequiredTagFiles() bool {
 	return valid
 }
 
-func (v *Validator) hasForbiddenTagFiles() bool {
+func (v *Validator) checkForbiddenTagFiles() bool {
 	for _, pattern := range v.Profile.TagFilesAllowed {
 		if strings.TrimSpace(pattern) == "*" {
 			return false
