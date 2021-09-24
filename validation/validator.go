@@ -78,46 +78,69 @@ func (v *Validator) Validate() bool {
 
 	// Scan the bag.
 
-	// Make sure required manifests are present.
-	if !v.hasRequiredManifests() {
-		return false
-	}
-	// Make sure required tag manifests are present.
-	if !v.hasRequiredTagManifests() {
-		return false
-	}
+	// // Make sure required manifests are present.
+	// if !v.hasRequiredManifests() {
+	// 	return false
+	// }
+	// // Make sure required tag manifests are present.
+	// if !v.hasRequiredTagManifests() {
+	// 	return false
+	// }
 
-	// Make sure all existing manifests are allowed.
-	if v.hasForbiddenManifests() {
-		return false
-	}
+	// // Make sure all existing manifests are allowed.
+	// if v.hasForbiddenManifests() {
+	// 	return false
+	// }
 
-	// Make sure all existing tag manifests are allowed.
-	if v.hasForbiddenTagManifests() {
-		return false
-	}
+	// // Make sure all existing tag manifests are allowed.
+	// if v.hasForbiddenTagManifests() {
+	// 	return false
+	// }
 
-	// Make sure we have all required tag files
-	if !v.hasRequiredTagFiles() {
-		return false
-	}
+	// // Make sure we have all required tag files
+	// if !v.hasRequiredTagFiles() {
+	// 	return false
+	// }
 
-	// Make sure existing tag files are allowed.
-	if v.hasForbiddenTagFiles() {
-		return false
-	}
+	// // Make sure existing tag files are allowed.
+	// if v.hasForbiddenTagFiles() {
+	// 	return false
+	// }
 
-	// Validate tags
-	if !v.validateTags() {
-		return false
-	}
+	// // Validate tags
+	// if !v.validateTags() {
+	// 	return false
+	// }
+
+	// // Validate payload checksums
+	// algs, _ := v.PayloadManifestAlgs()
+	// errors := v.PayloadFiles.ValidateChecksums(algs)
+	// if len(errors) > 0 {
+	// 	v.Errors = errors
+	// 	return false
+	// }
+
+	// // Validate tag file checksums
+	// algs, _ = v.TagManifestAlgs()
+	// errors = v.TagFiles.ValidateChecksums(algs)
+	// if len(errors) > 0 {
+	// 	v.Errors = errors
+	// 	return false
+	// }
+
+	v.hasRequiredManifests()
+	v.hasRequiredTagManifests()
+	v.hasForbiddenManifests()
+	v.hasForbiddenTagManifests()
+	v.hasRequiredTagFiles()
+	v.hasForbiddenTagFiles()
+	v.validateTags()
 
 	// Validate payload checksums
 	algs, _ := v.PayloadManifestAlgs()
 	errors := v.PayloadFiles.ValidateChecksums(algs)
 	if len(errors) > 0 {
 		v.Errors = errors
-		return false
 	}
 
 	// Validate tag file checksums
@@ -125,10 +148,9 @@ func (v *Validator) Validate() bool {
 	errors = v.TagFiles.ValidateChecksums(algs)
 	if len(errors) > 0 {
 		v.Errors = errors
-		return false
 	}
 
-	return true
+	return len(v.Errors) == 0
 }
 
 // ScanBag scans the bag's metadata and payload, recording file names,
