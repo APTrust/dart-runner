@@ -13,6 +13,9 @@ type ExtendedFileInfo struct {
 	FullPath string
 }
 
+// NewExtendedFileInfo creates a new ExtendedFileInfo object.
+// This takes two params because RecursiveFileList stats the
+// files for us. Otherwise, we'd do it in the constructor.
 func NewExtendedFileInfo(path string, fileInfo os.FileInfo) *ExtendedFileInfo {
 	return &ExtendedFileInfo{
 		FileInfo: fileInfo,
