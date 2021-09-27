@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -107,4 +108,14 @@ func HasValidExtensionForMimeType(filename, mimeType string) (bool, error) {
 		}
 	}
 	return valid, err
+}
+
+// RecursiveFileList a list of all files and directories inside of dir.
+func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
+	files := make([]*ExtendedFileInfo, 0)
+	err := filepath.Walk(dir, func(filePath string, f os.FileInfo, err error) error {
+		files = append(files, NewExtendedFileInfo(filePath, f))
+		return nil
+	})
+	return files, err
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFileExists(t *testing.T) {
@@ -89,5 +90,28 @@ func TestHasValidExtensionForMimeType(t *testing.T) {
 		ok, err := util.HasValidExtensionForMimeType(filename, mimeType)
 		assert.False(t, ok)
 		assert.NotNil(t, err)
+	}
+}
+
+func TestRecursiveFileList(t *testing.T) {
+	testdir := util.PathToTestData()
+	files, err := util.RecursiveFileList(testdir)
+	require.Nil(t, err)
+	sample := []string{
+		"test.edu.btr-wasabi-or.tar",
+		"test.edu.btr_good_sha512.tar",
+		"bag-info.txt",
+		"manifest-sha256.txt",
+	}
+
+	for _, expected := range sample {
+		found := false
+		for _, xFileInfo := range files {
+			if xFileInfo.Name() == expected {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "File %s was not in list", expected)
 	}
 }
