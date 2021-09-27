@@ -1,7 +1,6 @@
 package util_test
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -45,7 +44,6 @@ func TestLooksSafeToDelete(t *testing.T) {
 func TestCopyFile(t *testing.T) {
 	src := util.PathToUnitTestBag("example.edu.sample_good.tar")
 	dest := path.Join(util.ProjectRoot(), "example.edu.sample_good.tar")
-	fmt.Println(src, dest)
 	_, err := util.CopyFile(dest, src)
 	defer os.Remove(dest)
 	assert.Nil(t, err)

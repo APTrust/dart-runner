@@ -54,16 +54,13 @@ func TestAddToArchive(t *testing.T) {
 	filesAdded := make([]string, 0)
 	files := listTestFiles(t)
 	for _, xFileInfo := range files {
-		if xFileInfo.IsDir() {
-			continue
-		}
 		// Use Sprintf with forward slash instead of path.Join()
 		// because tar file paths should use / even on windows.
 		pathInBag := fmt.Sprintf("data/%s", xFileInfo.Name())
 		err = w.AddToArchive(xFileInfo, pathInBag)
 		assert.Nil(t, err, xFileInfo.FullPath)
 		filesAdded = append(filesAdded, pathInBag)
-		if len(filesAdded) > 3 {
+		if len(filesAdded) > 4 {
 			break
 		}
 	}
@@ -85,11 +82,10 @@ func TestAddToArchive(t *testing.T) {
 		filesInArchive = append(filesInArchive, header.Name)
 	}
 	require.Equal(t, len(filesAdded), len(filesInArchive))
-	assert.Equal(t, filesAdded[0], filesInArchive[0])
-	assert.Equal(t, filesAdded[1], filesInArchive[1])
-	assert.Equal(t, filesAdded[2], filesInArchive[2])
-	assert.Equal(t, filesAdded[3], filesInArchive[3])
-
+	for i, isInArchive := range filesInArchive {
+		shouldBeInArchive := filesAdded[i]
+		assert.Equal(t, shouldBeInArchive, isInArchive)
+	}
 }
 
 func TestAddToArchiveWithClosedWriter(t *testing.T) {

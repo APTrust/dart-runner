@@ -51,11 +51,25 @@ func (writer *TarWriter) AddToArchive(xFileInfo *ExtendedFileInfo, pathWithinArc
 		Gid:     gid,
 	}
 
+	// Note that because we support only files and directories.
+	// BagIt files probably shouldn't contain links or devices.
+	if xFileInfo.IsDir() {
+		header.Typeflag = tar.TypeDir
+		header.Size = 0
+	} else {
+		header.Typeflag = tar.TypeReg
+	}
+
 	// Write the header entry
 	if err := writer.tarWriter.WriteHeader(header); err != nil {
 		// Most likely error is archive/tar: write after close
-		// fmt.Println(header)
 		return err
+	}
+
+	// For directory entries, there's no content to write,
+	// so just stop here.
+	if header.Typeflag == tar.TypeDir {
+		return nil
 	}
 
 	// Open the file whose data we're going to add.
