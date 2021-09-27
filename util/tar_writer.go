@@ -34,8 +34,8 @@ func (writer *TarWriter) Close() error {
 	return nil
 }
 
-// Adds a file to a tar archive.
-func (writer *TarWriter) AddToArchive(xFileInfo *ExtendedFileInfo, pathWithinArchive string) error {
+// AddFile as a file to a tar archive.
+func (writer *TarWriter) AddFile(xFileInfo *ExtendedFileInfo, pathWithinArchive string) error {
 	if writer.tarWriter == nil {
 		return fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")
 	}

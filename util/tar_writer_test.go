@@ -43,7 +43,7 @@ func TestAndCloseOpen(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestAddToArchive(t *testing.T) {
+func TestAddFile(t *testing.T) {
 	w, tempFileName := getTarWriter(t, "test2.tar")
 	defer w.Close()
 	defer os.Remove(tempFileName)
@@ -57,7 +57,7 @@ func TestAddToArchive(t *testing.T) {
 		// Use Sprintf with forward slash instead of path.Join()
 		// because tar file paths should use / even on windows.
 		pathInBag := fmt.Sprintf("data/%s", xFileInfo.Name())
-		err = w.AddToArchive(xFileInfo, pathInBag)
+		err = w.AddFile(xFileInfo, pathInBag)
 		assert.Nil(t, err, xFileInfo.FullPath)
 		filesAdded = append(filesAdded, pathInBag)
 		if len(filesAdded) > 4 {
@@ -88,14 +88,14 @@ func TestAddToArchive(t *testing.T) {
 	}
 }
 
-func TestAddToArchiveWithClosedWriter(t *testing.T) {
+func TestAddFileWithClosedWriter(t *testing.T) {
 	w, tempFileName := getTarWriter(t, "test3.tar")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 
 	// Note that we have not opened the writer
 	files := listTestFiles(t)
-	err := w.AddToArchive(files[0], files[0].Name())
+	err := w.AddFile(files[0], files[0].Name())
 	require.NotNil(t, err)
 	assert.True(t, strings.HasPrefix(err.Error(), "Underlying TarWriter is nil"))
 
@@ -104,13 +104,13 @@ func TestAddToArchiveWithClosedWriter(t *testing.T) {
 	w.Close()
 	require.True(t, util.FileExists(w.PathToTarFile))
 
-	err = w.AddToArchive(files[0], files[0].Name())
+	err = w.AddFile(files[0], files[0].Name())
 	require.NotNil(t, err)
 	assert.True(t, strings.Contains(err.Error(), "tar: write after close"), err.Error())
 
 }
 
-func TestAddToArchiveWithBadFilePath(t *testing.T) {
+func TestAddFileWithBadFilePath(t *testing.T) {
 	w, tempFileName := getTarWriter(t, "test4.tar")
 	defer w.Close()
 	defer os.Remove(tempFileName)
@@ -125,7 +125,7 @@ func TestAddToArchiveWithBadFilePath(t *testing.T) {
 	// ...the path we give here points to a file that does not exist.
 	// Make sure we get the right error.
 	xFileInfo := util.NewExtendedFileInfo("file-does-not-exist.pdf", fInfo)
-	err = w.AddToArchive(xFileInfo, "file.pdf")
+	err = w.AddFile(xFileInfo, "file.pdf")
 	require.NotNil(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such file or directory"))
 }
