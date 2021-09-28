@@ -1,16 +1,16 @@
 package bagit
 
 import (
+	"embed"
 	"fmt"
+	"os"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
-// Contents of the bagit.txt file. We have to write this into every bag.
-var bagitTxt = `BagIt-Version: 1.0
-Tag-File-Character-Encoding: UTF-8
-`
+//go:embed bagit.txt
+var bagitTxt embed.FS
 
 type Bagger struct {
 	Profile      *Profile
@@ -81,6 +81,17 @@ func (b *Bagger) reset() {
 }
 
 func (b *Bagger) addBagItFile() bool {
+	fInfo, err := os.Stat("bagit.txt")
+	if err != nil {
+		b.Errors["bagit.txt"] = err.Error()
+		return false
+	}
+	xFileInfo := util.NewExtendedFileInfo("bagit.txt", fInfo)
+	err = b.writer.AddFile(xFileInfo, "bagit.txt")
+	if err != nil {
+		b.Errors["bagit.txt"] = err.Error()
+		return false
+	}
 	return true
 }
 
@@ -126,6 +137,7 @@ func (b *Bagger) validateProfile() bool {
 // (zip, gzip, file system, etc.) For now, it supports tar only.
 func (b *Bagger) initWriter() bool {
 	b.writer = util.NewTarWriter(b.OutputPath)
+	b.writer.Open()
 	return true
 }
 
