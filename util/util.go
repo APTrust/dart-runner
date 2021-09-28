@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -292,4 +293,53 @@ var TarSuffix = regexp.MustCompile("\\.tar$")
 func CleanBagName(bagName string) string {
 	nameMinusTarSuffix := TarSuffix.ReplaceAllString(bagName, "")
 	return MultipartSuffix.ReplaceAllString(nameMinusTarSuffix, "")
+}
+
+// FindCommonPrefix finds the common prefix in a list of strings.
+// This is used during bagging to trim off extraneous characters
+// from file paths to help determine what their path should be inside
+// the bag.
+//
+// For example, if we're bagging 100 files that all look like this:
+//
+// /user/linus/photos/image1.jpg
+// /user/linus/photos/image2.jpg
+// etc.
+//
+// We don't want the bag's payload directory to look like this:
+//
+// data/user/linus/photos/image1.jpg
+// data/user/linus/photos/image2.jpg
+// etc.
+//
+// We want it to look like this:
+//
+// data/image1.jpg
+// data/image2.jpg
+// etc.
+//
+// Note that this function has the side effect of sorting the list
+// of paths. While side effects are generally undesirable, this one
+// is OK in the bagging context as it makes the manifests easy to
+// read and tar file structure predictable.
+//
+// Also note that there may be cases where the list has no common
+// prefix. This will happen, for example, if the user is bagging two
+// directories like "/var/www" and "images".
+func FindCommonPrefix(paths []string) string {
+	prefix := make([]rune, 0)
+	sort.Strings(paths)
+	first := paths[0]
+	last := paths[len(paths)-1]
+	for i, rune := range first {
+		if i > len(last) {
+			break
+		}
+		if first[i] == last[i] {
+			prefix = append(prefix, rune)
+		} else {
+			break
+		}
+	}
+	return string(prefix)
 }

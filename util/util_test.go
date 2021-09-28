@@ -375,3 +375,30 @@ func TestIsEmptyStringList(t *testing.T) {
 	}
 	assert.False(t, util.IsEmptyStringList(list3))
 }
+
+func TestFileCommonPrefix(t *testing.T) {
+	list1 := []string{
+		"/user/joe/photo",
+		"/user/joe/docs/resume",
+		"/user/joe/docs/letter",
+		"/user/joe/photos/car",
+	}
+	list2 := []string{
+		"/user/joe/photos/dog",
+		"/user/joe/photos/car",
+		"/user/joe/photos/house",
+	}
+	list3 := []string{
+		"/home/linus/torvalds",
+		"/user/joe/photos/car",
+		"/etc/apache2/conf",
+	}
+	list4 := []string{
+		"/home/linus/torvalds",
+		"my_photos",
+	}
+	assert.Equal(t, "/user/joe/", util.FindCommonPrefix(list1))
+	assert.Equal(t, "/user/joe/photos/", util.FindCommonPrefix(list2))
+	assert.Equal(t, "/", util.FindCommonPrefix(list3))
+	assert.Equal(t, "", util.FindCommonPrefix(list4))
+}
