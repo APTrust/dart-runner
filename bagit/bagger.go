@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 //go:embed bagit.txt
@@ -77,6 +79,18 @@ func (b *Bagger) Run() bool {
 	b.finish()
 
 	return len(b.Errors) == 0
+}
+
+func (b *Bagger) PayloadBytes() int64 {
+	return b.payloadBytes
+}
+
+func (b *Bagger) PayloadFiles() int64 {
+	return b.payloadFiles
+}
+
+func (b *Bagger) PayloadOxum() string {
+	return fmt.Sprintf("%d.%d", b.payloadBytes, b.payloadFiles)
 }
 
 func (b *Bagger) reset() {
@@ -150,6 +164,45 @@ func (b *Bagger) calculatePathPrefix() {
 		paths[i] = xFileInfo.FullPath
 	}
 	b.pathPrefix = util.FindCommonPrefix(paths)
+}
+
+func (b *Bagger) setBagInfoAutoValues() {
+	baggingDate, err := b.Profile.FirstMatchingTag("tagName", "Bagging-Date")
+	if err == nil && baggingDate != nil {
+		baggingDate.UserValue = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	baggingSoftware, err := b.Profile.FirstMatchingTag("tagName", "Bagging-Software")
+	if err == nil && baggingSoftware != nil {
+		baggingSoftware.UserValue = constants.AppVersion()
+	}
+
+	// This supposedly required tag is often omitted from profiles in the wild.
+	profileIdentifier, err := b.Profile.FirstMatchingTag("tagName", "BagIt-Profile-Identifier")
+	if err == nil && profileIdentifier == nil {
+		profileIdentifier = &TagDefinition{
+			ID:       uuid.New().String(),
+			TagFile:  "bag-info.txt",
+			TagName:  "BagIt-Profile-Identifier",
+			Required: true,
+		}
+		b.Profile.Tags = append(b.Profile.Tags, profileIdentifier)
+	}
+	if b.Profile.BagItProfileInfo.BagItProfileIdentifier != "" {
+		profileIdentifier.UserValue = b.Profile.BagItProfileInfo.BagItProfileIdentifier
+	} else {
+		profileIdentifier.UserValue = "http://example.com/unspecified_profile_identifier"
+	}
+
+	payloadOxum, err := b.Profile.FirstMatchingTag("tagName", "Payload-Oxum")
+	if err == nil && payloadOxum != nil {
+		payloadOxum.UserValue = b.PayloadOxum()
+	}
+
+	bagSize, err := b.Profile.FirstMatchingTag("tagName", "Bag-Size")
+	if err == nil && bagSize != nil {
+		bagSize.UserValue = util.ToHumanSize(b.payloadBytes, 1024)
+	}
 }
 
 // Close the writer and do any other required cleanup.

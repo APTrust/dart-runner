@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTagDefinitionIsLegalValue(t *testing.T) {
+func TestTagDefIsLegalValue(t *testing.T) {
 	tagDef := &bagit.TagDefinition{
 		Values: []string{"one", "two", "three"},
 	}
@@ -22,4 +22,30 @@ func TestTagDefinitionIsLegalValue(t *testing.T) {
 	tagDef.Values = nil
 	assert.True(t, tagDef.IsLegalValue("homer"))
 	assert.True(t, tagDef.IsLegalValue("marge"))
+}
+
+func TestTagDefGetValue(t *testing.T) {
+	tagDef := &bagit.TagDefinition{}
+	assert.Empty(t, tagDef.GetValue())
+
+	tagDef.DefaultValue = "Homer"
+	assert.Equal(t, "Homer", tagDef.GetValue())
+
+	tagDef.UserValue = "Marge"
+	assert.Equal(t, "Marge", tagDef.GetValue())
+}
+
+func TestTagDefToFormattedString(t *testing.T) {
+	tagDef := &bagit.TagDefinition{
+		TagName:   "Description",
+		UserValue: "A bag of documents",
+	}
+	assert.Equal(t, "Description: A bag of documents", tagDef.ToFormattedString())
+
+	tagDef.UserValue = `A
+                        bag
+                        of
+                        documents
+    `
+	assert.Equal(t, "Description: A bag of documents", tagDef.ToFormattedString())
 }

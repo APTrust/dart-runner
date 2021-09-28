@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -203,4 +204,22 @@ func (p *Profile) IsValid() bool {
 		}
 	}
 	return len(p.Errors) == 0
+}
+
+// TagFileNames returns the names of the tag files for which we
+// have actual tag definitions. The bag may require other tag
+// files, but we can't produce them if we don't have tag defs.
+func (p *Profile) TagFileNames() []string {
+	distinct := make(map[string]bool)
+	for _, tagDef := range p.Tags {
+		distinct[tagDef.TagFile] = true
+	}
+	names := make([]string, len(distinct))
+	i := 0
+	for name, _ := range distinct {
+		names[i] = name
+		i++
+	}
+	sort.Strings(names)
+	return names
 }

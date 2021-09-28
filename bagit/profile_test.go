@@ -48,3 +48,33 @@ func TestGetTagDef(t *testing.T) {
 	tagDef = profile.GetTagDef("aptrust-info.txt", "Tag-Does-Not-Exist")
 	assert.Nil(t, tagDef)
 }
+
+func TestTagFileNames(t *testing.T) {
+	aptExpected := []string{
+		"aptrust-info.txt",
+		"bag-info.txt",
+		"bagit.txt",
+	}
+	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	apt, err := bagit.ProfileLoad(aptPath)
+	require.Nil(t, err)
+	aptActual := apt.TagFileNames()
+	assert.Equal(t, len(aptExpected), len(aptActual))
+	for i, _ := range aptExpected {
+		assert.Equal(t, aptExpected[i], aptActual[i])
+	}
+
+	btrExpected := []string{
+		"bag-info.txt",
+		"bagit.txt",
+	}
+	btrPath := path.Join(util.ProjectRoot(), "profiles", "btr-v1.0.json")
+	btr, err := bagit.ProfileLoad(btrPath)
+	require.Nil(t, err)
+	btrActual := btr.TagFileNames()
+	assert.Equal(t, len(btrExpected), len(btrActual))
+	for i, _ := range btrExpected {
+		assert.Equal(t, btrExpected[i], btrActual[i])
+	}
+
+}

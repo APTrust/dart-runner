@@ -37,3 +37,7 @@ var SerializationOptions = []string{
 	SerializationOptional,
 	SerializationRequired,
 }
+
+func AppVersion() string {
+	return "DART Runner v0.1"
+}

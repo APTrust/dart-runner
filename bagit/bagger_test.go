@@ -34,4 +34,5 @@ func TestBaggerRun(t *testing.T) {
 	assert.True(t, ok)
 	assert.Empty(t, bagger.Errors)
 	fmt.Println(bagger.OutputPath)
+	assert.True(t, false)
 }
