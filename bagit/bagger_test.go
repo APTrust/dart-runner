@@ -2,8 +2,7 @@ package bagit_test
 
 import (
 	"fmt"
-	"io/ioutil"
-	//"os"
+	"os"
 	"path"
 	"testing"
 
@@ -14,9 +13,7 @@ import (
 )
 
 func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *bagit.Bagger {
-	tempDir, err := ioutil.TempDir("", "bagger_test")
-	require.Nil(t, err)
-	outputPath := path.Join(tempDir, bagName)
+	outputPath := path.Join(os.TempDir(), bagName)
 	profilePath := path.Join(util.ProjectRoot(), "profiles", profileName)
 	profile, err := bagit.ProfileLoad(profilePath)
 	require.Nil(t, err)
@@ -29,7 +26,7 @@ func TestBaggerRun(t *testing.T) {
 	files, err := util.RecursiveFileList(util.PathToTestData())
 	require.Nil(t, err)
 	bagger := getBagger(t, "bag01.tar", "aptrust-v2.2.json", files)
-	//defer os.Remove(bagger.OutputPath)
+	defer os.Remove(bagger.OutputPath)
 
 	bagger.Profile.SetTagValue("bag-info.txt", "Source-Organization", "University of Virginia")
 	bagger.Profile.SetTagValue("bag-info.txt", "Bag-Count", "1 of 1")
@@ -45,5 +42,5 @@ func TestBaggerRun(t *testing.T) {
 	assert.True(t, ok)
 	assert.Empty(t, bagger.Errors)
 	fmt.Println(bagger.OutputPath)
-	assert.True(t, false)
+	//assert.True(t, false)
 }

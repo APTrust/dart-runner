@@ -3,9 +3,8 @@ package util_test
 import (
 	"archive/tar"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"testing"
 
@@ -21,11 +20,7 @@ func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
 }
 
 func getTarWriter(t *testing.T, filename string) (*util.TarWriter, string) {
-	tempDir, err := ioutil.TempDir("", "tarwriter_test")
-	if err != nil {
-		assert.FailNow(t, "Cannot create temp dir", err.Error())
-	}
-	tempFilePath := filepath.Join(tempDir, filename)
+	tempFilePath := path.Join(os.TempDir(), filename)
 	w := util.NewTarWriter(tempFilePath)
 	assert.NotNil(t, w)
 	assert.Equal(t, tempFilePath, w.PathToTarFile)
