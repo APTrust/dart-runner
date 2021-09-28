@@ -3,13 +3,14 @@ package bagit
 import (
 	"embed"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/google/uuid"
 )
 
 //go:embed bagit.txt
@@ -134,9 +135,35 @@ func (b *Bagger) addManifests(whichKind string) bool {
 }
 
 func (b *Bagger) addTagFiles() bool {
-	// We've already added BagIt. Read the profile and build from
-	// there. The profile should have tag defs merged from the job
-	// or workflow.
+	b.setBagInfoAutoValues()
+	for _, tagFileName := range b.Profile.TagFileNames() {
+		contents, err := b.Profile.GetTagFileContents(tagFileName)
+		if err != nil {
+			b.Errors[tagFileName] = fmt.Sprintf("Error getting tag file contents: %s", err.Error())
+			return false
+		}
+		// Write contents to temp file.
+		// Add tempfile to bag at tagFileName
+		// Delete temp file (with defer)
+		tempFilePath := path.Join(os.TempDir(), fmt.Sprintf("%s-%d", tagFileName, time.Now().UnixNano()))
+		defer os.Remove(tempFilePath)
+		err = ioutil.WriteFile(tempFilePath, []byte(contents), 0644)
+		if err != nil {
+			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file contents to temp file: %s", err.Error())
+			return false
+		}
+		fileInfo, err := os.Stat(tempFilePath)
+		if err != nil {
+			b.Errors[tagFileName] = fmt.Sprintf("Error getting temp file stat: %s", err.Error())
+			return false
+		}
+		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
+		err = b.writer.AddFile(xFileInfo, tagFileName)
+		if err != nil {
+			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file to bag: %s", err.Error())
+			return false
+		}
+	}
 	return true
 }
 
@@ -167,42 +194,15 @@ func (b *Bagger) calculatePathPrefix() {
 }
 
 func (b *Bagger) setBagInfoAutoValues() {
-	baggingDate, err := b.Profile.FirstMatchingTag("tagName", "Bagging-Date")
-	if err == nil && baggingDate != nil {
-		baggingDate.UserValue = time.Now().UTC().Format(time.RFC3339)
-	}
-
-	baggingSoftware, err := b.Profile.FirstMatchingTag("tagName", "Bagging-Software")
-	if err == nil && baggingSoftware != nil {
-		baggingSoftware.UserValue = constants.AppVersion()
-	}
-
-	// This supposedly required tag is often omitted from profiles in the wild.
-	profileIdentifier, err := b.Profile.FirstMatchingTag("tagName", "BagIt-Profile-Identifier")
-	if err == nil && profileIdentifier == nil {
-		profileIdentifier = &TagDefinition{
-			ID:       uuid.New().String(),
-			TagFile:  "bag-info.txt",
-			TagName:  "BagIt-Profile-Identifier",
-			Required: true,
-		}
-		b.Profile.Tags = append(b.Profile.Tags, profileIdentifier)
-	}
+	b.Profile.SetTagValue("bag-info.txt", "Bagging-Date", time.Now().UTC().Format(time.RFC3339))
+	b.Profile.SetTagValue("bag-info.txt", "Bagging-Software", constants.AppVersion())
+	b.Profile.SetTagValue("bag-info.txt", "Payload-Oxum", b.PayloadOxum())
+	b.Profile.SetTagValue("bag-info.txt", "Bag-Size", util.ToHumanSize(b.payloadBytes, 1024))
+	bpIdentifier := "http://example.com/unspecified_profile_identifier"
 	if b.Profile.BagItProfileInfo.BagItProfileIdentifier != "" {
-		profileIdentifier.UserValue = b.Profile.BagItProfileInfo.BagItProfileIdentifier
-	} else {
-		profileIdentifier.UserValue = "http://example.com/unspecified_profile_identifier"
+		bpIdentifier = b.Profile.BagItProfileInfo.BagItProfileIdentifier
 	}
-
-	payloadOxum, err := b.Profile.FirstMatchingTag("tagName", "Payload-Oxum")
-	if err == nil && payloadOxum != nil {
-		payloadOxum.UserValue = b.PayloadOxum()
-	}
-
-	bagSize, err := b.Profile.FirstMatchingTag("tagName", "Bag-Size")
-	if err == nil && bagSize != nil {
-		bagSize.UserValue = util.ToHumanSize(b.payloadBytes, 1024)
-	}
+	b.Profile.SetTagValue("bag-info.txt", "BagIt-Profile-Identifier", bpIdentifier)
 }
 
 // Close the writer and do any other required cleanup.

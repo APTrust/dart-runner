@@ -76,5 +76,47 @@ func TestTagFileNames(t *testing.T) {
 	for i, _ := range btrExpected {
 		assert.Equal(t, btrExpected[i], btrActual[i])
 	}
+}
 
+func TestGetTagFileContents(t *testing.T) {
+	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	apt, err := bagit.ProfileLoad(aptPath)
+	require.Nil(t, err)
+
+	descriptionTag, err := apt.FirstMatchingTag("TagName", "Description")
+	require.Nil(t, err)
+	require.NotNil(t, descriptionTag)
+	descriptionTag.UserValue = "This here bag belongs to Yosemite Sam!"
+
+	sourceOrgTag, err := apt.FirstMatchingTag("TagName", "Source-Organization")
+	require.Nil(t, err)
+	require.NotNil(t, sourceOrgTag)
+	sourceOrgTag.UserValue = "Warner Bros."
+
+	aptInfoExpected := "Title: \nAccess: Institution\nDescription: This here bag belongs to Yosemite Sam!\nStorage-Option: Standard\n"
+	bagInfoExpected := "Source-Organization: Warner Bros.\nBag-Count: \nBagging-Date: \nBagging-Software: \nBag-Group-Identifier: \nInternal-Sender-Description: \nInternal-Sender-Identifier: \nPayload-Oxum: \n"
+
+	aptActual, err := apt.GetTagFileContents("aptrust-info.txt")
+	require.Nil(t, err)
+	assert.Equal(t, aptInfoExpected, aptActual)
+
+	infoActual, err := apt.GetTagFileContents("bag-info.txt")
+	require.Nil(t, err)
+	assert.Equal(t, bagInfoExpected, infoActual)
+}
+
+func TestSetTagValue(t *testing.T) {
+	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	profile, err := bagit.ProfileLoad(aptPath)
+	require.Nil(t, err)
+
+	profile.SetTagValue("bag-info.txt", "Payload-Oxum", "12345.2")
+	tag := profile.GetTagDef("bag-info.txt", "Payload-Oxum")
+	require.NotNil(t, tag)
+	assert.Equal(t, "12345.2", tag.GetValue())
+
+	profile.SetTagValue("bag-info.txt", "Flava-Flave", "911")
+	tag = profile.GetTagDef("bag-info.txt", "Flava-Flave")
+	require.NotNil(t, tag)
+	assert.Equal(t, "911", tag.GetValue())
 }

@@ -3,7 +3,7 @@ package bagit_test
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
+	//"os"
 	"path"
 	"testing"
 
@@ -29,7 +29,18 @@ func TestBaggerRun(t *testing.T) {
 	files, err := util.RecursiveFileList(util.PathToTestData())
 	require.Nil(t, err)
 	bagger := getBagger(t, "bag01.tar", "aptrust-v2.2.json", files)
-	defer os.Remove(bagger.OutputPath)
+	//defer os.Remove(bagger.OutputPath)
+
+	bagger.Profile.SetTagValue("bag-info.txt", "Source-Organization", "University of Virginia")
+	bagger.Profile.SetTagValue("bag-info.txt", "Bag-Count", "1 of 1")
+	bagger.Profile.SetTagValue("bag-info.txt", "Internal-Sender-Description", "My stuff")
+	bagger.Profile.SetTagValue("bag-info.txt", "Internal-Sender-Identifier", "my-identifier")
+
+	bagger.Profile.SetTagValue("aptrust-info.txt", "Title", "Test Bag #0001")
+	bagger.Profile.SetTagValue("aptrust-info.txt", "Description", "Eloquence and elocution")
+	bagger.Profile.SetTagValue("aptrust-info.txt", "Access", "Consortia")
+	bagger.Profile.SetTagValue("aptrust-info.txt", "Storage-Option", "Glacier-Deep-OH")
+
 	ok := bagger.Run()
 	assert.True(t, ok)
 	assert.Empty(t, bagger.Errors)

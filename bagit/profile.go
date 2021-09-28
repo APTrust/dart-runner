@@ -10,6 +10,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 // Profile represents a DART-type Profile, as described at
@@ -222,4 +223,36 @@ func (p *Profile) TagFileNames() []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// GetTagFileContents returns the generated contents of the specified
+// tag file.
+func (p *Profile) GetTagFileContents(tagFileName string) (string, error) {
+	tags, err := p.FindMatchingTags("TagFile", tagFileName)
+	if err != nil {
+		return "", err
+	}
+	contents := make([]string, len(tags))
+	for i, tag := range tags {
+		contents[i] = tag.ToFormattedString()
+	}
+	return strings.Join(contents, "\n") + "\n", nil
+}
+
+// SetTagValue sets the value of the specified tag in the specified
+// file. It creates the tag if it doesn't already exist in the profile.
+// This currently supports only one instance of each tag in each file.
+func (p *Profile) SetTagValue(tagFile, tagName, value string) {
+	tag := p.GetTagDef(tagFile, tagName)
+	if tag == nil {
+		tag = &TagDefinition{
+			ID:        uuid.New().String(),
+			TagFile:   tagFile,
+			TagName:   tagName,
+			UserValue: value,
+		}
+		p.Tags = append(p.Tags, tag)
+	} else {
+		tag.UserValue = value
+	}
 }
