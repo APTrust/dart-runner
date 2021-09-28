@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -20,6 +21,7 @@ type Bagger struct {
 	payloadFiles int64
 	payloadBytes int64
 	writer       util.BagWriter
+	pathPrefix   string
 }
 
 func NewBagger(outputPath string, profile *Profile, files []*util.ExtendedFileInfo) *Bagger {
@@ -30,6 +32,7 @@ func NewBagger(outputPath string, profile *Profile, files []*util.ExtendedFileIn
 		Errors:       make(map[string]string),
 		payloadFiles: 0,
 		payloadBytes: 0,
+		pathPrefix:   "",
 	}
 }
 
@@ -39,6 +42,8 @@ func (b *Bagger) Run() bool {
 	if !b.validateProfile() {
 		return false
 	}
+
+	b.calculatePathPrefix()
 
 	if !b.initWriter() {
 		return false
@@ -96,12 +101,10 @@ func (b *Bagger) addBagItFile() bool {
 }
 
 func (b *Bagger) addPayloadFiles() bool {
-	// increment b.payloadFiles and b.payloadBytes as we go
 	var err error
 	for _, xFileInfo := range b.Files {
-		// need to calculate this by trimming part of absPath
-		// See https://github.com/APTrust/dart/blob/47032ff1f5b20726cb6b3199553f5c531f42fc9b/core/util.js#L671
-		pathInBag := ""
+		// Always use forward slash for bag paths, even on Windows.
+		pathInBag := "data" + strings.Replace(xFileInfo.FullPath, b.pathPrefix, "", 1)
 		err = b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[xFileInfo.FullPath] = err.Error()
@@ -139,6 +142,14 @@ func (b *Bagger) initWriter() bool {
 	b.writer = util.NewTarWriter(b.OutputPath)
 	b.writer.Open()
 	return true
+}
+
+func (b *Bagger) calculatePathPrefix() {
+	paths := make([]string, len(b.Files))
+	for i, xFileInfo := range b.Files {
+		paths[i] = xFileInfo.FullPath
+	}
+	b.pathPrefix = util.FindCommonPrefix(paths)
 }
 
 // Close the writer and do any other required cleanup.

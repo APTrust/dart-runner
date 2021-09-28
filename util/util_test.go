@@ -402,3 +402,10 @@ func TestFileCommonPrefix(t *testing.T) {
 	assert.Equal(t, "/", util.FindCommonPrefix(list3))
 	assert.Equal(t, "", util.FindCommonPrefix(list4))
 }
+
+func TestToHumanSize(t *testing.T) {
+	assert.Equal(t, "389.8 kB", util.ToHumanSize(389778, 1000))
+	assert.Equal(t, "380.6 kB", util.ToHumanSize(389778, 1024))
+	assert.Equal(t, "3.9 GB", util.ToHumanSize(3897784432, 1000))
+	assert.Equal(t, "3.6 GB", util.ToHumanSize(3897784432, 1024))
+}
