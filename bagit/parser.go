@@ -1,4 +1,4 @@
-package validation
+package bagit
 
 import (
 	"bufio"
@@ -6,8 +6,6 @@ import (
 	"io"
 	"regexp"
 	"strings"
-
-	"github.com/APTrust/dart-runner/bagit"
 )
 
 // ParseTagFile parses the tags in a tag file that conforms to the
@@ -25,11 +23,11 @@ import (
 // This returns a slice of Tag objects as parsed from the bag. Note that
 // the BagIt spec permits some tags to appear more than once in a file,
 // so you may get multiple tags with the same label.
-func ParseTagFile(reader io.Reader, relFilePath string) ([]*bagit.Tag, error) {
+func ParseTagFile(reader io.Reader, relFilePath string) ([]*Tag, error) {
 	re := regexp.MustCompile(`^(\S*\:)?(\s*.*)?$`)
-	tags := make([]*bagit.Tag, 0)
+	tags := make([]*Tag, 0)
 	scanner := bufio.NewScanner(reader)
-	var tag *bagit.Tag
+	var tag *Tag
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.TrimSpace(line) == "" {
@@ -43,7 +41,7 @@ func ParseTagFile(reader io.Reader, relFilePath string) ([]*bagit.Tag, error) {
 				if tag != nil && tag.TagName != "" {
 					tags = append(tags, tag)
 				}
-				tag = bagit.NewTag(relFilePath, data[1], strings.TrimSpace(data[2]))
+				tag = NewTag(relFilePath, data[1], strings.TrimSpace(data[2]))
 				continue
 			}
 			value := strings.TrimSpace(data[2])

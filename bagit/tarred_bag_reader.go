@@ -1,4 +1,4 @@
-package validation
+package bagit
 
 import (
 	"archive/tar"
@@ -12,7 +12,7 @@ import (
 )
 
 // TarredBagReader reads a tarred BagIt file to collect metadata for
-// validation and ingest processing. See ProcessNextEntry() below.
+// bagit and ingest processing. See ProcessNextEntry() below.
 type TarredBagReader struct {
 	validator *Validator
 	reader    io.ReadSeekCloser

@@ -1,4 +1,4 @@
-package validation_test
+package bagit_test
 
 import (
 	"encoding/json"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +32,7 @@ func loadProfile(jsonFile string) (*bagit.Profile, error) {
 // We have json files containing metadata that a read should
 // find when scanning a bag. We test our reader results against
 // this known good data.
-func loadValidatorFromJson(jsonFile string) (*validation.Validator, error) {
+func loadValidatorFromJson(jsonFile string) (*bagit.Validator, error) {
 	filePath := path.Join(util.PathToTestData(), "files", jsonFile)
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -43,7 +42,7 @@ func loadValidatorFromJson(jsonFile string) (*validation.Validator, error) {
 	if err != nil {
 		return nil, err
 	}
-	validator := &validation.Validator{}
+	validator := &bagit.Validator{}
 	err = json.Unmarshal(data, validator)
 	if err != nil {
 		validator.Profile, err = loadProfile("aptrust-v2.2.json")
@@ -59,9 +58,9 @@ func TestTarredBagScanner(t *testing.T) {
 	profile, err := loadProfile("aptrust-v2.2.json")
 	require.Nil(t, err)
 	pathToBag := util.PathToUnitTestBag("example.edu.tagsample_good.tar")
-	validator, err := validation.NewValidator(pathToBag, profile)
+	validator, err := bagit.NewValidator(pathToBag, profile)
 	require.Nil(t, err)
-	reader, err := validation.NewTarredBagReader(validator)
+	reader, err := bagit.NewTarredBagReader(validator)
 	require.Nil(t, err)
 
 	// Scan the metadata...
@@ -83,7 +82,7 @@ func TestTarredBagScanner(t *testing.T) {
 	tarReaderTestTags(t, expected.Tags, validator.Tags)
 }
 
-func tarReaderTestFileMaps(t *testing.T, expected, actual *validation.FileMap) {
+func tarReaderTestFileMaps(t *testing.T, expected, actual *bagit.FileMap) {
 	require.Equal(t, len(expected.Files), len(actual.Files))
 	for expectedName, expectedRecord := range expected.Files {
 		actualRecord := actual.Files[expectedName]

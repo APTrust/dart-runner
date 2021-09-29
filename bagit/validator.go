@@ -1,4 +1,4 @@
-package validation
+package bagit
 
 import (
 	"encoding/json"
@@ -8,26 +8,25 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
 type Validator struct {
 	PathToBag          string
-	Profile            *bagit.Profile
+	Profile            *Profile
 	PayloadFiles       *FileMap
 	PayloadManifests   *FileMap
 	TagFiles           *FileMap
 	TagManifests       *FileMap
-	Tags               []*bagit.Tag
+	Tags               []*Tag
 	UnparsableTagFiles []string
 	Errors             map[string]string
 	mapForType         map[string]*FileMap
 	IgnoreOxumMismatch bool
 }
 
-func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) {
+func NewValidator(pathToBag string, profile *Profile) (*Validator, error) {
 	if !util.FileExists(pathToBag) {
 		return nil, os.ErrNotExist
 	}
@@ -38,7 +37,7 @@ func NewValidator(pathToBag string, profile *bagit.Profile) (*Validator, error) 
 		Profile:            profile,
 		TagFiles:           NewFileMap(constants.FileTypeTag),
 		TagManifests:       NewFileMap(constants.FileTypeTagManifest),
-		Tags:               make([]*bagit.Tag, 0),
+		Tags:               make([]*Tag, 0),
 		UnparsableTagFiles: make([]string, 0),
 		Errors:             make(map[string]string),
 		IgnoreOxumMismatch: false,
@@ -153,8 +152,8 @@ func (v *Validator) AssertOxumsMatch() error {
 	return nil
 }
 
-func (v *Validator) GetTags(tagFile, tagName string) []*bagit.Tag {
-	tags := make([]*bagit.Tag, 0)
+func (v *Validator) GetTags(tagFile, tagName string) []*Tag {
+	tags := make([]*Tag, 0)
 	for _, tag := range v.Tags {
 		if tag.TagFile == tagFile && tag.TagName == tagName {
 			tags = append(tags, tag)

@@ -1,4 +1,4 @@
-package validation
+package bagit
 
 // BagReader describes the interface that bag readers must implement,
 // whether reading from a file system, tar file, zip file, etc.

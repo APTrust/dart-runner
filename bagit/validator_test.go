@@ -1,11 +1,11 @@
-package validation_test
+package bagit_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,12 +14,12 @@ var aptrustProfile = "aptrust-v2.2.json"
 var btrProfile = "btr-v1.0.json"
 var emptyProfile = "empty_profile.json"
 
-func getValidator(t *testing.T, bag, profile string) *validation.Validator {
+func getValidator(t *testing.T, bag, profile string) *bagit.Validator {
 	bagItProfile, err := loadProfile(profile)
 	require.Nil(t, err)
 
 	pathToBag := util.PathToUnitTestBag(bag)
-	validator, err := validation.NewValidator(pathToBag, bagItProfile)
+	validator, err := bagit.NewValidator(pathToBag, bagItProfile)
 	require.Nil(t, err)
 	return validator
 }

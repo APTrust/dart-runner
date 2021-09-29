@@ -1,22 +1,22 @@
-package validation_test
+package bagit_test
 
 import (
 	"testing"
 
+	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewChecksum(t *testing.T) {
-	cs := validation.NewChecksum(constants.FileTypePayload, constants.AlgMd5, "1234abcd")
+	cs := bagit.NewChecksum(constants.FileTypePayload, constants.AlgMd5, "1234abcd")
 	assert.Equal(t, constants.FileTypePayload, cs.Source)
 	assert.Equal(t, constants.AlgMd5, cs.Algorithm)
 	assert.Equal(t, "1234abcd", cs.Digest)
 }
 
 func TestChecksumSourceName(t *testing.T) {
-	cs := validation.NewChecksum(constants.FileTypePayload, constants.AlgMd5, "1234abcd")
+	cs := bagit.NewChecksum(constants.FileTypePayload, constants.AlgMd5, "1234abcd")
 	assert.Equal(t, "payload file", cs.SourceName())
 
 	cs.Source = constants.FileTypeManifest

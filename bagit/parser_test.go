@@ -1,9 +1,9 @@
-package validation_test
+package bagit_test
 
 import (
+	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/APTrust/dart-runner/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -40,7 +40,7 @@ func TestParseTagFile(t *testing.T) {
 	file, err := os.Open(tagfile)
 	require.Nil(t, err)
 	defer file.Close()
-	tags, err := validation.ParseTagFile(file, "bag-info.txt")
+	tags, err := bagit.ParseTagFile(file, "bag-info.txt")
 	require.Nil(t, err)
 	assert.Equal(t, len(tagNames), len(tags))
 	for i, tag := range tags {
@@ -60,7 +60,7 @@ func TestParseManifest(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, constants.AlgSha256, alg)
 
-	checksums, err := validation.ParseManifest(file)
+	checksums, err := bagit.ParseManifest(file)
 	require.Nil(t, err)
 
 	assert.Equal(t, len(expectedChecksums), len(checksums))
