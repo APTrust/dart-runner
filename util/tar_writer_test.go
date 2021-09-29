@@ -8,10 +8,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var digestAlgs = []string{
+	constants.AlgMd5,
+	constants.AlgSha256,
+}
 
 func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
 	files, err := util.RecursiveFileList(util.PathToTestData())
@@ -21,10 +27,17 @@ func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
 
 func getTarWriter(t *testing.T, filename string) (*util.TarWriter, string) {
 	tempFilePath := path.Join(os.TempDir(), filename)
-	w := util.NewTarWriter(tempFilePath)
+	w := util.NewTarWriter(tempFilePath, digestAlgs)
 	assert.NotNil(t, w)
 	assert.Equal(t, tempFilePath, w.PathToTarFile)
 	return w, tempFilePath
+}
+
+func assertChecksums(t *testing.T, checksums map[string]string, filename string) {
+	assert.NotNil(t, checksums, filename)
+	for _, alg := range digestAlgs {
+		assert.NotEmpty(t, checksums[alg], "Missing %s for %s", alg, filename)
+	}
 }
 
 func TestAndCloseOpen(t *testing.T) {
@@ -52,8 +65,11 @@ func TestAddFile(t *testing.T) {
 		// Use Sprintf with forward slash instead of path.Join()
 		// because tar file paths should use / even on windows.
 		pathInBag := fmt.Sprintf("data/%s", xFileInfo.Name())
-		err = w.AddFile(xFileInfo, pathInBag)
+		checksums, err := w.AddFile(xFileInfo, pathInBag)
 		assert.Nil(t, err, xFileInfo.FullPath)
+		if !xFileInfo.IsDir() {
+			assertChecksums(t, checksums, xFileInfo.FullPath)
+		}
 		filesAdded = append(filesAdded, pathInBag)
 		if len(filesAdded) > 4 {
 			break
@@ -90,8 +106,9 @@ func TestAddFileWithClosedWriter(t *testing.T) {
 
 	// Note that we have not opened the writer
 	files := listTestFiles(t)
-	err := w.AddFile(files[0], files[0].Name())
+	checksums, err := w.AddFile(files[0], files[0].Name())
 	require.NotNil(t, err)
+	assert.Empty(t, checksums)
 	assert.True(t, strings.HasPrefix(err.Error(), "Underlying TarWriter is nil"))
 
 	// Open and close the writer, so the file exists.
@@ -99,8 +116,9 @@ func TestAddFileWithClosedWriter(t *testing.T) {
 	w.Close()
 	require.True(t, util.FileExists(w.PathToTarFile))
 
-	err = w.AddFile(files[0], files[0].Name())
+	checksums, err = w.AddFile(files[0], files[0].Name())
 	require.NotNil(t, err)
+	assert.Empty(t, checksums)
 	assert.True(t, strings.Contains(err.Error(), "tar: write after close"), err.Error())
 
 }
@@ -120,7 +138,8 @@ func TestAddFileWithBadFilePath(t *testing.T) {
 	// ...the path we give here points to a file that does not exist.
 	// Make sure we get the right error.
 	xFileInfo := util.NewExtendedFileInfo("file-does-not-exist.pdf", fInfo)
-	err = w.AddFile(xFileInfo, "file.pdf")
+	checksums, err := w.AddFile(xFileInfo, "file.pdf")
 	require.NotNil(t, err)
+	assert.Empty(t, checksums)
 	assert.True(t, strings.Contains(err.Error(), "no such file or directory"))
 }

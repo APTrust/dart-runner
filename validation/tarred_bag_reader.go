@@ -187,7 +187,6 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord,
 	writers := make([]io.Writer, len(hashes))
 	for i, alg := range algs {
 		writers[i] = hashes[alg]
-		i++
 	}
 
 	multiWriter := io.MultiWriter(writers...)

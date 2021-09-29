@@ -10,11 +10,13 @@ import (
 type TarWriter struct {
 	PathToTarFile string
 	tarWriter     *tar.Writer
+	digestAlgs    []string
 }
 
-func NewTarWriter(pathToTarFile string) *TarWriter {
+func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
 	return &TarWriter{
 		PathToTarFile: pathToTarFile,
+		digestAlgs:    digestAlgs,
 	}
 }
 
@@ -34,10 +36,16 @@ func (writer *TarWriter) Close() error {
 	return nil
 }
 
-// AddFile as a file to a tar archive.
-func (writer *TarWriter) AddFile(xFileInfo *ExtendedFileInfo, pathWithinArchive string) error {
+// AddFile as a file to a tar archive. Returns a map of checksums
+// where key is the algorithm and value is the digest. E.g.
+// checksums["md5"] = "0987654321"
+func (writer *TarWriter) AddFile(xFileInfo *ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
+
+	checksums := make(map[string]string)
+	hashes := GetHashes(writer.digestAlgs)
+
 	if writer.tarWriter == nil {
-		return fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")
+		return checksums, fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")
 	}
 	// This returns actual owner and group id on posix systems,
 	// 0,0 on Windows.
@@ -63,32 +71,45 @@ func (writer *TarWriter) AddFile(xFileInfo *ExtendedFileInfo, pathWithinArchive 
 	// Write the header entry
 	if err := writer.tarWriter.WriteHeader(header); err != nil {
 		// Most likely error is archive/tar: write after close
-		return err
+		return checksums, err
 	}
 
 	// For directory entries, there's no content to write,
 	// so just stop here.
 	if header.Typeflag == tar.TypeDir {
-		return nil
+		return checksums, nil
 	}
 
 	// Open the file whose data we're going to add.
 	file, err := os.Open(xFileInfo.FullPath)
 	defer file.Close()
 	if err != nil {
-		return err
+		return checksums, err
 	}
 
-	// Copy the contents of the file into the tarWriter.
-	bytesWritten, err := io.Copy(writer.tarWriter, file)
+	// Copy the contents of the file into the tarWriter,
+	// passing it through the hashes along the way.
+	writers := make([]io.Writer, len(writer.digestAlgs)+1)
+	for i, alg := range writer.digestAlgs {
+		writers[i] = hashes[alg]
+	}
+	writers[len(writers)-1] = writer.tarWriter
+	multiWriter := io.MultiWriter(writers...)
+	bytesWritten, err := io.Copy(multiWriter, file)
 	if bytesWritten != header.Size {
-		return fmt.Errorf("addToArchive() copied only %d of %d bytes for file %s",
+		return checksums, fmt.Errorf("addToArchive() copied only %d of %d bytes for file %s",
 			bytesWritten, header.Size, xFileInfo.FullPath)
 	}
 	if err != nil {
-		return fmt.Errorf("Error copying %s into tar archive: %v",
+		return checksums, fmt.Errorf("Error copying %s into tar archive: %v",
 			xFileInfo.FullPath, err)
 	}
 
-	return nil
+	// Gather the checksums.
+	for _, alg := range writer.digestAlgs {
+		hash := hashes[alg]
+		checksums[alg] = fmt.Sprintf("%x", hash.Sum(nil))
+	}
+
+	return checksums, nil
 }

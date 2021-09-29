@@ -107,11 +107,12 @@ func (b *Bagger) addBagItFile() bool {
 		return false
 	}
 	xFileInfo := util.NewExtendedFileInfo("bagit.txt", fInfo)
-	err = b.writer.AddFile(xFileInfo, "bagit.txt")
+	_, err = b.writer.AddFile(xFileInfo, "bagit.txt")
 	if err != nil {
 		b.Errors["bagit.txt"] = err.Error()
 		return false
 	}
+	// TODO: track checksums
 	return true
 }
 
@@ -120,12 +121,13 @@ func (b *Bagger) addPayloadFiles() bool {
 	for _, xFileInfo := range b.Files {
 		// Always use forward slash for bag paths, even on Windows.
 		pathInBag := "data" + strings.Replace(xFileInfo.FullPath, b.pathPrefix, "", 1)
-		err = b.writer.AddFile(xFileInfo, pathInBag)
+		_, err = b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[xFileInfo.FullPath] = err.Error()
 		}
 		b.payloadFiles++
 		b.payloadBytes += xFileInfo.Size()
+		// TODO: Track checksums
 	}
 	return true
 }
@@ -158,11 +160,12 @@ func (b *Bagger) addTagFiles() bool {
 			return false
 		}
 		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
-		err = b.writer.AddFile(xFileInfo, tagFileName)
+		_, err = b.writer.AddFile(xFileInfo, tagFileName)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file to bag: %s", err.Error())
 			return false
 		}
+		// TODO: Track checksums
 	}
 	return true
 }
@@ -180,9 +183,25 @@ func (b *Bagger) validateProfile() bool {
 // In future, this will initialize the proper type of writer
 // (zip, gzip, file system, etc.) For now, it supports tar only.
 func (b *Bagger) initWriter() bool {
-	b.writer = util.NewTarWriter(b.OutputPath)
+	digestAlgs := b.Profile.ManifestsRequired
+	if len(digestAlgs) == 0 {
+		digestAlgs = []string{
+			b.getPreferredDigestAlg(),
+		}
+	}
+	b.writer = util.NewTarWriter(b.OutputPath, digestAlgs)
 	b.writer.Open()
 	return true
+}
+
+func (b *Bagger) getPreferredDigestAlg() string {
+	// What if TagManifestsAllowed differs from ManifestsAllowed?
+	for _, alg := range constants.PreferredAlgsInOrder {
+		if util.StringListContains(b.Profile.ManifestsAllowed, alg) {
+			return alg
+		}
+	}
+	return constants.AlgSha512
 }
 
 func (b *Bagger) calculatePathPrefix() {

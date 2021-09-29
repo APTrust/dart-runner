@@ -38,6 +38,13 @@ var SerializationOptions = []string{
 	SerializationRequired,
 }
 
+var PreferredAlgsInOrder = []string{
+	AlgSha512,
+	AlgSha256,
+	AlgMd5,
+	AlgSha1,
+}
+
 func AppVersion() string {
 	return "DART Runner v0.1"
 }
