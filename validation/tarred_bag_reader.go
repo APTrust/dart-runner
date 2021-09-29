@@ -2,12 +2,7 @@ package validation
 
 import (
 	"archive/tar"
-	"crypto/md5"
-	"crypto/sha1"
-	"crypto/sha256"
-	"crypto/sha512"
 	"fmt"
-	"hash"
 	"io"
 	"os"
 	"strings"
@@ -182,27 +177,17 @@ func (r *TarredBagReader) addOrUpdateFileRecord(fileMap *FileMap, pathInBag stri
 // We use a MultiWriter to calculate all of a file's checksums in a
 // single read.
 func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord, algs []string) error {
-	var md5Hash hash.Hash
-	var sha1Hash hash.Hash
-	var sha256Hash hash.Hash
-	var sha512Hash hash.Hash
-	writers := make([]io.Writer, 0)
 
-	if util.StringListContains(algs, constants.AlgMd5) {
-		md5Hash = md5.New()
-		writers = append(writers, md5Hash)
-	}
-	if util.StringListContains(algs, constants.AlgSha1) {
-		sha1Hash = sha1.New()
-		writers = append(writers, sha1Hash)
-	}
-	if util.StringListContains(algs, constants.AlgSha256) {
-		sha256Hash = sha256.New()
-		writers = append(writers, sha256Hash)
-	}
-	if util.StringListContains(algs, constants.AlgSha512) {
-		sha512Hash = sha512.New()
-		writers = append(writers, sha512Hash)
+	// Get a hash for each of the digest algorithms we need
+	// to calculate (md5, sha256, etc)
+	hashes := util.GetHashes(algs)
+
+	// Hashes implement io.Write. We'll write our file stream
+	// through all of them at once.
+	writers := make([]io.Writer, len(hashes))
+	for i, alg := range algs {
+		writers[i] = hashes[alg]
+		i++
 	}
 
 	multiWriter := io.MultiWriter(writers...)
@@ -220,22 +205,13 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord,
 		fileType = constants.FileTypeTag
 	}
 
-	if md5Hash != nil {
-		fileRecord.AddChecksum(fileType, constants.AlgMd5,
-			fmt.Sprintf("%x", md5Hash.Sum(nil)))
+	// For each hash we calculated, add a checksum to the
+	// file record.
+	for _, alg := range algs {
+		digest := fmt.Sprintf("%x", hashes[alg].Sum(nil))
+		fileRecord.AddChecksum(fileType, alg, digest)
 	}
-	if sha1Hash != nil {
-		fileRecord.AddChecksum(fileType, constants.AlgSha1,
-			fmt.Sprintf("%x", sha1Hash.Sum(nil)))
-	}
-	if sha256Hash != nil {
-		fileRecord.AddChecksum(fileType, constants.AlgSha256,
-			fmt.Sprintf("%x", sha256Hash.Sum(nil)))
-	}
-	if sha512Hash != nil {
-		fileRecord.AddChecksum(fileType, constants.AlgSha512,
-			fmt.Sprintf("%x", sha512Hash.Sum(nil)))
-	}
+
 	return nil
 }
 

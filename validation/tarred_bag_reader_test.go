@@ -89,9 +89,9 @@ func tarReaderTestFileMaps(t *testing.T, expected, actual *validation.FileMap) {
 		actualRecord := actual.Files[expectedName]
 		require.NotNil(t, actualRecord, expectedName)
 		assert.Equal(t, expectedRecord.Size, actualRecord.Size, expectedName)
-		for i, expectedChecksum := range expectedRecord.Checksums {
+		for _, expectedChecksum := range expectedRecord.Checksums {
 			message := fmt.Sprintf("File: %s, Checksum: %s", expectedName, expectedChecksum.Algorithm)
-			actualChecksum := actualRecord.Checksums[i]
+			actualChecksum := actualRecord.GetChecksum(expectedChecksum.Algorithm, expectedChecksum.Source)
 			require.NotNil(t, actualChecksum, message)
 			assert.Equal(t, expectedChecksum.Algorithm, actualChecksum.Algorithm)
 			assert.Equal(t, expectedChecksum.Source, actualChecksum.Source)
