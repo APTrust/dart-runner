@@ -27,7 +27,7 @@ type Bagger struct {
 	TagManifests     *FileMap
 	payloadFileCount int64
 	payloadBytes     int64
-	writer           util.BagWriter
+	writer           BagWriter
 	pathPrefix       string
 }
 
@@ -223,7 +223,7 @@ func (b *Bagger) initWriter() bool {
 			b.getPreferredDigestAlg(),
 		}
 	}
-	b.writer = util.NewTarWriter(b.OutputPath, digestAlgs)
+	b.writer = NewTarWriter(b.OutputPath, digestAlgs)
 	b.writer.Open()
 	return true
 }

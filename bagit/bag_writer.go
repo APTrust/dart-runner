@@ -1,4 +1,8 @@
-package util
+package bagit
+
+import (
+	"github.com/APTrust/dart-runner/util"
+)
 
 // BagWriter describes the interface that bag writers must implement,
 // whether writing to a file system, tar file, zip file, etc.
@@ -9,7 +13,7 @@ type BagWriter interface {
 	// AddFile adds a file to the bag. The returned map has digest
 	// alg names for keys and digests for values. For example,
 	// checksums["md5"] = "0987654321".
-	AddFile(*ExtendedFileInfo, string) (map[string]string, error)
+	AddFile(*util.ExtendedFileInfo, string) (map[string]string, error)
 
 	// DigestAlgs returns a list of digest algoritms that the
 	// writer calculates as it writes. E.g. ["md5", "sha256"].

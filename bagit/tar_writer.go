@@ -1,10 +1,12 @@
-package util
+package bagit
 
 import (
 	"archive/tar"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/APTrust/dart-runner/util"
 )
 
 type TarWriter struct {
@@ -46,10 +48,10 @@ func (writer *TarWriter) Close() error {
 // AddFile as a file to a tar archive. Returns a map of checksums
 // where key is the algorithm and value is the digest. E.g.
 // checksums["md5"] = "0987654321"
-func (writer *TarWriter) AddFile(xFileInfo *ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
+func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
 
 	checksums := make(map[string]string)
-	hashes := GetHashes(writer.digestAlgs)
+	hashes := util.GetHashes(writer.digestAlgs)
 
 	if writer.tarWriter == nil {
 		return checksums, fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")

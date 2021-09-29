@@ -1,4 +1,4 @@
-package util_test
+package bagit_test
 
 import (
 	"archive/tar"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
@@ -25,9 +26,9 @@ func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
 	return files
 }
 
-func getTarWriter(t *testing.T, filename string) (*util.TarWriter, string) {
+func getTarWriter(t *testing.T, filename string) (*bagit.TarWriter, string) {
 	tempFilePath := path.Join(os.TempDir(), filename)
-	w := util.NewTarWriter(tempFilePath, digestAlgs)
+	w := bagit.NewTarWriter(tempFilePath, digestAlgs)
 	assert.NotNil(t, w)
 	assert.Equal(t, tempFilePath, w.PathToTarFile)
 	return w, tempFilePath
