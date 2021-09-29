@@ -2,6 +2,8 @@ package bagit
 
 import (
 	"fmt"
+	"io"
+	"sort"
 )
 
 // MaxErrors is the maximum number of errors the validator will
@@ -59,4 +61,34 @@ func (fm *FileMap) TotalBytes() int64 {
 
 func (fm *FileMap) Oxum() string {
 	return fmt.Sprintf("%d.%d", fm.TotalBytes(), fm.FileCount())
+}
+
+// WriteManifest is used during bagging to write a manifest.
+// Param fileType should be either constants.FileTypePayload
+// or constants.FileTypeTag, depending on whether you're writing
+// a payload manifest or a tag manifest. Param alg is the digest
+// algorithm. Those are defined in constants. ("md5", "sha256", etc)
+func (fm *FileMap) WriteManifest(writer io.Writer, fileType, alg string) error {
+	sortedNames := make([]string, len(fm.Files))
+	i := 0
+	for filename, _ := range fm.Files {
+		sortedNames[i] = filename
+		i++
+	}
+	sort.Strings(sortedNames)
+	for _, filename := range sortedNames {
+		cs := fm.Files[filename].GetChecksum(alg, fileType)
+		if cs == nil {
+			return fmt.Errorf("Missing %s digest for %s [%s]", alg, filename, fileType)
+		}
+		entry := fmt.Sprintf("%s  %s\n", cs.Digest, filename)
+		n, err := writer.Write([]byte(entry))
+		if err != nil {
+			return err
+		}
+		if n != len(entry) {
+			return fmt.Errorf("Wrote %d of %d bytes for %s entry", n, len(entry), filename)
+		}
+	}
+	return nil
 }

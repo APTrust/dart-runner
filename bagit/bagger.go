@@ -127,7 +127,7 @@ func (b *Bagger) addBagItFile() bool {
 	for alg, digest := range checksums {
 		fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
 	}
-	b.PayloadFiles.Files["bagit.txt"] = fileRecord
+	b.TagFiles.Files["bagit.txt"] = fileRecord
 	return true
 }
 
@@ -142,23 +142,76 @@ func (b *Bagger) addPayloadFiles() bool {
 		b.payloadFileCount++
 		b.payloadBytes += xFileInfo.Size()
 
-		// Track the checksums
-		fileRecord := NewFileRecord()
-		for alg, digest := range checksums {
-			fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
+		// Track the checksums, except for directory entries,
+		// which won't have checksums because no actual data
+		// is written.
+		if !xFileInfo.IsDir() {
+			fileRecord := NewFileRecord()
+			for alg, digest := range checksums {
+				fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
+			}
+			b.PayloadFiles.Files[pathInBag] = fileRecord
 		}
-		b.PayloadFiles.Files[pathInBag] = fileRecord
 	}
 	return true
 }
 
 func (b *Bagger) addManifests(whichKind string) bool {
-	// fileMap := b.PayloadFiles
-	// if whichKind == constants.FileTypeTagManifest {
-	// 	fileMap = b.TagFiles
-	// }
+	for _, alg := range b.writer.DigestAlgs() {
+		tempFilePath, pathInBag, ok := b.writeManifest(whichKind, alg)
+		defer os.Remove(tempFilePath)
+		if !ok {
+			return false
+		}
+		fileInfo, err := os.Stat(tempFilePath)
+		if err != nil {
+			b.Errors[pathInBag] = err.Error()
+			return false
+		}
+		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
+		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 
+		// Tag manifests should contain digests of payload manifests.
+		// In this context, a payload manifest is a type of tag file.
+		// We want to mark it as such because when we write tagmanifests,
+		// we're going to ask the FileMap for all tag file checksums.
+		if whichKind == constants.FileTypeManifest {
+			fileRecord := NewFileRecord()
+			for alg, digest := range checksums {
+				fileRecord.AddChecksum(constants.FileTypeTag, alg, digest)
+			}
+			b.TagFiles.Files[pathInBag] = fileRecord
+		}
+	}
 	return true
+}
+
+func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
+	fileMap := b.PayloadFiles
+	prefix := "manifest"
+	subjectFileType := constants.FileTypePayload
+	if whichKind == constants.FileTypeTagManifest {
+		fileMap = b.TagFiles
+		prefix = "tagmanifest"
+		subjectFileType = constants.FileTypeTag
+	}
+	filename := fmt.Sprintf("%s-%s.txt", prefix, alg)
+	tempFilePath := ""
+	outputFile, err := os.CreateTemp("", fmt.Sprintf("%s-%d", filename, time.Now().UnixNano()))
+	if outputFile != nil {
+		tempFilePath = outputFile.Name()
+		defer outputFile.Close()
+	}
+	if err != nil {
+		b.Errors[filename] = fmt.Sprintf("Error opening temp file: %s", err.Error())
+		return tempFilePath, filename, false
+	}
+	err = fileMap.WriteManifest(outputFile, subjectFileType, alg)
+	if err != nil {
+		b.Errors[filename] = fmt.Sprintf("Error writing manifest %s (type=%s, subhectType=%s)): %s", filename, whichKind, subjectFileType, err.Error())
+		return tempFilePath, filename, false
+	}
+	return tempFilePath, filename, true
 }
 
 func (b *Bagger) addTagFiles() bool {
@@ -193,7 +246,7 @@ func (b *Bagger) addTagFiles() bool {
 		for alg, digest := range checksums {
 			fileRecord.AddChecksum(constants.FileTypeTag, alg, digest)
 		}
-		b.PayloadFiles.Files[tagFileName] = fileRecord
+		b.TagFiles.Files[tagFileName] = fileRecord
 	}
 	return true
 }
