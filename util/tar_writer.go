@@ -20,6 +20,13 @@ func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
 	}
 }
 
+// DigestAlgs returns a list of digest algoritms that the
+// writer calculates as it writes. E.g. ["md5", "sha256"].
+// These are defined in the contants package.
+func (writer *TarWriter) DigestAlgs() []string {
+	return writer.digestAlgs
+}
+
 func (writer *TarWriter) Open() error {
 	tarFile, err := os.Create(writer.PathToTarFile)
 	if err != nil {

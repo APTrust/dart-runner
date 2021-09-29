@@ -17,25 +17,33 @@ import (
 var bagitTxt embed.FS
 
 type Bagger struct {
-	Profile      *Profile
-	OutputPath   string
-	Files        []*util.ExtendedFileInfo
-	Errors       map[string]string
-	payloadFiles int64
-	payloadBytes int64
-	writer       util.BagWriter
-	pathPrefix   string
+	Profile          *Profile
+	OutputPath       string
+	FilesToBag       []*util.ExtendedFileInfo
+	Errors           map[string]string
+	PayloadFiles     *FileMap
+	PayloadManifests *FileMap
+	TagFiles         *FileMap
+	TagManifests     *FileMap
+	payloadFileCount int64
+	payloadBytes     int64
+	writer           util.BagWriter
+	pathPrefix       string
 }
 
-func NewBagger(outputPath string, profile *Profile, files []*util.ExtendedFileInfo) *Bagger {
+func NewBagger(outputPath string, profile *Profile, filesToBag []*util.ExtendedFileInfo) *Bagger {
 	return &Bagger{
-		Profile:      profile,
-		OutputPath:   outputPath,
-		Files:        files,
-		Errors:       make(map[string]string),
-		payloadFiles: 0,
-		payloadBytes: 0,
-		pathPrefix:   "",
+		Profile:          profile,
+		OutputPath:       outputPath,
+		FilesToBag:       filesToBag,
+		PayloadFiles:     NewFileMap(constants.FileTypePayload),
+		PayloadManifests: NewFileMap(constants.FileTypeManifest),
+		TagFiles:         NewFileMap(constants.FileTypeTag),
+		TagManifests:     NewFileMap(constants.FileTypeTagManifest),
+		Errors:           make(map[string]string),
+		payloadFileCount: 0,
+		payloadBytes:     0,
+		pathPrefix:       "",
 	}
 }
 
@@ -56,6 +64,7 @@ func (b *Bagger) Run() bool {
 		// Write bagit.txt into the bag.
 		return false
 	}
+
 	if !b.addPayloadFiles() {
 		return false
 	}
@@ -86,17 +95,17 @@ func (b *Bagger) PayloadBytes() int64 {
 	return b.payloadBytes
 }
 
-func (b *Bagger) PayloadFiles() int64 {
-	return b.payloadFiles
+func (b *Bagger) PayloadFileCount() int64 {
+	return b.payloadFileCount
 }
 
 func (b *Bagger) PayloadOxum() string {
-	return fmt.Sprintf("%d.%d", b.payloadBytes, b.payloadFiles)
+	return fmt.Sprintf("%d.%d", b.payloadBytes, b.payloadFileCount)
 }
 
 func (b *Bagger) reset() {
 	b.Errors = make(map[string]string)
-	b.payloadFiles = 0
+	b.payloadFileCount = 0
 	b.payloadBytes = 0
 }
 
@@ -107,32 +116,48 @@ func (b *Bagger) addBagItFile() bool {
 		return false
 	}
 	xFileInfo := util.NewExtendedFileInfo("bagit.txt", fInfo)
-	_, err = b.writer.AddFile(xFileInfo, "bagit.txt")
+	checksums, err := b.writer.AddFile(xFileInfo, "bagit.txt")
 	if err != nil {
 		b.Errors["bagit.txt"] = err.Error()
 		return false
 	}
-	// TODO: track checksums
+
+	// Track the checksum
+	fileRecord := NewFileRecord()
+	for alg, digest := range checksums {
+		fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
+	}
+	b.PayloadFiles.Files["bagit.txt"] = fileRecord
 	return true
 }
 
 func (b *Bagger) addPayloadFiles() bool {
-	var err error
-	for _, xFileInfo := range b.Files {
+	for _, xFileInfo := range b.FilesToBag {
 		// Always use forward slash for bag paths, even on Windows.
 		pathInBag := "data" + strings.Replace(xFileInfo.FullPath, b.pathPrefix, "", 1)
-		_, err = b.writer.AddFile(xFileInfo, pathInBag)
+		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[xFileInfo.FullPath] = err.Error()
 		}
-		b.payloadFiles++
+		b.payloadFileCount++
 		b.payloadBytes += xFileInfo.Size()
-		// TODO: Track checksums
+
+		// Track the checksums
+		fileRecord := NewFileRecord()
+		for alg, digest := range checksums {
+			fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
+		}
+		b.PayloadFiles.Files[pathInBag] = fileRecord
 	}
 	return true
 }
 
 func (b *Bagger) addManifests(whichKind string) bool {
+	// fileMap := b.PayloadFiles
+	// if whichKind == constants.FileTypeTagManifest {
+	// 	fileMap = b.TagFiles
+	// }
+
 	return true
 }
 
@@ -144,9 +169,6 @@ func (b *Bagger) addTagFiles() bool {
 			b.Errors[tagFileName] = fmt.Sprintf("Error getting tag file contents: %s", err.Error())
 			return false
 		}
-		// Write contents to temp file.
-		// Add tempfile to bag at tagFileName
-		// Delete temp file (with defer)
 		tempFilePath := path.Join(os.TempDir(), fmt.Sprintf("%s-%d", tagFileName, time.Now().UnixNano()))
 		defer os.Remove(tempFilePath)
 		err = ioutil.WriteFile(tempFilePath, []byte(contents), 0644)
@@ -160,12 +182,18 @@ func (b *Bagger) addTagFiles() bool {
 			return false
 		}
 		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
-		_, err = b.writer.AddFile(xFileInfo, tagFileName)
+		checksums, err := b.writer.AddFile(xFileInfo, tagFileName)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file to bag: %s", err.Error())
 			return false
 		}
-		// TODO: Track checksums
+
+		// Track the checksums
+		fileRecord := NewFileRecord()
+		for alg, digest := range checksums {
+			fileRecord.AddChecksum(constants.FileTypeTag, alg, digest)
+		}
+		b.PayloadFiles.Files[tagFileName] = fileRecord
 	}
 	return true
 }
@@ -184,6 +212,12 @@ func (b *Bagger) validateProfile() bool {
 // (zip, gzip, file system, etc.) For now, it supports tar only.
 func (b *Bagger) initWriter() bool {
 	digestAlgs := b.Profile.ManifestsRequired
+	for _, alg := range b.Profile.TagManifestsRequired {
+		if !util.StringListContains(digestAlgs, alg) {
+			digestAlgs = append(digestAlgs, alg)
+		}
+	}
+	// If no digest algs are required, pick one that's allowed.
 	if len(digestAlgs) == 0 {
 		digestAlgs = []string{
 			b.getPreferredDigestAlg(),
@@ -201,12 +235,19 @@ func (b *Bagger) getPreferredDigestAlg() string {
 			return alg
 		}
 	}
+	// Nothing?? Try the tag manifest algs.
+	for _, alg := range constants.PreferredAlgsInOrder {
+		if util.StringListContains(b.Profile.TagManifestsAllowed, alg) {
+			return alg
+		}
+	}
+	// Still nothing? LOC recommends sha512, so that's what you get.
 	return constants.AlgSha512
 }
 
 func (b *Bagger) calculatePathPrefix() {
-	paths := make([]string, len(b.Files))
-	for i, xFileInfo := range b.Files {
+	paths := make([]string, len(b.FilesToBag))
+	for i, xFileInfo := range b.FilesToBag {
 		paths[i] = xFileInfo.FullPath
 	}
 	b.pathPrefix = util.FindCommonPrefix(paths)

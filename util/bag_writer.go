@@ -11,6 +11,11 @@ type BagWriter interface {
 	// checksums["md5"] = "0987654321".
 	AddFile(*ExtendedFileInfo, string) (map[string]string, error)
 
+	// DigestAlgs returns a list of digest algoritms that the
+	// writer calculates as it writes. E.g. ["md5", "sha256"].
+	// These are defined in the contants package.
+	DigestAlgs() []string
+
 	// Close closes the underlying writer, flushing remaining data
 	// as necessary.
 	Close() error
