@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/bagit"
@@ -53,4 +54,19 @@ func TestBaggerRun(t *testing.T) {
 
 	assert.True(t, validator.Validate())
 	assert.Empty(t, validator.Errors)
+
+	xFileInfoList, err := util.RecursiveFileList(util.PathToTestData())
+	require.Nil(t, err)
+	assertAllPayloadFilesPresent(t, xFileInfoList, validator.PayloadFiles.Files)
+}
+
+func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInfo, actual map[string]*bagit.FileRecord) {
+	for _, xFileInfo := range expected {
+		if xFileInfo.IsDir() {
+			continue
+		}
+		shortPath := "data" + strings.Replace(xFileInfo.FullPath, util.PathToTestData(), "", 1)
+		fileRecord := actual[shortPath]
+		assert.NotNil(t, fileRecord, shortPath)
+	}
 }
