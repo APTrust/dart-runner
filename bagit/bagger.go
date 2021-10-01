@@ -25,10 +25,9 @@ type Bagger struct {
 	PayloadManifests *FileMap
 	TagFiles         *FileMap
 	TagManifests     *FileMap
-	payloadFileCount int64
-	payloadBytes     int64
 	writer           BagWriter
 	pathPrefix       string
+	bagName          string
 }
 
 func NewBagger(outputPath string, profile *Profile, filesToBag []*util.ExtendedFileInfo) *Bagger {
@@ -41,9 +40,6 @@ func NewBagger(outputPath string, profile *Profile, filesToBag []*util.ExtendedF
 		TagFiles:         NewFileMap(constants.FileTypeTag),
 		TagManifests:     NewFileMap(constants.FileTypeTagManifest),
 		Errors:           make(map[string]string),
-		payloadFileCount: 0,
-		payloadBytes:     0,
-		pathPrefix:       "",
 	}
 }
 
@@ -55,6 +51,7 @@ func (b *Bagger) Run() bool {
 	}
 
 	b.calculatePathPrefix()
+	b.calculateBagName()
 
 	if !b.initWriter() {
 		return false
@@ -92,21 +89,19 @@ func (b *Bagger) Run() bool {
 }
 
 func (b *Bagger) PayloadBytes() int64 {
-	return b.payloadBytes
+	return b.PayloadFiles.TotalBytes()
 }
 
 func (b *Bagger) PayloadFileCount() int64 {
-	return b.payloadFileCount
+	return b.PayloadFiles.FileCount()
 }
 
 func (b *Bagger) PayloadOxum() string {
-	return fmt.Sprintf("%d.%d", b.payloadBytes, b.payloadFileCount)
+	return fmt.Sprintf("%d.%d", b.PayloadFiles.TotalBytes(), b.PayloadFiles.FileCount())
 }
 
 func (b *Bagger) reset() {
 	b.Errors = make(map[string]string)
-	b.payloadFileCount = 0
-	b.payloadBytes = 0
 }
 
 func (b *Bagger) addBagItFile() bool {
@@ -116,7 +111,8 @@ func (b *Bagger) addBagItFile() bool {
 		return false
 	}
 	xFileInfo := util.NewExtendedFileInfo("bagit.txt", fInfo)
-	checksums, err := b.writer.AddFile(xFileInfo, "bagit.txt")
+	pathInBag := b.pathForTagFile("bagit.txt")
+	checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 	if err != nil {
 		b.Errors["bagit.txt"] = err.Error()
 		return false
@@ -127,26 +123,24 @@ func (b *Bagger) addBagItFile() bool {
 	for alg, digest := range checksums {
 		fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
 	}
-	b.TagFiles.Files["bagit.txt"] = fileRecord
+	b.TagFiles.Files[pathInBag] = fileRecord
 	return true
 }
 
 func (b *Bagger) addPayloadFiles() bool {
 	for _, xFileInfo := range b.FilesToBag {
-		// Always use forward slash for bag paths, even on Windows.
-		pathInBag := "data" + strings.Replace(xFileInfo.FullPath, b.pathPrefix, "", 1)
+		pathInBag := b.pathForPayloadFile(xFileInfo.FullPath)
 		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[xFileInfo.FullPath] = err.Error()
 		}
-		b.payloadFileCount++
-		b.payloadBytes += xFileInfo.Size()
 
 		// Track the checksums, except for directory entries,
 		// which won't have checksums because no actual data
 		// is written.
 		if !xFileInfo.IsDir() {
 			fileRecord := NewFileRecord()
+			fileRecord.Size = xFileInfo.Size()
 			for alg, digest := range checksums {
 				fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
 			}
@@ -196,6 +190,7 @@ func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
 		subjectFileType = constants.FileTypeTag
 	}
 	filename := fmt.Sprintf("%s-%s.txt", prefix, alg)
+	pathInBag := b.pathForTagFile(filename)
 	tempFilePath := ""
 	outputFile, err := os.CreateTemp("", fmt.Sprintf("%s-%d", filename, time.Now().UnixNano()))
 	if outputFile != nil {
@@ -204,14 +199,15 @@ func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
 	}
 	if err != nil {
 		b.Errors[filename] = fmt.Sprintf("Error opening temp file: %s", err.Error())
-		return tempFilePath, filename, false
+		return tempFilePath, pathInBag, false
 	}
-	err = fileMap.WriteManifest(outputFile, subjectFileType, alg)
+	trimFromPath := fmt.Sprintf("%s/", b.bagName)
+	err = fileMap.WriteManifest(outputFile, subjectFileType, alg, trimFromPath)
 	if err != nil {
-		b.Errors[filename] = fmt.Sprintf("Error writing manifest %s (type=%s, subhectType=%s)): %s", filename, whichKind, subjectFileType, err.Error())
-		return tempFilePath, filename, false
+		b.Errors[pathInBag] = fmt.Sprintf("Error writing manifest %s (type=%s, subjectType=%s)): %s", filename, whichKind, subjectFileType, err.Error())
+		return tempFilePath, pathInBag, false
 	}
-	return tempFilePath, filename, true
+	return tempFilePath, pathInBag, true
 }
 
 func (b *Bagger) addTagFiles() bool {
@@ -235,7 +231,8 @@ func (b *Bagger) addTagFiles() bool {
 			return false
 		}
 		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
-		checksums, err := b.writer.AddFile(xFileInfo, tagFileName)
+		pathInBag := b.pathForTagFile(tagFileName)
+		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file to bag: %s", err.Error())
 			return false
@@ -246,7 +243,7 @@ func (b *Bagger) addTagFiles() bool {
 		for alg, digest := range checksums {
 			fileRecord.AddChecksum(constants.FileTypeTag, alg, digest)
 		}
-		b.TagFiles.Files[tagFileName] = fileRecord
+		b.TagFiles.Files[pathInBag] = fileRecord
 	}
 	return true
 }
@@ -310,12 +307,29 @@ func (b *Bagger) setBagInfoAutoValues() {
 	b.Profile.SetTagValue("bag-info.txt", "Bagging-Date", time.Now().UTC().Format(time.RFC3339))
 	b.Profile.SetTagValue("bag-info.txt", "Bagging-Software", constants.AppVersion())
 	b.Profile.SetTagValue("bag-info.txt", "Payload-Oxum", b.PayloadOxum())
-	b.Profile.SetTagValue("bag-info.txt", "Bag-Size", util.ToHumanSize(b.payloadBytes, 1024))
+	b.Profile.SetTagValue("bag-info.txt", "Bag-Size", util.ToHumanSize(b.PayloadBytes(), 1024))
 	bpIdentifier := "http://example.com/unspecified_profile_identifier"
 	if b.Profile.BagItProfileInfo.BagItProfileIdentifier != "" {
 		bpIdentifier = b.Profile.BagItProfileInfo.BagItProfileIdentifier
 	}
 	b.Profile.SetTagValue("bag-info.txt", "BagIt-Profile-Identifier", bpIdentifier)
+}
+
+func (b *Bagger) calculateBagName() {
+	b.bagName = path.Base(b.OutputPath)
+	b.bagName = strings.TrimSuffix(b.bagName, path.Ext(b.bagName))
+	// Handle common .tar.gz case
+	b.bagName = strings.TrimSuffix(b.bagName, ".tar")
+}
+
+func (b *Bagger) pathForPayloadFile(fullPath string) string {
+	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+	return fmt.Sprintf("%s/data%s", b.bagName, shortPath)
+}
+
+func (b *Bagger) pathForTagFile(fullPath string) string {
+	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+	return fmt.Sprintf("%s/%s", b.bagName, shortPath)
 }
 
 // Close the writer and do any other required cleanup.

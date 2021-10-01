@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 )
 
 // MaxErrors is the maximum number of errors the validator will
@@ -47,8 +48,8 @@ func (fm *FileMap) ValidateChecksums(algs []string) map[string]string {
 	return errors
 }
 
-func (fm *FileMap) FileCount() int {
-	return len(fm.Files)
+func (fm *FileMap) FileCount() int64 {
+	return int64(len(fm.Files))
 }
 
 func (fm *FileMap) TotalBytes() int64 {
@@ -68,7 +69,17 @@ func (fm *FileMap) Oxum() string {
 // or constants.FileTypeTag, depending on whether you're writing
 // a payload manifest or a tag manifest. Param alg is the digest
 // algorithm. Those are defined in constants. ("md5", "sha256", etc)
-func (fm *FileMap) WriteManifest(writer io.Writer, fileType, alg string) error {
+//
+// Param trimFromPath is an optional prefix to remove from file paths
+// when writing the manifest. For example, tarred bags include an additional
+// top-level directory that matches the bag name, but this directory should
+// not be included in the manifest paths.
+//
+// What appears in the tar file as bag_name/data/file.txt should appear in the
+// manifest as data/file.txt. To make that happen, pass "bag_name/" as the
+// last param, and it will be trimmed. Pass an empty string if you don't
+// need to trim leading paths.
+func (fm *FileMap) WriteManifest(writer io.Writer, fileType, alg, trimFromPath string) error {
 	sortedNames := make([]string, len(fm.Files))
 	i := 0
 	for filename, _ := range fm.Files {
@@ -81,7 +92,8 @@ func (fm *FileMap) WriteManifest(writer io.Writer, fileType, alg string) error {
 		if cs == nil {
 			return fmt.Errorf("Missing %s digest for %s [%s]", alg, filename, fileType)
 		}
-		entry := fmt.Sprintf("%s  %s\n", cs.Digest, filename)
+		trimmedFileName := strings.Replace(filename, trimFromPath, "", 1)
+		entry := fmt.Sprintf("%s  %s\n", cs.Digest, trimmedFileName)
 		n, err := writer.Write([]byte(entry))
 		if err != nil {
 			return err

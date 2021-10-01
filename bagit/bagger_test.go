@@ -26,7 +26,7 @@ func TestBaggerRun(t *testing.T) {
 	files, err := util.RecursiveFileList(util.PathToTestData())
 	require.Nil(t, err)
 	bagger := getBagger(t, "bag01.tar", "aptrust-v2.2.json", files)
-	defer os.Remove(bagger.OutputPath)
+	// defer os.Remove(bagger.OutputPath)
 
 	bagger.Profile.SetTagValue("bag-info.txt", "Source-Organization", "University of Virginia")
 	bagger.Profile.SetTagValue("bag-info.txt", "Bag-Count", "1 of 1")
@@ -42,4 +42,9 @@ func TestBaggerRun(t *testing.T) {
 	assert.True(t, ok)
 	assert.Empty(t, bagger.Errors)
 	fmt.Println(bagger.OutputPath)
+
+	validator, err := bagit.NewValidator(bagger.OutputPath, bagger.Profile)
+	require.Nil(t, err)
+	assert.True(t, validator.Validate())
+	assert.Empty(t, validator.Errors)
 }
