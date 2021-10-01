@@ -163,7 +163,7 @@ func TestValidator_MissingManifest(t *testing.T) {
 	isValid := v.Validate()
 	assert.False(t, isValid)
 	assert.Equal(t, 2, len(v.Errors))
-	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
+	assert.Equal(t, "Required manifest is missing.", v.Errors["manifest-md5.txt"])
 	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
 }
 
@@ -173,15 +173,13 @@ func TestValidator_BadTags(t *testing.T) {
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
-	//fmt.Println(v.ErrorString())
-	assert.Equal(t, 7, len(v.Errors))
+	assert.Equal(t, 6, len(v.Errors))
 	assert.Equal(t, "file is missing from bag", v.Errors["custom_tags/tag_file_xyz.pdf"])
 	assert.Equal(t, "Required tag is present but has no value.", v.Errors["aptrust-info.txt/Title"])
 	assert.Equal(t, "Tag has illegal value 'acksess'. Allowed values are: Consortia,Institution,Restricted", v.Errors["aptrust-info.txt/Access"])
 	assert.Equal(t, "Tag has illegal value 'Cardboard-Box'. Allowed values are: Standard,Glacier-OH,Glacier-OR,Glacier-VA,Glacier-Deep-OH,Glacier-Deep-OR,Glacier-Deep-VA,Wasabi-OR,Wasabi-VA", v.Errors["aptrust-info.txt/Storage-Option"])
 	assert.Equal(t, "Digest This-checksum-is-bad-on-purpose.-The-validator-should-catch-it!! in manifest-sha256.txt does not match digest cf9cbce80062932e10ee9cd70ec05ebc24019deddfea4e54b8788decd28b4bc7 in payload file", v.Errors["data/datastream-descMetadata"])
-	assert.Equal(t, "Digest md5 was not calculated", v.Errors["data/file-not-in-bag"])
-	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
+	assert.Equal(t, "file is missing from bag", v.Errors["data/file-not-in-bag"])
 
 	// This bag has the required tag files but is missing
 	// some required tags.
@@ -190,8 +188,7 @@ func TestValidator_BadTags(t *testing.T) {
 	require.Nil(t, err)
 	isValid = v.Validate()
 	assert.False(t, isValid)
-	assert.Equal(t, 3, len(v.Errors))
-	assert.Equal(t, "Required manifest is missing.", v.Errors["md5"])
+	assert.Equal(t, 2, len(v.Errors))
 	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Access"])
 	assert.Equal(t, "Required tag is missing.", v.Errors["aptrust-info.txt/Storage-Option"])
 }
@@ -245,7 +242,6 @@ func TestValidator_BTRExtraFile(t *testing.T) {
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
-	fmt.Println(v.ErrorString())
 	assert.Equal(t, 2, len(v.Errors))
 	assert.Equal(t, "file is missing from manifest-sha512.txt", v.Errors["data/nsqd.dat"])
 	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
@@ -265,7 +261,6 @@ func TestValidator_BTRMissingPayloadFile(t *testing.T) {
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
-	fmt.Println(v.ErrorString())
 	assert.Equal(t, 2, len(v.Errors))
 	assert.Equal(t, "file is missing from bag", v.Errors["data/netutil/listen.go"])
 	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])

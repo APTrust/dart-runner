@@ -53,11 +53,11 @@ func TestFileRecordValidate(t *testing.T) {
 	assert.Equal(t, "Digest 0000 in manifest-sha512.txt does not match digest 9999 in payload file", err.Error())
 
 	// Test algorithm missing. In this case, the validator never
-	// even calculated the requested digest.
+	// calculated the requested digest because the file wasn't there.
 	sha1 := []string{constants.AlgSha1}
 	err = fr.Validate(constants.FileTypePayload, sha1)
 	require.NotNil(t, err)
-	assert.Equal(t, "Digest sha1 was not calculated", err.Error())
+	assert.Equal(t, "file is missing from bag", err.Error())
 
 	// Test payload file missing. In this case, the sha256 manifest
 	// has a digest for the file, but we have no digest calculated

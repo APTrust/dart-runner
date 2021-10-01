@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/util"
 )
 
 // ErrFileMissingFromBag indicates that a file present in a payload
@@ -40,7 +39,7 @@ func (fr *FileRecord) AddChecksum(source, alg, digest string) {
 // Validate returns true if the checksums we calculated for the
 // file match the checksums in the manifests.
 func (fr *FileRecord) Validate(fileType string, algs []string) error {
-	existingAlgorithms := fr.DigestAlgorithms()
+	// existingAlgorithms := fr.DigestAlgorithms()
 	srcFile := constants.FileTypePayload
 	srcManifest := constants.FileTypeManifest
 	if fileType == constants.FileTypeTag {
@@ -48,9 +47,6 @@ func (fr *FileRecord) Validate(fileType string, algs []string) error {
 		srcManifest = constants.FileTypeTagManifest
 	}
 	for _, alg := range algs {
-		if !util.StringListContains(existingAlgorithms, alg) {
-			return fmt.Errorf("Digest %s was not calculated", alg)
-		}
 		fileChecksum := fr.GetChecksum(alg, srcFile)
 		if fileChecksum == nil {
 			return ErrFileMissingFromBag

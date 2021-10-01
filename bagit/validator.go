@@ -215,7 +215,8 @@ func (v *Validator) validateSerialization() bool {
 
 func (v *Validator) checkRequiredManifests() bool {
 	valid := true
-	for _, filename := range v.Profile.ManifestsRequired {
+	for _, alg := range v.Profile.ManifestsRequired {
+		filename := fmt.Sprintf("manifest-%s.txt", alg)
 		if _, ok := v.PayloadManifests.Files[filename]; !ok {
 			v.Errors[filename] = "Required manifest is missing."
 			valid = false
@@ -226,7 +227,8 @@ func (v *Validator) checkRequiredManifests() bool {
 
 func (v *Validator) checkRequiredTagManifests() bool {
 	valid := true
-	for _, filename := range v.Profile.TagManifestsRequired {
+	for _, alg := range v.Profile.TagManifestsRequired {
+		filename := fmt.Sprintf("tagmanifest-%s.txt", alg)
 		if _, ok := v.TagManifests.Files[filename]; !ok {
 			v.Errors[filename] = "Required tag manifest is missing."
 			valid = false

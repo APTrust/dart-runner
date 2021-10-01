@@ -14,8 +14,7 @@ import (
 
 func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *bagit.Bagger {
 	outputPath := path.Join(os.TempDir(), bagName)
-	profilePath := path.Join(util.ProjectRoot(), "profiles", profileName)
-	profile, err := bagit.ProfileLoad(profilePath)
+	profile, err := loadProfile(profileName)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 	bagger := bagit.NewBagger(outputPath, profile, files)
@@ -43,8 +42,15 @@ func TestBaggerRun(t *testing.T) {
 	assert.Empty(t, bagger.Errors)
 	fmt.Println(bagger.OutputPath)
 
-	validator, err := bagit.NewValidator(bagger.OutputPath, bagger.Profile)
+	profile, err := loadProfile("aptrust-v2.2.json")
 	require.Nil(t, err)
+	require.NotNil(t, profile)
+	validator, err := bagit.NewValidator(bagger.OutputPath, profile)
+	require.Nil(t, err)
+
+	err = validator.ScanBag()
+	require.Nil(t, err)
+
 	assert.True(t, validator.Validate())
 	assert.Empty(t, validator.Errors)
 }
