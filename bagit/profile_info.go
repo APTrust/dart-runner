@@ -9,3 +9,14 @@ type ProfileInfo struct {
 	ExternalDescription    string `json:"externalDescription"`
 	SourceOrganization     string `json:"sourceOrganization"`
 }
+
+func CopyProfileInfo(info ProfileInfo) ProfileInfo {
+	return ProfileInfo{
+		BagItProfileIdentifier: info.BagItProfileIdentifier,
+		BagItProfileVersion:    info.BagItProfileVersion,
+		ContactEmail:           info.ContactEmail,
+		ContactName:            info.ContactName,
+		ExternalDescription:    info.ExternalDescription,
+		SourceOrganization:     info.SourceOrganization,
+	}
+}
