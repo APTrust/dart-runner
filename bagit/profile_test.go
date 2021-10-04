@@ -120,3 +120,39 @@ func TestSetTagValue(t *testing.T) {
 	require.NotNil(t, tag)
 	assert.Equal(t, "911", tag.GetValue())
 }
+
+func TestCloneProfile(t *testing.T) {
+	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	profile, err := bagit.ProfileLoad(aptPath)
+	require.Nil(t, err)
+	require.NotNil(t, profile)
+
+	clone := bagit.CloneProfile(profile)
+	assert.Equal(t, profile.AllowFetchTxt, clone.AllowFetchTxt)
+	assert.Equal(t, profile.Serialization, clone.Serialization)
+	assert.ElementsMatch(t, profile.ManifestsAllowed, clone.ManifestsAllowed)
+	assert.ElementsMatch(t, profile.ManifestsRequired, clone.ManifestsRequired)
+	assert.ElementsMatch(t, profile.TagFilesAllowed, clone.TagFilesAllowed)
+	assert.ElementsMatch(t, profile.TagManifestsAllowed, clone.TagManifestsAllowed)
+	assert.ElementsMatch(t, profile.TagManifestsRequired, clone.TagManifestsRequired)
+	assert.Empty(t, clone.Errors)
+	require.Equal(t, len(profile.Tags), len(clone.Tags))
+	for i, tag := range profile.Tags {
+		clonedTag := clone.Tags[i]
+		assert.Equal(t, tag.DefaultValue, clonedTag.DefaultValue)
+		assert.Equal(t, tag.EmptyOK, clonedTag.EmptyOK)
+		assert.Equal(t, tag.Help, clonedTag.Help)
+		assert.Equal(t, tag.ID, clonedTag.ID)
+		assert.Equal(t, tag.Required, clonedTag.Required)
+		assert.Equal(t, tag.TagFile, clonedTag.TagFile)
+		assert.Equal(t, tag.TagName, clonedTag.TagName)
+		assert.Equal(t, tag.UserValue, clonedTag.UserValue)
+		assert.Equal(t, tag.Values, clonedTag.Values)
+	}
+	assert.Equal(t, profile.BagItProfileInfo.BagItProfileVersion, clone.BagItProfileInfo.BagItProfileVersion)
+	assert.Equal(t, profile.BagItProfileInfo.BagItProfileIdentifier, clone.BagItProfileInfo.BagItProfileIdentifier)
+	assert.Equal(t, profile.BagItProfileInfo.ContactEmail, clone.BagItProfileInfo.ContactEmail)
+	assert.Equal(t, profile.BagItProfileInfo.ContactName, clone.BagItProfileInfo.ContactName)
+	assert.Equal(t, profile.BagItProfileInfo.ExternalDescription, clone.BagItProfileInfo.ExternalDescription)
+	assert.Equal(t, profile.BagItProfileInfo.SourceOrganization, clone.BagItProfileInfo.SourceOrganization)
+}

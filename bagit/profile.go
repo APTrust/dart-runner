@@ -41,6 +41,8 @@ type Profile struct {
 
 func NewProfile() *Profile {
 	profile := &Profile{
+		AcceptBagItVersion:   make([]string, len(constants.AcceptBagItVersion)),
+		AcceptSerialization:  make([]string, len(constants.AcceptSerialization)),
 		AllowFetchTxt:        false,
 		BagItProfileInfo:     ProfileInfo{},
 		Errors:               make(map[string]string),
@@ -54,6 +56,30 @@ func NewProfile() *Profile {
 	}
 	copy(profile.AcceptBagItVersion, constants.AcceptBagItVersion)
 	copy(profile.AcceptSerialization, constants.AcceptSerialization)
+	return profile
+}
+
+func CloneProfile(p *Profile) *Profile {
+	profile := &Profile{
+		AcceptBagItVersion:   make([]string, len(p.AcceptBagItVersion)),
+		AcceptSerialization:  make([]string, len(p.AcceptSerialization)),
+		AllowFetchTxt:        false,
+		Errors:               make(map[string]string),
+		ManifestsAllowed:     make([]string, len(p.ManifestsAllowed)),
+		ManifestsRequired:    make([]string, len(p.ManifestsRequired)),
+		Serialization:        p.Serialization,
+		TagFilesAllowed:      make([]string, len(p.TagFilesAllowed)),
+		TagManifestsAllowed:  make([]string, len(p.TagManifestsAllowed)),
+		TagManifestsRequired: make([]string, len(p.TagManifestsRequired)),
+		Tags:                 make([]*TagDefinition, len(p.Tags)),
+	}
+	profile.BagItProfileInfo = CopyProfileInfo(p.BagItProfileInfo)
+	copy(profile.ManifestsAllowed, p.ManifestsAllowed)
+	copy(profile.ManifestsRequired, p.ManifestsRequired)
+	copy(profile.TagFilesAllowed, p.TagFilesAllowed)
+	copy(profile.TagManifestsAllowed, p.TagManifestsAllowed)
+	copy(profile.TagManifestsRequired, p.TagManifestsRequired)
+	copy(profile.Tags, p.Tags)
 	return profile
 }
 
