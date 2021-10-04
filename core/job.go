@@ -32,6 +32,10 @@ type Job struct {
 	WorkflowID   string               `json:"workflowId"`
 }
 
+func NewJob() *Job {
+	return &Job{}
+}
+
 // Title returns a title for display purposes. It will use the first
 // available non-empty value of: 1) the name of the file that the job
 // packaged, 2) the name of the file that the job uploaded, or 3) a

@@ -1,10 +1,14 @@
 package core
 
+import (
+	"github.com/APTrust/dart-runner/bagit"
+)
+
 type Workflow struct {
-	BagItProfileID    string   `json:"bagItProfileId"`
-	Description       string   `json:"description"`
-	Name              string   `json:"name"`
-	PackageFormat     string   `json:"packageFormat"`
-	PackagePluginID   string   `json:"packagePluginId"`
-	StorageServiceIDs []string `json:"storageServiceIds"`
+	ID              string            `json:"id"`
+	BagItProfile    *bagit.Profile    `json:"bagItProfile"`
+	Description     string            `json:"description"`
+	Name            string            `json:"name"`
+	PackageFormat   string            `json:"packageFormat"`
+	StorageServices []*StorageService `json:"storageServices"`
 }
