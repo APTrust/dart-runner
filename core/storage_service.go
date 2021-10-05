@@ -47,7 +47,7 @@ func (ss *StorageService) Validate() bool {
 		ss.Errors["StorageService.Login"] = "StorageService requires a login name or access key id."
 	}
 	if strings.TrimSpace(ss.Password) == "" {
-		ss.Errors["StorageService.Password"] = "StorageService requires password or secret access key."
+		ss.Errors["StorageService.Password"] = "StorageService requires a password or secret access key."
 	}
 	return len(ss.Errors) == 0
 }

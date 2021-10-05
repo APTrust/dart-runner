@@ -31,6 +31,9 @@ func (u *UploadOperation) Validate() bool {
 	} else if u.StorageService.Validate() == false {
 		u.Errors = u.StorageService.Errors
 	}
+	if u.SourceFiles == nil || len(u.SourceFiles) == 0 {
+		u.Errors["UploadOperation.SourceFiles"] = "UploadOperation requires one or more files to upload"
+	}
 	missingFiles := make([]string, 0)
 	for _, file := range u.SourceFiles {
 		if !util.FileExists(file) {
