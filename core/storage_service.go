@@ -37,6 +37,9 @@ func (ss *StorageService) URL(filename string) string {
 
 func (ss *StorageService) Validate() bool {
 	ss.Errors = make(map[string]string)
+	if strings.TrimSpace(ss.Protocol) == "" {
+		ss.Errors["StorageService.Protocol"] = "StorageService requires a protocol (s3, sftp, etc)."
+	}
 	if strings.TrimSpace(ss.Host) == "" {
 		ss.Errors["StorageService.Host"] = "StorageService requires a hostname or IP address."
 	}

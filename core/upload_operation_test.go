@@ -24,7 +24,8 @@ func TestUploadOperation(t *testing.T) {
 	op = core.NewUploadOperation(ss, files)
 	require.NotNil(t, op)
 	assert.False(t, op.Validate())
-	assert.Equal(t, 5, len(op.Errors))
+	assert.Equal(t, 6, len(op.Errors))
+	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", op.Errors["StorageService.Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", op.Errors["StorageService.Host"])
 	assert.Equal(t, "StorageService requires a bucket or folder name.", op.Errors["StorageService.Bucket"])
 	assert.Equal(t, "StorageService requires a login name or access key id.", op.Errors["StorageService.Login"])
@@ -36,6 +37,7 @@ func TestUploadOperation(t *testing.T) {
 		Bucket:   "uploads",
 		Login:    "user@example.com",
 		Password: "secret",
+		Protocol: "sftp",
 	}
 	files = []string{
 		util.PathToUnitTestBag("test.edu.btr_good_sha256.tar"),
