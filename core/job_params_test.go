@@ -49,8 +49,10 @@ func getTestTags() []*bagit.Tag {
 	tags := []*bagit.Tag{
 		{"bag-info.txt", "Source-Organization", "The Liberry"},
 		{"aptrust-info.txt", "Title", "Baggy Pants"},
+		{"aptrust-info.txt", "Description", "Those are chock full of heady goodness."},
 		{"aptrust-info.txt", "Access", "Institution"},
 		{"aptrust-info.txt", "Storage-Option", "Glacier-Deep-OH"},
+		{"aptrust-info.txt", "Custom-Test-Tag", "Kwik-E-Mart"},
 	}
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("tag-%d", i+1)
@@ -84,5 +86,57 @@ func TestJobParams(t *testing.T) {
 	require.NotNil(t, job)
 	require.Empty(t, params.Errors)
 
-	// Make sure job has package op, upload ops, merged tags
+	// Job has the right profile
+	assert.NotNil(t, job.BagItProfile)
+	assert.Equal(t, workflow.BagItProfile.Name, job.BagItProfile.Name)
+
+	// Job has correctly initialized package op
+	require.NotNil(t, job.PackageOp)
+	assert.Equal(t, ".tar", job.PackageOp.BagItSerialization)
+	assert.Equal(t, "bag.tar", job.PackageOp.PackageName)
+	assert.Equal(t, "/user/homer/bags.tar", job.PackageOp.OutputPath)
+	assert.EqualValues(t, files, job.PackageOp.SourceFiles)
+	assert.NotNil(t, job.PackageOp.Result)
+	assert.False(t, job.PackageOp.Result.WasAttempted())
+
+	// Job has correctly initialized upload operations
+	uploadSrcFiles := []string{
+		"/user/homer/bags.tar",
+	}
+	require.NotNil(t, job.UploadOps)
+	require.Equal(t, 2, len(job.UploadOps))
+
+	assert.NotNil(t, job.UploadOps[0].Results)
+	assert.EqualValues(t, uploadSrcFiles, job.UploadOps[0].SourceFiles)
+	assert.Equal(t, workflow.StorageServices[0].Host, job.UploadOps[0].StorageService.Host)
+
+	assert.NotNil(t, job.UploadOps[1].Results)
+	assert.EqualValues(t, uploadSrcFiles, job.UploadOps[1].SourceFiles)
+	assert.Equal(t, workflow.StorageServices[1].Host, job.UploadOps[1].StorageService.Host)
+
+	// Job has merged tags
+	expectedTags := []string{
+		"bagit.txt BagIt-Version: 0.97",
+		"bagit.txt Tag-File-Character-Encoding: UTF-8",
+		"bag-info.txt Source-Organization: The Liberry",
+		"bag-info.txt Bag-Count: ",
+		"bag-info.txt Bagging-Date: ",
+		"bag-info.txt Bagging-Software: ",
+		"bag-info.txt Bag-Group-Identifier: ",
+		"bag-info.txt Internal-Sender-Description: ",
+		"bag-info.txt Internal-Sender-Identifier: ",
+		"bag-info.txt Payload-Oxum: ",
+		"aptrust-info.txt Title: Baggy Pants",
+		"aptrust-info.txt Access: Institution",
+		"aptrust-info.txt Description: Those are chock full of heady goodness.",
+		"aptrust-info.txt Storage-Option: Glacier-Deep-OH",
+		"aptrust-info.txt Custom-Test-Tag: Kwik-E-Mart",
+		"custom-file.txt tag-1: value-1",
+		"custom-file.txt tag-2: value-2",
+		"custom-file.txt tag-3: value-3",
+	}
+	for i, tag := range job.BagItProfile.Tags {
+		strValue := fmt.Sprintf("%s %s", tag.TagFile, tag.ToFormattedString())
+		assert.Equal(t, expectedTags[i], strValue)
+	}
 }

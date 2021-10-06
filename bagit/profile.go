@@ -64,9 +64,11 @@ func CloneProfile(p *Profile) *Profile {
 		AcceptBagItVersion:   make([]string, len(p.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(p.AcceptSerialization)),
 		AllowFetchTxt:        false,
+		Description:          p.Description,
 		Errors:               make(map[string]string),
 		ManifestsAllowed:     make([]string, len(p.ManifestsAllowed)),
 		ManifestsRequired:    make([]string, len(p.ManifestsRequired)),
+		Name:                 p.Name,
 		Serialization:        p.Serialization,
 		TagFilesAllowed:      make([]string, len(p.TagFilesAllowed)),
 		TagManifestsAllowed:  make([]string, len(p.TagManifestsAllowed)),
@@ -74,6 +76,8 @@ func CloneProfile(p *Profile) *Profile {
 		Tags:                 make([]*TagDefinition, len(p.Tags)),
 	}
 	profile.BagItProfileInfo = CopyProfileInfo(p.BagItProfileInfo)
+	copy(profile.AcceptBagItVersion, p.AcceptBagItVersion)
+	copy(profile.AcceptSerialization, p.AcceptSerialization)
 	copy(profile.ManifestsAllowed, p.ManifestsAllowed)
 	copy(profile.ManifestsRequired, p.ManifestsRequired)
 	copy(profile.TagFilesAllowed, p.TagFilesAllowed)

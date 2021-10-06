@@ -75,7 +75,7 @@ func (p *JobParams) mergeTags(job *Job) {
 	if p.Workflow.BagItProfile == nil {
 		return
 	}
-	profile := p.Workflow.BagItProfile
+	profile := job.BagItProfile
 	for _, t := range p.Tags {
 		profileTagDef := profile.GetTagDef(t.TagFile, t.TagName)
 		if profileTagDef == nil {
