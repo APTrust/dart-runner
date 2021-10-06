@@ -99,9 +99,8 @@ func (p *JobParams) mergeTags(job *Job) {
 // to S3/SFTP.
 func (p *JobParams) makePackageOp(job *Job) {
 	if p.PackageName != "" {
-		job.PackageOp = NewPackageOperation(p.PackageName, p.OutputPath)
+		job.PackageOp = NewPackageOperation(p.PackageName, p.OutputPath, p.Files)
 		job.PackageOp.PackageFormat = p.Workflow.PackageFormat
-		job.PackageOp.SourceFiles = p.Files
 		p.setSerialization(job)
 	}
 }

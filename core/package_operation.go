@@ -11,25 +11,20 @@ type PackageOperation struct {
 	BagItSerialization string            `json:"bagItSerialization"`
 	Errors             map[string]string `json:"errors"`
 	OutputPath         string            `json:"outputPath"`
-	PackageFormat      string            `json:"packageFormat"`
 	PackageName        string            `json:"packageName"`
+	PackageFormat      string            `json:"packageFormat"`
 	PayloadSize        int64             `json:"payloadSize"`
-	PluginId           string            `json:"pluginId"`
 	Result             *OperationResult  `json:"result"`
-	SkipFiles          []string          `json:"skipFiles"`
 	SourceFiles        []string          `json:"sourceFiles"`
-	TrimLeadingPaths   bool              `json:"_trimLeadingPaths"`
 }
 
-func NewPackageOperation(packageName, outputPath string) *PackageOperation {
+func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *PackageOperation {
 	return &PackageOperation{
-		PackageName:      packageName,
-		OutputPath:       outputPath,
-		SourceFiles:      make([]string, 0),
-		SkipFiles:        make([]string, 0),
-		TrimLeadingPaths: true,
-		Result:           NewOperationResult("package", "packager"),
-		Errors:           make(map[string]string),
+		PackageName: packageName,
+		OutputPath:  outputPath,
+		SourceFiles: sourceFiles,
+		Result:      NewOperationResult("package", "packager"),
+		Errors:      make(map[string]string),
 	}
 }
 
@@ -45,32 +40,22 @@ func (p *PackageOperation) Validate() bool {
 		p.Errors["PackageOperation.sourceFiles"] = "Specify at least one file or directory to package."
 	}
 	missingFiles := make([]string, 0)
+	duplicateFiles := make([]string, 0)
+	alreadySeen := make(map[string]bool)
 	for _, sourceFile := range p.SourceFiles {
 		if !util.FileExists(sourceFile) {
 			missingFiles = append(missingFiles, sourceFile)
 		}
+		if alreadySeen[sourceFile] {
+			duplicateFiles = append(duplicateFiles, sourceFile)
+		}
+		alreadySeen[sourceFile] = true
 	}
 	if len(missingFiles) > 0 {
 		p.Errors["PackageOperation.sourceFiles"] = fmt.Sprintf("The following files are missing: %s", strings.Join(missingFiles, ""))
 	}
-	return len(p.Errors) == 0
-}
-
-// PruneSourceFiles removes any non-existent files from the list
-// of source files to be packaged. This is useful on DART desktop
-// because sometimes users create a job, then delete files, then run
-// the job. This is questionable on a server.
-func (p *PackageOperation) PruneSourceFiles() {
-	existingFiles := make([]string, 0)
-	for _, file := range p.SourceFiles {
-		if util.FileExists(file) {
-			existingFiles = append(existingFiles, file)
-		}
+	if len(duplicateFiles) > 0 {
+		p.Errors["PackageOperation.sourceFiles"] += fmt.Sprintf("The following files are included more than once. Please remove duplicates: %s", strings.Join(duplicateFiles, ""))
 	}
-	p.SourceFiles = existingFiles
-}
-
-func (p *PackageOperation) GetWriter() {
-	// To do: return the tar writer, or whatever kind of
-	// writer we're using.
+	return len(p.Errors) == 0
 }
