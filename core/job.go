@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/APTrust/dart-runner/bagit"
+	"github.com/APTrust/dart-runner/constants"
 )
 
 // TitleTags is a list of BagItProfile tags to check to try to find a
@@ -178,7 +179,7 @@ func (job *Job) Validate() bool {
 	if job.PackageOp != nil {
 		job.PackageOp.Validate()
 		job.Errors = job.PackageOp.Errors
-		if job.PackageOp.PackageFormat == "BagIt" && job.BagItProfile == nil {
+		if job.PackageOp.PackageFormat == constants.PackageFormatBagIt && job.BagItProfile == nil {
 			job.Errors["Job.bagItProfile"] = "BagIt packaging requires a BagItProfile."
 		}
 	}

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
-	// "github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 )
 

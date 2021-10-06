@@ -18,6 +18,7 @@ const (
 	MaxS3ObjectSize          = int64(5497558138880) // 5TB
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30
+	PackageFormatBagIt       = "BagIt"
 	SerializationForbidden   = "forbidden"
 	SerializationOptional    = "optional"
 	SerializationRequired    = "required"
