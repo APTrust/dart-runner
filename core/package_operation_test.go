@@ -10,6 +10,7 @@ import (
 
 func TestPackageOperation(t *testing.T) {
 	op := core.NewPackageOperation("", "", []string{})
+	assert.NotNil(t, op.Result)
 	assert.False(t, op.Validate())
 	assert.Equal(t, 3, len(op.Errors))
 	assert.Equal(t, "Package name is required.", op.Errors["PackageOperation.PackageName"])
