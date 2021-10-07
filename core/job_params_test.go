@@ -99,6 +99,10 @@ func TestJobParams(t *testing.T) {
 	assert.NotNil(t, job.PackageOp.Result)
 	assert.False(t, job.PackageOp.Result.WasAttempted())
 
+	// Has right Validation Op
+	require.NotNil(t, job.ValidationOp)
+	assert.Equal(t, "/user/homer/bags/bag.tar", job.ValidationOp.PathToBag)
+
 	// Job has correctly initialized upload operations
 	uploadSrcFiles := []string{
 		"/user/homer/bags.tar",

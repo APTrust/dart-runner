@@ -1,6 +1,7 @@
 package core
 
 import (
+	"path"
 	"strings"
 
 	"github.com/APTrust/dart-runner/bagit"
@@ -110,7 +111,8 @@ func (p *JobParams) makePackageOp(job *Job) {
 // something and includes a BagIt profile.
 func (p *JobParams) makeValidationOp(job *Job) {
 	if p.PackageName != "" && p.Workflow.BagItProfile != nil {
-		job.ValidationOp = NewValidationOperation(p.OutputPath)
+		pathToBag := path.Join(p.OutputPath, p.PackageName)
+		job.ValidationOp = NewValidationOperation(pathToBag)
 	}
 }
 

@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/APTrust/dart-runner/bagit"
@@ -183,10 +184,11 @@ func (job *Job) Validate() bool {
 			job.Errors["Job.Package.BagItProfile"] = "BagIt packaging requires a BagItProfile."
 		}
 	}
+	// ValidationOp.PathToBag should be defined, but it won't exist
+	// until PackageOp finishes.
 	if job.ValidationOp != nil {
-		job.ValidationOp.Validate()
-		for key, value := range job.ValidationOp.Errors {
-			job.Errors[key] = value
+		if strings.TrimSpace(job.ValidationOp.PathToBag) == "" {
+			job.Errors["Job.Validate.PathToBag"] = "Validation requires a file or bag to validate."
 		}
 		if job.BagItProfile == nil {
 			job.Errors["Job.Validate.BagItProfile"] = "Validation requires a BagItProfile."
