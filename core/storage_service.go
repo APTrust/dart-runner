@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -53,4 +54,35 @@ func (ss *StorageService) Validate() bool {
 		ss.Errors["StorageService.Password"] = "StorageService requires a password or secret access key."
 	}
 	return len(ss.Errors) == 0
+}
+
+// GetLogin returns the login name or AccessKeyID to connect to this
+// storage service. Per the DART docts, if the login begins with "ENV:",
+// we fetch it from the environment. For example, "ENV:MY_SS_LOGIN"
+// causes us to fetch the env var "MY_SS_LOGIN". This allows us to
+// copy Workflow info across the wire without exposing sensitive credentials.
+//
+// If the login does not begin with "ENV:", this returns it verbatim.
+func (ss *StorageService) GetLogin() string {
+	if strings.HasPrefix(ss.Login, "ENV:") {
+		return ss.getEnv(ss.Login)
+	}
+	return ss.Login
+}
+
+// GetPassword returns this storage service's password from the
+// StorageService record or from the environment as necessary. See the
+// documentation for StorageService.GetLogin() for more info.
+func (ss *StorageService) GetPassword() string {
+	if strings.HasPrefix(ss.Password, "ENV:") {
+		return ss.getEnv(ss.Password)
+	}
+	return ss.Password
+}
+
+// getEnv returns the value of an environment variable, minus the
+// "ENV:" prefix.
+func (ss *StorageService) getEnv(varname string) string {
+	parts := strings.SplitN(varname, ":", 2)
+	return os.Getenv(parts[1])
 }

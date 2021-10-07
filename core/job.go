@@ -35,7 +35,9 @@ type Job struct {
 }
 
 func NewJob() *Job {
-	return &Job{}
+	return &Job{
+		Errors: make(map[string]string),
+	}
 }
 
 // Title returns a title for display purposes. It will use the first

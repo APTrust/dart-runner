@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -27,4 +28,32 @@ func TestStorageService(t *testing.T) {
 	assert.True(t, ss.Validate())
 	assert.Empty(t, ss.Errors)
 	assert.Equal(t, "s3://example.com/uploads/bag.tar", ss.URL("bag.tar"))
+}
+
+func TestStorageServiceSensitiveData(t *testing.T) {
+	creds := map[string]string{
+		"RUNNER_UNIT_TEST_SS_LOGIN": "user555@example.com",
+		"RUNNER_UNIT_TEST_SS_PWD":   "Secret! Shh!!",
+	}
+	for key, value := range creds {
+		os.Setenv(key, value)
+	}
+	defer func() {
+		for key, _ := range creds {
+			os.Unsetenv(key)
+		}
+	}()
+
+	ss := &core.StorageService{}
+	ss.Login = "insecure@example.com"
+	ss.Password = "not secret"
+
+	assert.Equal(t, "insecure@example.com", ss.GetLogin())
+	assert.Equal(t, "not secret", ss.GetPassword())
+
+	ss.Login = "ENV:RUNNER_UNIT_TEST_SS_LOGIN"
+	ss.Password = "ENV:RUNNER_UNIT_TEST_SS_PWD"
+
+	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_LOGIN"], ss.GetLogin())
+	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_PWD"], ss.GetPassword())
 }
