@@ -46,6 +46,7 @@ func (p *JobParams) ToJob() *Job {
 	job.BagItProfile = bagit.CloneProfile(p.Workflow.BagItProfile)
 	job.WorkflowID = p.Workflow.ID
 	p.makePackageOp(job)
+	p.makeValidationOp(job)
 	p.makeUploadOps(job)
 	p.mergeTags(job)
 	return job
@@ -102,6 +103,14 @@ func (p *JobParams) makePackageOp(job *Job) {
 		job.PackageOp = NewPackageOperation(p.PackageName, p.OutputPath, p.Files)
 		job.PackageOp.PackageFormat = p.Workflow.PackageFormat
 		p.setSerialization(job)
+	}
+}
+
+// makeValidationOp creates a ValidationOperation if the job is packaging
+// something and includes a BagIt profile.
+func (p *JobParams) makeValidationOp(job *Job) {
+	if p.PackageName != "" && p.Workflow.BagItProfile != nil {
+		job.ValidationOp = NewValidationOperation(p.OutputPath)
 	}
 }
 

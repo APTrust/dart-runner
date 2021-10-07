@@ -180,7 +180,7 @@ func (job *Job) Validate() bool {
 		job.PackageOp.Validate()
 		job.Errors = job.PackageOp.Errors
 		if job.PackageOp.PackageFormat == constants.PackageFormatBagIt && job.BagItProfile == nil {
-			job.Errors["Job.bagItProfile"] = "BagIt packaging requires a BagItProfile."
+			job.Errors["Job.Package.BagItProfile"] = "BagIt packaging requires a BagItProfile."
 		}
 	}
 	if job.ValidationOp != nil {
@@ -188,24 +188,34 @@ func (job *Job) Validate() bool {
 		for key, value := range job.ValidationOp.Errors {
 			job.Errors[key] = value
 		}
-		if job.BagItProfile == nil && job.ValidationOp.Result.Errors["Job.BagItProfile"] == "" {
-			job.Errors["Job.BagItProfile"] = "Validation requires a BagItProfile."
+		if job.BagItProfile == nil {
+			job.Errors["Job.Validate.BagItProfile"] = "Validation requires a BagItProfile."
 		}
 	}
-	opNum := 1
-	for _, uploadOp := range job.UploadOps {
-		uploadOp.Validate()
-		for key, value := range uploadOp.Errors {
-			uniqueKey := fmt.Sprintf("%s-%d", key, opNum)
-			job.Errors[uniqueKey] = value
+
+	// UploadOp validation ensures that files exist. They don't yet, so we
+	// don't want to run full validation. Just ensure we have valid storage
+	// service records.
+	if job.UploadOps != nil {
+		for i, uploadOp := range job.UploadOps {
+			errKey := fmt.Sprintf("UploadOp[%d].StorageService", i)
+			if uploadOp.StorageService == nil {
+				job.Errors[errKey] = "UploadOperation requires a StorageService"
+			} else if uploadOp.StorageService.Validate() == false {
+				for key, errMsg := range uploadOp.StorageService.Errors {
+					job.Errors[key] = errMsg
+				}
+			}
 		}
-		opNum++
+	}
+	if job.PackageOp == nil && job.ValidationOp == nil && (job.UploadOps == nil || len(job.UploadOps) == 0) {
+		job.Errors["Job"] = "Job has nothing to package, validate, or upload."
 	}
 	return len(job.Errors) == 0
 }
 
-// GetRunErrors returns a list of errors from all of this job's operations.
-func (job *Job) GetRunErrors() map[string]string {
+// RuntimeErrors returns a list of errors from all of this job's operations.
+func (job *Job) RuntimeErrors() map[string]string {
 	errs := make(map[string]string)
 	if job.PackageOp != nil && job.PackageOp.Result != nil {
 		for key, value := range job.PackageOp.Errors {
