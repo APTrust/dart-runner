@@ -13,7 +13,7 @@ type StorageService struct {
 	Description    string            `json:"description"`
 	Errors         map[string]string `json:"-"`
 	Host           string            `json:"host"`
-	Login          string            `json:"port"`
+	Login          string            `json:"login"`
 	LoginExtra     string            `json:"loginExtra"`
 	Name           string            `json:"name"`
 	Password       string            `json:"password"`
