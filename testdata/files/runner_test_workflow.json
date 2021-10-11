@@ -295,26 +295,18 @@
   },
   "storageServices": [
     {
-      "id": "d9ed1ec0-7275-4731-89f2-66c46627d5d9",
-      "userCanDelete": true,
-      "required": [
-        "name",
-        "protocol",
-        "host",
-        "id"
-      ],
-      "errors": {},
-      "name": "APTrust Staging",
-      "description": "APTrust staging server",
+      "id": "31b0846e-46f6-4925-bdba-1d3c1a0b2b73",
+      "name": "APTrust Demo Receiving Bucket",
+      "description": "Receiving bucket for ingest to the APTrust Demo repository",
       "protocol": "s3",
       "host": "s3.amazonaws.com",
       "port": 0,
-      "bucket": "aptrust.receiving.staging.staging.edu",
+      "bucket": "aptrust.receiving.test.test.edu",
       "login": "env:AWS_ACCESS_KEY_ID",
       "password": "env:AWS_SECRET_ACCESS_KEY",
       "loginExtra": "",
       "allowsUpload": true,
-      "allowsDownload": true
+      "allowsDownload": false
     }
   ]
 }

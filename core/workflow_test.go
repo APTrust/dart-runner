@@ -11,11 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWorkflowFromJson(t *testing.T) {
+func loadJsonWorkflow(t *testing.T) *core.Workflow {
 	pathToFile := path.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
 	workflow, err := core.WorkflowFromJson(pathToFile)
 	require.Nil(t, err)
 	require.NotNil(t, workflow)
+	return workflow
+}
+
+func TestWorkflowFromJson(t *testing.T) {
+	workflow := loadJsonWorkflow(t)
 	require.NotNil(t, workflow.BagItProfile)
 
 	// Spot check the workflow's BagIt profile.
@@ -33,4 +38,17 @@ func TestWorkflowFromJson(t *testing.T) {
 	assert.Equal(t, 1, len(workflow.StorageServices))
 	assert.Equal(t, "env:AWS_ACCESS_KEY_ID", workflow.StorageServices[0].Login)
 	assert.Equal(t, "env:AWS_SECRET_ACCESS_KEY", workflow.StorageServices[0].Password)
+}
+
+func TestWorkflowValidate(t *testing.T) {
+	workflow := loadJsonWorkflow(t)
+	assert.True(t, workflow.Validate())
+	assert.Empty(t, workflow.Errors)
+
+	workflow.BagItProfile.ManifestsAllowed = make([]string, 0)
+	workflow.StorageServices[0].Host = ""
+	assert.False(t, workflow.Validate())
+	assert.Equal(t, 2, len(workflow.Errors))
+	assert.Equal(t, "StorageService requires a hostname or IP address.", workflow.Errors["APTrust Demo Receiving Bucket.StorageService.Host"])
+	assert.Equal(t, "Profile must allow at least one manifest algorithm.", workflow.Errors["BagItProfile.ManifestsAllowed"])
 }
