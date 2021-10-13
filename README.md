@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/APTrust/dart-runner.svg?branch=master)](https://travis-ci.org/APTrust/dart-runner)
-[![Maintainability](img src="https://api.codeclimate.com/v1/badges/afced50b57b1e02432f6/maintainability)](https://codeclimate.com/github/APTrust/dart-runner/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/afced50b57b1e02432f6/maintainability)](https://codeclimate.com/github/APTrust/dart-runner/maintainability)
 
 
 # What is dart-runner?
