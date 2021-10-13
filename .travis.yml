@@ -1,0 +1,13 @@
+os: linux
+language: go
+go:
+- 1.16.2
+- tip
+script:
+    - go test ./...
+notifications:
+  slack:
+    secure: WCxwC+x+tnd1nYDzLanlx4x5WX79NBkGkcwdAH+1kMNTo9BhUi6vWHlIOOtYaRcegoC7LLh5rcoKghBuJLZILERFsUo0KZWTPA1S5KE4YeWs9SLqXtaUU8NH2fmHV3QvcnfuouGNmZn6p6oLx8bxl+JdBvXiEZSLDUE0MUyCDEWw5vFqVfsWv1lreoEr3B2wnmv7cg6/lm1A1aEe2RxXPb/0nVqJUg86d3DrNkhGbOzP5uppPRPnUmv/FyDZ389sC9ZJ3Qlb+ru5+9u3gXf5O11n03un8s0arsWzK4+EHwxlNes6U3oa6sKCghkj1L+X4Qe2Bj0tz4s8KHufZtuxu+/Gvq2qt3yq9YLneyhc7DPdk3IrG8mtx+lh5Ozb3YXDAe+QCoOdwp/u89VFT8+Xta6ukLeHKJKmqec3VLj1RHg/ZvfrXSHJGCTjxn1niNyzjf13x3wj7z7NiP9PBLGtTFR+/1P+3esjBd0W97eNLB4OXOU+JB52f1GXyQEC8me1YkzGsIqujVoJc7TT0aO1Z1SOiDt4nS/5fTzmUkH4sU3+ESdh2bQc6NNvhKkTdMp/qq/p9xgSGU9V2FvnSgZdICB7Njw2irMnDFOO9hLMEHgNHy5h6+2PDGIZnZrf4RB5RR2ory5ynWnWTU7umxrY4BvBxALpLMtNkrpuAjpfzoQ=
+branches:
+  only:
+    - /.*/
