@@ -57,11 +57,6 @@ func (b *Bagger) Run() bool {
 		return false
 	}
 
-	if !b.addBagItFile() {
-		// Write bagit.txt into the bag.
-		return false
-	}
-
 	if !b.addPayloadFiles() {
 		return false
 	}
@@ -102,29 +97,6 @@ func (b *Bagger) PayloadOxum() string {
 
 func (b *Bagger) reset() {
 	b.Errors = make(map[string]string)
-}
-
-func (b *Bagger) addBagItFile() bool {
-	fInfo, err := os.Stat("bagit.txt")
-	if err != nil {
-		b.Errors["bagit.txt"] = err.Error()
-		return false
-	}
-	xFileInfo := util.NewExtendedFileInfo("bagit.txt", fInfo)
-	pathInBag := b.pathForTagFile("bagit.txt")
-	checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
-	if err != nil {
-		b.Errors["bagit.txt"] = err.Error()
-		return false
-	}
-
-	// Track the checksum
-	fileRecord := NewFileRecord()
-	for alg, digest := range checksums {
-		fileRecord.AddChecksum(constants.FileTypePayload, alg, digest)
-	}
-	b.TagFiles.Files[pathInBag] = fileRecord
-	return true
 }
 
 func (b *Bagger) addPayloadFiles() bool {
