@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 )
 
 type Runner struct {
@@ -42,7 +44,30 @@ func (r *Runner) RunPackageOp() bool {
 	}
 	// Build the package / bag
 	// Set the bag path on the validation op
-	return true
+	//
+	// For workflows, we only permit a single directory in op.SourceFiles.
+	// Jobs may contain multiple. If there are overlapping directories,
+	// we want to make sure their common files are not included twice.
+	op := r.Job.PackageOp
+	op.Result.Start()
+	sourceFiles := make([]*util.ExtendedFileInfo, 0)
+	for _, filepath := range op.SourceFiles {
+		files, err := util.RecursiveFileList(filepath)
+		if err != nil {
+			errors := map[string]string{
+				"SourceFiles": err.Error(),
+			}
+			op.Result.Finish(errors)
+			return false
+		}
+		// TODO: Weed out duplicates
+		sourceFiles = append(sourceFiles, files...)
+	}
+	fmt.Println(op.OutputPath)
+	bagger := bagit.NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
+	ok := bagger.Run()
+	op.Result.Finish(bagger.Errors)
+	return ok
 }
 
 func (r *Runner) RunValidationOp() bool {

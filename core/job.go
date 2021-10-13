@@ -129,10 +129,8 @@ func (job *Job) UploadedAt() time.Time {
 	uploadedAt := time.Time{}
 	if len(job.UploadOps) > 0 {
 		for _, uploadOp := range job.UploadOps {
-			for _, result := range uploadOp.Results {
-				if result != nil && !result.Completed.IsZero() {
-					uploadedAt = result.Completed
-				}
+			if uploadOp.Result != nil && !uploadOp.Result.Completed.IsZero() {
+				uploadedAt = uploadOp.Result.Completed
 			}
 		}
 	}
@@ -144,10 +142,8 @@ func (job *Job) UploadedAt() time.Time {
 func (job *Job) UploadAttempted() bool {
 	if job.UploadOps != nil {
 		for _, op := range job.UploadOps {
-			for _, result := range op.Results {
-				if result.Attempt > 0 {
-					return true
-				}
+			if op.Result.Attempt > 0 {
+				return true
 			}
 		}
 	}
@@ -161,13 +157,11 @@ func (job Job) UploadSucceeded() bool {
 	allSucceeded := true
 	if job.UploadOps != nil {
 		for _, op := range job.UploadOps {
-			for _, result := range op.Results {
-				if result.Attempt > 0 {
-					anyAttempted = true
-				}
-				if !result.Succeeded() {
-					allSucceeded = false
-				}
+			if op.Result.Attempt > 0 {
+				anyAttempted = true
+			}
+			if !op.Result.Succeeded() {
+				allSucceeded = false
 			}
 		}
 	}

@@ -110,11 +110,11 @@ func TestJobParams(t *testing.T) {
 	require.NotNil(t, job.UploadOps)
 	require.Equal(t, 2, len(job.UploadOps))
 
-	assert.NotNil(t, job.UploadOps[0].Results)
+	assert.NotNil(t, job.UploadOps[0].Result)
 	assert.EqualValues(t, uploadSrcFiles, job.UploadOps[0].SourceFiles)
 	assert.Equal(t, workflow.StorageServices[0].Host, job.UploadOps[0].StorageService.Host)
 
-	assert.NotNil(t, job.UploadOps[1].Results)
+	assert.NotNil(t, job.UploadOps[1].Result)
 	assert.EqualValues(t, uploadSrcFiles, job.UploadOps[1].SourceFiles)
 	assert.Equal(t, workflow.StorageServices[1].Host, job.UploadOps[1].StorageService.Host)
 

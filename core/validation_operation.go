@@ -17,6 +17,7 @@ func NewValidationOperation(pathToBag string) *ValidationOperation {
 	return &ValidationOperation{
 		Errors:    make(map[string]string),
 		PathToBag: pathToBag,
+		Result:    NewOperationResult("validation", "validator"),
 	}
 }
 

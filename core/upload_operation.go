@@ -8,17 +8,17 @@ import (
 )
 
 type UploadOperation struct {
-	Errors         map[string]string  `json:"errors"`
-	PayloadSize    int64              `json:"payloadSize"`
-	Results        []*OperationResult `json:"results"`
-	SourceFiles    []string           `json:"sourceFiles"`
-	StorageService *StorageService    `json:"storageService"`
+	Errors         map[string]string `json:"errors"`
+	PayloadSize    int64             `json:"payloadSize"`
+	Result         *OperationResult  `json:"result"`
+	SourceFiles    []string          `json:"sourceFiles"`
+	StorageService *StorageService   `json:"storageService"`
 }
 
 func NewUploadOperation(ss *StorageService, files []string) *UploadOperation {
 	return &UploadOperation{
 		Errors:         make(map[string]string),
-		Results:        make([]*OperationResult, 0),
+		Result:         NewOperationResult("upload", "uploader"),
 		SourceFiles:    files,
 		StorageService: ss,
 	}
