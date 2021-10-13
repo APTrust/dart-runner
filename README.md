@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/APTrust/dart-runner.svg?branch=master)](https://travis-ci.org/APTrust/dart-runner)
+[![Maintainability](img src="https://api.codeclimate.com/v1/badges/afced50b57b1e02432f6/maintainability)](https://codeclimate.com/github/APTrust/dart-runner/maintainability)
+
+
 # What is dart-runner?
 
 dart-runner will run [DART](https://github.com/APTrust/dart) jobs and workflows without requiring a UI. This means you can run DART workflows on a server.
