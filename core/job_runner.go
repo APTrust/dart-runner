@@ -60,7 +60,7 @@ func (r *Runner) RunPackageOp() bool {
 			op.Result.Finish(errors)
 			return false
 		}
-		// TODO: Weed out duplicates
+		// TODO: Weed out duplicate files.
 		sourceFiles = append(sourceFiles, files...)
 	}
 	fmt.Println(op.OutputPath)
@@ -75,7 +75,11 @@ func (r *Runner) RunValidationOp() bool {
 		return true
 	}
 	// Validate the package / bag
-	return true
+	op := r.Job.ValidationOp
+	op.Result.Start()
+	ok := r.Job.ValidationOp.Validate()
+	op.Result.Finish(op.Errors)
+	return ok
 }
 
 func (r *Runner) RunUploadOps() bool {

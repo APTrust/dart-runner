@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -27,13 +26,15 @@ func getRunnerTestJob(t *testing.T) *core.Job {
 
 func TestJobRunner(t *testing.T) {
 	job := getRunnerTestJob(t)
+	defer func() {
+		if util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
+			os.Remove(job.PackageOp.OutputPath)
+		}
+	}()
 	require.True(t, job.Validate())
 	retVal := core.RunJob(job)
-	for k, v := range job.PackageOp.Result.Errors {
-		fmt.Println(k, v)
-	}
-	for k, v := range job.Errors {
-		fmt.Println(k, v)
-	}
 	assert.Equal(t, constants.ExitOK, retVal)
+
+	assert.True(t, job.PackageOp.Result.Succeeded())
+	assert.True(t, job.ValidationOp.Result.Succeeded())
 }
