@@ -57,14 +57,14 @@ func (ss *StorageService) Validate() bool {
 }
 
 // GetLogin returns the login name or AccessKeyID to connect to this
-// storage service. Per the DART docts, if the login begins with "ENV:",
-// we fetch it from the environment. For example, "ENV:MY_SS_LOGIN"
+// storage service. Per the DART docts, if the login begins with "env:",
+// we fetch it from the environment. For example, "env:MY_SS_LOGIN"
 // causes us to fetch the env var "MY_SS_LOGIN". This allows us to
 // copy Workflow info across the wire without exposing sensitive credentials.
 //
-// If the login does not begin with "ENV:", this returns it verbatim.
+// If the login does not begin with "env:", this returns it verbatim.
 func (ss *StorageService) GetLogin() string {
-	if strings.HasPrefix(ss.Login, "ENV:") {
+	if strings.HasPrefix(ss.Login, "env:") {
 		return ss.getEnv(ss.Login)
 	}
 	return ss.Login
@@ -74,7 +74,7 @@ func (ss *StorageService) GetLogin() string {
 // StorageService record or from the environment as necessary. See the
 // documentation for StorageService.GetLogin() for more info.
 func (ss *StorageService) GetPassword() string {
-	if strings.HasPrefix(ss.Password, "ENV:") {
+	if strings.HasPrefix(ss.Password, "env:") {
 		return ss.getEnv(ss.Password)
 	}
 	return ss.Password

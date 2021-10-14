@@ -1,10 +1,15 @@
 package core
 
 import (
+	"context"
 	"fmt"
+	"path"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type UploadOperation struct {
@@ -44,4 +49,51 @@ func (u *UploadOperation) Validate() bool {
 		u.Errors["UploadOperation.SourceFiles"] = fmt.Sprintf("UploadOperation source files are missing: %s", strings.Join(missingFiles, ";"))
 	}
 	return len(u.Errors) == 0
+}
+
+func (u *UploadOperation) DoUpload() bool {
+	ok := false
+	switch u.StorageService.Protocol {
+	case constants.ProtocolS3:
+		ok = u.sendToS3()
+	case constants.ProtocolSFTP:
+		ok = u.sendToSFTP()
+	default:
+		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
+	}
+	return ok
+}
+
+func (u *UploadOperation) sendToS3() bool {
+	accessKeyId := u.StorageService.GetLogin()
+	secretKey := u.StorageService.GetPassword()
+	client, err := minio.New(u.StorageService.Host,
+		&minio.Options{
+			Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
+			Secure: true,
+		})
+	if err != nil {
+		u.Errors["S3Upload"] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
+		return false
+	}
+	allSucceeded := true
+	for _, sourceFile := range u.SourceFiles {
+		s3Key := path.Base(sourceFile)
+		_, err = client.FPutObject(
+			context.Background(),
+			u.StorageService.Bucket,
+			s3Key,
+			sourceFile,
+			minio.PutObjectOptions{})
+		if err != nil {
+			u.Errors[s3Key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
+			allSucceeded = false
+		}
+	}
+	return allSucceeded
+}
+
+func (u *UploadOperation) sendToSFTP() bool {
+	u.Errors["SFTPUpload"] = fmt.Sprintf("SFTP upload is not yet supported.")
+	return false
 }

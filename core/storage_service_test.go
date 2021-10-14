@@ -51,8 +51,8 @@ func TestStorageServiceSensitiveData(t *testing.T) {
 	assert.Equal(t, "insecure@example.com", ss.GetLogin())
 	assert.Equal(t, "not secret", ss.GetPassword())
 
-	ss.Login = "ENV:RUNNER_UNIT_TEST_SS_LOGIN"
-	ss.Password = "ENV:RUNNER_UNIT_TEST_SS_PWD"
+	ss.Login = "env:RUNNER_UNIT_TEST_SS_LOGIN"
+	ss.Password = "env:RUNNER_UNIT_TEST_SS_PWD"
 
 	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_LOGIN"], ss.GetLogin())
 	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_PWD"], ss.GetPassword())

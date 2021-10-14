@@ -22,6 +22,8 @@ const (
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30
 	PackageFormatBagIt       = "BagIt"
+	ProtocolS3               = "s3"
+	ProtocolSFTP             = "sftp"
 	SerializationForbidden   = "forbidden"
 	SerializationOptional    = "optional"
 	SerializationRequired    = "required"

@@ -86,9 +86,18 @@ func (r *Runner) RunUploadOps() bool {
 	if r.Job.UploadOps == nil || len(r.Job.UploadOps) == 0 {
 		return true
 	}
-	// Run upload ops on sequence. If any fails, continue
-	// with remaining uploads and set the error messages.
-	return true
+	// Run upload ops in sequence. If any fails, continue
+	// with remaining uploads.
+	allSucceeded := true
+	for _, op := range r.Job.UploadOps {
+		op.Result.Start()
+		ok := op.DoUpload()
+		op.Result.Finish(op.Errors)
+		if !ok {
+			allSucceeded = false
+		}
+	}
+	return allSucceeded
 }
 
 func (r *Runner) PrintErrors(errors map[string]string) {

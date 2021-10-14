@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -31,10 +32,22 @@ func TestJobRunner(t *testing.T) {
 			os.Remove(job.PackageOp.OutputPath)
 		}
 	}()
+
+	// When running in CI, don't try to upload items to S3,
+	// because we don't currently have credentials.
+	if util.RunningInCI() {
+		fmt.Println("Running in CI. Skipping upload operations in JobRunner test.")
+		job.UploadOps = make([]*core.UploadOperation, 0)
+	}
+
 	require.True(t, job.Validate())
 	retVal := core.RunJob(job)
 	assert.Equal(t, constants.ExitOK, retVal)
 
 	assert.True(t, job.PackageOp.Result.Succeeded())
 	assert.True(t, job.ValidationOp.Result.Succeeded())
+	for _, op := range job.UploadOps {
+		fmt.Println(op.Errors)
+		assert.True(t, op.Result.Succeeded())
+	}
 }
