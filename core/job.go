@@ -25,9 +25,9 @@ var TitleTags = []string{
 type Job struct {
 	BagItProfile *bagit.Profile       `json:"bagItProfile"`
 	ByteCount    int64                `json:"byteCount"`
-	DirCount     int                  `json:"dirCount"`
+	DirCount     int64                `json:"dirCount"`
 	Errors       map[string]string    `json:"errors"`
-	FileCount    int                  `json:"fileCount"`
+	FileCount    int64                `json:"fileCount"`
 	PackageOp    *PackageOperation    `json:"packageOp"`
 	UploadOps    []*UploadOperation   `json:"uploadOps"`
 	ValidationOp *ValidationOperation `json:"validationOp"`
@@ -40,31 +40,28 @@ func NewJob() *Job {
 	}
 }
 
-// Title returns a title for display purposes. It will use the first
-// available non-empty value of: 1) the name of the file that the job
-// packaged, 2) the name of the file that the job uploaded, or 3) a
-// title or description of the bag from within the bag's tag files.
-// If none of those is available, this will return "Job of <timestamp>",
-// where timestamp is date and time the job was created.
-func (job *Job) Title() string {
-	var name = fmt.Sprintf("Job of %s", time.Now().Format(time.RFC3339))
-	if name == "" && job.PackageOp != nil && job.PackageOp.PackageName != "" {
-		name = path.Base(job.PackageOp.PackageName)
+// Name returns a name for this job, which is usually the file name of
+// the package being built, validated, or uploaded.
+func (job *Job) Name() string {
+	if job.PackageOp != nil && job.PackageOp.PackageName != "" {
+		return path.Base(job.PackageOp.PackageName)
 	}
-	if name == "" && len(job.UploadOps) > 0 && len(job.UploadOps[0].SourceFiles) > 0 {
-		name = path.Base(job.UploadOps[0].SourceFiles[0])
+	if job.ValidationOp != nil && job.ValidationOp.PathToBag != "" {
+		return path.Base(job.ValidationOp.PathToBag)
+	}
+	if job.UploadOps != nil && len(job.UploadOps) > 0 && len(job.UploadOps[0].SourceFiles) > 0 {
+		return path.Base(job.UploadOps[0].SourceFiles[0])
 	}
 	// Try to get a title from the bag.
-	if name == "" && job.BagItProfile != nil {
+	if job.BagItProfile != nil {
 		for _, tagName := range TitleTags {
 			tag, _ := job.BagItProfile.FirstMatchingTag("tagName", tagName)
 			if tag != nil && tag.UserValue != "" {
-				name = tag.UserValue
-				break
+				return tag.UserValue
 			}
 		}
 	}
-	return name
+	return fmt.Sprintf("Job of %s", time.Now().Format(time.RFC3339))
 }
 
 // PackagedAt returns the datetime on which this job's package

@@ -66,6 +66,8 @@ func (r *Runner) RunPackageOp() bool {
 	fmt.Println(op.OutputPath)
 	bagger := bagit.NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	ok := bagger.Run()
+	r.Job.ByteCount = bagger.PayloadBytes()
+	r.Job.FileCount = bagger.PayloadFileCount()
 	op.Result.Finish(bagger.Errors)
 	return ok
 }

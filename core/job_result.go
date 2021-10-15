@@ -7,8 +7,9 @@ import (
 // JobResult collects the results of an attempted job for
 // reporting purposes.
 type JobResult struct {
-	ByteCount        int64              `json:"byteCount"`
-	FileCount        int                `json:"fileCount"`
+	JobName          string             `json:"jobName"`
+	PayloadByteCount int64              `json:"payloadByteCount"`
+	PayloadFileCount int64              `json:"payloadFileCount"`
 	Succeeded        bool               `json:"succeeded"`
 	Results          []*OperationResult `json:"operationResults"`
 	ValidationErrors map[string]string  `json:"validationErrors"`
@@ -36,8 +37,9 @@ func NewJobResult(job *Job) *JobResult {
 		validationErrors = job.Errors
 	}
 	return &JobResult{
-		ByteCount:        job.ByteCount,
-		FileCount:        job.FileCount,
+		JobName:          job.Name(),
+		PayloadByteCount: job.ByteCount,
+		PayloadFileCount: job.FileCount,
 		Succeeded:        len(job.Errors) == 0,
 		ValidationErrors: validationErrors,
 		Results:          results,

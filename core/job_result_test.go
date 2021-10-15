@@ -23,13 +23,14 @@ func getJobForJobResult() *core.Job {
 func TestJobResult(t *testing.T) {
 	job := getJobForJobResult()
 	jobResult := core.NewJobResult(job)
-	assert.Equal(t, job.ByteCount, jobResult.ByteCount)
-	assert.Equal(t, job.FileCount, jobResult.FileCount)
+	assert.Equal(t, job.Name(), jobResult.JobName)
+	assert.Equal(t, job.ByteCount, jobResult.PayloadByteCount)
+	assert.Equal(t, job.FileCount, jobResult.PayloadFileCount)
 	assert.Equal(t, 5, len(jobResult.Results))
 	assert.Equal(t, 0, len(jobResult.ValidationErrors))
 	assert.True(t, jobResult.Succeeded)
 
-	job.Errors["oops"] = "Britanny did it again."
+	job.Errors["oops"] = "Britney did it again."
 	jobResult = core.NewJobResult(job)
 	assert.False(t, jobResult.Succeeded)
 	assert.Equal(t, 1, len(jobResult.ValidationErrors))

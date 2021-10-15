@@ -22,6 +22,8 @@ type WorkflowRunner struct {
 	parseError   error
 	jobChannel   chan *Job
 	waitGroup    sync.WaitGroup
+	outMutex     sync.Mutex
+	errMutex     sync.Mutex
 }
 
 func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int) (*WorkflowRunner, error) {
@@ -60,11 +62,7 @@ func (r *WorkflowRunner) Run() int {
 		r.jobChannel <- jobParams.ToJob()
 	}
 	r.waitGroup.Wait()
-
-	if r.parseError != nil || r.FailureCount > 0 {
-		return constants.ExitRuntimeErr
-	}
-	return constants.ExitOK
+	return r.getExitCode()
 }
 
 func (r *WorkflowRunner) runAsync() {
@@ -75,6 +73,7 @@ func (r *WorkflowRunner) runAsync() {
 		} else {
 			r.FailureCount++
 		}
+		r.writeResult(job)
 		r.waitGroup.Done()
 	}
 }
@@ -100,4 +99,49 @@ func (r *WorkflowRunner) getExitCode() int {
 		return constants.ExitRuntimeErr
 	}
 	return constants.ExitOK
+}
+
+// writeResult writes the result
+func (r *WorkflowRunner) writeResult(job *Job) {
+	result := NewJobResult(job)
+	jsonStr, err := result.ToJson()
+
+	// If we can't serialize the JobResult, tell the user.
+	if err != nil {
+		errMsg := fmt.Sprintf("Error getting result for job %s: %s", job.Name(), err.Error())
+		r.writeStdErr(errMsg)
+
+		status := "succeeded"
+		if !result.Succeeded {
+			status = "failed"
+		}
+		resultMsg := fmt.Sprintf("Job %s %s, but dart runner encountered an error when trying to report detailed results.", job.Name(), status)
+		r.writeStdOut(resultMsg)
+		return
+	}
+
+	// OK, we can serialize the the JobResult. If there were any errors,
+	// make a note in STDERR.
+	if !result.Succeeded {
+		errMsg := fmt.Sprintf("Job %s encountered one or more errors. See the JSON results in stdout.", job.Name())
+		r.writeStdOut(errMsg)
+	}
+
+	// If possible, always print the machine-readable JSON result to STDOUT.
+	// This is human-readable too, since the JSON is formatted.
+	r.writeStdOut(jsonStr)
+}
+
+// writeStdOut safely writes to STDOUT from concurrent go routines.
+func (r *WorkflowRunner) writeStdOut(msg string) {
+	r.outMutex.Lock()
+	fmt.Println(msg)
+	r.outMutex.Unlock()
+}
+
+// writeStdErr safely writes to STDOUT from concurrent go routines.
+func (r *WorkflowRunner) writeStdErr(msg string) {
+	r.errMutex.Lock()
+	fmt.Fprintln(os.Stderr, msg)
+	r.errMutex.Unlock()
 }
