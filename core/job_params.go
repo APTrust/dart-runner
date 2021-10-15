@@ -112,6 +112,9 @@ func (p *JobParams) makePackageOp(job *Job) {
 func (p *JobParams) makeValidationOp(job *Job) {
 	if p.PackageName != "" && p.Workflow.BagItProfile != nil {
 		pathToBag := path.Join(p.OutputPath, p.PackageName)
+		if job.PackageOp != nil {
+			pathToBag = job.PackageOp.OutputPath
+		}
 		job.ValidationOp = NewValidationOperation(pathToBag)
 	}
 }

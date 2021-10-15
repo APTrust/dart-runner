@@ -73,10 +73,10 @@ func TestJobParams(t *testing.T) {
 	workflow := getTestWorkflow(t)
 	files := getTestFileList()
 	tags := getTestTags()
-	params := core.NewJobParams(workflow, "bag.tar", "/user/homer/bags", files, tags)
+	params := core.NewJobParams(workflow, "bag.tar", "/user/homer/bag.tar", files, tags)
 	assert.Equal(t, files, params.Files)
 	assert.Equal(t, "bag.tar", params.PackageName)
-	assert.Equal(t, "/user/homer/bags", params.OutputPath)
+	assert.Equal(t, "/user/homer/bag.tar", params.OutputPath)
 	assert.Equal(t, tags, params.Tags)
 	assert.Equal(t, workflow, params.Workflow)
 	assert.NotNil(t, params.Errors)
@@ -94,18 +94,18 @@ func TestJobParams(t *testing.T) {
 	require.NotNil(t, job.PackageOp)
 	assert.Equal(t, ".tar", job.PackageOp.BagItSerialization)
 	assert.Equal(t, "bag.tar", job.PackageOp.PackageName)
-	assert.Equal(t, "/user/homer/bags.tar", job.PackageOp.OutputPath)
+	assert.Equal(t, "/user/homer/bag.tar", job.PackageOp.OutputPath)
 	assert.EqualValues(t, files, job.PackageOp.SourceFiles)
 	assert.NotNil(t, job.PackageOp.Result)
 	assert.False(t, job.PackageOp.Result.WasAttempted())
 
 	// Has right Validation Op
 	require.NotNil(t, job.ValidationOp)
-	assert.Equal(t, "/user/homer/bags/bag.tar", job.ValidationOp.PathToBag)
+	assert.Equal(t, "/user/homer/bag.tar", job.ValidationOp.PathToBag)
 
 	// Job has correctly initialized upload operations
 	uploadSrcFiles := []string{
-		"/user/homer/bags.tar",
+		"/user/homer/bag.tar",
 	}
 	require.NotNil(t, job.UploadOps)
 	require.Equal(t, 2, len(job.UploadOps))

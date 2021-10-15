@@ -1,9 +1,6 @@
 package core
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -18,6 +15,17 @@ func RunJob(job *Job) int {
 	if !runner.ValidateJob() {
 		return constants.ExitRuntimeErr
 	}
+
+	// ----------------------------------------
+	// TODO: Delete bag when job completes.
+	// Can do this in a simple defer.
+	//
+	// TODO: Fill in all available data in
+	// OperationResult for each op. Or else
+	// get rid of extraneous fields in that
+	// struct.
+	// ----------------------------------------
+
 	if !runner.RunPackageOp() {
 		return constants.ExitRuntimeErr
 	}
@@ -32,7 +40,6 @@ func RunJob(job *Job) int {
 
 func (r *Runner) ValidateJob() bool {
 	if !r.Job.Validate() {
-		r.PrintErrors(r.Job.Errors)
 		return false
 	}
 	return true
@@ -63,7 +70,6 @@ func (r *Runner) RunPackageOp() bool {
 		// TODO: Weed out duplicate files.
 		sourceFiles = append(sourceFiles, files...)
 	}
-	fmt.Println(op.OutputPath)
 	bagger := bagit.NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	ok := bagger.Run()
 	r.Job.ByteCount = bagger.PayloadBytes()
@@ -100,10 +106,4 @@ func (r *Runner) RunUploadOps() bool {
 		}
 	}
 	return allSucceeded
-}
-
-func (r *Runner) PrintErrors(errors map[string]string) {
-	for key, value := range errors {
-		fmt.Fprintln(os.Stderr, key, value)
-	}
 }

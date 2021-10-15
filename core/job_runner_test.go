@@ -33,6 +33,9 @@ func TestJobRunner(t *testing.T) {
 		}
 	}()
 
+	// ----------------------------------------
+	// TODO: Travis needs creds to run uploads.
+	// ----------------------------------------
 	// When running in CI, don't try to upload items to S3,
 	// because we don't currently have credentials.
 	if util.RunningInCI() {

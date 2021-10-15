@@ -38,17 +38,18 @@ func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int)
 	if err != nil {
 		return nil, err
 	}
-	return &WorkflowRunner{
+	runner := &WorkflowRunner{
 		Workflow:    workflow,
 		CSVFile:     workflowCSVFile,
 		OutputDir:   outputDir,
 		Concurrency: concurrency,
 		jobChannel:  make(chan *Job, concurrency),
-	}, nil
+	}
+	go runner.runAsync()
+	return runner, nil
 }
 
 func (r *WorkflowRunner) Run() int {
-	go r.runAsync()
 	for {
 		entry, err := r.CSVFile.ReadNext()
 		if err == io.EOF {
@@ -90,12 +91,12 @@ func (r *WorkflowRunner) getJobParams(entry *WorkflowCSVEntry) *JobParams {
 func (r *WorkflowRunner) getExitCode() int {
 	if r.parseError != nil {
 		errMsg := fmt.Sprintf("Error parsing CSV batch file: %s", r.parseError.Error())
-		fmt.Fprintf(os.Stderr, errMsg)
+		r.writeStdErr(errMsg)
 		return constants.ExitRuntimeErr
 	}
 	if r.FailureCount > 0 {
 		errMsg := fmt.Sprintf("%d job(s) failed", r.FailureCount)
-		fmt.Fprintf(os.Stderr, errMsg)
+		r.writeStdErr(errMsg)
 		return constants.ExitRuntimeErr
 	}
 	return constants.ExitOK
