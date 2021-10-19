@@ -89,6 +89,14 @@ func TestWorkflowRunner(t *testing.T) {
 		assert.True(t, result.PayloadByteCount > 0)
 		assert.True(t, result.PayloadFileCount > 0)
 		assert.True(t, result.Succeeded)
+
+		for _, opResult := range result.Results {
+			if opResult.Operation == "upload" {
+				assert.True(t, len(opResult.RemoteChecksum) >= 32)
+				assert.True(t, strings.HasPrefix(opResult.RemoteURL, "s3://localhost:9899/dart-runner.test/RunnerTest"))
+				assert.True(t, strings.HasSuffix(opResult.RemoteURL, ".tar"))
+			}
+		}
 	}
 }
 

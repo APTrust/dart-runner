@@ -71,7 +71,6 @@ func (u *UploadOperation) sendToS3() bool {
 		Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
 		Secure: u.useSSL(),
 	}
-	// xxxxxxxxxxx
 	client, err := minio.New(u.StorageService.HostAndPort(), options)
 	if err != nil {
 		u.Errors["S3Upload"] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
@@ -80,7 +79,8 @@ func (u *UploadOperation) sendToS3() bool {
 	allSucceeded := true
 	for _, sourceFile := range u.SourceFiles {
 		s3Key := path.Base(sourceFile)
-		_, err = client.FPutObject(
+		u.Result.RemoteURL = u.StorageService.URL(s3Key)
+		uploadInfo, err := client.FPutObject(
 			context.Background(),
 			u.StorageService.Bucket,
 			s3Key,
@@ -89,6 +89,8 @@ func (u *UploadOperation) sendToS3() bool {
 		if err != nil {
 			u.Errors[s3Key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
 			allSucceeded = false
+		} else {
+			u.Result.RemoteChecksum = uploadInfo.ETag
 		}
 	}
 	return allSucceeded
