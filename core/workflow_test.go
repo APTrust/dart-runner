@@ -36,8 +36,8 @@ func TestWorkflowFromJson(t *testing.T) {
 	// Make sure the workflow has storage services
 	require.NotEmpty(t, workflow.StorageServices)
 	assert.Equal(t, 1, len(workflow.StorageServices))
-	assert.Equal(t, "env:AWS_ACCESS_KEY_ID", workflow.StorageServices[0].Login)
-	assert.Equal(t, "env:AWS_SECRET_ACCESS_KEY", workflow.StorageServices[0].Password)
+	assert.Equal(t, "minioadmin", workflow.StorageServices[0].Login)
+	assert.Equal(t, "minioadmin", workflow.StorageServices[0].Password)
 }
 
 func TestWorkflowValidate(t *testing.T) {
@@ -49,6 +49,6 @@ func TestWorkflowValidate(t *testing.T) {
 	workflow.StorageServices[0].Host = ""
 	assert.False(t, workflow.Validate())
 	assert.Equal(t, 2, len(workflow.Errors))
-	assert.Equal(t, "StorageService requires a hostname or IP address.", workflow.Errors["APTrust Demo Receiving Bucket.StorageService.Host"])
+	assert.Equal(t, "StorageService requires a hostname or IP address.", workflow.Errors["Local Test Receiving Bucket.StorageService.Host"])
 	assert.Equal(t, "Profile must allow at least one manifest algorithm.", workflow.Errors["BagItProfile.ManifestsAllowed"])
 }

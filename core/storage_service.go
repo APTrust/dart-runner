@@ -29,11 +29,17 @@ func NewStorageService() *StorageService {
 
 // URL returns the URL to which the file will be uploaded.
 func (ss *StorageService) URL(filename string) string {
+	return fmt.Sprintf("%s://%s/%s/%s", ss.Protocol, ss.HostAndPort(), ss.Bucket, filename)
+}
+
+// HostAndPort returns the host and port for connecting to a remote service.
+// Use this when creating a connection to a remote S3 service.
+func (ss *StorageService) HostAndPort() string {
 	port := ""
 	if ss.Port > 0 {
 		port = fmt.Sprintf(":%d", ss.Port)
 	}
-	return fmt.Sprintf("%s://%s%s/%s/%s", ss.Protocol, ss.Host, port, ss.Bucket, filename)
+	return fmt.Sprintf("%s%s", ss.Host, port)
 }
 
 func (ss *StorageService) Validate() bool {

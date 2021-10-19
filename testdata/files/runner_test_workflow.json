@@ -295,18 +295,18 @@
   },
   "storageServices": [
     {
-      "id": "31b0846e-46f6-4925-bdba-1d3c1a0b2b73",
-      "name": "APTrust Demo Receiving Bucket",
-      "description": "Receiving bucket for ingest to the APTrust Demo repository",
+      "id": "b52a158f-168b-4b6e-83f3-932c968da808",
+      "name": "Local Test Receiving Bucket",
+      "description": "Bucket on locally running minio server",
       "protocol": "s3",
-      "host": "s3.amazonaws.com",
-      "port": 0,
-      "bucket": "aptrust.receiving.test.test.edu",
-      "login": "env:AWS_ACCESS_KEY_ID",
-      "password": "env:AWS_SECRET_ACCESS_KEY",
+      "host": "localhost",
+      "port": 9899,
+      "bucket": "dart-runner.test",
+      "login": "minioadmin",
+      "password": "minioadmin",
       "loginExtra": "",
       "allowsUpload": true,
-      "allowsDownload": false
+      "allowsDownload": true
     }
   ]
 }

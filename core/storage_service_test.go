@@ -57,3 +57,23 @@ func TestStorageServiceSensitiveData(t *testing.T) {
 	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_LOGIN"], ss.GetLogin())
 	assert.Equal(t, creds["RUNNER_UNIT_TEST_SS_PWD"], ss.GetPassword())
 }
+
+func TestStorageServiceURL(t *testing.T) {
+	ss := &core.StorageService{}
+	ss.Protocol = "s3"
+	ss.Host = "example.com"
+	ss.Bucket = "bucky"
+	assert.Equal(t, "s3://example.com/bucky/document.pdf", ss.URL("document.pdf"))
+
+	ss.Port = 9999
+	assert.Equal(t, "s3://example.com:9999/bucky/document.pdf", ss.URL("document.pdf"))
+}
+
+func TestStorageServiceHostAndPort(t *testing.T) {
+	ss := &core.StorageService{}
+	ss.Host = "example.com"
+	assert.Equal(t, "example.com", ss.HostAndPort())
+
+	ss.Port = 9999
+	assert.Equal(t, "example.com:9999", ss.HostAndPort())
+}

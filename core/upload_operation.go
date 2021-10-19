@@ -67,11 +67,12 @@ func (u *UploadOperation) DoUpload() bool {
 func (u *UploadOperation) sendToS3() bool {
 	accessKeyId := u.StorageService.GetLogin()
 	secretKey := u.StorageService.GetPassword()
-	client, err := minio.New(u.StorageService.Host,
-		&minio.Options{
-			Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
-			Secure: true,
-		})
+	options := &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
+		Secure: u.useSSL(),
+	}
+	// xxxxxxxxxxx
+	client, err := minio.New(u.StorageService.HostAndPort(), options)
 	if err != nil {
 		u.Errors["S3Upload"] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
 		return false
@@ -91,6 +92,13 @@ func (u *UploadOperation) sendToS3() bool {
 		}
 	}
 	return allSucceeded
+}
+
+// useSSL returns a boolean describing whether we should use secure
+// connections for S3 uploads. This returns true unless we're talking
+// to localhost (which we do in unit tests).
+func (u *UploadOperation) useSSL() bool {
+	return !strings.HasPrefix(u.StorageService.Host, "localhost")
 }
 
 func (u *UploadOperation) sendToSFTP() bool {

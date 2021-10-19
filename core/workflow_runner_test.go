@@ -36,24 +36,9 @@ func runnerCleanup() {
 }
 
 func TestWorkflowRunner(t *testing.T) {
-
-	// ----------------------------------------
-	// TODO: Travis needs creds to run uploads.
-	// ----------------------------------------
-	// When running in CI, don't try to upload items to S3,
-	// because we don't currently have credentials.
-	if util.RunningInCI() {
-		fmt.Println("Running in CI. Skipping WorkflowRunner test until we have creds or a minio server.")
-		return
-	}
-
 	workflowFile := path.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
 	batchFile := createBatchFile(t)
 	defer runnerCleanup()
-
-	// ----------------------------------------
-	// TODO: Travis needs creds to run uploads.
-	// ----------------------------------------
 
 	runner, err := core.NewWorkflowRunner(workflowFile, batchFile, os.TempDir(), 3)
 	require.Nil(t, err)

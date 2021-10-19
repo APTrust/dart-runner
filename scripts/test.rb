@@ -80,20 +80,7 @@ class TestRunner
     # S3 buckets for minio. We should ideally read these from the
     # .env.test file.
     buckets = [
-      "preservation-or",
-      "preservation-va",
-      "glacier-oh",
-      "glacier-or",
-      "glacier-va",
-      "glacier-deep-oh",
-      "glacier-deep-or",
-      "glacier-deep-va",
-      "wasabi-or",
-      "wasabi-va",
-      "receiving",
-      "staging",
-      "aptrust.receiving.test.test.edu",
-      "aptrust.restore.test.test.edu",
+      "dart-runner.test",
     ]
     buckets.each do |bucket|
       full_bucket = File.join(base, "minio", bucket)

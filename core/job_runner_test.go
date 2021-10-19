@@ -33,16 +33,6 @@ func TestJobRunner(t *testing.T) {
 		}
 	}()
 
-	// ----------------------------------------
-	// TODO: Travis needs creds to run uploads.
-	// ----------------------------------------
-	// When running in CI, don't try to upload items to S3,
-	// because we don't currently have credentials.
-	if util.RunningInCI() {
-		fmt.Println("Running in CI. Skipping upload operations in JobRunner test.")
-		job.UploadOps = make([]*core.UploadOperation, 0)
-	}
-
 	require.True(t, job.Validate())
 	retVal := core.RunJob(job)
 	assert.Equal(t, constants.ExitOK, retVal)

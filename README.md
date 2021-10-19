@@ -50,3 +50,7 @@ Once you’ve defined a workflow and a CSV list, you can set the workflow to run
 For more dynamic workflows where you want to bag and ship only new and updated items, you can run a script that generates a CSV file of new/updated items and feed that file to the DART Runner application.
 
 dart-runner can also help replicate bags between digital repositories using the [Beyond the Repository BagIt format](https://github.com/dpscollaborative/btr_bagit_profile).
+
+## Testing
+
+`ruby ./scripts/test.rb`
