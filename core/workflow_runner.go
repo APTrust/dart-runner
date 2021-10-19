@@ -26,7 +26,22 @@ type WorkflowRunner struct {
 	errMutex     sync.Mutex
 }
 
+// NewWorkflowRunner creates a new WorkFlowRunner object. Param workflowFile
+// is the path the JSON file that contains a description of the workflow.
+// Param csvFile is the path to the file contains a CSV list of directories
+// to package. (That file also contains tag values for each package.)
+// Param outputDir is the path to the directory into which the packages
+// should be written. Param concurrency is the number of jobs to run in
+// parallel.
+//
+// This creates (1 * concurrency) goroutines to do the work. You probably
+// shouldn't set concurrency too high because bagging and other forms of
+// packaging do a lot of disk reading and writing. Concurrency significantly
+// above 2 will probably lead to disk thrashing.
 func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int) (*WorkflowRunner, error) {
+	if concurrency < 1 {
+		return nil, fmt.Errorf("Concurrency must be >= 1.")
+	}
 	if !util.FileExists(outputDir) {
 		return nil, fmt.Errorf("Output directory '%s' does not exist. You must create it first.", outputDir)
 	}
@@ -38,17 +53,32 @@ func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int)
 	if err != nil {
 		return nil, err
 	}
+
+	// Create the runner. Note that the channel size is limited
+	// because the job objects pushed into the channel can use
+	// 10-20k of memory each. If you're running a workflow on
+	// 5,000 items, you don't want 50-100 MB of data sitting in
+	// memory waiting to be processed. Better to call jobParams.ToJob()
+	// just before the job is going to be executed. The 10-20k
+	// goes out of scope as soon as the job completes.
 	runner := &WorkflowRunner{
 		Workflow:    workflow,
 		CSVFile:     workflowCSVFile,
 		OutputDir:   outputDir,
 		Concurrency: concurrency,
-		jobChannel:  make(chan *Job, concurrency),
+		jobChannel:  make(chan *Job, concurrency*2),
 	}
-	go runner.runAsync()
+	// Create one or more workers to run jobs.
+	for i := 0; i < concurrency; i++ {
+		go runner.runAsync()
+	}
 	return runner, nil
 }
 
+// Run runs the workflow, writing one line of JSON output per job
+// to STDOUT. The output is a serialized JobResult object. Errors
+// will be written to STDERR, though there **should** also be
+// JobResult written to STDOUT if a job fails.
 func (r *WorkflowRunner) Run() int {
 	for {
 		entry, err := r.CSVFile.ReadNext()
@@ -66,6 +96,9 @@ func (r *WorkflowRunner) Run() int {
 	return r.getExitCode()
 }
 
+// runAsync listens for new jobs on on a go channel and runs
+// those jobs as they appear. It should run up to concurrency jobs
+// at once.
 func (r *WorkflowRunner) runAsync() {
 	for job := range r.jobChannel {
 		retVal := RunJob(job)
