@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 )
 
+// TODO: Change Results to PackageResult, ValidationResult, UploadResults
+//       Fill in FileSize, FilePath on package & validation results
+//       Provider should indicate this was a DART-runner job
+
 // JobResult collects the results of an attempted job for
 // reporting purposes.
 type JobResult struct {
