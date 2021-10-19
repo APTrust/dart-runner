@@ -357,3 +357,13 @@ func ToHumanSize(size, unit int64) string {
 	}
 	return fmt.Sprintf("%.1f %cB", float64(size)/float64(div), "kMGTPE"[exp])
 }
+
+// NewLine returns the correct newline character for the current system,
+// either "\r\n" or "\n".
+func NewLine() string {
+	newline := "\n"
+	if runtime.GOOS == "windows" {
+		newline = "\r\n"
+	}
+	return newline
+}

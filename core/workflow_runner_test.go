@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -48,30 +49,51 @@ func TestWorkflowRunner(t *testing.T) {
 	// TODO: Capture and test STDOUT properly
 	// ----------------------------------------
 
-	//origStdout := os.Stdout
+	origStdout := os.Stdout
 	origStderr := os.Stderr
 
-	//stdOutReader, stdOutWriter, _ := os.Pipe()
+	stdOutReader, stdOutWriter, _ := os.Pipe()
 	stdErrReader, stdErrWriter, _ := os.Pipe()
-	//os.Stdout = stdOutWriter
+	os.Stdout = stdOutWriter
 	os.Stderr = stdErrWriter
-
-	defer func() {
-		//os.Stdout = origStdout
-		os.Stderr = origStderr
-	}()
 
 	retVal := runner.Run()
 	assert.Equal(t, retVal, constants.ExitOK)
 
-	//stdOutWriter.Close()
+	stdOutWriter.Close()
 	stdErrWriter.Close()
-	//stdOutStr, _ := ioutil.ReadAll(stdOutReader)
+	stdOutStr, _ := ioutil.ReadAll(stdOutReader)
 	stdErrStr, _ := ioutil.ReadAll(stdErrReader)
 
-	//fmt.Println("STDOUT:", stdOutStr)
-	fmt.Println("STDERR:", stdErrStr)
+	os.Stdout = origStdout
+	os.Stderr = origStderr
 
-	//assert.NotEmpty(t, stdOutStr)
+	//fmt.Println("STDOUT:", string(stdOutStr))
+	//fmt.Println("STDERR:", string(stdErrStr))
+
+	assert.NotEmpty(t, stdOutStr)
 	assert.Empty(t, string(stdErrStr))
+
+	// STDOUT should have three JSON objects,
+	// each one representing the result of a job.
+	// Parse and test these three...
+	jsonData := formatJsonOutput(string(stdOutStr))
+	fmt.Println(jsonData)
+	results := make([]*core.JobResult, 0)
+	err = json.Unmarshal([]byte(jsonData), &results)
+	require.Nil(t, err)
+
+	// TODO: Fill and check remoteURL and remoteChecksum on upload results
+
+	for _, result := range results {
+		assert.True(t, result.PayloadByteCount > 0)
+		assert.True(t, result.PayloadFileCount > 0)
+		assert.True(t, result.Succeeded)
+	}
+}
+
+func formatJsonOutput(str string) string {
+	splitAt := fmt.Sprintf("}%s{", util.NewLine())
+	parts := strings.Split(str, splitAt)
+	return fmt.Sprintf("[%s]", strings.Join(parts, "},{"))
 }
