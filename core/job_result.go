@@ -46,10 +46,10 @@ func NewJobResult(job *Job) *JobResult {
 	}
 }
 
-// ToJson returns a pretty-printed JSON string describing the
-// results of this job's operations.
+// ToJson returns a JSON string describing the results of this
+// job's operations.
 func (r *JobResult) ToJson() (string, error) {
-	data, err := json.MarshalIndent(r, "", "  ")
+	data, err := json.Marshal(r)
 	if err != nil {
 		return "", nil
 	}

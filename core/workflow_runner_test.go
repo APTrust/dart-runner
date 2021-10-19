@@ -62,30 +62,30 @@ func TestWorkflowRunner(t *testing.T) {
 
 	stdOutWriter.Close()
 	stdErrWriter.Close()
-	stdOutStr, _ := ioutil.ReadAll(stdOutReader)
-	stdErrStr, _ := ioutil.ReadAll(stdErrReader)
+	stdOutBytes, _ := ioutil.ReadAll(stdOutReader)
+	stdErrBytes, _ := ioutil.ReadAll(stdErrReader)
 
 	os.Stdout = origStdout
 	os.Stderr = origStderr
 
-	//fmt.Println("STDOUT:", string(stdOutStr))
-	//fmt.Println("STDERR:", string(stdErrStr))
+	fmt.Println("STDOUT:", string(stdOutBytes))
+	fmt.Println("STDERR:", string(stdErrBytes))
 
-	assert.NotEmpty(t, stdOutStr)
-	assert.Empty(t, string(stdErrStr))
+	assert.NotEmpty(t, stdOutBytes)
+	assert.Empty(t, string(stdErrBytes))
 
 	// STDOUT should have three JSON objects,
 	// each one representing the result of a job.
 	// Parse and test these three...
-	jsonData := formatJsonOutput(string(stdOutStr))
-	fmt.Println(jsonData)
-	results := make([]*core.JobResult, 0)
-	err = json.Unmarshal([]byte(jsonData), &results)
-	require.Nil(t, err)
+	jsonStr := strings.TrimRight(string(stdOutBytes), "\r\n")
+	jsonLines := strings.Split(jsonStr, util.NewLine())
+	assert.Equal(t, 3, len(jsonLines), "Workflow should have produced 3 JSON results.")
 
-	// TODO: Fill and check remoteURL and remoteChecksum on upload results
+	for _, line := range jsonLines {
+		result := &core.JobResult{}
+		err = json.Unmarshal([]byte(line), result)
+		require.Nil(t, err)
 
-	for _, result := range results {
 		assert.True(t, result.PayloadByteCount > 0)
 		assert.True(t, result.PayloadFileCount > 0)
 		assert.True(t, result.Succeeded)
@@ -98,10 +98,11 @@ func TestWorkflowRunner(t *testing.T) {
 			}
 		}
 	}
+	//assert.True(t, false)
 }
 
-func formatJsonOutput(str string) string {
-	splitAt := fmt.Sprintf("}%s{", util.NewLine())
-	parts := strings.Split(str, splitAt)
-	return fmt.Sprintf("[%s]", strings.Join(parts, "},{"))
-}
+// func formatJsonOutput(str string) string {
+// 	splitAt := fmt.Sprintf("}%s{", util.NewLine())
+// 	parts := strings.Split(str, splitAt)
+// 	return fmt.Sprintf("[%s]", strings.Join(parts, "},{"))
+// }
