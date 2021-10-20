@@ -45,10 +45,6 @@ func TestWorkflowRunner(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, runner)
 
-	// ----------------------------------------
-	// TODO: Capture and test STDOUT properly
-	// ----------------------------------------
-
 	origStdout := os.Stdout
 	origStderr := os.Stderr
 
@@ -90,19 +86,14 @@ func TestWorkflowRunner(t *testing.T) {
 		assert.True(t, result.PayloadFileCount > 0)
 		assert.True(t, result.Succeeded)
 
-		for _, opResult := range result.Results {
-			if opResult.Operation == "upload" {
-				assert.True(t, len(opResult.RemoteChecksum) >= 32)
-				assert.True(t, strings.HasPrefix(opResult.RemoteURL, "s3://localhost:9899/dart-runner.test/RunnerTest"))
-				assert.True(t, strings.HasSuffix(opResult.RemoteURL, ".tar"))
-			}
+		assert.True(t, result.PackageResult.Succeeded())
+		assert.True(t, result.ValidationResult.Succeeded())
+
+		for _, opResult := range result.UploadResults {
+			assert.True(t, len(opResult.RemoteChecksum) >= 32)
+			assert.True(t, strings.HasPrefix(opResult.RemoteURL, "s3://localhost:9899/dart-runner.test/RunnerTest"))
+			assert.True(t, strings.HasSuffix(opResult.RemoteURL, ".tar"))
 		}
 	}
 	//assert.True(t, false)
 }
-
-// func formatJsonOutput(str string) string {
-// 	splitAt := fmt.Sprintf("}%s{", util.NewLine())
-// 	parts := strings.Split(str, splitAt)
-// 	return fmt.Sprintf("[%s]", strings.Join(parts, "},{"))
-// }

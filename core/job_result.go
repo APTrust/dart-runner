@@ -15,7 +15,9 @@ type JobResult struct {
 	PayloadByteCount int64              `json:"payloadByteCount"`
 	PayloadFileCount int64              `json:"payloadFileCount"`
 	Succeeded        bool               `json:"succeeded"`
-	Results          []*OperationResult `json:"operationResults"`
+	PackageResult    *OperationResult   `json:"packageResult"`
+	ValidationResult *OperationResult   `json:"validationResult"`
+	UploadResults    []*OperationResult `json:"uploadResults"`
 	ValidationErrors map[string]string  `json:"validationErrors"`
 }
 
@@ -24,30 +26,28 @@ type JobResult struct {
 // representation of this object to stdout upon completion or
 // termination of each job.
 func NewJobResult(job *Job) *JobResult {
-	results := make([]*OperationResult, 0)
-	if job.PackageOp != nil && job.PackageOp.Result != nil {
-		results = append(results, job.PackageOp.Result)
-	}
-	if job.ValidationOp != nil && job.ValidationOp.Result != nil {
-		results = append(results, job.ValidationOp.Result)
-	}
-	if job.UploadOps != nil {
-		for _, op := range job.UploadOps {
-			results = append(results, op.Result)
-		}
-	}
-	validationErrors := make(map[string]string)
-	if len(job.Errors) > 0 && !job.PackageAttempted() && !job.ValidationAttempted() && !job.UploadAttempted() {
-		validationErrors = job.Errors
-	}
-	return &JobResult{
+	jobResult := &JobResult{
 		JobName:          job.Name(),
 		PayloadByteCount: job.ByteCount,
 		PayloadFileCount: job.FileCount,
 		Succeeded:        len(job.Errors) == 0,
-		ValidationErrors: validationErrors,
-		Results:          results,
+		UploadResults:    make([]*OperationResult, 0),
 	}
+	if job.PackageOp != nil && job.PackageOp.Result != nil {
+		jobResult.PackageResult = job.PackageOp.Result
+	}
+	if job.ValidationOp != nil && job.ValidationOp.Result != nil {
+		jobResult.ValidationResult = job.ValidationOp.Result
+	}
+	if job.UploadOps != nil {
+		for _, op := range job.UploadOps {
+			jobResult.UploadResults = append(jobResult.UploadResults, op.Result)
+		}
+	}
+	if len(job.Errors) > 0 && !job.PackageAttempted() && !job.ValidationAttempted() && !job.UploadAttempted() {
+		jobResult.ValidationErrors = job.Errors
+	}
+	return jobResult
 }
 
 // ToJson returns a JSON string describing the results of this

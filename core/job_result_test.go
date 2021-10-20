@@ -26,7 +26,9 @@ func TestJobResult(t *testing.T) {
 	assert.Equal(t, job.Name(), jobResult.JobName)
 	assert.Equal(t, job.ByteCount, jobResult.PayloadByteCount)
 	assert.Equal(t, job.FileCount, jobResult.PayloadFileCount)
-	assert.Equal(t, 5, len(jobResult.Results))
+	assert.NotNil(t, jobResult.PackageResult)
+	assert.NotNil(t, jobResult.ValidationResult)
+	assert.Equal(t, 3, len(jobResult.UploadResults))
 	assert.Equal(t, 0, len(jobResult.ValidationErrors))
 	assert.True(t, jobResult.Succeeded)
 
