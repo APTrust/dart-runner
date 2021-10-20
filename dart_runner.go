@@ -13,12 +13,17 @@ import (
 var help string
 
 func main() {
+	exitCode := constants.ExitOK
 	options := core.ParseOptions()
 	fmt.Println(options)
 	if !options.AreValid() {
 		showHelp()
-		os.Exit(constants.ExitOK)
+	} else if options.JobFilePath != "" {
+		exitCode = runJob(options)
+	} else {
+		exitCode = runWorkflow(options)
 	}
+	os.Exit(exitCode)
 }
 
 func runJob(opts *core.Options) int {

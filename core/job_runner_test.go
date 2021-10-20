@@ -13,20 +13,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getRunnerTestJob(t *testing.T) *core.Job {
+func getRunnerTestJob(t *testing.T, bagName string) *core.Job {
 	workflow := loadJsonWorkflow(t)
 	files := []string{
 		path.Join(util.PathToTestData(), "files"),
 	}
-	packageName := "runner_test_bag.tar"
-	outputPath := path.Join(os.TempDir(), packageName)
+	outputPath := path.Join(os.TempDir(), bagName)
 	tags := getTestTags()
-	jobParams := core.NewJobParams(workflow, packageName, outputPath, files, tags)
+	jobParams := core.NewJobParams(workflow, bagName, outputPath, files, tags)
 	return jobParams.ToJob()
 }
 
-func TestJobRunner(t *testing.T) {
-	job := getRunnerTestJob(t)
+func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
+	job := getRunnerTestJob(t, bagName)
 	defer func() {
 		if util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
 			os.Remove(job.PackageOp.OutputPath)
@@ -34,7 +33,7 @@ func TestJobRunner(t *testing.T) {
 	}()
 
 	require.True(t, job.Validate())
-	retVal := core.RunJob(job)
+	retVal := core.RunJob(job, withCleanup)
 	assert.Equal(t, constants.ExitOK, retVal)
 
 	assert.True(t, job.PackageOp.Result.Succeeded())
@@ -43,4 +42,19 @@ func TestJobRunner(t *testing.T) {
 		fmt.Println(op.Errors)
 		assert.True(t, op.Result.Succeeded())
 	}
+
+	lastUpload := job.UploadOps[len(job.UploadOps)-1]
+	if withCleanup {
+		assert.Contains(t, lastUpload.Result.Info, "was deleted at")
+	} else {
+		assert.Contains(t, lastUpload.Result.Info, "Bag file(s) remain")
+	}
+}
+
+func TestJobRunnerWithCleanup(t *testing.T) {
+	testJobRunner(t, "bag_with_cleanup.tar", true)
+}
+
+func TestJobRunnerNoCleanup(t *testing.T) {
+	testJobRunner(t, "bag_without_cleanup.tar", false)
 }

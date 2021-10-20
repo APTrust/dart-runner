@@ -41,7 +41,7 @@ func TestWorkflowRunner(t *testing.T) {
 	batchFile := createBatchFile(t)
 	defer runnerCleanup()
 
-	runner, err := core.NewWorkflowRunner(workflowFile, batchFile, os.TempDir(), 3)
+	runner, err := core.NewWorkflowRunner(workflowFile, batchFile, os.TempDir(), false, 3)
 	require.Nil(t, err)
 	require.NotNil(t, runner)
 

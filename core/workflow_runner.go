@@ -16,6 +16,7 @@ type WorkflowRunner struct {
 	Workflow     *Workflow
 	CSVFile      *WorkflowCSVFile
 	OutputDir    string
+	Cleanup      bool
 	Concurrency  int
 	SuccessCount int
 	FailureCount int
@@ -38,7 +39,7 @@ type WorkflowRunner struct {
 // shouldn't set concurrency too high because bagging and other forms of
 // packaging do a lot of disk reading and writing. Concurrency significantly
 // above 2 will probably lead to disk thrashing.
-func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int) (*WorkflowRunner, error) {
+func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup bool, concurrency int) (*WorkflowRunner, error) {
 	if concurrency < 1 {
 		return nil, fmt.Errorf("Concurrency must be >= 1.")
 	}
@@ -65,6 +66,7 @@ func NewWorkflowRunner(workflowFile, csvFile, outputDir string, concurrency int)
 		Workflow:    workflow,
 		CSVFile:     workflowCSVFile,
 		OutputDir:   outputDir,
+		Cleanup:     cleanup,
 		Concurrency: concurrency,
 		jobChannel:  make(chan *Job, concurrency*2),
 	}
@@ -101,7 +103,7 @@ func (r *WorkflowRunner) Run() int {
 // at once.
 func (r *WorkflowRunner) runAsync() {
 	for job := range r.jobChannel {
-		retVal := RunJob(job)
+		retVal := RunJob(job, r.Cleanup)
 		if retVal == constants.ExitOK {
 			r.SuccessCount++
 		} else {
