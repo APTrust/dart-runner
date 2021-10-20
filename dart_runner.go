@@ -27,13 +27,29 @@ func main() {
 }
 
 func runJob(opts *core.Options) int {
-
-	return constants.ExitOK
+	job, err := core.JobFromJson(opts.JobFilePath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr,
+			"Error reading job file %s: %s\n",
+			opts.JobFilePath, err.Error())
+		return constants.ExitRuntimeErr
+	}
+	return core.RunJob(job, opts.DeleteAfterUpload)
 }
 
 func runWorkflow(opts *core.Options) int {
-
-	return constants.ExitOK
+	runner, err := core.NewWorkflowRunner(
+		opts.WorkflowFilePath,
+		opts.BatchFilePath,
+		opts.OutputDir,
+		opts.DeleteAfterUpload,
+		opts.Concurrency,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot start workflow: %s\n", err.Error())
+		return constants.ExitRuntimeErr
+	}
+	return runner.Run()
 }
 
 func showHelp() {

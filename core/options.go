@@ -9,6 +9,7 @@ type Options struct {
 	WorkflowFilePath  string
 	BatchFilePath     string
 	OutputDir         string
+	Concurrency       int
 	DeleteAfterUpload bool
 	ShowHelp          bool
 }
@@ -18,6 +19,7 @@ func ParseOptions() *Options {
 	workflowFilePath := flag.String("workflow", "", "Path to workflow json file")
 	batchFilePath := flag.String("batch", "", "Path to csv batch file")
 	outputDir := flag.String("output-dir", "", "Path to output directory")
+	concurrency := flag.Int("concurrency", 1, "Number of jobs to run simultaneously")
 	deleteAfterUpload := flag.Bool("delete", true, "Delete bags after upload? true|false - Default = true.")
 	showHelp := flag.Bool("help", false, "Show help.")
 
@@ -28,6 +30,7 @@ func ParseOptions() *Options {
 		WorkflowFilePath:  *workflowFilePath,
 		BatchFilePath:     *batchFilePath,
 		OutputDir:         *outputDir,
+		Concurrency:       *concurrency,
 		DeleteAfterUpload: *deleteAfterUpload,
 		ShowHelp:          *showHelp,
 	}

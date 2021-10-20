@@ -1,27 +1,43 @@
 DART Runner: Bag and ship files from the command line.
 
+To use DART Runner, you typically want to define a job or workflow in the DART
+UI, then export it as a json file to be consumed by DART Runner. See the
+Resources section below.
+
 -------
 Options
 -------
 
-  --job        Path to job json file. Use this option only if you are running
-               a single job (as opposed to a workflow). Job json files can
-               be exported from the DART UI.
-  --workflow   Path to workflow json file. Use this option if you are running
-               a workflow against a batch of files. If you specify a workflow
-               file, you must also specify --batch. Workflows can be exported
-               from the DART UI.
-  --batch      Path to CSV batch file. Use this option with --workflow to
-               specify a set of files or directories to run through a workflow.
-  --output-dir Path to package output directory. Jobs and workflows will create
-               bags in this directory. This option is always REQUIRED.
-  --delete     Delete bags after job completes? Set this to true or false.
-               The default is true for jobs and workflows that include uploads:
-               the bags will be deleted after successful uploads. Default is
-               false for jobs and workflows that do not include uploads because
-               you probably want to do something with the bag after it's
-               created.
-  --help       Show this help document.
+  --job          Path to job json file. Use this option only if you are running
+                 a single job (as opposed to a workflow). Job json files can
+                 be exported from the DART UI.
+
+  --workflow     Path to workflow json file. Use this option if you are running
+                 a workflow against a batch of files. If you specify a workflow
+                 file, you must also specify --batch. Workflows can be exported
+                 from the DART UI.
+
+  --batch        Path to CSV batch file. Use this option with --workflow to
+                 specify a set of files or directories to run through a
+                 workflow.
+
+  --output-dir   Path to package output directory. Jobs and workflows will
+                 create bags in this directory. This option is always REQUIRED.
+
+  --delete       Delete bags after job completes? Set this to true or false.
+                 The default is true for jobs and workflows that include
+                 uploads: the bags will be deleted after successful uploads.
+                 Default is false for jobs and workflows that do not include
+                 uploads because you probably want to do something with the bag
+                 after it's created.
+
+  --concurrency  Number of jobs to run concurrently. Default is 1. Max value
+                 for this param should be less than or equal to the number of
+                 processors on your machine. You may get diminishing returns
+                 when setting this above 2 because most of the DART runner's
+                 work is reading from and writing to disk.
+
+  --help         Show this help document.
 
 
 --------
@@ -40,18 +56,19 @@ To run a workflow:
     dart-runner --workflow=path/to/workflow.json  \
                 --batch=path/to/batch.csv         \
                 --output-dir=path/to/directory    \
+                --concurrency=2                   \
                 --delete=false
 
 The command above runs all of the items listed in the --batch CSV file through
 the workflow described in the --workflow json file. Bags are written to the
 output directory. Setting the delete flag to false means the bags will not be
-deleted from the output directory after successful upload. Setting --delete
-to true (or omitting --delete) will cause bags to be deleted after successful
-upload.
+deleted from the output directory after successful upload.
 
-To use DART Runner, you typically want to define a job or workflow in the DART
-UI, then export it as a json file to be consumed by DART Runner.
+The --concurrency flag above tells DART runner to work on 2 bags at a time
+(instead of the default 1 at a time) when bagging and uploading.
 
+Setting --delete to true (or omitting --delete) will cause bags to be deleted
+after successful upload.
 
 ---------
 Resources

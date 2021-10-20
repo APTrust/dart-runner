@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 )
 
 // TitleTags is a list of BagItProfile tags to check to try to find a
@@ -38,6 +40,16 @@ func NewJob() *Job {
 	return &Job{
 		Errors: make(map[string]string),
 	}
+}
+
+func JobFromJson(pathToFile string) (*Job, error) {
+	job := &Job{}
+	data, err := util.ReadFile(pathToFile)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, job)
+	return job, err
 }
 
 // Name returns a name for this job, which is usually the file name of
