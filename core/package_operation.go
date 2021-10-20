@@ -23,7 +23,7 @@ func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *
 		PackageName: packageName,
 		OutputPath:  outputPath,
 		SourceFiles: sourceFiles,
-		Result:      NewOperationResult("package", "bagger"),
+		Result:      NewOperationResult("package", "DART Runner Bagger"),
 		Errors:      make(map[string]string),
 	}
 }

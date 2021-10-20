@@ -1,6 +1,9 @@
 package core
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -19,11 +22,6 @@ func RunJob(job *Job) int {
 	// ----------------------------------------
 	// TODO: Delete bag when job completes.
 	// Can do this in a simple defer.
-	//
-	// TODO: Fill in all available data in
-	// OperationResult for each op. Or else
-	// get rid of extraneous fields in that
-	// struct.
 	// ----------------------------------------
 
 	if !runner.RunPackageOp() {
@@ -74,6 +72,7 @@ func (r *Runner) RunPackageOp() bool {
 	ok := bagger.Run()
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.FileCount = bagger.PayloadFileCount()
+	r.setResultFileInfo(op.Result, op.OutputPath, bagger.Errors)
 	op.Result.Finish(bagger.Errors)
 	return ok
 }
@@ -86,6 +85,7 @@ func (r *Runner) RunValidationOp() bool {
 	op := r.Job.ValidationOp
 	op.Result.Start()
 	ok := r.Job.ValidationOp.Validate()
+	r.setResultFileInfo(op.Result, op.PathToBag, op.Errors)
 	op.Result.Finish(op.Errors)
 	return ok
 }
@@ -100,10 +100,24 @@ func (r *Runner) RunUploadOps() bool {
 	for _, op := range r.Job.UploadOps {
 		op.Result.Start()
 		ok := op.DoUpload()
+		if op.SourceFiles != nil && len(op.SourceFiles) > 0 {
+			r.setResultFileInfo(op.Result, op.SourceFiles[0], op.Errors)
+		}
 		op.Result.Finish(op.Errors)
 		if !ok {
 			allSucceeded = false
 		}
 	}
 	return allSucceeded
+}
+
+func (r *Runner) setResultFileInfo(opResult *OperationResult, filePath string, errMap map[string]string) {
+	opResult.FilePath = filePath
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		errMap["OutputFile.Stat"] = fmt.Sprintf("Can't stat output file at %s: %s", filePath, err.Error())
+	} else {
+		opResult.FileMTime = fileInfo.ModTime()
+		opResult.FileSize = fileInfo.Size()
+	}
 }
