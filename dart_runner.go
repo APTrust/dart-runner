@@ -12,12 +12,16 @@ import (
 //go:embed help.txt
 var help string
 
+// Version value is injected at build time.
+var Version string
+
 func main() {
 	exitCode := constants.ExitOK
 	options := core.ParseOptions()
-	fmt.Println(options)
 	if !options.AreValid() {
 		showHelp()
+	} else if options.Version {
+		showVersion()
 	} else if options.JobFilePath != "" {
 		exitCode = runJob(options)
 	} else {
@@ -54,4 +58,8 @@ func runWorkflow(opts *core.Options) int {
 
 func showHelp() {
 	fmt.Println(help)
+}
+
+func showVersion() {
+	fmt.Println(Version)
 }

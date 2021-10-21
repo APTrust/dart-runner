@@ -16,3 +16,6 @@
 
 # Emacs temp files
 *~
+
+# Local build directory
+dist/*

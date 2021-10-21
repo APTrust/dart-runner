@@ -12,6 +12,7 @@ type Options struct {
 	Concurrency       int
 	DeleteAfterUpload bool
 	ShowHelp          bool
+	Version           bool
 }
 
 func ParseOptions() *Options {
@@ -22,6 +23,7 @@ func ParseOptions() *Options {
 	concurrency := flag.Int("concurrency", 1, "Number of jobs to run simultaneously")
 	deleteAfterUpload := flag.Bool("delete", true, "Delete bags after upload? true|false - Default = true.")
 	showHelp := flag.Bool("help", false, "Show help.")
+	version := flag.Bool("version", false, "Show version and exit.")
 
 	flag.Parse()
 
@@ -33,10 +35,14 @@ func ParseOptions() *Options {
 		Concurrency:       *concurrency,
 		DeleteAfterUpload: *deleteAfterUpload,
 		ShowHelp:          *showHelp,
+		Version:           *version,
 	}
 }
 
 func (opts Options) AreValid() bool {
+	if opts.Version {
+		return true
+	}
 	if opts.JobFilePath != "" && opts.OutputDir != "" {
 		return true
 	}
