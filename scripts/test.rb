@@ -55,7 +55,16 @@ class TestRunner
   end
 
   def bin_dir
-    os = (/darwin/ =~ RUBY_PLATFORM) ? "osx" : "linux"
+    os = ""
+    if RUBY_PLATFORM =~ /win32|mingw/
+      os = "windows"
+    elsif RUBY_PLATFORM =~ /darwin/
+      os = "osx"
+    elsif RUBY_PLATFORM =~ /linux/
+      os = "linux"
+    else
+      abort("Unsupported platform: #{RUBY_PLATFORM}")
+    end
     File.join(project_root, "bin", os)
   end
 
