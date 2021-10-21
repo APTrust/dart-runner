@@ -51,6 +51,17 @@ For more dynamic workflows where you want to bag and ship only new and updated i
 
 dart-runner can also help replicate bags between digital repositories using the [Beyond the Repository BagIt format](https://github.com/dpscollaborative/btr_bagit_profile).
 
+## Building
+
+`./scripts/build.sh` or `bash ./scripts/build.sh`
+
 ## Testing
 
 `ruby ./scripts/test.rb`
+
+### Post-Build Test
+
+```
+./scripts/build.sh
+./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json --batch=./testdata/files/postbuild_test_batch.csv --output-dir=<DIR>
+```
