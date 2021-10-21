@@ -56,9 +56,7 @@ class TestRunner
 
   def bin_dir
     os = ""
-    if RUBY_PLATFORM =~ /win32|mingw/
-      os = "windows"
-    elsif RUBY_PLATFORM =~ /darwin/
+    if RUBY_PLATFORM =~ /darwin/
       os = "osx"
     elsif RUBY_PLATFORM =~ /linux/
       os = "linux"
