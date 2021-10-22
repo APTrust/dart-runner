@@ -16,6 +16,7 @@ var help string
 var Version string
 
 func main() {
+	constants.AppVersion = Version
 	exitCode := constants.ExitOK
 	options := core.ParseOptions()
 	if !options.AreValid() {

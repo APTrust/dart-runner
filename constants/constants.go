@@ -51,6 +51,9 @@ var PreferredAlgsInOrder = []string{
 	AlgSha1,
 }
 
-func AppVersion() string {
-	return "DART Runner v0.1"
-}
+// AppVersion is the version of DART Runner. This is set by
+// the linker at compile time in main.Version, which then
+// sets this var before it runs a job or workflow. This isn't
+// really a constant, since it changes from build to build, but
+// then didn't Heraclitus say "The only constant in life is change?"
+var AppVersion string

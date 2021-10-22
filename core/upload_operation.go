@@ -23,7 +23,7 @@ type UploadOperation struct {
 func NewUploadOperation(ss *StorageService, files []string) *UploadOperation {
 	return &UploadOperation{
 		Errors:         make(map[string]string),
-		Result:         NewOperationResult("upload", "DART Runner Uploader"),
+		Result:         NewOperationResult("upload", "Uploader - "+constants.AppVersion),
 		SourceFiles:    files,
 		StorageService: ss,
 	}

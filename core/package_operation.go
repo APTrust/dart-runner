@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -23,7 +24,7 @@ func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *
 		PackageName: packageName,
 		OutputPath:  outputPath,
 		SourceFiles: sourceFiles,
-		Result:      NewOperationResult("package", "DART Runner Bagger"),
+		Result:      NewOperationResult("package", "Bagger - "+constants.AppVersion),
 		Errors:      make(map[string]string),
 	}
 }

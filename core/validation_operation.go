@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -17,7 +18,7 @@ func NewValidationOperation(pathToBag string) *ValidationOperation {
 	return &ValidationOperation{
 		Errors:    make(map[string]string),
 		PathToBag: pathToBag,
-		Result:    NewOperationResult("validation", "DART Runner Validator"),
+		Result:    NewOperationResult("validation", "Validator - "+constants.AppVersion),
 	}
 }
 

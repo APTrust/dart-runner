@@ -277,7 +277,7 @@ func (b *Bagger) calculatePathPrefix() {
 
 func (b *Bagger) setBagInfoAutoValues() {
 	b.Profile.SetTagValue("bag-info.txt", "Bagging-Date", time.Now().UTC().Format(time.RFC3339))
-	b.Profile.SetTagValue("bag-info.txt", "Bagging-Software", constants.AppVersion())
+	b.Profile.SetTagValue("bag-info.txt", "Bagging-Software", constants.AppVersion)
 	b.Profile.SetTagValue("bag-info.txt", "Payload-Oxum", b.PayloadOxum())
 	b.Profile.SetTagValue("bag-info.txt", "Bag-Size", util.ToHumanSize(b.PayloadBytes(), 1024))
 	bpIdentifier := "http://example.com/unspecified_profile_identifier"
