@@ -2,11 +2,13 @@ package main
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 )
 
 //go:embed help.txt
@@ -45,22 +47,12 @@ func runJob(opts *core.Options) int {
 }
 
 func runJobFromJson(opts *core.Options) int {
-	//
-	// 1. Parse json into JobParams
-	// 2. Read workflow from file
-	// 3. Create full-fledged JobParams with Workflow object.
-	// 4. Create job using JobParams.ToJob()
-	// 5. return core.RunJob(), as below
-	//
-	// --------------------------------------------
-	job, err := core.JobFromJson(opts.JobFilePath)
+	params, err := initParams(opts)
 	if err != nil {
-		fmt.Fprintf(os.Stderr,
-			"Error reading job file %s: %s\n",
-			opts.JobFilePath, err.Error())
+		fmt.Fprintf(os.Stderr, "Error creating job: %s\n", err.Error())
 		return constants.ExitRuntimeErr
 	}
-	return core.RunJob(job, opts.DeleteAfterUpload)
+	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload)
 }
 
 func runWorkflow(opts *core.Options) int {
@@ -76,6 +68,28 @@ func runWorkflow(opts *core.Options) int {
 		return constants.ExitRuntimeErr
 	}
 	return runner.Run()
+}
+
+func initParams(opts *core.Options) (*core.JobParams, error) {
+	if !util.FileExists(opts.OutputDir) {
+		return nil, fmt.Errorf("Output directory '%s' does not exist. You must create it first.", opts.OutputDir)
+	}
+	workflow, err := core.WorkflowFromJson(opts.WorkflowFilePath)
+	if err != nil {
+		return nil, err
+	}
+	partialParams := &core.JobParams{}
+	err = json.Unmarshal(opts.StdinData, partialParams)
+	if err != nil {
+		return nil, fmt.Errorf("JobParams JSON: %s", err.Error())
+	}
+	params := core.NewJobParams(
+		workflow,
+		partialParams.PackageName,
+		partialParams.OutputPath,
+		partialParams.Files,
+		partialParams.Tags)
+	return params, nil
 }
 
 func showHelp() {

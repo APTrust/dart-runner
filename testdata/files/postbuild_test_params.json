@@ -1,0 +1,30 @@
+{
+	"packageName": "job_params_test.tar",
+	"files": [
+		"./bagit",
+		"./core",
+		"./util"
+	],
+	"tags": [
+		{
+			"tagFile": "bag-info.txt",
+			"tagName": "Tag-One",
+			"userValue": "Value One"
+		},
+		{
+			"tagFile": "bag-info.txt",
+			"tagName": "Tag-Two",
+			"userValue": "Value Two"
+		},
+		{
+			"tagFile": "aptrust-info.txt",
+			"tagName": "Tag-Three",
+			"userValue": "Value Three"
+		},
+		{
+			"tagFile": "aptrust-info.txt",
+			"tagName": "Tag-Four",
+			"userValue": "Value Four"
+		}
+	]
+}
