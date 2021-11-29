@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bufio"
 	"flag"
+	"os"
 )
 
 type Options struct {
@@ -9,6 +11,7 @@ type Options struct {
 	WorkflowFilePath  string
 	BatchFilePath     string
 	OutputDir         string
+	StdinData         []byte
 	Concurrency       int
 	DeleteAfterUpload bool
 	ShowHelp          bool
@@ -36,6 +39,7 @@ func ParseOptions() *Options {
 		DeleteAfterUpload: *deleteAfterUpload,
 		ShowHelp:          *showHelp,
 		Version:           *version,
+		StdinData:         getStdinData(),
 	}
 }
 
@@ -46,8 +50,21 @@ func (opts Options) AreValid() bool {
 	if opts.JobFilePath != "" && opts.OutputDir != "" {
 		return true
 	}
+	if len(opts.StdinData) > 0 && opts.OutputDir != "" {
+		// We'll validate stdin json later
+		return true
+	}
 	if opts.WorkflowFilePath != "" && opts.BatchFilePath != "" && opts.OutputDir != "" {
 		return true
 	}
 	return false
+}
+
+func getStdinData() []byte {
+	var stdinData []byte
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		stdinData = append(stdinData, scanner.Bytes()...)
+	}
+	return stdinData
 }
