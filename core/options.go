@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"flag"
+	"io"
 	"os"
 )
 
@@ -39,7 +40,7 @@ func ParseOptions() *Options {
 		DeleteAfterUpload: *deleteAfterUpload,
 		ShowHelp:          *showHelp,
 		Version:           *version,
-		StdinData:         getStdinData(),
+		StdinData:         ReadInput(os.Stdin),
 	}
 }
 
@@ -60,11 +61,14 @@ func (opts Options) AreValid() bool {
 	return false
 }
 
-func getStdinData() []byte {
+// ReadInput reads input from the specified reader (which, in practice,
+// will usually be STDIN) and returns it with newlines preserved.
+func ReadInput(reader io.Reader) []byte {
 	var stdinData []byte
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		stdinData = append(stdinData, scanner.Bytes()...)
+		stdinData = append(stdinData, []byte("\n")...)
 	}
 	return stdinData
 }
