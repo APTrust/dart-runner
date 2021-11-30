@@ -296,6 +296,9 @@ func (b *Bagger) calculateBagName() {
 
 func (b *Bagger) pathForPayloadFile(fullPath string) string {
 	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+	if !strings.HasPrefix(shortPath, "/") {
+		shortPath = "/" + shortPath
+	}
 	return fmt.Sprintf("%s/data%s", b.bagName, shortPath)
 }
 

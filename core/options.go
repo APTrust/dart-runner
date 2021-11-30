@@ -3,8 +3,11 @@ package core
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"os"
+
+	"github.com/APTrust/dart-runner/constants"
 )
 
 type Options struct {
@@ -31,6 +34,11 @@ func ParseOptions() *Options {
 
 	flag.Parse()
 
+	var jsonData []byte
+	if StdinHasData() {
+		jsonData = ReadInput(os.Stdin)
+	}
+
 	return &Options{
 		JobFilePath:       *jobFilePath,
 		WorkflowFilePath:  *workflowFilePath,
@@ -40,10 +48,12 @@ func ParseOptions() *Options {
 		DeleteAfterUpload: *deleteAfterUpload,
 		ShowHelp:          *showHelp,
 		Version:           *version,
-		StdinData:         ReadInput(os.Stdin),
+		StdinData:         jsonData,
 	}
 }
 
+// AreValid returns true if options are valid. That is, they contain enough
+// info for DART Runner to proceed.
 func (opts Options) AreValid() bool {
 	if opts.Version {
 		return true
@@ -71,4 +81,15 @@ func ReadInput(reader io.Reader) []byte {
 		stdinData = append(stdinData, []byte("\n")...)
 	}
 	return stdinData
+}
+
+// StdinHasData returns true if STDIN has data waiting to be read.
+// This exits immediately if it can't access or stat STDIN.
+func StdinHasData() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Fprintln(os.Stdout, "Error checking STDIN:", err)
+		os.Exit(constants.ExitRuntimeErr)
+	}
+	return fi.Size() > 0
 }

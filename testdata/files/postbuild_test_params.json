@@ -1,30 +1,40 @@
 {
 	"packageName": "job_params_test.tar",
 	"files": [
-		"./bagit",
-		"./core",
-		"./util"
+		"/Users/apd4n/aptrust/dart-runner/bagit",
+		"/Users/apd4n/aptrust/dart-runner/core",
+		"/Users/apd4n/aptrust/dart-runner/util"
 	],
 	"tags": [
 		{
 			"tagFile": "bag-info.txt",
 			"tagName": "Tag-One",
-			"userValue": "Value One"
+			"value": "Value One"
 		},
 		{
 			"tagFile": "bag-info.txt",
 			"tagName": "Tag-Two",
-			"userValue": "Value Two"
+			"value": "Value Two"
 		},
 		{
 			"tagFile": "aptrust-info.txt",
 			"tagName": "Tag-Three",
-			"userValue": "Value Three"
+			"value": "Value Three"
 		},
 		{
 			"tagFile": "aptrust-info.txt",
 			"tagName": "Tag-Four",
-			"userValue": "Value Four"
+			"value": "Value Four"
+		},
+		{
+			"tagFile": "aptrust-info.txt",
+			"tagName": "Title",
+			"value": "Job Params Test Bag"
+		},
+		{
+			"tagFile": "aptrust-info.txt",
+			"tagName": "Description",
+			"value": "This bag is created by a post-build test."
 		}
 	]
 }

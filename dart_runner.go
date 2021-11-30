@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -86,7 +87,7 @@ func initParams(opts *core.Options) (*core.JobParams, error) {
 	params := core.NewJobParams(
 		workflow,
 		partialParams.PackageName,
-		partialParams.OutputPath,
+		path.Join(opts.OutputDir, partialParams.PackageName),
 		partialParams.Files,
 		partialParams.Tags)
 	return params, nil
