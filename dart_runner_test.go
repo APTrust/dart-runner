@@ -1,13 +1,26 @@
 package main_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
 	"path"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// These tests compile a binary of dart runner, call the program like a user
+// would, and then test a number of output conditions. These tests rely on the
+// setup done by scripts/test.rb, including:
+//
+// 1. Cleaning out and re-creating the test directories under ~/tmp
+// 2. Running a local version of Minio to receive uploads.
 
 var setupAttempted = false
 var setupSucceeded = false
@@ -63,5 +76,74 @@ func TestJobParams(t *testing.T) {
 }
 
 func TestWorkflowBatch(t *testing.T) {
+	Setup(t)
+	filesDir := path.Join(util.ProjectRoot(), "testdata", "files")
+	homeDir, err := os.UserHomeDir()
+	require.Nil(t, err)
 
+	// NOTE: scripts/test.rb should create this dir before tests start.
+	outputDir := path.Join(homeDir, "tmp", "bags")
+	command := runner()
+	args := []string{
+		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
+		fmt.Sprintf("--batch=%s/postbuild_test_batch.csv", filesDir),
+		fmt.Sprintf("--output-dir=%s", outputDir),
+		"--concurrency=2",
+		"--delete=true",
+	}
+	stdout, stderr, exitCode := util.ExecCommand(command, args)
+	assert.NotEmpty(t, stdout)
+	fmt.Println(string(stderr))
+	fmt.Println(string(stdout))
+	assert.Empty(t, stderr, string(stderr))
+	require.Equal(t, 0, exitCode)
+
+	results := strings.Split(string(stdout), "\n")
+	assert.Equal(t, 4, len(results))
+
+	for _, data := range results {
+		testJsonOutput(t, data)
+	}
+
+	outputFiles := []string{
+		"RunnerTestBagIt.tar",
+		"RunnerTestCore.tar",
+		"RunnerTestUtil.tar",
+	}
+	for _, file := range outputFiles {
+		testOutputFile(t, homeDir, file)
+	}
+}
+
+func testOutputFile(t *testing.T, homeDir, file string) {
+	// This directory is also created by scripts/test.rb.
+	// Post-build tests upload to the dart-runner.test bucket.
+	fullPath := path.Join(homeDir, "tmp", "minio", "dart-runner.test", file)
+	require.True(t, util.FileExists(fullPath), fullPath)
+
+	fileInfo, err := os.Stat(fullPath)
+	require.Nil(t, err, fullPath)
+
+	// Make sure size is sane and modtime is fresh (so we know file isn't
+	// left over from a prior test run... the test script at scripts/test.rb
+	// should delete contents of this dir before each run, but let's be sure).
+	assert.True(t, fileInfo.Size() > int64(10000), fullPath)
+	assert.WithinDuration(t, time.Now(), fileInfo.ModTime(), 30*time.Second)
+}
+
+func testJsonOutput(t *testing.T, data string) {
+	if len(data) == 0 {
+		return // empty newline at end of output
+	}
+	result := &core.JobResult{}
+	err := json.Unmarshal([]byte(data), result)
+	require.Nil(t, err)
+	assert.NotEmpty(t, result.JobName)
+	assert.True(t, result.PayloadFileCount > 0)
+	assert.True(t, result.PayloadByteCount > 0)
+	assert.NotNil(t, result.PackageResult)
+	assert.NotNil(t, result.ValidationResult)
+	assert.NotNil(t, result.UploadResults)
+	assert.Equal(t, 1, len(result.UploadResults))
+	assert.True(t, result.Succeeded)
 }

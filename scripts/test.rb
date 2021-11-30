@@ -95,22 +95,10 @@ class TestRunner
       FileUtils.mkdir_p full_bucket
     end
   end
-
-  # def run_post_build_tests
-  #   build_script = File.join(project_root, 'scripts', 'build.sh')
-  #   system(build_script) or raise "Build script failed"
-
-  #   make_test_dirs
-  #   bags_dir = File.join(ENV['HOME'], "tmp", "bags")
-  #   cmd = "./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json --batch=./testdata/files/postbuild_test_batch.csv --output-dir=#{bags_dir}"
-  #   stdout_str, stderr_str, exit_code = Open3.capture3(cmd)
-  # end
-
 end
 
 
 if __FILE__ == $0
   test_runner = TestRunner.new
   test_runner.run
-  #test_runner.run_post_build_tests
 end
