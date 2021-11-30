@@ -297,7 +297,7 @@
   },
   "storageServices": [
     {
-      "id": "31b0846e-46f6-4925-bdba-1d3c1a0b2b73",
+      "id": "6ab08dce-49f1-4925-bdba-933c1a0b2a14",
       "userCanDelete": true,
       "required": [
         "name",
@@ -306,39 +306,17 @@
         "id"
       ],
       "errors": {},
-      "name": "APTrust Demo Receiving Bucket",
-      "description": "Receiving bucket for ingest to the APTrust Demo repository",
+      "name": "Local Minio Receiving Bucket",
+      "description": "Receiving bucket running on local instance",
       "protocol": "s3",
-      "host": "s3.amazonaws.com",
-      "port": 0,
-      "bucket": "aptrust.receiving.test.test.edu",
-      "login": "env:AWS_ACCESS_KEY_ID",
-      "password": "env:AWS_SECRET_ACCESS_KEY",
+      "host": "localhost",
+      "port": 9899,
+      "bucket": "dart-runner.test",
+      "login": "minioadmin",
+      "password": "minioadmin",
       "loginExtra": "",
       "allowsUpload": true,
-      "allowsDownload": false
-    },
-    {
-      "id": "3781b002-ea3f-4caf-8adc-2fc6c992fb56",
-      "userCanDelete": true,
-      "required": [
-        "name",
-        "protocol",
-        "host",
-        "id"
-      ],
-      "errors": {},
-      "name": "DART Test Bucket",
-      "description": "Bucket for testing DART uploads.",
-      "protocol": "s3",
-      "host": "s3.amazonaws.com",
-      "port": 0,
-      "bucket": "aptrust.dart.test",
-      "login": "env:AWS_ACCESS_KEY_ID",
-      "password": "env:AWS_SECRET_ACCESS_KEY",
-      "loginExtra": "",
-      "allowsUpload": true,
-      "allowsDownload": false
+      "allowsDownload": true
     }
   ]
 }
