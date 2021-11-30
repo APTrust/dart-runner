@@ -15,7 +15,7 @@ type Runner struct {
 	Job *Job
 }
 
-func RunJob(job *Job, deleteOnSuccess bool) int {
+func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
 	runner := &Runner{job}
 	if !runner.ValidateJob() {
 		return constants.ExitRuntimeErr
@@ -34,14 +34,16 @@ func RunJob(job *Job, deleteOnSuccess bool) int {
 	} else {
 		runner.setNoCleanupMessage()
 	}
+
+	if printOutput {
+		runner.writeResult()
+	}
+
 	return constants.ExitOK
 }
 
 func (r *Runner) ValidateJob() bool {
-	if !r.Job.Validate() {
-		return false
-	}
-	return true
+	return r.Job.Validate()
 }
 
 func (r *Runner) RunPackageOp() bool {
@@ -184,5 +186,16 @@ func (r *Runner) setNoCleanupMessage() {
 	} else if r.Job.PackageOp == nil || r.Job.PackageOp.OutputPath == "" {
 		r.Job.PackageOp.Result.Info = fmt.Sprintf(
 			"Bag file remains in %s.", r.Job.PackageOp.OutputPath)
+	}
+}
+
+// writeResult writes the result of a job to STDOUT and/or STDERR
+func (r *Runner) writeResult() {
+	stdoutMessage, stderrMessage := r.Job.GetResultMessages()
+	if len(stdoutMessage) > 0 {
+		fmt.Println(stdoutMessage)
+	}
+	if len(stderrMessage) > 0 {
+		fmt.Fprintln(os.Stderr, stderrMessage)
 	}
 }

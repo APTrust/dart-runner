@@ -44,7 +44,7 @@ func runJob(opts *core.Options) int {
 			opts.JobFilePath, err.Error())
 		return constants.ExitRuntimeErr
 	}
-	return core.RunJob(job, opts.DeleteAfterUpload)
+	return core.RunJob(job, opts.DeleteAfterUpload, true)
 }
 
 func runJobFromJson(opts *core.Options) int {
@@ -53,7 +53,7 @@ func runJobFromJson(opts *core.Options) int {
 		fmt.Fprintf(os.Stderr, "Error creating job: %s\n", err.Error())
 		return constants.ExitRuntimeErr
 	}
-	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload)
+	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload, true)
 }
 
 func runWorkflow(opts *core.Options) int {

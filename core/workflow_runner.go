@@ -103,7 +103,7 @@ func (r *WorkflowRunner) Run() int {
 // at once.
 func (r *WorkflowRunner) runAsync() {
 	for job := range r.jobChannel {
-		retVal := RunJob(job, r.Cleanup)
+		retVal := RunJob(job, r.Cleanup, false)
 		if retVal == constants.ExitOK {
 			r.SuccessCount++
 		} else {
@@ -137,35 +137,15 @@ func (r *WorkflowRunner) getExitCode() int {
 	return constants.ExitOK
 }
 
-// writeResult writes the result
+// writeResult writes the result of a job to STDOUT and/or STDERR
 func (r *WorkflowRunner) writeResult(job *Job) {
-	result := NewJobResult(job)
-	jsonStr, err := result.ToJson()
-
-	// If we can't serialize the JobResult, tell the user.
-	if err != nil {
-		errMsg := fmt.Sprintf("Error getting result for job %s: %s", job.Name(), err.Error())
-		r.writeStdErr(errMsg)
-
-		status := "succeeded"
-		if !result.Succeeded {
-			status = "failed"
-		}
-		resultMsg := fmt.Sprintf("Job %s %s, but dart runner encountered an error when trying to report detailed results.", job.Name(), status)
-		r.writeStdOut(resultMsg)
-		return
+	stdoutMessage, stderrMessage := job.GetResultMessages()
+	if len(stdoutMessage) > 0 {
+		r.writeStdOut(stdoutMessage)
 	}
-
-	// OK, we can serialize the the JobResult. If there were any errors,
-	// make a note in STDERR.
-	if !result.Succeeded {
-		errMsg := fmt.Sprintf("Job %s encountered one or more errors. See the JSON results in stdout.", job.Name())
-		r.writeStdOut(errMsg)
+	if len(stderrMessage) > 0 {
+		r.writeStdErr(stderrMessage)
 	}
-
-	// If possible, always print the machine-readable JSON result to STDOUT.
-	// This is human-readable too, since the JSON is formatted.
-	r.writeStdOut(jsonStr)
 }
 
 // writeStdOut safely writes to STDOUT from concurrent go routines.

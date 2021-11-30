@@ -246,3 +246,27 @@ func (job *Job) RuntimeErrors() map[string]string {
 	}
 	return errs
 }
+
+func (job *Job) GetResultMessages() (stdoutMessage, stdErrMessage string) {
+	result := NewJobResult(job)
+	stdoutMessage, err := result.ToJson()
+
+	// If we can't serialize the JobResult, tell the user.
+	if err != nil {
+		stdErrMessage = fmt.Sprintf("Error getting result for job %s: %s", job.Name(), err.Error())
+		status := "succeeded"
+		if !result.Succeeded {
+			status = "failed"
+		}
+		stdoutMessage = fmt.Sprintf("Job %s %s, but dart runner encountered an error when trying to report detailed results.", job.Name(), status)
+		return stdoutMessage, stdErrMessage
+	}
+
+	// OK, we can serialize the the JobResult. If there were any errors,
+	// make a note in STDERR.
+	if !result.Succeeded {
+		stdErrMessage = fmt.Sprintf("Job %s encountered one or more errors. See the JSON results in stdout.", job.Name())
+
+	}
+	return stdoutMessage, stdErrMessage
+}
