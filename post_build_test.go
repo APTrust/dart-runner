@@ -60,7 +60,7 @@ func dirs(t *testing.T) (filesDir, homeDir, outputDir string) {
 	return filesDir, homeDir, outputDir
 }
 
-func TestHelp(t *testing.T) {
+func TestHelpCommand(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--help"}
@@ -70,7 +70,7 @@ func TestHelp(t *testing.T) {
 	require.Equal(t, 0, exitCode)
 }
 
-func TestVersion(t *testing.T) {
+func TestVersionCommand(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--version"}
@@ -81,7 +81,7 @@ func TestVersion(t *testing.T) {
 	require.Equal(t, 0, exitCode)
 }
 
-func TestJobParams(t *testing.T) {
+func TestRunJobCommand(t *testing.T) {
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()
@@ -102,7 +102,7 @@ func TestJobParams(t *testing.T) {
 	testOutputFile(t, homeDir, "job_params_test.tar")
 }
 
-func TestWorkflowBatch(t *testing.T) {
+func TestWorkflowBatchCommand(t *testing.T) {
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()
@@ -110,7 +110,7 @@ func TestWorkflowBatch(t *testing.T) {
 		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
 		fmt.Sprintf("--batch=%s/postbuild_test_batch.csv", filesDir),
 		fmt.Sprintf("--output-dir=%s", outputDir),
-		"--concurrency=2",
+		"--concurrency=1",
 		"--delete=true",
 	}
 	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
