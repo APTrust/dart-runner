@@ -208,7 +208,7 @@ func (job *Job) Validate() bool {
 			errKey := fmt.Sprintf("UploadOp[%d].StorageService", i)
 			if uploadOp.StorageService == nil {
 				job.Errors[errKey] = "UploadOperation requires a StorageService"
-			} else if uploadOp.StorageService.Validate() == false {
+			} else if !uploadOp.StorageService.Validate() {
 				for key, errMsg := range uploadOp.StorageService.Errors {
 					job.Errors[key] = errMsg
 				}

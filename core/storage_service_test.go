@@ -39,7 +39,7 @@ func TestStorageServiceSensitiveData(t *testing.T) {
 		os.Setenv(key, value)
 	}
 	defer func() {
-		for key, _ := range creds {
+		for key := range creds {
 			os.Unsetenv(key)
 		}
 	}()

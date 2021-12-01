@@ -8,13 +8,31 @@ import (
 )
 
 func TestExecCommand(t *testing.T) {
-	stdout, stderr, exitCode := util.ExecCommand("ls", []string{"-la"})
+	args := []string{"-la"}
+	stdout, stderr, exitCode := util.ExecCommand("ls", args, nil)
 	assert.NotEmpty(t, stdout)
 	assert.Empty(t, stderr)
 	assert.Equal(t, 0, exitCode)
 
-	stdout, stderr, exitCode = util.ExecCommand("ls", []string{"-la", "/does-not-exist"})
+	args = []string{"-la", "/does-not-exist"}
+	stdout, stderr, exitCode = util.ExecCommand("ls", args, nil)
 	assert.Empty(t, stdout)
 	assert.NotEmpty(t, stderr)
 	assert.Equal(t, 1, exitCode)
+
+	if systemHasAwk() {
+		// Note: `awk //` copies stdin to stdout.
+		// This tests that stdinData actually gets passed to our command.
+		stdinData := []byte("Cletus Spuckler lost a game of tic-tac-toe to a chicken.\n")
+		args = []string{"//"}
+		stdout, stderr, exitCode = util.ExecCommand("awk", args, stdinData)
+		assert.Equal(t, stdinData, stdout)
+		assert.Empty(t, stderr)
+		assert.Equal(t, 0, exitCode)
+	}
+}
+
+func systemHasAwk() bool {
+	_, _, exitCode := util.ExecCommand("which", []string{"awk"}, nil)
+	return exitCode == 0
 }

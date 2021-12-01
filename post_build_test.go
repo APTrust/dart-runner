@@ -34,7 +34,7 @@ func Setup(t *testing.T) {
 
 func build(t *testing.T) {
 	buildScript := path.Join(util.ProjectRoot(), "scripts", "build.sh")
-	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil)
+	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, nil)
 	assert.NotEmpty(t, stdout)
 	assert.Equal(t, 0, exitCode, stderr)
 	if exitCode == 0 {
@@ -42,15 +42,29 @@ func build(t *testing.T) {
 	}
 }
 
+// runner returns the path to the dart-runner executable created by build()
 func runner() string {
 	return path.Join(util.ProjectRoot(), "dist", "dart-runner")
+}
+
+// dirs returns a list of directories commonly used in tests
+func dirs(t *testing.T) (filesDir, homeDir, outputDir string) {
+	var err error
+	filesDir = path.Join(util.ProjectRoot(), "testdata", "files")
+	homeDir, err = os.UserHomeDir()
+	require.Nil(t, err)
+
+	// NOTE: scripts/test.rb should create this dir before tests start.
+	outputDir = path.Join(homeDir, "tmp", "bags")
+
+	return filesDir, homeDir, outputDir
 }
 
 func TestHelp(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--help"}
-	stdout, stderr, exitCode := util.ExecCommand(command, args)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
 	assert.Contains(t, string(stdout), "DART Runner: Bag and ship files from the command line")
 	assert.Empty(t, stderr)
 	require.Equal(t, 0, exitCode)
@@ -60,7 +74,7 @@ func TestVersion(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--version"}
-	stdout, stderr, exitCode := util.ExecCommand(command, args)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
 	assert.Contains(t, string(stdout), "DART Runner")
 	assert.Contains(t, string(stdout), "Build")
 	assert.Empty(t, stderr)
@@ -72,17 +86,22 @@ func TestJob(t *testing.T) {
 }
 
 func TestJobParams(t *testing.T) {
+	// Setup(t)
+	// filesDir, homeDir, outputDir := dirs(t)
+	// command := runner()
+	// jobParamsJson := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
+	// args := []string{
+	// 	fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
+	// 	fmt.Sprintf("--output-dir=%s", outputDir),
+	// 	"--concurrency=2",
+	// 	"--delete=true",
+	// }
 
 }
 
 func TestWorkflowBatch(t *testing.T) {
 	Setup(t)
-	filesDir := path.Join(util.ProjectRoot(), "testdata", "files")
-	homeDir, err := os.UserHomeDir()
-	require.Nil(t, err)
-
-	// NOTE: scripts/test.rb should create this dir before tests start.
-	outputDir := path.Join(homeDir, "tmp", "bags")
+	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()
 	args := []string{
 		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
@@ -91,7 +110,7 @@ func TestWorkflowBatch(t *testing.T) {
 		"--concurrency=2",
 		"--delete=true",
 	}
-	stdout, stderr, exitCode := util.ExecCommand(command, args)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
 	assert.NotEmpty(t, stdout)
 	fmt.Println(string(stderr))
 	fmt.Println(string(stdout))

@@ -104,6 +104,6 @@ func (u *UploadOperation) useSSL() bool {
 }
 
 func (u *UploadOperation) sendToSFTP() bool {
-	u.Errors["SFTPUpload"] = fmt.Sprintf("SFTP upload is not yet supported.")
+	u.Errors["SFTPUpload"] = "SFTP upload is not yet supported."
 	return false
 }
