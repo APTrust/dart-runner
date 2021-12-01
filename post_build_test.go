@@ -81,10 +81,6 @@ func TestVersion(t *testing.T) {
 	require.Equal(t, 0, exitCode)
 }
 
-func TestJob(t *testing.T) {
-
-}
-
 func TestJobParams(t *testing.T) {
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)

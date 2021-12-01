@@ -26,10 +26,8 @@ func main() {
 		ShowHelp()
 	} else if options.Version {
 		ShowVersion()
-	} else if options.JobFilePath != "" {
-		exitCode = RunJob(options)
 	} else if len(options.StdinData) > 0 {
-		exitCode = RunJobFromJson(options)
+		exitCode = RunJob(options)
 	} else {
 		exitCode = RunWorkflow(options)
 	}
@@ -37,17 +35,6 @@ func main() {
 }
 
 func RunJob(opts *core.Options) int {
-	job, err := core.JobFromJson(opts.JobFilePath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr,
-			"Error reading job file %s: %s\n",
-			opts.JobFilePath, err.Error())
-		return constants.ExitRuntimeErr
-	}
-	return core.RunJob(job, opts.DeleteAfterUpload, true)
-}
-
-func RunJobFromJson(opts *core.Options) int {
 	params, err := InitParams(opts)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating job: %s\n", err.Error())

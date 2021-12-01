@@ -11,7 +11,6 @@ import (
 )
 
 type Options struct {
-	JobFilePath       string
 	WorkflowFilePath  string
 	BatchFilePath     string
 	OutputDir         string
@@ -23,7 +22,6 @@ type Options struct {
 }
 
 func ParseOptions() *Options {
-	jobFilePath := flag.String("job", "", "Path to job json file")
 	workflowFilePath := flag.String("workflow", "", "Path to workflow json file")
 	batchFilePath := flag.String("batch", "", "Path to csv batch file")
 	outputDir := flag.String("output-dir", "", "Path to output directory")
@@ -40,7 +38,6 @@ func ParseOptions() *Options {
 	}
 
 	return &Options{
-		JobFilePath:       *jobFilePath,
 		WorkflowFilePath:  *workflowFilePath,
 		BatchFilePath:     *batchFilePath,
 		OutputDir:         *outputDir,
@@ -56,9 +53,6 @@ func ParseOptions() *Options {
 // info for DART Runner to proceed.
 func (opts Options) AreValid() bool {
 	if opts.Version {
-		return true
-	}
-	if opts.JobFilePath != "" && opts.OutputDir != "" {
 		return true
 	}
 	if len(opts.StdinData) > 0 && opts.OutputDir != "" {

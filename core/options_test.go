@@ -28,22 +28,14 @@ func TestGetStdinData(t *testing.T) {
 
 func TestOptionsAreValid(t *testing.T) {
 	opts := &core.Options{
-		JobFilePath: "/path/to/job_file.json",
+		WorkflowFilePath: "/path/to/workflow_file.json",
 	}
 
-	// Not valid: missing output dir
+	// Not valid because workflow requires batch file & output dir
 	assert.False(t, opts.AreValid())
 
-	// Job file + output dir = valid
-	opts.OutputDir = "/some/dir"
-	assert.True(t, opts.AreValid())
-
-	// Not valid without one of: job, workflow, stdin data
-	opts.JobFilePath = ""
-	assert.False(t, opts.AreValid())
-
+	opts.OutputDir = "/path/to/output_dir"
 	// Not valid because workflow requires batch file
-	opts.WorkflowFilePath = "/path/to/workflow"
 	assert.False(t, opts.AreValid())
 
 	// output dir + workflow + batch = valid
