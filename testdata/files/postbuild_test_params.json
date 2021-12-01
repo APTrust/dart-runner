@@ -1,9 +1,9 @@
 {
 	"packageName": "job_params_test.tar",
 	"files": [
-		"/Users/apd4n/aptrust/dart-runner/bagit",
-		"/Users/apd4n/aptrust/dart-runner/core",
-		"/Users/apd4n/aptrust/dart-runner/util"
+		"./bagit",
+		"./core",
+		"./util"
 	],
 	"tags": [
 		{
