@@ -8,10 +8,6 @@ Resources section below.
 Options
 -------
 
-  --job          Path to job json file. Use this option only if you are running
-                 a single job (as opposed to a workflow). Job json files can
-                 be exported from the DART UI.
-
   --workflow     Path to workflow json file. Use this option if you are running
                  a workflow against a batch of files. If you specify a workflow
                  file, you must also specify --batch. Workflows can be exported
@@ -35,7 +31,9 @@ Options
                  for this param should be less than or equal to the number of
                  processors on your machine. You may get diminishing returns
                  when setting this above 2 because most of the DART runner's
-                 work is reading from and writing to disk.
+                 work is reading from and writing to disk. This setting only
+                 makes sense for workflows. For a single job, you can omit
+                 this.
 
   --help         Show this help document.
 
@@ -44,11 +42,20 @@ Options
 Examples
 --------
 
-To run a single job:
+If you're running a single job, you can send job params to dart-runner through
+STDIN, like this:
 
-    dart-runner --job=path/to/job.json --output-dir=path/to/output
+    echo '{ json }' | dart-runner --workflow=workflow.json --output-dir=/dir
 
-This runs the job described in the job.json file, writing the bag to the
+The job params json tells dart-runner which files to bag and what tag values
+to set. The workflow tells dart-runner which BagIt profile to use and where to
+send the bag.
+
+You can also feed the contents of a Job Params file to STDIN, like this:
+
+    cat job_params.json | dart-runner --workflow=workflow.json --output-dir=/dir
+
+This runs the job described in the job_params.json file, writing the bag to the
 specified output directory.
 
 To run a workflow:
@@ -69,6 +76,44 @@ The --concurrency flag above tells DART runner to work on 2 bags at a time
 
 Setting --delete to true (or omitting --delete) will cause bags to be deleted
 after successful upload.
+
+----------------------
+Sample Job Params JSON
+----------------------
+
+The following job params tell dart-runner to bag all of the files in
+/home/linus/documents and /home/linus/files. This also tells the bagger to
+write two tags with the assigned values into the bag-info.txt file and
+one tag into the aptrust-info.txt file.
+
+These job params would be combined with a workflow JSON file that would
+tell dart runner which BagIt profile to use when creating the bag, and where
+to send the bag when it's done.
+
+{
+	"packageName": "TestBag.tar",
+	"files": [
+		"/home/linus/documents",
+		"/home/linus/photos"
+	],
+	"tags": [
+		{
+			"tagFile": "bag-info.txt",
+			"tagName": "Tag-One",
+			"value":   "Value One"
+		},
+		{
+			"tagFile": "bag-info.txt",
+			"tagName": "Tag-Two",
+			"value":   "Value Two"
+		},
+		{
+			"tagFile": "aptrust-info.txt",
+			"tagName": "Tag-Three",
+			"value": "Value Three"
+		}
+	]
+}
 
 ---------
 Resources
