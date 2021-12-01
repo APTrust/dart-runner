@@ -23,20 +23,20 @@ func main() {
 	exitCode := constants.ExitOK
 	options := core.ParseOptions()
 	if !options.AreValid() {
-		showHelp()
+		ShowHelp()
 	} else if options.Version {
-		showVersion()
+		ShowVersion()
 	} else if options.JobFilePath != "" {
-		exitCode = runJob(options)
+		exitCode = RunJob(options)
 	} else if len(options.StdinData) > 0 {
-		exitCode = runJobFromJson(options)
+		exitCode = RunJobFromJson(options)
 	} else {
-		exitCode = runWorkflow(options)
+		exitCode = RunWorkflow(options)
 	}
 	os.Exit(exitCode)
 }
 
-func runJob(opts *core.Options) int {
+func RunJob(opts *core.Options) int {
 	job, err := core.JobFromJson(opts.JobFilePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr,
@@ -47,8 +47,8 @@ func runJob(opts *core.Options) int {
 	return core.RunJob(job, opts.DeleteAfterUpload, true)
 }
 
-func runJobFromJson(opts *core.Options) int {
-	params, err := initParams(opts)
+func RunJobFromJson(opts *core.Options) int {
+	params, err := InitParams(opts)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating job: %s\n", err.Error())
 		return constants.ExitRuntimeErr
@@ -56,7 +56,7 @@ func runJobFromJson(opts *core.Options) int {
 	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload, true)
 }
 
-func runWorkflow(opts *core.Options) int {
+func RunWorkflow(opts *core.Options) int {
 	runner, err := core.NewWorkflowRunner(
 		opts.WorkflowFilePath,
 		opts.BatchFilePath,
@@ -71,7 +71,7 @@ func runWorkflow(opts *core.Options) int {
 	return runner.Run()
 }
 
-func initParams(opts *core.Options) (*core.JobParams, error) {
+func InitParams(opts *core.Options) (*core.JobParams, error) {
 	if !util.FileExists(opts.OutputDir) {
 		return nil, fmt.Errorf("Output directory '%s' does not exist. You must create it first.", opts.OutputDir)
 	}
@@ -93,10 +93,10 @@ func initParams(opts *core.Options) (*core.JobParams, error) {
 	return params, nil
 }
 
-func showHelp() {
+func ShowHelp() {
 	fmt.Println(help)
 }
 
-func showVersion() {
+func ShowVersion() {
 	fmt.Println(Version)
 }

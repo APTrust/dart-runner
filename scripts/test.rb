@@ -19,6 +19,7 @@ class TestRunner
     Process.wait pid
     if $?.success?
       puts "😊 PASSED 😊"
+      puts "To generate HTML report: > go tool cover -html=c.out"
     else
       puts "😡 FAILED 😡"
     end
