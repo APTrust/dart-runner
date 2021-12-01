@@ -86,17 +86,24 @@ func TestJob(t *testing.T) {
 }
 
 func TestJobParams(t *testing.T) {
-	// Setup(t)
-	// filesDir, homeDir, outputDir := dirs(t)
-	// command := runner()
-	// jobParamsJson := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
-	// args := []string{
-	// 	fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
-	// 	fmt.Sprintf("--output-dir=%s", outputDir),
-	// 	"--concurrency=2",
-	// 	"--delete=true",
-	// }
+	Setup(t)
+	filesDir, homeDir, outputDir := dirs(t)
+	command := runner()
+	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
+	require.Nil(t, err)
+	args := []string{
+		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
+		fmt.Sprintf("--output-dir=%s", outputDir),
+	}
+	stdout, stderr, exitCode := util.ExecCommand(command, args, jobParamsJson)
+	assert.NotEmpty(t, stdout)
+	fmt.Println(string(stderr))
+	fmt.Println(string(stdout))
+	assert.Empty(t, stderr, string(stderr))
+	require.Equal(t, 0, exitCode)
 
+	testJsonOutput(t, string(stdout))
+	testOutputFile(t, homeDir, "job_params_test.tar")
 }
 
 func TestWorkflowBatch(t *testing.T) {
