@@ -17,6 +17,7 @@ class TestRunner
     cmd = "go test -p 1 ./... -coverprofile c.out"
     pid = Process.spawn(ENV, cmd, chdir: project_root)
     Process.wait pid
+    exit_code = $?.exitstatus
     if $?.success?
       puts "😊 PASSED 😊"
       puts "To generate HTML report: > go tool cover -html=c.out"
@@ -24,6 +25,7 @@ class TestRunner
       puts "😡 FAILED 😡"
     end
     stop_minio
+    exit(exit_code)
   end
 
   def start_minio
