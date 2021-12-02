@@ -5,10 +5,27 @@ import (
 	"testing"
 
 	"github.com/APTrust/dart-runner/bagit"
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestNewBagItProfile(t *testing.T) {
+	p := bagit.NewProfile()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.AcceptBagItVersion)
+	assert.NotNil(t, p.AcceptSerialization)
+	assert.False(t, p.AllowFetchTxt)
+	assert.NotNil(t, p.BagItProfileInfo)
+	assert.NotNil(t, p.Errors)
+	assert.NotNil(t, p.ManifestsAllowed)
+	assert.NotNil(t, p.ManifestsRequired)
+	assert.Equal(t, constants.SerializationOptional, p.Serialization)
+	assert.NotNil(t, p.TagManifestsAllowed)
+	assert.NotNil(t, p.TagManifestsRequired)
+	assert.NotNil(t, p.Tags)
+}
 
 // This also implicitly tests BagItProfileFromJson
 func TestBagItProfileLoad(t *testing.T) {
@@ -32,6 +49,15 @@ func TestBagItProfileLoad(t *testing.T) {
 	filename = path.Join(util.PathToUnitTestBag("example.edu.tagsample_good.tar"))
 	_, err = bagit.ProfileLoad(filename)
 	assert.NotNil(t, err)
+
+	// Test to/from JSON
+	str, err := profile.ToJSON()
+	require.Nil(t, err)
+
+	copyOfProfile, err := bagit.ProfileFromJSON(str)
+	assert.Nil(t, err)
+	require.NotNil(t, copyOfProfile)
+	assert.Equal(t, profile, copyOfProfile)
 }
 
 func TestGetTagDef(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -100,4 +101,12 @@ func TestFileRecordGetChecksum(t *testing.T) {
 
 	cs = fr.GetChecksum(constants.AlgSha256, constants.FileTypeTag)
 	assert.Nil(t, cs)
+}
+
+func TestDigestAlgorithms(t *testing.T) {
+	fr := getTestFileRecord()
+	algs := fr.DigestAlgorithms()
+	assert.Equal(t, 2, len(algs))
+	assert.True(t, util.StringListContains(algs, constants.AlgMd5))
+	assert.True(t, util.StringListContains(algs, constants.AlgSha256))
 }

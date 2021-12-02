@@ -2,9 +2,11 @@ package core_test
 
 import (
 	"os"
+	"path"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -49,4 +51,11 @@ func TestJobValidate(t *testing.T) {
 	assert.Equal(t, 4, len(job.Errors))
 	assert.Equal(t, "UploadOperation requires a StorageService", job.Errors["UploadOp[0].StorageService"])
 	assert.Equal(t, "UploadOperation requires a StorageService", job.Errors["UploadOp[1].StorageService"])
+}
+
+func TestJobFromJson(t *testing.T) {
+	pathToJobFile := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	job, err := core.JobFromJson(pathToJobFile)
+	require.Nil(t, err)
+	require.NotNil(t, job)
 }
