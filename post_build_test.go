@@ -87,16 +87,17 @@ func TestRunJobCommand(t *testing.T) {
 	command := runner()
 	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
 	require.Nil(t, err)
+	require.True(t, len(jobParamsJson) > 100) // Make sure we read this right.
 	args := []string{
 		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
 		fmt.Sprintf("--output-dir=%s", outputDir),
 	}
 	stdout, stderr, exitCode := util.ExecCommand(command, args, jobParamsJson)
 	assert.NotEmpty(t, stdout)
-	//fmt.Println(string(stderr))
-	//fmt.Println(string(stdout))
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
+
+	require.True(t, strings.HasPrefix(string(stdout), "{"), "Command output doesn't look like JSON")
 
 	testJsonOutput(t, string(stdout))
 	testOutputFile(t, homeDir, "job_params_test.tar")
