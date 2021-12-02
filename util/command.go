@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"os/exec"
+	"runtime"
 )
 
 const STDIN_ERROR = -10000
@@ -24,7 +25,9 @@ func ExecCommand(command string, args []string, stdinData []byte) (stdout, stder
 		if err != nil {
 			return nil, nil, STDIN_ERROR
 		}
-		stdin.Close()
+		if runtime.GOOS == "darwin" {
+			stdin.Close()
+		}
 	}
 
 	cmd.Run()
