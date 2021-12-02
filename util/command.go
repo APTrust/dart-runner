@@ -27,8 +27,7 @@ func ExecCommand(command string, args []string, stdinData []byte) (stdout, stder
 		stdin.Close()
 	}
 
-	cmd.Start()
-	cmd.Wait()
+	cmd.Run()
 	exitCode = cmd.ProcessState.ExitCode()
 	return outBuffer.Bytes(), errBuffer.Bytes(), exitCode
 }
