@@ -18,7 +18,7 @@ func TestExecCommand(t *testing.T) {
 	stdout, stderr, exitCode = util.ExecCommand("ls", args, nil)
 	assert.Empty(t, stdout)
 	assert.NotEmpty(t, stderr)
-	assert.Equal(t, 1, exitCode)
+	assert.NotEqual(t, 0, exitCode)
 
 	if systemHasAwk() {
 		// Note: `awk //` copies stdin to stdout.
