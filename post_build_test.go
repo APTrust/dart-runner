@@ -84,19 +84,15 @@ func TestVersionCommand(t *testing.T) {
 func TestRunJobCommand(t *testing.T) {
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)
+	command := runner()
 	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
 	require.Nil(t, err)
-	require.True(t, len(jobParamsJson) > 100) // Make sure we read this right.
-
-	workflow := fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir)
-	output := fmt.Sprintf("--output-dir=%s", outputDir)
-	command := fmt.Sprintf("echo '%s' | %s %s %s", string(jobParamsJson), runner(), workflow, output)
-
+	require.True(t, len(string(jobParamsJson)) > 100)
 	args := []string{
-		"-c",
-		command,
+		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
+		fmt.Sprintf("--output-dir=%s", outputDir),
 	}
-	stdout, stderr, exitCode := util.ExecCommand("bash", args, jobParamsJson)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, jobParamsJson)
 	assert.NotEmpty(t, stdout)
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
