@@ -23,6 +23,9 @@ func main() {
 	exitCode := constants.ExitOK
 	options := core.ParseOptions()
 	if !options.AreValid() {
+		ShowOptionsError()
+		exitCode = constants.ExitUsageErr
+	} else if options.ShowHelp {
 		ShowHelp()
 	} else if options.Version {
 		ShowVersion()
@@ -86,4 +89,16 @@ func ShowHelp() {
 
 func ShowVersion() {
 	fmt.Println(Version)
+}
+
+func ShowOptionsError() {
+	message := `
+	Invalid arguments.
+
+	Params --workflow and --output-dir are always required.
+	For batch jobs, param --batch is also required.
+	
+	For more info: dart-runner --help 		
+	`
+	fmt.Fprintln(os.Stderr, message)
 }

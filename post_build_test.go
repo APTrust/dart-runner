@@ -66,7 +66,7 @@ func TestHelpCommand(t *testing.T) {
 	args := []string{"--help"}
 	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
 	assert.Contains(t, string(stdout), "DART Runner: Bag and ship files from the command line")
-	assert.Empty(t, stderr)
+	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
 }
 

@@ -33,7 +33,7 @@ func (u *UploadOperation) Validate() bool {
 	u.Errors = make(map[string]string)
 	if u.StorageService == nil {
 		u.Errors["UploadOperation.StorageService"] = "UploadOperation requires a StorageService"
-	} else if u.StorageService.Validate() == false {
+	} else if !u.StorageService.Validate() {
 		u.Errors = u.StorageService.Errors
 	}
 	if u.SourceFiles == nil || len(u.SourceFiles) == 0 {

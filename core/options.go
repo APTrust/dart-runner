@@ -52,7 +52,7 @@ func ParseOptions() *Options {
 // AreValid returns true if options are valid. That is, they contain enough
 // info for DART Runner to proceed.
 func (opts Options) AreValid() bool {
-	if opts.Version {
+	if opts.Version || opts.ShowHelp {
 		return true
 	}
 	if len(opts.StdinData) > 0 && opts.OutputDir != "" {
