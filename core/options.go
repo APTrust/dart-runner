@@ -77,7 +77,7 @@ func ReadInput(reader io.Reader) []byte {
 	return stdinData
 }
 
-// StdinHasData returns true if STDIN has data waiting to be read.
+// StdinHasData returns true if STDIN is a pipe with data waiting to be read.
 // This exits immediately if it can't access or stat STDIN.
 func StdinHasData() bool {
 	fi, err := os.Stdin.Stat()
@@ -85,5 +85,5 @@ func StdinHasData() bool {
 		fmt.Fprintln(os.Stdout, "Error checking STDIN:", err)
 		os.Exit(constants.ExitRuntimeErr)
 	}
-	return fi.Size() > 0
+	return (fi.Mode() & os.ModeCharDevice) == 0
 }
