@@ -82,12 +82,6 @@ func TestVersionCommand(t *testing.T) {
 }
 
 func TestRunJobCommand(t *testing.T) {
-	//if util.RunningInCI() {
-	//	// Stdin pipe does not work in Travis. Related to
-	//	// https://github.com/golang/go/issues/9307
-	//	// Sucks, because this is a key test.
-	//	return
-	//}
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()

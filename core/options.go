@@ -77,6 +77,13 @@ func ReadInput(reader io.Reader) []byte {
 	return stdinData
 }
 
+// Reading from STDIN hangs on Linux if no data was piped.
+// We check for CharDevice to work around this. See
+// https://stackoverflow.com/questions/22744443/check-if-there-is-something-to-read-on-stdin-in-golang
+//
+// This means that we'll only be reading piped data, not data typed
+// into stdin after the app is running.
+
 // StdinHasData returns true if STDIN is a pipe with data waiting to be read.
 // This exits immediately if it can't access or stat STDIN.
 func StdinHasData() bool {
