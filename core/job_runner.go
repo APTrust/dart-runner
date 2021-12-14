@@ -18,15 +18,19 @@ type Runner struct {
 func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
 	runner := &Runner{job}
 	if !runner.ValidateJob() {
+		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunPackageOp() {
+		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunValidationOp() {
+		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunUploadOps() {
+		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if deleteOnSuccess {
@@ -40,6 +44,16 @@ func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
 	}
 
 	return constants.ExitOK
+}
+
+func (r *Runner) printExitMessages() {
+	stdOutMsg, stdErrMsg := r.Job.GetResultMessages()
+	if len(stdOutMsg) > 0 {
+		fmt.Println(stdOutMsg)
+	}
+	if len(stdErrMsg) > 0 {
+		fmt.Fprintln(os.Stderr, stdErrMsg)
+	}
 }
 
 func (r *Runner) ValidateJob() bool {

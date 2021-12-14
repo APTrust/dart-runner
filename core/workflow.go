@@ -12,7 +12,7 @@ type Workflow struct {
 	ID              string            `json:"id"`
 	BagItProfile    *bagit.Profile    `json:"bagItProfile"`
 	Description     string            `json:"description"`
-	Errors          map[string]string `json:-`
+	Errors          map[string]string `json:"-"`
 	Name            string            `json:"name"`
 	PackageFormat   string            `json:"packageFormat"`
 	StorageServices []*StorageService `json:"storageServices"`
