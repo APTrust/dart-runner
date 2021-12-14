@@ -10,6 +10,10 @@ dart-runner will run [DART](https://github.com/APTrust/dart) jobs and workflows 
 
 For Mac and Linux beta versions, see  https://aptrust.github.io/dart-docs/users/dart_runner/#downloads
 
+## Usage
+
+Run `dart-runner --help`, or view the [detailed help page](https://aptrust.github.io/dart-docs/users/dart_runner/).
+
 ## Definitions
 
 A [job](https://aptrust.github.io/dart-docs/users/jobs/) is the creation and shipping of a single bag. It typically involves bagging a list of files according to a BagIt profile and then sending that bag to an SFTP or S3-compliant server.
