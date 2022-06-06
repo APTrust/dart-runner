@@ -19,3 +19,6 @@
 
 # Local build directory
 dist/*
+
+.DS_Store
+*.DS_Store
