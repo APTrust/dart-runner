@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"time"
 
 	"github.com/APTrust/dart-runner/util"
@@ -21,7 +22,7 @@ type TarWriter struct {
 func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
 	return &TarWriter{
 		PathToTarFile:  pathToTarFile,
-		rootDirName:    util.CleanBagName(pathToTarFile),
+		rootDirName:    util.CleanBagName(path.Base(pathToTarFile)),
 		digestAlgs:     digestAlgs,
 		rootDirCreated: false,
 	}

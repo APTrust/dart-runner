@@ -96,7 +96,7 @@ func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInf
 		if xFileInfo.IsDir() {
 			continue
 		}
-		shortPath := "data" + strings.Replace(xFileInfo.FullPath, util.PathToTestData(), "", 1)
+		shortPath := "data" + strings.Replace(xFileInfo.FullPath, util.ProjectRoot(), "", 1)
 		fileRecord := actual[shortPath]
 		assert.NotNil(t, fileRecord, shortPath)
 	}

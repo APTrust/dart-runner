@@ -329,6 +329,7 @@ func CleanBagName(bagName string) string {
 func FindCommonPrefix(paths []string) string {
 	prefix := make([]rune, 0)
 	sort.Strings(paths)
+	lastPathSeparator := 0
 	first := paths[0]
 	last := paths[len(paths)-1]
 	for i, rune := range first {
@@ -337,11 +338,18 @@ func FindCommonPrefix(paths []string) string {
 		}
 		if first[i] == last[i] {
 			prefix = append(prefix, rune)
+			if rune == os.PathSeparator {
+				lastPathSeparator = i
+			}
 		} else {
 			break
 		}
 	}
-	return string(prefix)
+	if len(prefix) == 0 {
+		return ""
+	}
+	commonPrefix := string(prefix[0:lastPathSeparator]) + string(os.PathSeparator)
+	return commonPrefix
 }
 
 // ToHumanSize converts a raw byte count (size) to a human-friendly

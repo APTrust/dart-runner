@@ -403,6 +403,18 @@ func TestFileCommonPrefix(t *testing.T) {
 	assert.Equal(t, "", util.FindCommonPrefix(list4))
 }
 
+func TestCommonPrefixEndsAtPathDelimiter(t *testing.T) {
+	files := []string{
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_001.tif",
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_002.tif",
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_003.tif",
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_004.tif",
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_005.tif",
+		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_006.tif",
+	}
+	assert.Equal(t, "/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/", util.FindCommonPrefix(files))
+}
+
 func TestToHumanSize(t *testing.T) {
 	assert.Equal(t, "389.8 kB", util.ToHumanSize(389778, 1000))
 	assert.Equal(t, "380.6 kB", util.ToHumanSize(389778, 1024))
