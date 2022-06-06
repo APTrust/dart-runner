@@ -5,20 +5,25 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/APTrust/dart-runner/util"
 )
 
 type TarWriter struct {
-	PathToTarFile string
-	tarWriter     *tar.Writer
-	digestAlgs    []string
+	PathToTarFile  string
+	rootDirName    string
+	tarWriter      *tar.Writer
+	digestAlgs     []string
+	rootDirCreated bool
 }
 
 func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
 	return &TarWriter{
-		PathToTarFile: pathToTarFile,
-		digestAlgs:    digestAlgs,
+		PathToTarFile:  pathToTarFile,
+		rootDirName:    util.CleanBagName(pathToTarFile),
+		digestAlgs:     digestAlgs,
+		rootDirCreated: false,
 	}
 }
 
@@ -45,6 +50,23 @@ func (writer *TarWriter) Close() error {
 	return nil
 }
 
+func (writer *TarWriter) initRootDir(uid, gid int) error {
+	header := &tar.Header{
+		Name:     writer.rootDirName,
+		Size:     0,
+		Mode:     0755,
+		ModTime:  time.Now(),
+		Uid:      uid,
+		Gid:      gid,
+		Typeflag: tar.TypeDir,
+	}
+	err := writer.tarWriter.WriteHeader(header)
+	if err == nil {
+		writer.rootDirCreated = true
+	}
+	return err
+}
+
 // AddFile as a file to a tar archive. Returns a map of checksums
 // where key is the algorithm and value is the digest. E.g.
 // checksums["md5"] = "0987654321"
@@ -56,9 +78,17 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 	if writer.tarWriter == nil {
 		return checksums, fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")
 	}
+
 	// This returns actual owner and group id on posix systems,
 	// 0,0 on Windows.
 	uid, gid := xFileInfo.OwnerAndGroup()
+	if !writer.rootDirCreated {
+		err := writer.initRootDir(uid, gid)
+		if err != nil {
+			return checksums, err
+		}
+	}
+
 	header := &tar.Header{
 		Name:    pathWithinArchive,
 		Size:    xFileInfo.Size(),

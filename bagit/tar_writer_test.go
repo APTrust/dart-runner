@@ -60,7 +60,11 @@ func TestAddFile(t *testing.T) {
 	assert.Nil(t, err)
 	require.True(t, util.FileExists(w.PathToTarFile), "Tar file does not exist at %s", w.PathToTarFile)
 
-	filesAdded := make([]string, 0)
+	// Note that the first "file" added to the bag is the root directory,
+	// which has the same name as the bag, minus the .tar extension
+	filesAdded := []string{
+		util.CleanBagName(w.PathToTarFile),
+	}
 	files := listTestFiles(t)
 	for _, xFileInfo := range files {
 		// Use Sprintf with forward slash instead of path.Join()
@@ -93,6 +97,8 @@ func TestAddFile(t *testing.T) {
 		}
 		filesInArchive = append(filesInArchive, header.Name)
 	}
+
+	// Make sure root directory and all files are present.
 	require.Equal(t, len(filesAdded), len(filesInArchive))
 	for i, isInArchive := range filesInArchive {
 		shouldBeInArchive := filesAdded[i]
