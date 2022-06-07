@@ -22,8 +22,17 @@ fi
 TAG="${TAG:=Beta 0.1}"
 VERSION="DART Runner $TAG for $OS (Build $COMMIT $DATE)"
 
-mkdir -p dist
-go build -o dist/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+echo "Building MacOS version in ./dist/mac/dart-runner"
+mkdir -p dist/mac
+go build -o dist/mac/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
-echo "Executable is in dist/dart-runner"
-dist/dart-runner --version
+echo "Building Windows amd64 version in ./dist/windows/dart-runner"
+mkdir -p dist/windows
+GOOS=windows GOARCH=amd64 go build -o dist/windows/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+
+echo "Building Linux amd64 version in ./dist/linux/dart-runner"
+mkdir -p dist/linux
+GOOS=linux GOARCH=amd64 go build -o dist/linux/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+
+echo "Version info from latest build:"
+dist/mac/dart-runner --version
