@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -44,7 +45,11 @@ func build(t *testing.T) {
 
 // runner returns the path to the dart-runner executable created by build()
 func runner() string {
-	return path.Join(util.ProjectRoot(), "dist", "dart-runner")
+	osName := "mac"
+	if runtime.GOOS == "linux" {
+		osName = "linux"
+	}
+	return path.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
 }
 
 // dirs returns a list of directories commonly used in tests
