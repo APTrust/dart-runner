@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.94-beta - 2022-07-05
+
+* Fixed [Repeated fields have only one field (with last value) in bag-info.txt](https://github.com/APTrust/dart-runner/issues/7)
+
 ## v0.93-beta - 2022-06-07
 
 * Fixed [missing root directory in tarred bags](https://github.com/APTrust/dart-runner/issues/5)
