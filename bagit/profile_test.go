@@ -131,6 +131,35 @@ func TestGetTagFileContents(t *testing.T) {
 	assert.Equal(t, bagInfoExpected, infoActual)
 }
 
+func TestMultipleTagValues(t *testing.T) {
+	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	apt, err := bagit.ProfileLoad(aptPath)
+	require.Nil(t, err)
+
+	rights1 := &bagit.TagDefinition{
+		TagFile: "bag-info.txt",
+		TagName: "Rights-ID",
+		UserValue: "1",
+	}
+	rights2 := &bagit.TagDefinition{
+		TagFile: "bag-info.txt",
+		TagName: "Rights-ID",
+		UserValue: "2",
+	}
+	apt.Tags = append(apt.Tags, rights1, rights2)
+
+	sourceOrgTag, err := apt.FirstMatchingTag("TagName", "Source-Organization")
+	require.Nil(t, err)
+	require.NotNil(t, sourceOrgTag)
+	sourceOrgTag.UserValue = "Warner Bros."
+
+	bagInfoExpected := "Source-Organization: Warner Bros.\nBag-Count: \nBagging-Date: \nBagging-Software: \nBag-Group-Identifier: \nInternal-Sender-Description: \nInternal-Sender-Identifier: \nPayload-Oxum: \nRights-ID: 1\nRights-ID: 2\n"
+
+	infoActual, err := apt.GetTagFileContents("bag-info.txt")
+	require.Nil(t, err)
+	assert.Equal(t, bagInfoExpected, infoActual)
+}
+
 func TestSetTagValue(t *testing.T) {
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
 	profile, err := bagit.ProfileLoad(aptPath)

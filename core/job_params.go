@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"path"
 	"strings"
 
@@ -77,15 +78,18 @@ func (p *JobParams) mergeTags(job *Job) {
 	if p.Workflow.BagItProfile == nil {
 		return
 	}
+	alreadyMatched := make(map[string]bool)
 	profile := job.BagItProfile
 	for _, t := range p.Tags {
+		key := fmt.Sprintf("%s/%s", t.TagFile, t.TagName)
 		profileTagDef := profile.GetTagDef(t.TagFile, t.TagName)
-		if profileTagDef == nil {
+		if profileTagDef == nil || alreadyMatched[key] {
 			profileTagDef = &bagit.TagDefinition{
 				TagFile: t.TagFile,
 				TagName: t.TagName,
 			}
 			profile.Tags = append(profile.Tags, profileTagDef)
+			alreadyMatched[key] = true
 		}
 		profileTagDef.UserValue = t.Value
 	}

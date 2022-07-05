@@ -27,7 +27,7 @@ func getRunnerTestJob(t *testing.T, bagName string) *core.Job {
 func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	job := getRunnerTestJob(t, bagName)
 	defer func() {
-		if util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
+		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
 			os.Remove(job.PackageOp.OutputPath)
 		}
 	}()

@@ -53,6 +53,9 @@ func getTestTags() []*bagit.Tag {
 		{"aptrust-info.txt", "Access", "Institution"},
 		{"aptrust-info.txt", "Storage-Option", "Glacier-Deep-OH"},
 		{"aptrust-info.txt", "Custom-Test-Tag", "Kwik-E-Mart"},
+		{"bag-info.txt", "Repeated-Tag", "1"},
+		{"bag-info.txt", "Repeated-Tag", "2"},
+		{"bag-info.txt", "Repeated-Tag", "3"},
 	}
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("tag-%d", i+1)
@@ -99,6 +102,22 @@ func TestJobParams(t *testing.T) {
 	assert.NotNil(t, job.PackageOp.Result)
 	assert.False(t, job.PackageOp.Result.WasAttempted())
 
+	// TestRepeatedTags: https://github.com/APTrust/dart-runner/issues/7
+	repeatedTags, err := job.BagItProfile.FindMatchingTags("TagName", "Repeated-Tag")
+	require.Nil(t, err)
+	require.Equal(t, 3, len(repeatedTags))
+	assert.Equal(t, "bag-info.txt", repeatedTags[0].TagFile)
+	assert.Equal(t, "Repeated-Tag", repeatedTags[0].TagName)
+	assert.Equal(t, "1", repeatedTags[0].UserValue)
+
+	assert.Equal(t, "bag-info.txt", repeatedTags[1].TagFile)
+	assert.Equal(t, "Repeated-Tag", repeatedTags[1].TagName)
+	assert.Equal(t, "2", repeatedTags[1].UserValue)
+
+	assert.Equal(t, "bag-info.txt", repeatedTags[2].TagFile)
+	assert.Equal(t, "Repeated-Tag", repeatedTags[2].TagName)
+	assert.Equal(t, "3", repeatedTags[2].UserValue)
+
 	// Has right Validation Op
 	require.NotNil(t, job.ValidationOp)
 	assert.Equal(t, "/user/homer/bag.tar", job.ValidationOp.PathToBag)
@@ -135,12 +154,15 @@ func TestJobParams(t *testing.T) {
 		"aptrust-info.txt Description: Those are chock full of heady goodness.",
 		"aptrust-info.txt Storage-Option: Glacier-Deep-OH",
 		"aptrust-info.txt Custom-Test-Tag: Kwik-E-Mart",
+		"bag-info.txt Repeated-Tag: 1",
+		"bag-info.txt Repeated-Tag: 2",
+		"bag-info.txt Repeated-Tag: 3",
 		"custom-file.txt tag-1: value-1",
 		"custom-file.txt tag-2: value-2",
 		"custom-file.txt tag-3: value-3",
 	}
 	for i, tag := range job.BagItProfile.Tags {
 		strValue := fmt.Sprintf("%s %s", tag.TagFile, tag.ToFormattedString())
-		assert.Equal(t, expectedTags[i], strValue)
+		assert.Equal(t, expectedTags[i], strValue, i)
 	}
 }
