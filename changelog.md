@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.95-beta - 2022-08-11
+
+* Fixed a problem reading from STDIN. Runner would fail to read piped STDIN that contained no newlines.
+
 ## v0.94-beta - 2022-07-05
 
 * Fixed [Repeated fields have only one field (with last value) in bag-info.txt](https://github.com/APTrust/dart-runner/issues/7)
