@@ -29,7 +29,7 @@ func main() {
 		ShowHelp()
 	} else if options.Version {
 		ShowVersion()
-	} else if len(options.StdinData) > 0 {
+	} else if len(options.StdinData) > 0 || core.StdinHasData() {
 		exitCode = RunJob(options)
 	} else {
 		exitCode = RunWorkflow(options)
@@ -67,7 +67,7 @@ func InitParams(opts *core.Options) (*core.JobParams, error) {
 	}
 	workflow, err := core.WorkflowFromJson(opts.WorkflowFilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Workflow JSON (%s): %s", opts.WorkflowFilePath, err.Error())
 	}
 	partialParams := &core.JobParams{}
 	err = json.Unmarshal(opts.StdinData, partialParams)

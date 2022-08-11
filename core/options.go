@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -55,7 +54,7 @@ func (opts Options) AreValid() bool {
 	if opts.Version || opts.ShowHelp {
 		return true
 	}
-	if StdinHasData() && opts.OutputDir != "" {
+	if (len(opts.StdinData) > 0 || StdinHasData()) && opts.OutputDir != "" {
 		// We'll validate stdin json later
 		return true
 	}
@@ -68,11 +67,9 @@ func (opts Options) AreValid() bool {
 // ReadInput reads input from the specified reader (which, in practice,
 // will usually be STDIN) and returns it with newlines preserved.
 func ReadInput(reader io.Reader) []byte {
-	var stdinData []byte
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		stdinData = append(stdinData, scanner.Bytes()...)
-		stdinData = append(stdinData, []byte("\n")...)
+	stdinData, err := io.ReadAll(reader)
+	if err != nil {
+		panic(err)
 	}
 	return stdinData
 }
