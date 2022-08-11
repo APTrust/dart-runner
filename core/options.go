@@ -55,7 +55,7 @@ func (opts Options) AreValid() bool {
 	if opts.Version || opts.ShowHelp {
 		return true
 	}
-	if len(opts.StdinData) > 0 && opts.OutputDir != "" {
+	if StdinHasData() && opts.OutputDir != "" {
 		// We'll validate stdin json later
 		return true
 	}

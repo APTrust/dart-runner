@@ -97,8 +97,8 @@ func ShowOptionsError() {
 
 	Params --workflow and --output-dir are always required.
 	For batch jobs, param --batch is also required.
-	
-	For more info: dart-runner --help 		
+
+	For more info: dart-runner --help
 	`
 	fmt.Fprintln(os.Stderr, message)
 }
