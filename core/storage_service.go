@@ -92,3 +92,22 @@ func (ss *StorageService) getEnv(varname string) string {
 	parts := strings.SplitN(varname, ":", 2)
 	return os.Getenv(parts[1])
 }
+
+// Copy returns a pointer to a new StorageService whose values
+// are the same as this service.
+func (ss *StorageService) Copy() *StorageService {
+	return &StorageService{
+		AllowsDownload: ss.AllowsDownload,
+		AllowsUpload:   ss.AllowsUpload,
+		Bucket:         ss.Bucket,
+		Description:    ss.Description,
+		Errors:         ss.Errors,
+		Host:           ss.Host,
+		Login:          ss.Login,
+		LoginExtra:     ss.LoginExtra,
+		Name:           ss.Name,
+		Password:       ss.Password,
+		Port:           ss.Port,
+		Protocol:       ss.Protocol,
+	}
+}

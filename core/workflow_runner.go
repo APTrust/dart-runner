@@ -25,6 +25,8 @@ type WorkflowRunner struct {
 	waitGroup    sync.WaitGroup
 	outMutex     sync.Mutex
 	errMutex     sync.Mutex
+	fCountMutex  sync.Mutex
+	sCountMutex  sync.Mutex
 }
 
 // NewWorkflowRunner creates a new WorkFlowRunner object. Param workflowFile
@@ -105,9 +107,13 @@ func (r *WorkflowRunner) runAsync() {
 	for job := range r.jobChannel {
 		retVal := RunJob(job, r.Cleanup, false)
 		if retVal == constants.ExitOK {
+			r.sCountMutex.Lock()
 			r.SuccessCount++
+			r.sCountMutex.Unlock()
 		} else {
+			r.fCountMutex.Lock()
 			r.FailureCount++
+			r.fCountMutex.Unlock()
 		}
 		r.writeResult(job)
 		r.waitGroup.Done()
@@ -116,7 +122,7 @@ func (r *WorkflowRunner) runAsync() {
 
 func (r *WorkflowRunner) getJobParams(entry *WorkflowCSVEntry) *JobParams {
 	return NewJobParams(
-		r.Workflow,
+		r.Workflow.Copy(),
 		entry.BagName,
 		path.Join(r.OutputDir, entry.BagName),
 		[]string{entry.RootDir},

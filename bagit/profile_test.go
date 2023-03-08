@@ -137,13 +137,13 @@ func TestMultipleTagValues(t *testing.T) {
 	require.Nil(t, err)
 
 	rights1 := &bagit.TagDefinition{
-		TagFile: "bag-info.txt",
-		TagName: "Rights-ID",
+		TagFile:   "bag-info.txt",
+		TagName:   "Rights-ID",
 		UserValue: "1",
 	}
 	rights2 := &bagit.TagDefinition{
-		TagFile: "bag-info.txt",
-		TagName: "Rights-ID",
+		TagFile:   "bag-info.txt",
+		TagName:   "Rights-ID",
 		UserValue: "2",
 	}
 	apt.Tags = append(apt.Tags, rights1, rights2)
@@ -203,6 +203,15 @@ func TestCloneProfile(t *testing.T) {
 		assert.Equal(t, tag.TagName, clonedTag.TagName)
 		assert.Equal(t, tag.UserValue, clonedTag.UserValue)
 		assert.Equal(t, tag.Values, clonedTag.Values)
+
+		// This is key. Make sure the copy of the tags does not
+		// point back to the original tag. This was the source
+		// of the race condition that caused bags to get the
+		// wrong tag values. See https://trello.com/c/0yoY0FBS
+		//
+		// Note that we want to assert NotSame here to test that
+		// pointer addresses are not the same.
+		assert.NotSame(t, tag, clonedTag)
 	}
 	assert.Equal(t, profile.BagItProfileInfo.BagItProfileVersion, clone.BagItProfileInfo.BagItProfileVersion)
 	assert.Equal(t, profile.BagItProfileInfo.BagItProfileIdentifier, clone.BagItProfileInfo.BagItProfileIdentifier)

@@ -51,3 +51,21 @@ func (t *TagDefinition) ToFormattedString() string {
 	cleanValue := reWhiteSpace.ReplaceAllString(t.GetValue(), " ")
 	return fmt.Sprintf("%s: %s", t.TagName, strings.TrimSpace(cleanValue))
 }
+
+// Copy returns a pointer to a new TagDefinition whose values are the
+// same as this TagDefinition.
+func (t *TagDefinition) Copy() *TagDefinition {
+	copyOfTagDef := &TagDefinition{
+		DefaultValue: t.DefaultValue,
+		EmptyOK:      t.EmptyOK,
+		Help:         t.Help,
+		ID:           t.ID,
+		Required:     t.Required,
+		TagFile:      t.TagFile,
+		TagName:      t.TagName,
+		UserValue:    t.UserValue,
+		Values:       make([]string, len(t.Values)),
+	}
+	copy(copyOfTagDef.Values, t.Values)
+	return copyOfTagDef
+}

@@ -1,9 +1,11 @@
 package bagit_test
 
 import (
+	"testing"
+
 	"github.com/APTrust/dart-runner/bagit"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTagDefIsLegalValue(t *testing.T) {
@@ -19,9 +21,23 @@ func TestTagDefIsLegalValue(t *testing.T) {
 	assert.True(t, tagDef.IsLegalValue("homer"))
 	assert.True(t, tagDef.IsLegalValue("marge"))
 
+	tagDef.UserValue = "homer"
+	testTagDefinitionCopy(t, tagDef)
+
 	tagDef.Values = nil
 	assert.True(t, tagDef.IsLegalValue("homer"))
 	assert.True(t, tagDef.IsLegalValue("marge"))
+}
+
+func testTagDefinitionCopy(t *testing.T, tagDef *bagit.TagDefinition) {
+	copyOfTagDef := tagDef.Copy()
+	require.NotNil(t, copyOfTagDef)
+
+	// Values inside original and copy should be the same
+	assert.Equal(t, tagDef, copyOfTagDef)
+
+	// But the pointers should poind to different addresses
+	assert.NotSame(t, tagDef, copyOfTagDef)
 }
 
 func TestTagDefGetValue(t *testing.T) {

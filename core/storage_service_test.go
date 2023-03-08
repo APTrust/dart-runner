@@ -6,6 +6,7 @@ import (
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStorageService(t *testing.T) {
@@ -76,4 +77,29 @@ func TestStorageServiceHostAndPort(t *testing.T) {
 
 	ss.Port = 9999
 	assert.Equal(t, "example.com:9999", ss.HostAndPort())
+}
+
+func TestStorgeServiceCopy(t *testing.T) {
+	ss := &core.StorageService{
+		AllowsDownload: true,
+		AllowsUpload:   true,
+		Bucket:         "chum.bucket",
+		Description:    "Everyone loves the Krusty Krab!",
+		Errors:         make(map[string]string),
+		Host:           "s3.example.com",
+		Login:          "user1",
+		LoginExtra:     "nothing to see here",
+		Name:           "example bucket",
+		Password:       "secret-password",
+		Port:           999,
+		Protocol:       "s3",
+	}
+	ssCopy := ss.Copy()
+	require.NotNil(t, ssCopy)
+
+	// Make sure internal struct values are equal...
+	assert.Equal(t, ss, ssCopy)
+
+	// ...but these pointers don't point to the same address
+	assert.NotSame(t, ss, ssCopy)
 }

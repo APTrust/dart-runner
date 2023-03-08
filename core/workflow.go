@@ -47,3 +47,20 @@ func (w *Workflow) Validate() bool {
 	}
 	return len(w.Errors) == 0
 }
+
+func (w *Workflow) Copy() *Workflow {
+	ssCopy := make([]*StorageService, len(w.StorageServices))
+	for i, ss := range w.StorageServices {
+		ssCopy[i] = ss.Copy()
+	}
+	return &Workflow{
+		ID:              w.ID,
+		BagItProfile:    bagit.CloneProfile(w.BagItProfile),
+		Description:     w.Description,
+		Errors:          w.Errors,
+		Name:            w.Name,
+		PackageFormat:   w.PackageFormat,
+		StorageServices: ssCopy,
+	}
+
+}

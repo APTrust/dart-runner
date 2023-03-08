@@ -83,7 +83,9 @@ func CloneProfile(p *Profile) *Profile {
 	copy(profile.TagFilesAllowed, p.TagFilesAllowed)
 	copy(profile.TagManifestsAllowed, p.TagManifestsAllowed)
 	copy(profile.TagManifestsRequired, p.TagManifestsRequired)
-	copy(profile.Tags, p.Tags)
+	for i, tag := range p.Tags {
+		profile.Tags[i] = tag.Copy() // These are TagDefinition objects
+	}
 	return profile
 }
 
@@ -112,7 +114,7 @@ func ProfileFromJSON(jsonData string) (*Profile, error) {
 	return p, nil
 }
 
-//ToJSON returns a JSON representation of this object.
+// ToJSON returns a JSON representation of this object.
 func (p *Profile) ToJSON() (string, error) {
 	bytes, err := json.Marshal(p)
 	if err != nil {
