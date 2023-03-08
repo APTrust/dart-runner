@@ -14,7 +14,7 @@ class TestRunner
     make_test_dirs
     start_minio
     `go clean -testcache`
-    cmd = "go test -p 1 ./... -coverprofile c.out"
+    cmd = "go test -race -p 1 ./... -coverprofile c.out"
     pid = Process.spawn(ENV, cmd, chdir: project_root)
     Process.wait pid
     exit_code = $?.exitstatus
