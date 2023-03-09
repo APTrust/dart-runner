@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.96-beta - 2023-03-09
+
+* Fixed [DART runner writes incorrect tag values in workflow batch mode](https://github.com/APTrust/dart-runner/issues/9). This was a serious bug caused by race condition that we anticipated but handled incorrectly in versions 0.95 and earlier.
+
 ## v0.95-beta - 2022-08-11
 
 * Fixed a problem reading from STDIN. Runner would fail to read piped STDIN that contained no newlines.
