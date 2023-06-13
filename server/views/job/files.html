@@ -1,5 +1,7 @@
 {{ define "job/files.html" }}
 
+{{ template "partials/page_header.html" .}}
+
 <h2>Files</h2>
 
   <div id="dropZone" class="drop-zone">
@@ -87,5 +89,7 @@
     }
     attachDragAndDropEvents();
 </script>
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}

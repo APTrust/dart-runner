@@ -1,5 +1,7 @@
 {{ define "app_setting/form.html" }}
 
+{{ template "partials/page_header.html" .}}
+
 <h2>Application Setting</h2>
 
 <form method="post" action="#" id="{{ .form.ObjType }}">
@@ -20,5 +22,7 @@
   {{ template "partials/form_buttons.html" . }}
   
 </form>
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}

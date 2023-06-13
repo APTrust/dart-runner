@@ -1,6 +1,6 @@
 {{ define "internal_setting/list.html" }}
 
-{{ template "partials/banner_alert.html" . }}
+{{ template "partials/page_header.html" .}}
 
 <h2>Internal Settings</h2>
 <p>These settings are created by DART and cannot be edited.</p>
@@ -22,5 +22,7 @@
 </table>
 
 {{ template "partials/table_bottom_links.html" . }}
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}

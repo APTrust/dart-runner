@@ -1,5 +1,7 @@
 {{ define "remote_repository/form.html" }}
 
+{{ template "partials/page_header.html" .}}
+
 <h2>Remote Repository</h2>
 
 <form method="post" action="#" id="{{ .form.ObjType }}">
@@ -21,5 +23,7 @@
   {{ template "partials/form_buttons.html" . }}
 
 </form>
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}

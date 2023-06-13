@@ -1,6 +1,6 @@
 {{ define "app_setting/list.html" }}
 
-{{ template "partials/banner_alert.html" . }}
+{{ template "partials/page_header.html" .}}
 
 <h2>Application Settings</h2>
 <div class="pull-right mt-1 mb-3">
@@ -24,5 +24,7 @@
 </table>
 
 {{ template "partials/table_bottom_links.html" . }}
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}
