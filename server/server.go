@@ -67,6 +67,10 @@ func initRoutes(router *gin.Engine) {
 	router.Static("/static", "./static")
 	router.Static("/favicon.ico", "./static/img/favicon.png")
 
+	// About
+	router.GET("/", controllers.AboutShow)
+	router.GET("/about", controllers.AboutShow)
+
 	// App Settings
 	router.GET("/app_settings", controllers.AppSettingIndex)
 	router.GET("/app_settings/new", controllers.AppSettingNew)
