@@ -12,7 +12,7 @@ func Dict(values ...interface{}) (map[string]interface{}, error) {
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
-			return nil, fmt.Errorf("wrong data type: %v should be representable as a string", values[i])
+			return nil, fmt.Errorf("wrong data type: key '%v' should be a string", values[i])
 		}
 		dict[key] = values[i+1]
 	}

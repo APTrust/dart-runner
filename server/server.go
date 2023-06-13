@@ -64,8 +64,9 @@ func initRoutes(router *gin.Engine) {
 	// This ensures that routes match even when they contain
 	// extraneous slashes.
 	router.RedirectFixedPath = true
-	router.Static("/static", "./static")
-	router.Static("/favicon.ico", "./static/img/favicon.png")
+
+	router.StaticFile("/favicon.ico", "./server/assets/img/favicon.ico")
+	router.Static("/assets", "./server/assets")
 
 	// About
 	router.GET("/", controllers.AboutShow)
