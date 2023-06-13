@@ -1,0 +1,14 @@
+{{ define "partials/input_file.html" }}
+
+<div class="custom-file {{ .field.FormGroupClass }}">
+    <input type="file" id="{{ .field.ID }}" name="{{ .field.Name }}"
+           class="custom-file-input {{ template "partials/classes.html" .field }}"
+           {{ template "partials/attrs.html" .field }} />
+    <label for="{{ .field.ID }}" class="custom-file-label {{ if .field.Help }}clickable{{ end }}" for="{{ .field.ID }}"
+           {{ if .field.Help }}data-toggle="popover" data-trigger="hover" title="{{ .field.Label }}" data-content="{{ .field.Help }}"{{ end }}>{{ .field.Label }} {{ if .field.Attrs.required}}<i class="fas fa-asterisk fa-xs text-danger"></i>{{ end }} {{ if .field.Help }}<i class="fas fa-question-circle text-primary"></i>{{ end }}</label>
+    <small id="{{ .field.ID }}Error" class="form-text text-danger">
+      {{ .field.Error }}
+    </small>
+</div>
+
+{{ end }}

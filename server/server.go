@@ -2,6 +2,7 @@ package server
 
 import (
 	"io"
+	"text/template"
 
 	"github.com/APTrust/dart-runner/server/controllers"
 	"github.com/APTrust/dart-runner/util"
@@ -38,6 +39,11 @@ func InitAppEngine(discardStdOut bool) *gin.Engine {
 
 // initTemplates loads templates and sets up template helper functions.
 func initTemplates(router *gin.Engine) {
+
+	router.SetFuncMap(template.FuncMap{
+		"dict": Dict,
+	})
+
 	// Load the view templates
 	// If we're running from main, templates will come
 	// from ./views. When running tests, templates come
@@ -46,10 +52,10 @@ func initTemplates(router *gin.Engine) {
 	// sub directory.
 	if util.FileExists("./views") {
 		router.LoadHTMLGlob("./views/**/*.html")
-	} else if util.FileExists("../../views") {
-		router.LoadHTMLGlob("../../views/**/*.html")
+	} else if util.FileExists("./server/views") {
+		router.LoadHTMLGlob("./server/views/**/*.html")
 	} else {
-		router.LoadHTMLGlob("../../../views/**/*.html")
+		router.LoadHTMLGlob("../server/views/**/*.html")
 	}
 }
 

@@ -1,0 +1,14 @@
+{{ define "partials/job_tabs.html" }}
+
+<div class="btn-toolbar" role="toolbar" aria-label="Job tabs">
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+      <button type="button" class="btn {{ if .tabFiles}} btn-primary {{ else if .tabFilesDanger}} btn-danger {{ else }} btn-default {{ end }}">Files &gt;&gt;</button>
+      <button type="button" class="btn {{ if .tabPackaging}} btn-primary {{ else if .tabPackagingDanger}} btn-danger {{ else }} btn-default {{ end }}">Packaging &gt;&gt;</button>
+      <button type="button" class="btn {{ if .tabMetadata}} btn-primary {{ else if .tabMetadataDanger}} btn-danger {{ else }} btn-default {{ end }}">Metadata &gt;&gt;</button>
+      <button type="button" class="btn {{ if .tabStorage}} btn-primary {{ else if .tabStorageDanger}} btn-danger {{ else }} btn-default {{ end }}">Storage &gt;&gt;</button>
+      <button type="button" class="btn {{ if .tabReview}} btn-primary {{ else if .tabReviewDanger}} btn-danger {{ else }} btn-default {{ end }}">Review &gt;&gt;</button>
+      <button type="button" class="btn {{ if .tabRun}} btn-primary {{ else if .tabRunDanger}} btn-danger {{ else }} btn-default {{ end }}">Run Job &gt;&gt;</button>
+    </div>
+  </div>
+
+{{ end }}

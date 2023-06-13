@@ -1,0 +1,18 @@
+{{ define "partials/banner_alert.html" }}
+
+{{ if .flash }}
+<div class="alert alert-success" role="alert">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  {{ .flash }}
+</div>
+{{ end }}
+
+{{ if .error }}
+<div class="alert alert-danger" role="alert">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  {{ .error }}
+</div>
+{{ end }}
+
+
+{{ end }}

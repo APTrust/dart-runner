@@ -1,0 +1,33 @@
+{{ define "dashboard/show.html" }}
+
+{{ template "partials/banner_alert.html" . }}
+
+<div class="row mb-3">
+
+  {{ template "partials/running_jobs.html" . }}
+
+  {{ template "partials/recent_jobs.html" . }}
+
+</div>
+
+
+{{ range $index, $reports := .reportRows }}
+
+<div class="row mb-3">
+
+  {{ range $ix, $report := .reports }}
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">{{ $report.title }}</div>
+      <div class="card-body dashboard-card-body" id="{{ $report.id }}">
+
+      </div>
+    </div>
+  </div>
+  {{ end }}
+
+</div>
+
+{{ end }}
+
+{{ end }}

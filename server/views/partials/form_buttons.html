@@ -1,0 +1,17 @@
+{{ define "partials/form_buttons.html" }}
+
+<div class="bottom-buttons">
+    {{ if .form.UserCanDelete }}
+    <div class="pull-left">
+      <a class="btn btn-danger" href="#" data-func="{{ .form.DeleteFunction }}" data-func-param="{{ .form.ObjectID }}" role="button">Delete</a>
+    </div>
+    {{ end }}
+    <div class="pull-right">
+      <a class="btn btn-primary" href="#" data-func="{{ .form.SubmitFunction }}" role="button">Save</a>
+    </div>
+    <div class="pull-right mr-5">
+      <a class="btn btn-secondary" href="#" data-func="{{ .form.CancelFunction }}" role="button">Cancel</a>
+    </div>
+  </div>
+
+{{ end }}

@@ -1,0 +1,24 @@
+{{ define "app_setting/form.html" }}
+
+<h2>Application Setting</h2>
+
+<form method="post" action="#" id="{{ .form.ObjType }}">
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
+
+
+  {{ if .form.Fields.Value.Choices }}
+  {{ template "partials/input_select.html" dict "field" .form.Fields.Value }}
+  {{ else }}
+  {{ template "partials/input_text.html" dict "field"  .form.Fields.Value }}
+  {{ end }}
+
+  {{ template "partials/input_hidden.html" dict "field"  .form.Fields.UserCanDelete }}
+
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+
+  {{ template "partials/form_buttons.html" . }}
+  
+</form>
+
+{{ end }}

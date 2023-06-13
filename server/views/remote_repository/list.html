@@ -1,0 +1,28 @@
+{{ define "remote_repository/list.html" }}
+
+{{ template "partials/banner_alert.html" . }}
+
+<h2>Remote Repositories</h2>
+<div class="pull-right mt-1 mb-3">
+  <a class="btn btn-primary" href="#" data-func="RemoteRepositoryCreate" role="button">New</a>
+</div>
+<table class="table table-hover">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Name</th>
+      <th>URL</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $index, $item := .items }}
+    <tr class="clickable-row" data-func="RemoteRepositoryEdit" data-func-param="{{ $item.ID }}">
+      <td>{{ $item.Name }}</td>
+      <td>{{ $item.Url }}</td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+
+{{ template "partials/table_bottom_links.html" . }}
+
+{{ end }}

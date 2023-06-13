@@ -1,0 +1,40 @@
+{{ define "about/index.html" }}
+
+<div class="row about">
+    <p>
+      DART is the Digital Archivist's Resource Tool for packaging
+      and sending data. It produces BagIt files and uploads them to any
+      sftp server or S3-compliant API.
+    </p>
+    <p>
+      For help, see the <a href="#" data-func="OpenExternal" data-func-param="https://aptrust.github.io/dart-docs/users/getting_started/">DART User Guide.</a>
+    </p>
+  </div>
+  
+  <div class="row about">
+    <p><b>Version</b>: {{ .version }}</p>
+  </div>
+  
+  <div class="row about">
+    <p><b>App Location</b>: {{ .appPath }}</p>
+  </div>
+  
+  <div class="row about">
+    <p><b>Data Location</b>: {{ .userDataPath }}</p>
+  </div>
+  
+  <div class="row about">
+    <p><b>Log File</b>: {{ .logFilePath }}</p>
+  </div>
+  
+  <hr/>
+  
+  <div class="row about">
+    <p>
+      DART is open source software produced and maintained by the
+      <a href="#" data-func="OpenExternal" data-func-param="https://www.aptrust.org">Academic Preservation Trust</a>
+      on <a href="#" data-func="OpenExternal" data-func-param="https://github.com/APTrust/dart3">GitHub</a>.
+    </p>
+  </div>
+
+  {{ end }}

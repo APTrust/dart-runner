@@ -1,0 +1,25 @@
+{{ define "remote_repository/form.html" }}
+
+<h2>Remote Repository</h2>
+
+<form method="post" action="#" id="{{ .form.ObjType }}">
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.Url }}
+
+  {{ template "partials/input_select.html" dict "field" .form.Fields.PluginID }}
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.UserID }}
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.APIToken }}
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.LoginExtra }}
+
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+
+  {{ template "partials/form_buttons.html" . }}
+
+</form>
+
+{{ end }}
