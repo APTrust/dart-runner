@@ -41,7 +41,7 @@ func InitAppEngine(discardStdOut bool) *gin.Engine {
 func initTemplates(router *gin.Engine) {
 
 	router.SetFuncMap(template.FuncMap{
-		"dict": Dict,
+		"dict": util.Dict,
 	})
 
 	// Load the view templates
