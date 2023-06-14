@@ -421,3 +421,13 @@ func TestToHumanSize(t *testing.T) {
 	assert.Equal(t, "3.9 GB", util.ToHumanSize(3897784432, 1000))
 	assert.Equal(t, "3.6 GB", util.ToHumanSize(3897784432, 1024))
 }
+
+func TestLooksLikeHyperTextURL(t *testing.T) {
+	assert.True(t, util.LooksLikeHypertextURL("http://example.com/api"))
+	assert.True(t, util.LooksLikeHypertextURL("http://localhost/api"))
+	assert.True(t, util.LooksLikeHypertextURL("https://repo.example.com/api/v2"))
+	assert.False(t, util.LooksLikeHypertextURL("ftp://example.com/upload"))
+	assert.False(t, util.LooksLikeHypertextURL("ταὐτὰ παρίσταταί"))
+	assert.False(t, util.LooksLikeHypertextURL(""))
+	assert.False(t, util.LooksLikeHypertextURL("6"))
+}

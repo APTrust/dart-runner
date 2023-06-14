@@ -27,6 +27,9 @@ const (
 	SerializationForbidden   = "forbidden"
 	SerializationOptional    = "optional"
 	SerializationRequired    = "required"
+	TypeAppSetting           = "AppSetting"
+	TypeInternalSetting      = "InternalSetting"
+	TypeRemoteRepository     = "RemoteRepository"
 )
 
 var AcceptBagItVersion = []string{

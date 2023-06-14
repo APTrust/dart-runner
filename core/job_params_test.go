@@ -47,15 +47,15 @@ func getTestStorageService(protocol, host string) *core.StorageService {
 
 func getTestTags() []*bagit.Tag {
 	tags := []*bagit.Tag{
-		{"bag-info.txt", "Source-Organization", "The Liberry"},
-		{"aptrust-info.txt", "Title", "Baggy Pants"},
-		{"aptrust-info.txt", "Description", "Those are chock full of heady goodness."},
-		{"aptrust-info.txt", "Access", "Institution"},
-		{"aptrust-info.txt", "Storage-Option", "Glacier-Deep-OH"},
-		{"aptrust-info.txt", "Custom-Test-Tag", "Kwik-E-Mart"},
-		{"bag-info.txt", "Repeated-Tag", "1"},
-		{"bag-info.txt", "Repeated-Tag", "2"},
-		{"bag-info.txt", "Repeated-Tag", "3"},
+		{TagFile: "bag-info.txt", TagName: "Source-Organization", Value: "The Liberry"},
+		{TagFile: "aptrust-info.txt", TagName: "Title", Value: "Baggy Pants"},
+		{TagFile: "aptrust-info.txt", TagName: "Description", Value: "Those are chock full of heady goodness."},
+		{TagFile: "aptrust-info.txt", TagName: "Access", Value: "Institution"},
+		{TagFile: "aptrust-info.txt", TagName: "Storage-Option", Value: "Glacier-Deep-OH"},
+		{TagFile: "aptrust-info.txt", TagName: "Custom-Test-Tag", Value: "Kwik-E-Mart"},
+		{TagFile: "bag-info.txt", TagName: "Repeated-Tag", Value: "1"},
+		{TagFile: "bag-info.txt", TagName: "Repeated-Tag", Value: "2"},
+		{TagFile: "bag-info.txt", TagName: "Repeated-Tag", Value: "3"},
 	}
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("tag-%d", i+1)
