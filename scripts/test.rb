@@ -39,18 +39,30 @@ class TestRunner
   end
 
   def stop_minio
-	if !@minio_pid
-      puts "Pid for minio is zero. Can't kill that..."
-	  return
-	end
-	puts "Stopping minio service (pid #{@minio_pid})"
-	begin
-	  Process.kill('TERM', @minio_pid)
-	rescue
-	  puts "Hmm... Couldn't kill #{@minio_pid}."
-      puts "Check system processes to see if a version "
-      puts "of that process is lingering from a previous test run."
-	end
+    if !@minio_pid
+        puts "Pid for minio is zero. Can't kill that..."
+        return
+    end
+
+    puts "Stopping minio service (pid #{@minio_pid})"
+
+    begin
+      Process.kill('TERM', @minio_pid)
+    rescue
+      # We'll handle this below
+    end
+
+    ps_pid = `ps -ef | grep minio`.split(/\s+/)[1].to_i
+    if (ps_pid > 0)
+      begin
+        Process.kill('TERM', ps_pid)
+        puts "Also stopped minio child process #{ps_pid}"
+      rescue
+        puts "Couldn't kill minio."
+        puts "Check system processes to see if a version "
+        puts "of that process is lingering from a previous test run."
+        end
+    end    
   end
 
   def project_root
