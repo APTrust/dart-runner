@@ -1,6 +1,11 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/APTrust/dart-runner/core"
+	"github.com/gin-gonic/gin"
+)
 
 // AppSettingCreate creates a new AppSetting.
 // Handles submission of new AppSetting form.
@@ -22,7 +27,20 @@ func AppSettingEdit(c *gin.Context) {
 
 // GET /app_settings
 func AppSettingIndex(c *gin.Context) {
-
+	offset := c.GetInt("offset")
+	limit := c.GetInt("limit")
+	if limit < 1 {
+		limit = 25
+	}
+	items, err := core.AppSettingList("obj_name", limit, offset)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	data := gin.H{
+		"items": items,
+	}
+	c.HTML(http.StatusOK, "app_setting/list.html", data)
 }
 
 // GET /app_settings/new
