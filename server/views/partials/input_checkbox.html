@@ -6,8 +6,7 @@
      {{ if .field.Hide }}style="display:none;"{{ end }}>
   <label class="form-check-label" for="{{ .field.ID }}">
     <input id="{{ .field.ID }}" class="form-check-input" type="checkbox" name="{{ .field.Name }}" value="{{ .field.Value }}" 
-    {{ if .field.Selected }}checked{{ end }}
-    data-cast="{{ .field.Cast }}" />
+    {{ if .field.Selected }}checked{{ end }} />
     {{ .field.Label }}
   </label>
 </div>

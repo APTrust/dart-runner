@@ -22,7 +22,16 @@ func AppSettingDelete(c *gin.Context) {
 
 // GET /app_settings/edit/:id
 func AppSettingEdit(c *gin.Context) {
-
+	id := c.Param("id")
+	setting, err := core.AppSettingFind(id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	data := gin.H{
+		"form": setting.ToForm(),
+	}
+	c.HTML(http.StatusOK, "app_setting/form.html", data)
 }
 
 // GET /app_settings
@@ -56,5 +65,16 @@ func AppSettingShow(c *gin.Context) {
 // PUT /app_settings/edit/:id
 // POST /app_settings/edit/:id
 func AppSettingUpdate(c *gin.Context) {
-
+	setting := &core.AppSetting{}
+	err := c.Bind(setting)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	err = setting.Save()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, "/app_settings")
 }

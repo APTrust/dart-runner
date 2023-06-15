@@ -15,7 +15,7 @@
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
-    <tr class="clickable-row" data-func="AppSettingEdit" data-func-param="{{ $item.ID }}">
+    <tr class="clickable-row" onclick="location.href='/app_settings/edit/{{ $item.ID }}'">
       <td>{{ $item.Name }}</td>
       <td>{{ $item.Value }}</td>
     </tr>

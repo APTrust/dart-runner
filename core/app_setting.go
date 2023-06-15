@@ -108,7 +108,7 @@ func (setting *AppSetting) ToForm() *Form {
 	// an in the case of a required setting like "Bagging Directory,"
 	// that would cause lots of problems.
 	if !setting.UserCanDelete {
-		nameField.Attrs["disabled"] = "disabled"
+		nameField.Attrs["readonly"] = "readonly"
 	}
 
 	valueField := form.AddField("Value", "Value", setting.Value, true)

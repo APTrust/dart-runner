@@ -7,7 +7,7 @@
            {{ if .field.Help}}<i class="fas fa-question-circle text-primary"></i>{{ end }}</label>
     <textarea id="{{ .field.ID }}" name="{{ .field.Name }}"
            class="form-control {{ template "partials/classes.html" . }}" rows="4"
-           {{ template "partials/attrs.html" .field }} data-cast="{{ .field.Cast }}" >{{ .field.Value }}</textarea>
+           {{ template "partials/attrs.html" .field }} >{{ .field.Value }}</textarea>
     <small id="{{ .field.ID }}Error" class="form-text text-danger">
       {{ .field.Error }}
     </small>

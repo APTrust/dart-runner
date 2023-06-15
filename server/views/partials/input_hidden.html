@@ -4,8 +4,7 @@
     <input type="hidden" name="{{ .field.Name }}" value="{{ .field.Value }}"
            id="{{ .field.ID }}"
            class="form-control {{ template "partials/classes.html" .field }}"
-           {{ template "partials/attrs.html" .field }} 
-           data-cast="{{ .field.Cast }}"/>
+           {{ template "partials/attrs.html" .field }} />
 </div>
 
 {{ end }}
