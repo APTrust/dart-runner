@@ -7,17 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AppSettingCreate creates a new AppSetting.
-// Handles submission of new AppSetting form.
-// POST /app_settings/new
-func AppSettingCreate(c *gin.Context) {
-
-}
-
 // GET /app_settings/delete/:id
 // POST /app_settings/delete/:id
 func AppSettingDelete(c *gin.Context) {
-
+	id := c.Param("id")
+	setting, err := core.AppSettingFind(id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	err = setting.Delete()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, "/app_settings")
 }
 
 // GET /app_settings/edit/:id
@@ -54,17 +58,18 @@ func AppSettingIndex(c *gin.Context) {
 
 // GET /app_settings/new
 func AppSettingNew(c *gin.Context) {
-
-}
-
-// GET /app_settings/show/:id
-func AppSettingShow(c *gin.Context) {
-
+	setting := core.NewAppSetting("", "")
+	data := gin.H{
+		"form":                 setting.ToForm(),
+		"suppressDeleteButton": true,
+	}
+	c.HTML(http.StatusOK, "app_setting/form.html", data)
 }
 
 // PUT /app_settings/edit/:id
 // POST /app_settings/edit/:id
-func AppSettingUpdate(c *gin.Context) {
+// POST /app_settings/new
+func AppSettingSave(c *gin.Context) {
 	setting := &core.AppSetting{}
 	err := c.Bind(setting)
 	if err != nil {

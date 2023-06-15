@@ -97,6 +97,7 @@ func (setting *AppSetting) Delete() error {
 // The form can be rendered by the app_setting/form.html template.
 func (setting *AppSetting) ToForm() *Form {
 	form := NewForm(constants.TypeAppSetting, setting.ID, setting.Errors)
+	form.UserCanDelete = setting.UserCanDelete
 
 	form.AddField("ID", "ID", setting.ID, true)
 

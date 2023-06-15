@@ -75,13 +75,12 @@ func initRoutes(router *gin.Engine) {
 	// App Settings
 	router.GET("/app_settings", controllers.AppSettingIndex)
 	router.GET("/app_settings/new", controllers.AppSettingNew)
-	router.POST("/app_settings/new", controllers.AppSettingCreate)
+	router.POST("/app_settings/new", controllers.AppSettingSave)
 	router.GET("/app_settings/edit/:id", controllers.AppSettingEdit)
-	router.PUT("/app_settings/edit/:id", controllers.AppSettingUpdate)
-	router.POST("/app_settings/edit/:id", controllers.AppSettingUpdate)
+	router.PUT("/app_settings/edit/:id", controllers.AppSettingSave)
+	router.POST("/app_settings/edit/:id", controllers.AppSettingSave)
 	router.PUT("/app_settings/delete/:id", controllers.AppSettingDelete)
 	router.POST("/app_settings/delete/:id", controllers.AppSettingDelete)
-	router.GET("/app_settings/:id", controllers.AppSettingShow)
 
 	// BagIt Profiles
 	router.GET("/profiles", controllers.ProfileIndex)
