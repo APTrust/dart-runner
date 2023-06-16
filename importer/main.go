@@ -12,6 +12,7 @@ import (
 func main() {
 	ImportAppSettings()
 	ImportRemoteRepositories()
+	ImportStorageServices()
 }
 
 func ImportAppSettings() {
@@ -32,14 +33,14 @@ func ImportRemoteRepositories() {
 	}
 }
 
-// func ImportStorageServices() {
-// 	jsonBytes := GetJson("StorageService.json")
-// 	services := make(map[string]*core.StorageService)
-// 	ParseJson(jsonBytes, &services)
-// 	for _, ss := range services {
-// 		SaveObject(ss)
-// 	}
-// }
+func ImportStorageServices() {
+	jsonBytes := GetJson("StorageService.json")
+	services := make(map[string]*core.StorageService)
+	ParseJson(jsonBytes, &services)
+	for _, ss := range services {
+		SaveObject(ss)
+	}
+}
 
 func GetJson(filename string) []byte {
 	dataDir := core.Dart.Paths.DataDir
@@ -64,6 +65,9 @@ func SaveObject(obj core.PersistentObject) {
 	saveErr := obj.Save()
 	if saveErr != nil {
 		fmt.Printf("Error saving setting %s: %v\n", obj.ObjName(), saveErr)
+		for key, value := range obj.GetErrors() {
+			fmt.Println("  ", key, "->", value)
+		}
 	} else {
 		fmt.Printf("Saved setting %s\n", obj.ObjName())
 	}

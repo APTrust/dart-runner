@@ -8,6 +8,8 @@ type QueryResult struct {
 	ObjType            string
 	RemoteRepository   *RemoteRepository
 	RemoteRepositories []*RemoteRepository
+	StorageService     *StorageService
+	StorageServices    []*StorageService
 }
 
 func NewQueryResult(objType string) *QueryResult {

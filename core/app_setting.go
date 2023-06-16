@@ -142,3 +142,7 @@ func (setting *AppSetting) Validate() bool {
 func (setting *AppSetting) String() string {
 	return fmt.Sprintf("AppSetting: '%s' = '%s'", setting.Name, setting.Value)
 }
+
+func (setting *AppSetting) GetErrors() map[string]string {
+	return setting.Errors
+}

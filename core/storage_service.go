@@ -3,10 +3,14 @@ package core
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+
+	"github.com/APTrust/dart-runner/constants"
 )
 
 type StorageService struct {
+	ID             string            `json:"id"`
 	AllowsDownload bool              `json:"allowsDownload"`
 	AllowsUpload   bool              `json:"allowsUpload"`
 	Bucket         string            `json:"bucket"`
@@ -94,9 +98,12 @@ func (ss *StorageService) getEnv(varname string) string {
 }
 
 // Copy returns a pointer to a new StorageService whose values
-// are the same as this service.
+// are the same as this service. The copy will have the same
+// ID as the original, so if you want to change it, you'll have
+// to do that yourself.
 func (ss *StorageService) Copy() *StorageService {
 	return &StorageService{
+		ID:             ss.ID,
 		AllowsDownload: ss.AllowsDownload,
 		AllowsUpload:   ss.AllowsUpload,
 		Bucket:         ss.Bucket,
@@ -110,4 +117,83 @@ func (ss *StorageService) Copy() *StorageService {
 		Port:           ss.Port,
 		Protocol:       ss.Protocol,
 	}
+}
+
+// StorageServiceFind returns the StorageService with the specified UUID,
+// or sql.ErrNoRows if no matching record exists.
+func StorageServiceFind(uuid string) (*StorageService, error) {
+	result, err := ObjFind(uuid)
+	if err != nil {
+		return nil, err
+	}
+	return result.StorageService, err
+}
+
+// StorageServiceList returns a list of StorageServices with the specified
+// order, offset and limit.
+func StorageServiceList(orderBy string, limit, offset int) ([]*StorageService, error) {
+	result, err := ObjList(constants.TypeStorageService, orderBy, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return result.StorageServices, err
+}
+
+// ObjID returns this remote ss's UUID.
+func (ss *StorageService) ObjID() string {
+	return ss.ID
+}
+
+// ObjName returns the name of this remote ss.
+func (ss *StorageService) ObjName() string {
+	return ss.Name
+}
+
+// ObjType returns this object's type.
+func (ss *StorageService) ObjType() string {
+	return constants.TypeStorageService
+}
+
+func (ss *StorageService) String() string {
+	return fmt.Sprintf("StorageService: '%s'", ss.Name)
+}
+
+// Save saves this ss, if it determines the ss is valid.
+// It returns core.ErrObjecValidation if the ss is invalid.
+// Check ss.Errors if you get a validation error.
+func (ss *StorageService) Save() error {
+	if !ss.Validate() {
+		return ErrObjecValidation
+	}
+	return ObjSave(ss)
+}
+
+// Delete deletes this ss config.
+func (ss *StorageService) Delete() error {
+	return ObjDelete(ss.ID)
+}
+
+func (ss *StorageService) ToForm() *Form {
+	form := NewForm(constants.TypeStorageService, ss.ID, ss.Errors)
+
+	// TODO: Set protocol choices. Set choices for AllowsUpload/Download.
+
+	form.AddField("ID", "ID", ss.ID, true)
+	form.AddField("Name", "Name", ss.Name, true)
+	form.AddField("Host", "Host", ss.Host, true)
+	form.AddField("Port", "Port", strconv.Itoa(ss.Port), true)
+	form.AddField("Protocol", "Protocol", ss.Protocol, true)
+	form.AddField("Bucket", "Bucket", ss.LoginExtra, false)
+	form.AddField("Description", "Description", ss.Description, false)
+	form.AddField("Login", "Login", ss.Login, false)
+	form.AddField("Password", "Password", ss.Password, false)
+	form.AddField("LoginExtra", "Login Extra", ss.LoginExtra, false)
+	form.AddField("AllowsUpload", "Allows Upload", strconv.FormatBool(ss.AllowsUpload), true)
+	form.AddField("AllowsDownload", "Allows Download", strconv.FormatBool(ss.AllowsDownload), true)
+
+	return form
+}
+
+func (ss *StorageService) GetErrors() map[string]string {
+	return ss.Errors
 }

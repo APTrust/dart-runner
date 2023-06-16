@@ -1,8 +1,6 @@
 package core
 
 import (
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -128,20 +126,6 @@ func (repo *RemoteRepository) ToForm() *Form {
 	return form
 }
 
-func remoteRepositoryList(rows *sql.Rows) ([]*RemoteRepository, error) {
-	list := make([]*RemoteRepository, 0)
-	for rows.Next() {
-		var jsonStr string
-		err := rows.Scan(&jsonStr)
-		if err != nil {
-			return nil, err
-		}
-		item := &RemoteRepository{}
-		err = json.Unmarshal([]byte(jsonStr), item)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, item)
-	}
-	return list, nil
+func (repo *RemoteRepository) GetErrors() map[string]string {
+	return repo.Errors
 }

@@ -30,6 +30,7 @@ const (
 	TypeAppSetting           = "AppSetting"
 	TypeInternalSetting      = "InternalSetting"
 	TypeRemoteRepository     = "RemoteRepository"
+	TypeStorageService       = "StorageService"
 )
 
 var AcceptBagItVersion = []string{

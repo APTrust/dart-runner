@@ -112,6 +112,8 @@ func ObjList(objType, orderBy string, limit, offset int) (*QueryResult, error) {
 		qr.InternalSettings, err = internalSettingList(rows)
 	case constants.TypeRemoteRepository:
 		qr.RemoteRepositories, err = remoteRepositoryList(rows)
+	case constants.TypeStorageService:
+		qr.StorageServices, err = storageServiceList(rows)
 	default:
 		return nil, fmt.Errorf("cannot convert unknown type %s to query result", objType)
 	}
@@ -145,6 +147,42 @@ func internalSettingList(rows *sql.Rows) ([]*InternalSetting, error) {
 			return nil, err
 		}
 		item := &InternalSetting{}
+		err = json.Unmarshal([]byte(jsonStr), item)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, item)
+	}
+	return list, nil
+}
+
+func remoteRepositoryList(rows *sql.Rows) ([]*RemoteRepository, error) {
+	list := make([]*RemoteRepository, 0)
+	for rows.Next() {
+		var jsonStr string
+		err := rows.Scan(&jsonStr)
+		if err != nil {
+			return nil, err
+		}
+		item := &RemoteRepository{}
+		err = json.Unmarshal([]byte(jsonStr), item)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, item)
+	}
+	return list, nil
+}
+
+func storageServiceList(rows *sql.Rows) ([]*StorageService, error) {
+	list := make([]*StorageService, 0)
+	for rows.Next() {
+		var jsonStr string
+		err := rows.Scan(&jsonStr)
+		if err != nil {
+			return nil, err
+		}
+		item := &StorageService{}
 		err = json.Unmarshal([]byte(jsonStr), item)
 		if err != nil {
 			return nil, err

@@ -1,12 +1,13 @@
 package core
 
 type PersistentObject interface {
+	Delete() error
+	GetErrors() map[string]string
 	ObjID() string
 	ObjName() string
 	ObjType() string
 	Save() error
-	Delete() error
+	String() string
 	ToForm() *Form
 	Validate() bool
-	String() string
 }
