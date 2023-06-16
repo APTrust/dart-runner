@@ -52,7 +52,6 @@ func DataFilePath() string {
 	// our actual dart db.
 	if util.TestsAreRunning() {
 		dbPath = ":memory:"
-		//dbPath = path.Join(paths.HomeDir, "Desktop", "dart.db")
 	}
 	return dbPath
 }

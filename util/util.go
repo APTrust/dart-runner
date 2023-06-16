@@ -1,7 +1,6 @@
 package util
 
 import (
-	"flag"
 	"fmt"
 	"math"
 	"os"
@@ -214,7 +213,17 @@ func PathToUnitTestBag(bagName string) string {
 
 // TestsAreRunning returns true when code is running under "go test"
 func TestsAreRunning() bool {
-	return flag.Lookup("test.v") != nil
+	//return flag.Lookup("test.v") != nil || strings.HasSuffix(os.Args[0], ".test") || (len(os.Args) > 1 && os.Args[1] == "-test.run")
+	if strings.HasSuffix(os.Args[0], ".test") || os.Getenv("DART_ENV") == "test" {
+		return true
+	}
+	for _, arg := range os.Args {
+		fmt.Println(arg)
+		if strings.HasPrefix(arg, "-test.") {
+			return true
+		}
+	}
+	return false
 }
 
 // RunningInCI returns true when code is running in the Travis CI

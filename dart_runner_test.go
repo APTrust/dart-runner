@@ -3,8 +3,9 @@ package main_test
 import (
 	// "encoding/json"
 	"fmt"
-	//"os"
+	"os"
 	"path"
+
 	//"strings"
 	"testing"
 	//"time"
@@ -23,6 +24,10 @@ import (
 //
 // As in the post build test, these tests assume that scripts/test.rb
 // has set up the output directory under ~/tmp/bags
+
+func init() {
+	os.Setenv("DART_ENV", "test")
+}
 
 func TestRunJob(t *testing.T) {
 	opts := optsForJobParams(t)

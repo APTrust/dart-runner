@@ -31,11 +31,12 @@ func Setup(t *testing.T) {
 		build(t)
 	}
 	setupAttempted = true
+	os.Setenv("DART_ENV", "test")
 }
 
 func build(t *testing.T) {
 	buildScript := path.Join(util.ProjectRoot(), "scripts", "build.sh")
-	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, nil)
+	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, os.Environ(), nil)
 	assert.NotEmpty(t, stdout)
 	assert.Equal(t, 0, exitCode, stderr)
 	if exitCode == 0 {
@@ -50,6 +51,15 @@ func runner() string {
 		osName = "linux"
 	}
 	return path.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
+}
+
+// When we run post-build tests, DART needs to know it's running in
+// a test environment, so it uses an in-memory database instead of
+// polluting the on-disk database.
+func envForRunner() []string {
+	env := os.Environ()
+	env = append(env, "DART_ENV=test")
+	return env
 }
 
 // dirs returns a list of directories commonly used in tests
@@ -69,7 +79,7 @@ func TestHelpCommand(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--help"}
-	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), nil)
 	assert.Contains(t, string(stdout), "DART Runner: Bag and ship files from the command line")
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
@@ -79,7 +89,7 @@ func TestVersionCommand(t *testing.T) {
 	Setup(t)
 	command := runner()
 	args := []string{"--version"}
-	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), nil)
 	assert.Contains(t, string(stdout), "DART Runner")
 	assert.Contains(t, string(stdout), "Build")
 	assert.Empty(t, stderr)
@@ -97,7 +107,7 @@ func TestRunJobCommand(t *testing.T) {
 		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
 		fmt.Sprintf("--output-dir=%s", outputDir),
 	}
-	stdout, stderr, exitCode := util.ExecCommand(command, args, jobParamsJson)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), jobParamsJson)
 	assert.NotEmpty(t, stdout)
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
@@ -119,7 +129,7 @@ func TestWorkflowBatchCommand(t *testing.T) {
 		"--concurrency=1",
 		"--delete=true",
 	}
-	stdout, stderr, exitCode := util.ExecCommand(command, args, nil)
+	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), nil)
 	assert.NotEmpty(t, stdout)
 	fmt.Println(string(stderr))
 	fmt.Println(string(stdout))

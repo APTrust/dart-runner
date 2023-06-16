@@ -12,11 +12,12 @@ const STDIN_ERROR = -10000
 //
 // os/exec has some problems when piping stdin. These show up on Travis/Linux,
 // but not Mac. See https://github.com/golang/go/issues/9307
-func ExecCommand(command string, args []string, stdinData []byte) (stdout, stderr []byte, exitCode int) {
+func ExecCommand(command string, args []string, env []string, stdinData []byte) (stdout, stderr []byte, exitCode int) {
 	cmd := exec.Command(command, args...)
 	var outBuffer, errBuffer bytes.Buffer
 	cmd.Stdout = &outBuffer
 	cmd.Stderr = &errBuffer
+	cmd.Env = env
 
 	if len(stdinData) > 0 {
 		stdin, err := cmd.StdinPipe()
