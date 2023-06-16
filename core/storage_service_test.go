@@ -1,10 +1,12 @@
 package core_test
 
 import (
+	"database/sql"
 	"os"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,7 +14,8 @@ import (
 func TestStorageService(t *testing.T) {
 	ss := &core.StorageService{}
 	assert.False(t, ss.Validate())
-	assert.Equal(t, 5, len(ss.Errors))
+	assert.Equal(t, 6, len(ss.Errors))
+	assert.Equal(t, "StorageService requires a valid ID.", ss.Errors["StorageService.ID"])
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", ss.Errors["StorageService.Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", ss.Errors["StorageService.Host"])
 	assert.Equal(t, "StorageService requires a bucket or folder name.", ss.Errors["StorageService.Bucket"])
@@ -20,6 +23,7 @@ func TestStorageService(t *testing.T) {
 	assert.Equal(t, "StorageService requires a password or secret access key.", ss.Errors["StorageService.Password"])
 
 	ss = &core.StorageService{
+		ID:       uuid.NewString(),
 		Host:     "example.com",
 		Bucket:   "uploads",
 		Login:    "user@example.com",
@@ -79,8 +83,9 @@ func TestStorageServiceHostAndPort(t *testing.T) {
 	assert.Equal(t, "example.com:9999", ss.HostAndPort())
 }
 
-func TestStorgeServiceCopy(t *testing.T) {
-	ss := &core.StorageService{
+func getSampleStorageService() *core.StorageService {
+	return &core.StorageService{
+		ID:             uuid.NewString(),
 		AllowsDownload: true,
 		AllowsUpload:   true,
 		Bucket:         "chum.bucket",
@@ -94,6 +99,10 @@ func TestStorgeServiceCopy(t *testing.T) {
 		Port:           999,
 		Protocol:       "s3",
 	}
+}
+
+func TestStorgeServiceCopy(t *testing.T) {
+	ss := getSampleStorageService()
 	ssCopy := ss.Copy()
 	require.NotNil(t, ssCopy)
 
@@ -102,4 +111,54 @@ func TestStorgeServiceCopy(t *testing.T) {
 
 	// ...but these pointers don't point to the same address
 	assert.NotSame(t, ss, ssCopy)
+}
+
+func TestStorageServicePersistence(t *testing.T) {
+
+	// Clean up when test completes.
+	defer core.ClearDartTable()
+
+	// Insert three records for testing.
+	ss1 := getSampleStorageService()
+	ss1.Name = "Storage Service 1"
+	ss2 := ss1.Copy()
+	ss2.ID = uuid.NewString()
+	ss2.Name = "Storage Service 2"
+	ss3 := ss1.Copy()
+	ss3.ID = uuid.NewString()
+	ss3.Name = "Storage Service 3"
+
+	assert.Nil(t, ss1.Save())
+	assert.Nil(t, ss2.Save())
+	assert.Nil(t, ss3.Save())
+
+	// Make sure S1 was saved as expected.
+	ss1Reload, err := core.StorageServiceFind(ss1.ID)
+	require.Nil(t, err)
+	require.NotNil(t, ss1Reload)
+	assert.Equal(t, ss1.ID, ss1Reload.ID)
+	assert.Equal(t, ss1.Name, ss1Reload.Name)
+	assert.Equal(t, ss1.Host, ss1Reload.Host)
+
+	// Make sure order, offset and limit work on list query.
+	settings, err := core.StorageServiceList("obj_name", 1, 0)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(settings))
+	assert.Equal(t, ss1.ID, settings[0].ID)
+
+	// Make sure we can get all results.
+	settings, err = core.StorageServiceList("obj_name", 100, 0)
+	require.Nil(t, err)
+	require.Equal(t, 3, len(settings))
+	assert.Equal(t, ss1.ID, settings[0].ID)
+	assert.Equal(t, ss2.ID, settings[1].ID)
+	assert.Equal(t, ss3.ID, settings[2].ID)
+
+	// Make sure delete works. Should return no error.
+	assert.Nil(t, ss1.Delete())
+
+	// Make sure the record was truly deleted.
+	deletedRecord, err := core.AppSettingFind(ss1.ID)
+	assert.Equal(t, sql.ErrNoRows, err)
+	assert.Nil(t, deletedRecord)
 }

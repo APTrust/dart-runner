@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 )
 
 type StorageService struct {
@@ -48,6 +49,9 @@ func (ss *StorageService) HostAndPort() string {
 
 func (ss *StorageService) Validate() bool {
 	ss.Errors = make(map[string]string)
+	if !util.LooksLikeUUID(ss.ID) {
+		ss.Errors["StorageService.ID"] = "StorageService requires a valid ID."
+	}
 	if strings.TrimSpace(ss.Protocol) == "" {
 		ss.Errors["StorageService.Protocol"] = "StorageService requires a protocol (s3, sftp, etc)."
 	}

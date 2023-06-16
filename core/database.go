@@ -28,12 +28,6 @@ type Artifact struct {
 	UpdatedAt time.Time
 }
 
-type DartObject interface {
-	ObjID() string
-	ObjName() string
-	ObjType() string
-}
-
 func InitSchema() error {
 	schema := `create table if not exists dart (
 		uuid text primary key not null,
@@ -58,7 +52,7 @@ func InitSchema() error {
 	return err
 }
 
-func ObjSave(obj DartObject) error {
+func ObjSave(obj PersistentObject) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -87,6 +81,10 @@ func ObjFind(uuid string) (*QueryResult, error) {
 		i := &InternalSetting{}
 		err = json.Unmarshal([]byte(objJson), i)
 		qr.InternalSetting = i
+	case constants.TypeStorageService:
+		s := &StorageService{}
+		err = json.Unmarshal([]byte(objJson), s)
+		qr.StorageService = s
 	case constants.TypeRemoteRepository:
 		r := &RemoteRepository{}
 		err = json.Unmarshal([]byte(objJson), r)

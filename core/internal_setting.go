@@ -86,3 +86,23 @@ func (setting *InternalSetting) Validate() bool {
 	}
 	return isValid
 }
+
+// ToForm returns a form to comply with the PersistentObject
+// interface, but internal settings are not editable, so the
+// app never displays this form.
+func (setting *InternalSetting) ToForm() *Form {
+	form := NewForm(constants.TypeAppSetting, setting.ID, setting.Errors)
+	form.UserCanDelete = false
+
+	form.AddField("ID", "ID", setting.ID, true)
+	nameField := form.AddField("Name", "Name", setting.Name, true)
+	nameField.Attrs["readonly"] = "readonly"
+
+	valueField := form.AddField("Value", "Value", setting.Value, true)
+	valueField.Attrs["readonly"] = "readonly"
+	return form
+}
+
+func (setting *InternalSetting) GetErrors() map[string]string {
+	return setting.Errors
+}

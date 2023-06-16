@@ -210,7 +210,8 @@ func (job *Job) Validate() bool {
 				job.Errors[errKey] = "UploadOperation requires a StorageService"
 			} else if !uploadOp.StorageService.Validate() {
 				for key, errMsg := range uploadOp.StorageService.Errors {
-					job.Errors[key] = errMsg
+					ssErrKey := "Job." + key
+					job.Errors[ssErrKey] = errMsg
 				}
 			}
 		}

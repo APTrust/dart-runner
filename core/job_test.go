@@ -32,7 +32,8 @@ func TestJobValidate(t *testing.T) {
 	job.BagItProfile = nil
 	assert.False(t, job.Validate())
 
-	assert.Equal(t, 2, len(job.Errors))
+	assert.Equal(t, 3, len(job.Errors))
+	assert.Equal(t, "StorageService requires a valid ID.", job.Errors["Job.StorageService.ID"])
 	assert.Equal(t, "BagIt packaging requires a BagItProfile.", job.Errors["Job.Package.BagItProfile"])
 	assert.Equal(t, "Validation requires a BagItProfile.", job.Errors["Job.Validate.BagItProfile"])
 
@@ -41,8 +42,8 @@ func TestJobValidate(t *testing.T) {
 		uploadOp.StorageService.Login = ""
 	}
 	assert.False(t, job.Validate())
-	assert.Equal(t, 3, len(job.Errors))
-	assert.Equal(t, "StorageService requires a login name or access key id.", job.Errors["StorageService.Login"])
+	assert.Equal(t, 4, len(job.Errors))
+	assert.Equal(t, "StorageService requires a login name or access key id.", job.Errors["Job.StorageService.Login"])
 
 	for _, uploadOp := range job.UploadOps {
 		uploadOp.StorageService = nil

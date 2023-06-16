@@ -5,6 +5,7 @@ import (
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +25,8 @@ func TestUploadOperation(t *testing.T) {
 	op = core.NewUploadOperation(ss, files)
 	require.NotNil(t, op)
 	assert.False(t, op.Validate())
-	assert.Equal(t, 6, len(op.Errors))
+	assert.Equal(t, 7, len(op.Errors))
+	assert.Equal(t, "StorageService requires a valid ID.", op.Errors["StorageService.ID"])
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", op.Errors["StorageService.Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", op.Errors["StorageService.Host"])
 	assert.Equal(t, "StorageService requires a bucket or folder name.", op.Errors["StorageService.Bucket"])
@@ -33,6 +35,7 @@ func TestUploadOperation(t *testing.T) {
 	assert.Equal(t, "UploadOperation source files are missing: file-does-not-exist", op.Errors["UploadOperation.SourceFiles"])
 
 	ss = &core.StorageService{
+		ID:       uuid.NewString(),
 		Host:     "example.com",
 		Bucket:   "uploads",
 		Login:    "user@example.com",
