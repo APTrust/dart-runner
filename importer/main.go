@@ -10,25 +10,61 @@ import (
 )
 
 func main() {
-	dataDir := core.Dart.Paths.DataDir
-	appSettingsFile := path.Join(dataDir, "AppSetting.json")
-	appSettingsJson, err := os.ReadFile(appSettingsFile)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	ImportAppSettings()
+	ImportRemoteRepositories()
+}
+
+func ImportAppSettings() {
+	jsonBytes := GetJson("AppSetting.json")
 	appSettings := make(map[string]*core.AppSetting)
-	err = json.Unmarshal(appSettingsJson, &appSettings)
+	ParseJson(jsonBytes, &appSettings)
+	for _, setting := range appSettings {
+		SaveObject(setting)
+	}
+}
+
+func ImportRemoteRepositories() {
+	jsonBytes := GetJson("RemoteRepository.json")
+	repos := make(map[string]*core.RemoteRepository)
+	ParseJson(jsonBytes, &repos)
+	for _, repo := range repos {
+		SaveObject(repo)
+	}
+}
+
+// func ImportStorageServices() {
+// 	jsonBytes := GetJson("StorageService.json")
+// 	services := make(map[string]*core.StorageService)
+// 	ParseJson(jsonBytes, &services)
+// 	for _, ss := range services {
+// 		SaveObject(ss)
+// 	}
+// }
+
+func GetJson(filename string) []byte {
+	dataDir := core.Dart.Paths.DataDir
+	jsonFile := path.Join(dataDir, filename)
+	jsonData, err := os.ReadFile(jsonFile)
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
-	for _, setting := range appSettings {
-		saveErr := setting.Save()
-		if saveErr != nil {
-			fmt.Printf("Error saving setting %s: %v\n", setting.Name, saveErr)
-		} else {
-			fmt.Printf("Saved setting %s\n", setting.Name)
-		}
+	return jsonData
+}
+
+func ParseJson(jsonBytes []byte, objMap interface{}) {
+	err := json.Unmarshal(jsonBytes, objMap)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func SaveObject(obj core.PersistentObject) {
+	saveErr := obj.Save()
+	if saveErr != nil {
+		fmt.Printf("Error saving setting %s: %v\n", obj.ObjName(), saveErr)
+	} else {
+		fmt.Printf("Saved setting %s\n", obj.ObjName())
 	}
 }
