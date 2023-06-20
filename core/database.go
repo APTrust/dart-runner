@@ -117,6 +117,18 @@ func ObjList(objType, orderBy string, limit, offset int) (*QueryResult, error) {
 	return qr, err
 }
 
+func ObjCount(objType string) (int, error) {
+	count := 0
+	err := Dart.DB.QueryRow("select count(*) from dart where obj_type = ?", objType).Scan(&count)
+	return count, err
+}
+
+func ObjExists(objId string) (bool, error) {
+	count := 0
+	err := Dart.DB.QueryRow("select count(*) from dart where uuid = ?", objId).Scan(&count)
+	return count == 1, err
+}
+
 func appSettingsList(rows *sql.Rows) ([]*AppSetting, error) {
 	list := make([]*AppSetting, 0)
 	for rows.Next() {
