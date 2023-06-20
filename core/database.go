@@ -76,6 +76,10 @@ func ObjFind(uuid string) (*QueryResult, error) {
 		return nil, err
 	}
 	qr := NewQueryResult(objType)
+	qr.ObjCount = 1
+
+	// TODO: Set Error on QueryResult instead of returning it separately.
+
 	switch objType {
 	case constants.TypeAppSetting:
 		a := &AppSetting{}
@@ -101,12 +105,23 @@ func ObjFind(uuid string) (*QueryResult, error) {
 }
 
 func ObjList(objType, orderBy string, limit, offset int) (*QueryResult, error) {
+	count, err := ObjCount(objType)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := Dart.DB.Query("select obj_json from dart where obj_type = ? order by ? limit ? offset ?", objType, orderBy, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	qr := NewQueryResult(objType)
+	qr.ObjCount = count
+	qr.Offset = offset
+	qr.Limit = limit
+	qr.OrderBy = orderBy
+
+	// TODO: Set Error on QueryResult instead of returning it separately.
+
 	switch objType {
 	case constants.TypeAppSetting:
 		qr.AppSettings, err = appSettingsList(rows)
@@ -133,6 +148,9 @@ func ObjExists(objId string) (bool, error) {
 	err := Dart.DB.QueryRow("select count(*) from dart where uuid = ?", objId).Scan(&count)
 	return count == 1, err
 }
+
+// TODO: Consolidate List methods into one inside of QueryResult,
+// and use switch internally.
 
 func appSettingsList(rows *sql.Rows) ([]*AppSetting, error) {
 	list := make([]*AppSetting, 0)
