@@ -20,7 +20,7 @@ func TestObjCountAndObjExists(t *testing.T) {
 	objIds := make([]string, 5)
 	for i := 0; i < 5; i++ {
 		setting := core.NewAppSetting(fmt.Sprintf("Name %d", i), fmt.Sprintf("Value %d", i))
-		assert.Nil(t, setting.Save())
+		assert.Nil(t, core.ObjSave(setting))
 		objIds[i] = setting.ID
 	}
 

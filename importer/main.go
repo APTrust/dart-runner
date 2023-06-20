@@ -62,7 +62,7 @@ func ParseJson(jsonBytes []byte, objMap interface{}) {
 }
 
 func SaveObject(obj core.PersistentObject) {
-	saveErr := obj.Save()
+	saveErr := core.ObjSave(obj)
 	if saveErr != nil {
 		fmt.Printf("Error saving setting %s: %v\n", obj.ObjName(), saveErr)
 		for key, value := range obj.GetErrors() {

@@ -25,9 +25,9 @@ func TestRemoteRepositoryPersistence(t *testing.T) {
 	rr3 := core.NewRemoteRepository()
 	rr3.Name = "RR-3"
 	rr3.Url = "https://example.com/rr-3"
-	assert.Nil(t, rr1.Save())
-	assert.Nil(t, rr2.Save())
-	assert.Nil(t, rr3.Save())
+	assert.Nil(t, core.ObjSave(rr1))
+	assert.Nil(t, core.ObjSave(rr2))
+	assert.Nil(t, core.ObjSave(rr3))
 
 	// Make sure S1 was saved as expected.
 	s1Reload, err := core.RemoteRepositoryFind(rr1.ID)
@@ -52,7 +52,7 @@ func TestRemoteRepositoryPersistence(t *testing.T) {
 	assert.Equal(t, rr3.ID, repos[2].ID)
 
 	// Make sure delete works. Should return no error.
-	assert.Nil(t, rr1.Delete())
+	assert.Nil(t, core.ObjDelete(rr1))
 
 	// Make sure the record was truly deleted.
 	deletedRecord, err := core.RemoteRepositoryFind(rr1.ID)
@@ -68,10 +68,10 @@ func TestRemoteRepositoryValidation(t *testing.T) {
 	rr1.Name = "RR-1"
 	rr1.Url = "https://example.com/rr-1"
 	assert.True(t, rr1.Validate())
-	assert.Nil(t, rr1.Save())
+	assert.Nil(t, core.ObjSave(rr1))
 
 	rr1.Url = "this-aint-no-url"
 	assert.False(t, rr1.Validate())
 	assert.Equal(t, "Repository URL must be a valid URL beginning with http:// or https://.", rr1.Errors["Url"])
-	assert.Equal(t, constants.ErrObjecValidation, rr1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, core.ObjSave(rr1))
 }

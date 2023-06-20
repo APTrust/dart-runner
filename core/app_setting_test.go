@@ -20,9 +20,9 @@ func TestAppSettingPersistence(t *testing.T) {
 	s2 := core.NewAppSetting("Setting 2", "Value 2")
 	s3 := core.NewAppSetting("Setting 3", "Value 3")
 	s3.UserCanDelete = false
-	assert.Nil(t, s1.Save())
-	assert.Nil(t, s2.Save())
-	assert.Nil(t, s3.Save())
+	assert.Nil(t, core.ObjSave(s1))
+	assert.Nil(t, core.ObjSave(s2))
+	assert.Nil(t, core.ObjSave(s3))
 
 	// Make sure S1 was saved as expected.
 	s1Reload, err := core.AppSettingFind(s1.ID)
@@ -47,7 +47,7 @@ func TestAppSettingPersistence(t *testing.T) {
 	assert.Equal(t, s3.ID, settings[2].ID)
 
 	// Make sure delete works. Should return no error.
-	assert.Nil(t, s1.Delete())
+	assert.Nil(t, core.ObjDelete(s1))
 
 	// Make sure the record was truly deleted.
 	deletedRecord, err := core.AppSettingFind(s1.ID)
@@ -56,7 +56,7 @@ func TestAppSettingPersistence(t *testing.T) {
 
 	// User should not be able to delete s3 because
 	// s3.UserCanDelete = false.
-	assert.Equal(t, constants.ErrNotDeletable, s3.Delete())
+	assert.Equal(t, constants.ErrNotDeletable, core.ObjDelete(s3))
 }
 
 func TestAppSettingValidation(t *testing.T) {
@@ -67,19 +67,19 @@ func TestAppSettingValidation(t *testing.T) {
 	assert.False(t, s1.Validate())
 	assert.Equal(t, "Name cannot be empty.", s1.Errors["Name"])
 	assert.Equal(t, "Value cannot be empty.", s1.Errors["Value"])
-	assert.Equal(t, constants.ErrObjecValidation, s1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, core.ObjSave(s1))
 
 	s1.Name = "Setting 1 Name"
 	assert.False(t, s1.Validate())
 	assert.Equal(t, "", s1.Errors["Name"])
 	assert.Equal(t, "Value cannot be empty.", s1.Errors["Value"])
-	assert.Equal(t, constants.ErrObjecValidation, s1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, core.ObjSave(s1))
 
 	s1.Value = "Setting 1 Value"
 	assert.True(t, s1.Validate())
 	assert.Equal(t, "", s1.Errors["Name"])
 	assert.Equal(t, "", s1.Errors["Value"])
-	assert.Nil(t, s1.Save())
+	assert.Nil(t, core.ObjSave(s1))
 
 	s1Reload, err := core.AppSettingFind(s1.ID)
 	assert.Nil(t, err)

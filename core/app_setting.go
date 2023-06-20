@@ -74,25 +74,6 @@ func (setting *AppSetting) ObjType() string {
 	return constants.TypeAppSetting
 }
 
-// Save saves this setting, if it determines the setting is valid.
-// It returns constants.ErrObjecValidation if the setting is invalid.
-// Check setting.Errors if you get a validation error.
-func (setting *AppSetting) Save() error {
-	if !setting.Validate() {
-		return constants.ErrObjecValidation
-	}
-	return ObjSave(setting)
-}
-
-// Delete deletes this AppSetting. If the setting is marked with
-// UserCanDelete = false, you'll get a constants.ErrNotDeletable error.
-func (setting *AppSetting) Delete() error {
-	if !setting.UserCanDelete {
-		return constants.ErrNotDeletable
-	}
-	return ObjDelete(setting.ID)
-}
-
 // ToForm returns a form so the user can edit this AppSetting.
 // The form can be rendered by the app_setting/form.html template.
 func (setting *AppSetting) ToForm() *Form {
@@ -145,4 +126,8 @@ func (setting *AppSetting) String() string {
 
 func (setting *AppSetting) GetErrors() map[string]string {
 	return setting.Errors
+}
+
+func (setting *AppSetting) IsDeletable() bool {
+	return setting.UserCanDelete
 }

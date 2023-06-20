@@ -128,9 +128,9 @@ func TestStorageServicePersistence(t *testing.T) {
 	ss3.ID = uuid.NewString()
 	ss3.Name = "Storage Service 3"
 
-	assert.Nil(t, ss1.Save())
-	assert.Nil(t, ss2.Save())
-	assert.Nil(t, ss3.Save())
+	assert.Nil(t, core.ObjSave(ss1))
+	assert.Nil(t, core.ObjSave(ss2))
+	assert.Nil(t, core.ObjSave(ss3))
 
 	// Make sure S1 was saved as expected.
 	ss1Reload, err := core.StorageServiceFind(ss1.ID)
@@ -155,7 +155,7 @@ func TestStorageServicePersistence(t *testing.T) {
 	assert.Equal(t, ss3.ID, settings[2].ID)
 
 	// Make sure delete works. Should return no error.
-	assert.Nil(t, ss1.Delete())
+	assert.Nil(t, core.ObjDelete(ss1))
 
 	// Make sure the record was truly deleted.
 	deletedRecord, err := core.AppSettingFind(ss1.ID)

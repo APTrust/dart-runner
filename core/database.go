@@ -32,6 +32,7 @@ func InitSchema() error {
 		uuid text primary key not null,
 		obj_type text not null,
 		obj_name text not null,
+		is_deletable bool not null default false,
 		obj_json text not null,
 		updated_at datetime not null
 	);
@@ -52,13 +53,17 @@ func InitSchema() error {
 }
 
 func ObjSave(obj PersistentObject) error {
+	if !obj.Validate() {
+		return constants.ErrObjecValidation
+	}
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return err
 	}
-	stmt := `insert into dart (uuid, obj_type, obj_name, obj_json, updated_at) values (?,?,?,?,?)
-	on conflict do update set obj_name=excluded.obj_name, obj_json=excluded.obj_json, updated_at=excluded.updated_at where uuid=excluded.uuid`
-	_, err = Dart.DB.Exec(stmt, obj.ObjID(), obj.ObjType(), obj.ObjName(), string(jsonBytes), time.Now().UTC())
+	stmt := `insert into dart (uuid, obj_type, obj_name, is_deletable, obj_json, updated_at) values (?,?,?,?,?,?)
+	on conflict do update set obj_name=excluded.obj_name, is_deletable=excluded.is_deletable, 
+	obj_json=excluded.obj_json, updated_at=excluded.updated_at where uuid=excluded.uuid`
+	_, err = Dart.DB.Exec(stmt, obj.ObjID(), obj.ObjType(), obj.ObjName(), obj.IsDeletable(), string(jsonBytes), time.Now().UTC())
 	return err
 }
 
@@ -201,8 +206,11 @@ func storageServiceList(rows *sql.Rows) ([]*StorageService, error) {
 	return list, nil
 }
 
-func ObjDelete(uuid string) error {
-	_, err := Dart.DB.Exec("delete from dart where uuid=?", uuid)
+func ObjDelete(obj PersistentObject) error {
+	if !obj.IsDeletable() {
+		return constants.ErrNotDeletable
+	}
+	_, err := Dart.DB.Exec("delete from dart where uuid=? and obj_type=?", obj.ObjID(), obj.ObjType())
 	return err
 }
 

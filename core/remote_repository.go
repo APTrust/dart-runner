@@ -77,21 +77,6 @@ func (repo *RemoteRepository) String() string {
 	return fmt.Sprintf("RemoteRepository: '%s'", repo.Name)
 }
 
-// Save saves this repo, if it determines the repo is valid.
-// It returns constants.ErrObjecValidation if the repo is invalid.
-// Check repo.Errors if you get a validation error.
-func (repo *RemoteRepository) Save() error {
-	if !repo.Validate() {
-		return constants.ErrObjecValidation
-	}
-	return ObjSave(repo)
-}
-
-// Delete deletes this repo config.
-func (repo *RemoteRepository) Delete() error {
-	return ObjDelete(repo.ID)
-}
-
 // Validate returns true if this RemoteRepository config contains
 // valid settings, false if not. Check the Errors map if this returns
 // false.
@@ -128,4 +113,8 @@ func (repo *RemoteRepository) ToForm() *Form {
 
 func (repo *RemoteRepository) GetErrors() map[string]string {
 	return repo.Errors
+}
+
+func (repo *RemoteRepository) IsDeletable() bool {
+	return true
 }

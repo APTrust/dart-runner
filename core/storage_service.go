@@ -162,21 +162,6 @@ func (ss *StorageService) String() string {
 	return fmt.Sprintf("StorageService: '%s'", ss.Name)
 }
 
-// Save saves this ss, if it determines the ss is valid.
-// It returns constants.ErrObjecValidation if the ss is invalid.
-// Check ss.Errors if you get a validation error.
-func (ss *StorageService) Save() error {
-	if !ss.Validate() {
-		return constants.ErrObjecValidation
-	}
-	return ObjSave(ss)
-}
-
-// Delete deletes this ss config.
-func (ss *StorageService) Delete() error {
-	return ObjDelete(ss.ID)
-}
-
 func (ss *StorageService) ToForm() *Form {
 	form := NewForm(constants.TypeStorageService, ss.ID, ss.Errors)
 
@@ -200,4 +185,8 @@ func (ss *StorageService) ToForm() *Form {
 
 func (ss *StorageService) GetErrors() map[string]string {
 	return ss.Errors
+}
+
+func (ss *StorageService) IsDeletable() bool {
+	return true
 }

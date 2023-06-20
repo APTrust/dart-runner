@@ -16,7 +16,7 @@ func AppSettingDelete(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	err = setting.Delete()
+	err = core.ObjDelete(setting)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -76,7 +76,7 @@ func AppSettingSave(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	err = setting.Save()
+	err = core.ObjSave(setting)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

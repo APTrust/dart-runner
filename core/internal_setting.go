@@ -55,17 +55,6 @@ func (setting *InternalSetting) ObjType() string {
 	return constants.TypeInternalSetting
 }
 
-func (setting *InternalSetting) Save() error {
-	if !setting.Validate() {
-		return constants.ErrObjecValidation
-	}
-	return ObjSave(setting)
-}
-
-func (setting *InternalSetting) Delete() error {
-	return ObjDelete(setting.ID)
-}
-
 func (setting *InternalSetting) String() string {
 	return fmt.Sprintf("InternalSetting: '%s' = '%s'", setting.Name, setting.Value)
 }
@@ -105,4 +94,8 @@ func (setting *InternalSetting) ToForm() *Form {
 
 func (setting *InternalSetting) GetErrors() map[string]string {
 	return setting.Errors
+}
+
+func (setting *InternalSetting) IsDeletable() bool {
+	return false
 }
