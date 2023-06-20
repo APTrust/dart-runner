@@ -163,11 +163,11 @@ func (ss *StorageService) String() string {
 }
 
 // Save saves this ss, if it determines the ss is valid.
-// It returns core.ErrObjecValidation if the ss is invalid.
+// It returns constants.ErrObjecValidation if the ss is invalid.
 // Check ss.Errors if you get a validation error.
 func (ss *StorageService) Save() error {
 	if !ss.Validate() {
-		return ErrObjecValidation
+		return constants.ErrObjecValidation
 	}
 	return ObjSave(ss)
 }

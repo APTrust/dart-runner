@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,7 +56,7 @@ func TestAppSettingPersistence(t *testing.T) {
 
 	// User should not be able to delete s3 because
 	// s3.UserCanDelete = false.
-	assert.Equal(t, core.ErrNotDeletable, s3.Delete())
+	assert.Equal(t, constants.ErrNotDeletable, s3.Delete())
 }
 
 func TestAppSettingValidation(t *testing.T) {
@@ -66,13 +67,13 @@ func TestAppSettingValidation(t *testing.T) {
 	assert.False(t, s1.Validate())
 	assert.Equal(t, "Name cannot be empty.", s1.Errors["Name"])
 	assert.Equal(t, "Value cannot be empty.", s1.Errors["Value"])
-	assert.Equal(t, core.ErrObjecValidation, s1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, s1.Save())
 
 	s1.Name = "Setting 1 Name"
 	assert.False(t, s1.Validate())
 	assert.Equal(t, "", s1.Errors["Name"])
 	assert.Equal(t, "Value cannot be empty.", s1.Errors["Value"])
-	assert.Equal(t, core.ErrObjecValidation, s1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, s1.Save())
 
 	s1.Value = "Setting 1 Value"
 	assert.True(t, s1.Validate())

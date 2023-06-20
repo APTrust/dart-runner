@@ -57,7 +57,7 @@ func (setting *InternalSetting) ObjType() string {
 
 func (setting *InternalSetting) Save() error {
 	if !setting.Validate() {
-		return ErrObjecValidation
+		return constants.ErrObjecValidation
 	}
 	return ObjSave(setting)
 }

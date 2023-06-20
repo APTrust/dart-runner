@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -72,5 +73,5 @@ func TestRemoteRepositoryValidation(t *testing.T) {
 	rr1.Url = "this-aint-no-url"
 	assert.False(t, rr1.Validate())
 	assert.Equal(t, "Repository URL must be a valid URL beginning with http:// or https://.", rr1.Errors["Url"])
-	assert.Equal(t, core.ErrObjecValidation, rr1.Save())
+	assert.Equal(t, constants.ErrObjecValidation, rr1.Save())
 }

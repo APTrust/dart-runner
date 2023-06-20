@@ -78,11 +78,11 @@ func (repo *RemoteRepository) String() string {
 }
 
 // Save saves this repo, if it determines the repo is valid.
-// It returns core.ErrObjecValidation if the repo is invalid.
+// It returns constants.ErrObjecValidation if the repo is invalid.
 // Check repo.Errors if you get a validation error.
 func (repo *RemoteRepository) Save() error {
 	if !repo.Validate() {
-		return ErrObjecValidation
+		return constants.ErrObjecValidation
 	}
 	return ObjSave(repo)
 }

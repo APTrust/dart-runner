@@ -3,7 +3,6 @@ package core
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -90,7 +89,7 @@ func ObjFind(uuid string) (*QueryResult, error) {
 		err = json.Unmarshal([]byte(objJson), r)
 		qr.RemoteRepository = r
 	default:
-		return nil, fmt.Errorf("cannot convert unknown type %s to query result", objType)
+		return nil, constants.ErrUnknownType
 	}
 
 	return qr, err
@@ -113,7 +112,7 @@ func ObjList(objType, orderBy string, limit, offset int) (*QueryResult, error) {
 	case constants.TypeStorageService:
 		qr.StorageServices, err = storageServiceList(rows)
 	default:
-		return nil, fmt.Errorf("cannot convert unknown type %s to query result", objType)
+		return nil, constants.ErrUnknownType
 	}
 	return qr, err
 }
@@ -250,7 +249,7 @@ func ArtifactDelete(uuid string) error {
 // ClearDartTable is for testing use only
 func ClearDartTable() error {
 	if !util.TestsAreRunning() {
-		return ErrInvalidOperation
+		return constants.ErrInvalidOperation
 	}
 	_, err := Dart.DB.Exec("delete from dart")
 	return err
@@ -259,7 +258,7 @@ func ClearDartTable() error {
 // ClearArtifactsTable is for testing use only
 func ClearArtifactsTable() error {
 	if !util.TestsAreRunning() {
-		return ErrInvalidOperation
+		return constants.ErrInvalidOperation
 	}
 	_, err := Dart.DB.Exec("delete from artifacts")
 	return err

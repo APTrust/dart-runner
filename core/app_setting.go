@@ -75,20 +75,20 @@ func (setting *AppSetting) ObjType() string {
 }
 
 // Save saves this setting, if it determines the setting is valid.
-// It returns core.ErrObjecValidation if the setting is invalid.
+// It returns constants.ErrObjecValidation if the setting is invalid.
 // Check setting.Errors if you get a validation error.
 func (setting *AppSetting) Save() error {
 	if !setting.Validate() {
-		return ErrObjecValidation
+		return constants.ErrObjecValidation
 	}
 	return ObjSave(setting)
 }
 
 // Delete deletes this AppSetting. If the setting is marked with
-// UserCanDelete = false, you'll get a core.ErrNotDeletable error.
+// UserCanDelete = false, you'll get a constants.ErrNotDeletable error.
 func (setting *AppSetting) Delete() error {
 	if !setting.UserCanDelete {
-		return ErrNotDeletable
+		return constants.ErrNotDeletable
 	}
 	return ObjDelete(setting.ID)
 }
