@@ -38,26 +38,6 @@ func NewAppSetting(name, value string) *AppSetting {
 	}
 }
 
-// AppSettingFind returns the AppSetting with the specified UUID,
-// or sql.ErrNoRows if no matching record exists.
-func AppSettingFind(uuid string) (*AppSetting, error) {
-	result, err := ObjFind(uuid)
-	if err != nil {
-		return nil, err
-	}
-	return result.AppSetting, err
-}
-
-// AppSettingList returns a list of AppSettings with the specified
-// order, offset and limit.
-func AppSettingList(orderBy string, limit, offset int) ([]*AppSetting, error) {
-	result, err := ObjList(constants.TypeAppSetting, orderBy, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return result.AppSettings, err
-}
-
 // ObjID returns this setting's object id (uuid).
 func (setting *AppSetting) ObjID() string {
 	return setting.ID

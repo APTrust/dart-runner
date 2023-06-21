@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -133,32 +134,33 @@ func TestStorageServicePersistence(t *testing.T) {
 	assert.Nil(t, core.ObjSave(ss3))
 
 	// Make sure S1 was saved as expected.
-	ss1Reload, err := core.StorageServiceFind(ss1.ID)
-	require.Nil(t, err)
+	result := core.ObjFind(ss1.ID)
+	require.Nil(t, result.Error)
+	ss1Reload := result.StorageService()
 	require.NotNil(t, ss1Reload)
 	assert.Equal(t, ss1.ID, ss1Reload.ID)
 	assert.Equal(t, ss1.Name, ss1Reload.Name)
 	assert.Equal(t, ss1.Host, ss1Reload.Host)
 
 	// Make sure order, offset and limit work on list query.
-	settings, err := core.StorageServiceList("obj_name", 1, 0)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(settings))
-	assert.Equal(t, ss1.ID, settings[0].ID)
+	result = core.ObjList(constants.TypeStorageService, "obj_name", 1, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 1, len(result.StorageServices))
+	assert.Equal(t, ss1.ID, result.StorageServices[0].ID)
 
 	// Make sure we can get all results.
-	settings, err = core.StorageServiceList("obj_name", 100, 0)
-	require.Nil(t, err)
-	require.Equal(t, 3, len(settings))
-	assert.Equal(t, ss1.ID, settings[0].ID)
-	assert.Equal(t, ss2.ID, settings[1].ID)
-	assert.Equal(t, ss3.ID, settings[2].ID)
+	result = core.ObjList(constants.TypeStorageService, "obj_name", 100, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 3, len(result.StorageServices))
+	assert.Equal(t, ss1.ID, result.StorageServices[0].ID)
+	assert.Equal(t, ss2.ID, result.StorageServices[1].ID)
+	assert.Equal(t, ss3.ID, result.StorageServices[2].ID)
 
 	// Make sure delete works. Should return no error.
 	assert.Nil(t, core.ObjDelete(ss1))
 
 	// Make sure the record was truly deleted.
-	deletedRecord, err := core.AppSettingFind(ss1.ID)
-	assert.Equal(t, sql.ErrNoRows, err)
-	assert.Nil(t, deletedRecord)
+	result = core.ObjFind(ss1.ID)
+	assert.Equal(t, sql.ErrNoRows, result.Error)
+	assert.Nil(t, result.StorageService())
 }

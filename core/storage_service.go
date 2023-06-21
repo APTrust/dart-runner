@@ -123,26 +123,6 @@ func (ss *StorageService) Copy() *StorageService {
 	}
 }
 
-// StorageServiceFind returns the StorageService with the specified UUID,
-// or sql.ErrNoRows if no matching record exists.
-func StorageServiceFind(uuid string) (*StorageService, error) {
-	result, err := ObjFind(uuid)
-	if err != nil {
-		return nil, err
-	}
-	return result.StorageService, err
-}
-
-// StorageServiceList returns a list of StorageServices with the specified
-// order, offset and limit.
-func StorageServiceList(orderBy string, limit, offset int) ([]*StorageService, error) {
-	result, err := ObjList(constants.TypeStorageService, orderBy, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return result.StorageServices, err
-}
-
 // ObjID returns this remote ss's UUID.
 func (ss *StorageService) ObjID() string {
 	return ss.ID

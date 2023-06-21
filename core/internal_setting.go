@@ -27,22 +27,6 @@ func NewInternalSetting(name, value string) *InternalSetting {
 	}
 }
 
-func InternalSettingFind(uuid string) (*InternalSetting, error) {
-	result, err := ObjFind(uuid)
-	if err != nil {
-		return nil, err
-	}
-	return result.InternalSetting, err
-}
-
-func InternalSettingList(orderBy string, limit, offset int) ([]*InternalSetting, error) {
-	result, err := ObjList(constants.TypeInternalSetting, orderBy, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return result.InternalSettings, err
-}
-
 func (setting *InternalSetting) ObjID() string {
 	return setting.ID
 }

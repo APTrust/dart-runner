@@ -25,34 +25,35 @@ func TestAppSettingPersistence(t *testing.T) {
 	assert.Nil(t, core.ObjSave(s3))
 
 	// Make sure S1 was saved as expected.
-	s1Reload, err := core.AppSettingFind(s1.ID)
-	require.Nil(t, err)
+	result := core.ObjFind(s1.ID)
+	require.Nil(t, result.Error)
+	s1Reload := result.AppSetting()
 	require.NotNil(t, s1Reload)
 	assert.Equal(t, s1.ID, s1Reload.ID)
 	assert.Equal(t, s1.Name, s1Reload.Name)
 	assert.Equal(t, s1.Value, s1Reload.Value)
 
 	// Make sure order, offset and limit work on list query.
-	settings, err := core.AppSettingList("obj_name", 1, 0)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(settings))
-	assert.Equal(t, s1.ID, settings[0].ID)
+	result = core.ObjList(constants.TypeAppSetting, "obj_name", 1, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 1, len(result.AppSettings))
+	assert.Equal(t, s1.ID, result.AppSettings[0].ID)
 
 	// Make sure we can get all results.
-	settings, err = core.AppSettingList("obj_name", 100, 0)
-	require.Nil(t, err)
-	require.Equal(t, 3, len(settings))
-	assert.Equal(t, s1.ID, settings[0].ID)
-	assert.Equal(t, s2.ID, settings[1].ID)
-	assert.Equal(t, s3.ID, settings[2].ID)
+	result = core.ObjList(constants.TypeAppSetting, "obj_name", 100, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 3, len(result.AppSettings))
+	assert.Equal(t, s1.ID, result.AppSettings[0].ID)
+	assert.Equal(t, s2.ID, result.AppSettings[1].ID)
+	assert.Equal(t, s3.ID, result.AppSettings[2].ID)
 
 	// Make sure delete works. Should return no error.
 	assert.Nil(t, core.ObjDelete(s1))
 
 	// Make sure the record was truly deleted.
-	deletedRecord, err := core.AppSettingFind(s1.ID)
-	assert.Equal(t, sql.ErrNoRows, err)
-	assert.Nil(t, deletedRecord)
+	result = core.ObjFind(s1.ID)
+	assert.Equal(t, sql.ErrNoRows, result.Error)
+	assert.Nil(t, result.AppSetting())
 
 	// User should not be able to delete s3 because
 	// s3.UserCanDelete = false.
@@ -81,8 +82,8 @@ func TestAppSettingValidation(t *testing.T) {
 	assert.Equal(t, "", s1.Errors["Value"])
 	assert.Nil(t, core.ObjSave(s1))
 
-	s1Reload, err := core.AppSettingFind(s1.ID)
-	assert.Nil(t, err)
-	require.NotNil(t, s1Reload)
-	assert.Equal(t, s1.Name, s1Reload.Name)
+	result := core.ObjFind(s1.ID)
+	assert.Nil(t, result.Error)
+	require.NotNil(t, result.AppSetting())
+	assert.Equal(t, s1.Name, result.AppSetting().Name)
 }

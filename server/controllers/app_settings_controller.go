@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -11,12 +12,12 @@ import (
 // POST /app_settings/delete/:id
 func AppSettingDelete(c *gin.Context) {
 	id := c.Param("id")
-	setting, err := core.AppSettingFind(id)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	result := core.ObjFind(id)
+	if result.Error != nil {
+		c.AbortWithError(http.StatusInternalServerError, result.Error)
 		return
 	}
-	err = core.ObjDelete(setting)
+	err := core.ObjDelete(result.AppSetting())
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -27,13 +28,13 @@ func AppSettingDelete(c *gin.Context) {
 // GET /app_settings/edit/:id
 func AppSettingEdit(c *gin.Context) {
 	id := c.Param("id")
-	setting, err := core.AppSettingFind(id)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	result := core.ObjFind(id)
+	if result.Error != nil {
+		c.AbortWithError(http.StatusInternalServerError, result.Error)
 		return
 	}
 	data := gin.H{
-		"form": setting.ToForm(),
+		"form": result.AppSetting().ToForm(),
 	}
 	c.HTML(http.StatusOK, "app_setting/form.html", data)
 }
@@ -45,13 +46,13 @@ func AppSettingIndex(c *gin.Context) {
 	if limit < 1 {
 		limit = 25
 	}
-	items, err := core.AppSettingList("obj_name", limit, offset)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	result := core.ObjList(constants.TypeAppSetting, "obj_name", limit, offset)
+	if result.Error != nil {
+		c.AbortWithError(http.StatusInternalServerError, result.Error)
 		return
 	}
 	data := gin.H{
-		"items": items,
+		"items": result.AppSettings,
 	}
 	c.HTML(http.StatusOK, "app_setting/list.html", data)
 }
@@ -78,7 +79,10 @@ func AppSettingSave(c *gin.Context) {
 	}
 	err = core.ObjSave(setting)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		data := gin.H{
+			"form": setting.ToForm(),
+		}
+		c.HTML(http.StatusOK, "app_setting/form.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, "/app_settings")

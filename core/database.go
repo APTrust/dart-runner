@@ -67,74 +67,69 @@ func ObjSave(obj PersistentObject) error {
 	return err
 }
 
-func ObjFind(uuid string) (*QueryResult, error) {
+func ObjFind(uuid string) *QueryResult {
 	var objType string
 	var objJson string
-	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where uuid=?", uuid)
-	err := row.Scan(&objType, &objJson)
-	if err != nil {
-		return nil, err
-	}
 	qr := NewQueryResult(objType)
+	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where uuid=?", uuid)
+	qr.Error = row.Scan(&objType, &objJson)
+	if qr.Error != nil {
+		return qr
+	}
 	qr.ObjCount = 1
-
-	// TODO: Set Error on QueryResult instead of returning it separately.
-
 	switch objType {
 	case constants.TypeAppSetting:
-		a := &AppSetting{}
-		err = json.Unmarshal([]byte(objJson), a)
-		qr.AppSetting = a
+		item := &AppSetting{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.AppSettings = append(qr.AppSettings, item)
 	case constants.TypeInternalSetting:
-		i := &InternalSetting{}
-		err = json.Unmarshal([]byte(objJson), i)
-		qr.InternalSetting = i
+		item := &InternalSetting{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.InternalSettings = append(qr.InternalSettings, item)
 	case constants.TypeStorageService:
-		s := &StorageService{}
-		err = json.Unmarshal([]byte(objJson), s)
-		qr.StorageService = s
+		item := &StorageService{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.StorageServices = append(qr.StorageServices, item)
 	case constants.TypeRemoteRepository:
-		r := &RemoteRepository{}
-		err = json.Unmarshal([]byte(objJson), r)
-		qr.RemoteRepository = r
+		item := &RemoteRepository{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.RemoteRepositories = append(qr.RemoteRepositories, item)
 	default:
-		return nil, constants.ErrUnknownType
+		qr.Error = constants.ErrUnknownType
 	}
 
-	return qr, err
+	return qr
 }
 
-func ObjList(objType, orderBy string, limit, offset int) (*QueryResult, error) {
-	count, err := ObjCount(objType)
-	if err != nil {
-		return nil, err
-	}
-	rows, err := Dart.DB.Query("select obj_json from dart where obj_type = ? order by ? limit ? offset ?", objType, orderBy, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 	qr := NewQueryResult(objType)
-	qr.ObjCount = count
 	qr.Offset = offset
 	qr.Limit = limit
 	qr.OrderBy = orderBy
-
-	// TODO: Set Error on QueryResult instead of returning it separately.
+	qr.ObjCount, qr.Error = ObjCount(objType)
+	if qr.Error != nil {
+		return qr
+	}
+	var rows *sql.Rows
+	rows, qr.Error = Dart.DB.Query("select obj_json from dart where obj_type = ? order by ? limit ? offset ?", objType, orderBy, limit, offset)
+	if qr.Error != nil {
+		return qr
+	}
+	defer rows.Close()
 
 	switch objType {
 	case constants.TypeAppSetting:
-		qr.AppSettings, err = appSettingsList(rows)
+		appSettingsList(rows, qr)
 	case constants.TypeInternalSetting:
-		qr.InternalSettings, err = internalSettingList(rows)
+		internalSettingList(rows, qr)
 	case constants.TypeRemoteRepository:
-		qr.RemoteRepositories, err = remoteRepositoryList(rows)
+		remoteRepositoryList(rows, qr)
 	case constants.TypeStorageService:
-		qr.StorageServices, err = storageServiceList(rows)
+		storageServiceList(rows, qr)
 	default:
-		return nil, constants.ErrUnknownType
+		qr.Error = constants.ErrUnknownType
 	}
-	return qr, err
+	return qr
 }
 
 func ObjCount(objType string) (int, error) {
@@ -152,76 +147,68 @@ func ObjExists(objId string) (bool, error) {
 // TODO: Consolidate List methods into one inside of QueryResult,
 // and use switch internally.
 
-func appSettingsList(rows *sql.Rows) ([]*AppSetting, error) {
-	list := make([]*AppSetting, 0)
+func appSettingsList(rows *sql.Rows, qr *QueryResult) {
 	for rows.Next() {
-		var jsonStr string
-		err := rows.Scan(&jsonStr)
-		if err != nil {
-			return nil, err
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
 		}
 		item := &AppSetting{}
-		err = json.Unmarshal([]byte(jsonStr), item)
-		if err != nil {
-			return nil, err
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
 		}
-		list = append(list, item)
+		qr.AppSettings = append(qr.AppSettings, item)
 	}
-	return list, nil
 }
 
-func internalSettingList(rows *sql.Rows) ([]*InternalSetting, error) {
-	list := make([]*InternalSetting, 0)
+func internalSettingList(rows *sql.Rows, qr *QueryResult) {
 	for rows.Next() {
-		var jsonStr string
-		err := rows.Scan(&jsonStr)
-		if err != nil {
-			return nil, err
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
 		}
 		item := &InternalSetting{}
-		err = json.Unmarshal([]byte(jsonStr), item)
-		if err != nil {
-			return nil, err
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
 		}
-		list = append(list, item)
+		qr.InternalSettings = append(qr.InternalSettings, item)
 	}
-	return list, nil
 }
 
-func remoteRepositoryList(rows *sql.Rows) ([]*RemoteRepository, error) {
-	list := make([]*RemoteRepository, 0)
+func remoteRepositoryList(rows *sql.Rows, qr *QueryResult) {
 	for rows.Next() {
-		var jsonStr string
-		err := rows.Scan(&jsonStr)
-		if err != nil {
-			return nil, err
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
 		}
 		item := &RemoteRepository{}
-		err = json.Unmarshal([]byte(jsonStr), item)
-		if err != nil {
-			return nil, err
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
 		}
-		list = append(list, item)
+		qr.RemoteRepositories = append(qr.RemoteRepositories, item)
 	}
-	return list, nil
 }
 
-func storageServiceList(rows *sql.Rows) ([]*StorageService, error) {
-	list := make([]*StorageService, 0)
+func storageServiceList(rows *sql.Rows, qr *QueryResult) {
 	for rows.Next() {
-		var jsonStr string
-		err := rows.Scan(&jsonStr)
-		if err != nil {
-			return nil, err
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
 		}
 		item := &StorageService{}
-		err = json.Unmarshal([]byte(jsonStr), item)
-		if err != nil {
-			return nil, err
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
 		}
-		list = append(list, item)
+		qr.StorageServices = append(qr.StorageServices, item)
 	}
-	return list, nil
 }
 
 func ObjDelete(obj PersistentObject) error {

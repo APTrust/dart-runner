@@ -38,26 +38,6 @@ func NewRemoteRepository() *RemoteRepository {
 	}
 }
 
-// RemoteRepositoryFind returns the RemoteRepository with the specified UUID,
-// or sql.ErrNoRows if no matching record exists.
-func RemoteRepositoryFind(uuid string) (*RemoteRepository, error) {
-	result, err := ObjFind(uuid)
-	if err != nil {
-		return nil, err
-	}
-	return result.RemoteRepository, err
-}
-
-// RemoteRepositoryList returns a list of RemoteRepositorys with the specified
-// order, offset and limit.
-func RemoteRepositoryList(orderBy string, limit, offset int) ([]*RemoteRepository, error) {
-	result, err := ObjList(constants.TypeRemoteRepository, orderBy, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	return result.RemoteRepositories, err
-}
-
 // ObjID returns this remote repo's UUID.
 func (repo *RemoteRepository) ObjID() string {
 	return repo.ID
