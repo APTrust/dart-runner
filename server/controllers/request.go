@@ -10,10 +10,12 @@ import (
 
 type Request struct {
 	ginCtx         *gin.Context
+	Action         string
 	Errors         []error
 	Handler        string
 	ObjType        string
-	Action         string
+	Path           string
+	PathAndQuery   string
 	QueryResult    *core.QueryResult
 	IsListResponse bool
 	TemplateData   gin.H
@@ -24,10 +26,16 @@ type Request struct {
 var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete$`)
 
 func NewRequest(c *gin.Context) *Request {
+	pathAndQuery := c.Request.URL.Path
+	if c.Request.URL.RawQuery != "" {
+		pathAndQuery = c.Request.URL.Path + "?" + c.Request.URL.RawQuery
+	}
 	request := &Request{
 		ginCtx:         c,
 		Errors:         make([]error, 0),
 		IsListResponse: false,
+		Path:           c.Request.URL.Path,
+		PathAndQuery:   pathAndQuery,
 		TemplateData: gin.H{
 			"currentUrl":  c.Request.URL.Path,
 			"showAsModal": c.Query("modal") == "true",
@@ -35,35 +43,8 @@ func NewRequest(c *gin.Context) *Request {
 	}
 	request.initFromHandlerName()
 	request.loadObjects()
-
-	// TODO: Init pager if this is a list request
-
-	// TODO: Figure out response template?
-	//       Run save & delete here
-	//       Run ToForm here
-	//       Set error on request object and figure out status code?
-
 	return request
 }
-
-/*
-
-TODO:
-
-  * Set ObjType (AppSetting, RemoteRepo, etc)
-  * Set Action (new, edit, save, list, delete)
-  * Select template
-  * Fetch object or list
-  * Populate template data
-  * Set up pager (if this is a list page)
-  * Figure out redirects and status code
-  * Set current menu highlight
-  * Set flash message
-  * If single item, set template var to indicate whether ObjExists(), so we can show or hide delete button
-
-  * Index, New, Save, Edit, Delete
-
-*/
 
 func (r *Request) HasErrors() bool {
 	return len(r.Errors) > 0
@@ -86,6 +67,10 @@ func (r *Request) loadObjects() {
 	if !r.IsListResponse {
 		r.QueryResult = core.ObjFind(objId)
 		r.TemplateData["objectExistsInDB"] = (r.QueryResult.ObjCount == 1)
+		if r.QueryResult.Error != nil {
+			r.Errors = append(r.Errors, r.QueryResult.Error)
+			return
+		}
 		form, err := r.QueryResult.GetForm()
 		if err != nil {
 			r.Errors = append(r.Errors, err)
@@ -100,8 +85,21 @@ func (r *Request) loadObjects() {
 			limit = 25
 		}
 		r.QueryResult = core.ObjList(r.ObjType, orderBy, limit, offset)
-	}
-	if r.QueryResult.Error != nil {
-		r.Errors = append(r.Errors, r.QueryResult.Error)
+		if r.QueryResult.Error != nil {
+			r.Errors = append(r.Errors, r.QueryResult.Error)
+			return
+		}
+		pager, err := NewPager(r.ginCtx, r.Path, 25)
+		if err != nil {
+			r.Errors = append(r.Errors, err)
+			return
+		}
+		totalObjectCount, err := core.ObjCount(r.QueryResult.ObjType)
+		if err != nil {
+			r.Errors = append(r.Errors, err)
+			return
+		}
+		pager.SetCounts(totalObjectCount, r.QueryResult.ObjCount)
+		r.TemplateData["pager"] = pager
 	}
 }

@@ -1,7 +1,7 @@
 {{ define "partials/form_buttons.html" }}
 
 <div class="bottom-buttons">
-    {{ if and (.form.UserCanDelete) (not .suppressDeleteButton) }}
+    {{ if and .form.UserCanDelete .objectExistsInDB }}
     <div class="pull-left">
       <a class="btn btn-danger" href="javascript:confirmDeletion('{{ .form.DeleteFunction }}')" role="button">Delete</a>
     </div>

@@ -22,18 +22,6 @@ func NewQueryResult(resultType string) *QueryResult {
 	qr := &QueryResult{
 		ResultType: resultType,
 	}
-	// switch objType {
-	// case constants.TypeAppSetting:
-	// 	qr.AppSettings = make([]*AppSetting, 0)
-	// case constants.TypeInternalSetting:
-	// 	qr.InternalSettings = make([]*InternalSetting, 0)
-	// case constants.TypeStorageService:
-	// 	qr.StorageServices = make([]*StorageService, 0)
-	// case constants.TypeRemoteRepository:
-	// 	qr.RemoteRepositories = make([]*RemoteRepository, 0)
-	// default:
-	// 	qr.Error = constants.ErrUnknownType
-	// }
 	return qr
 }
 

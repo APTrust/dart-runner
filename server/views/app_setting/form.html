@@ -23,7 +23,7 @@
   
 </form>
 
-{{ if .form.UserCanDelete }}
+{{ if and .form.UserCanDelete .objectExistsInDB }}
 <form method="post" id="{{ .form.ObjType }}Delete" action="/app_settings/delete/{{ .form.ObjectID }}" style="display:none">
   <input type="hidden" name="ID" value=".form.ObjectID"/>
 </form>

@@ -10,8 +10,6 @@ import (
 // GET /app_settings/delete/:id
 // POST /app_settings/delete/:id
 func AppSettingDelete(c *gin.Context) {
-	// id := c.Param("id")
-	// result := core.ObjFind(id)
 	request := NewRequest(c)
 	if request.HasErrors() {
 		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
@@ -27,16 +25,21 @@ func AppSettingDelete(c *gin.Context) {
 
 // GET /app_settings/edit/:id
 func AppSettingEdit(c *gin.Context) {
-	id := c.Param("id")
-	result := core.ObjFind(id)
-	if result.Error != nil {
-		c.AbortWithError(http.StatusInternalServerError, result.Error)
+	// id := c.Param("id")
+	// result := core.ObjFind(id)
+	// if result.Error != nil {
+	// 	c.AbortWithError(http.StatusInternalServerError, result.Error)
+	// 	return
+	// }
+	// data := gin.H{
+	// 	"form": result.AppSetting().ToForm(),
+	// }
+	request := NewRequest(c)
+	if request.HasErrors() {
+		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	data := gin.H{
-		"form": result.AppSetting().ToForm(),
-	}
-	c.HTML(http.StatusOK, "app_setting/form.html", data)
+	c.HTML(http.StatusOK, "app_setting/form.html", request.TemplateData)
 }
 
 // GET /app_settings
@@ -72,8 +75,10 @@ func AppSettingSave(c *gin.Context) {
 	}
 	err = core.ObjSave(setting)
 	if err != nil {
+		objectExistsInDB, _ := core.ObjExists(setting.ID)
 		data := gin.H{
-			"form": setting.ToForm(),
+			"form":             setting.ToForm(),
+			"objectExistsInDB": objectExistsInDB,
 		}
 		c.HTML(http.StatusOK, "app_setting/form.html", data)
 		return
