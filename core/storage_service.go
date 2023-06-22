@@ -8,6 +8,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 type StorageService struct {
@@ -28,6 +29,7 @@ type StorageService struct {
 
 func NewStorageService() *StorageService {
 	return &StorageService{
+		ID:     uuid.NewString(),
 		Errors: make(map[string]string),
 	}
 }
@@ -50,22 +52,25 @@ func (ss *StorageService) HostAndPort() string {
 func (ss *StorageService) Validate() bool {
 	ss.Errors = make(map[string]string)
 	if !util.LooksLikeUUID(ss.ID) {
-		ss.Errors["StorageService.ID"] = "StorageService requires a valid ID."
+		ss.Errors["ID"] = "StorageService requires a valid ID."
+	}
+	if strings.TrimSpace(ss.Name) == "" {
+		ss.Errors["Name"] = "StorageService requires a name."
 	}
 	if strings.TrimSpace(ss.Protocol) == "" {
-		ss.Errors["StorageService.Protocol"] = "StorageService requires a protocol (s3, sftp, etc)."
+		ss.Errors["Protocol"] = "StorageService requires a protocol (s3, sftp, etc)."
 	}
 	if strings.TrimSpace(ss.Host) == "" {
-		ss.Errors["StorageService.Host"] = "StorageService requires a hostname or IP address."
+		ss.Errors["Host"] = "StorageService requires a hostname or IP address."
 	}
 	if strings.TrimSpace(ss.Bucket) == "" {
-		ss.Errors["StorageService.Bucket"] = "StorageService requires a bucket or folder name."
+		ss.Errors["Bucket"] = "StorageService requires a bucket or folder name."
 	}
 	if strings.TrimSpace(ss.Login) == "" {
-		ss.Errors["StorageService.Login"] = "StorageService requires a login name or access key id."
+		ss.Errors["Login"] = "StorageService requires a login name or access key id."
 	}
 	if strings.TrimSpace(ss.Password) == "" {
-		ss.Errors["StorageService.Password"] = "StorageService requires a password or secret access key."
+		ss.Errors["Password"] = "StorageService requires a password or secret access key."
 	}
 	return len(ss.Errors) == 0
 }
@@ -149,16 +154,24 @@ func (ss *StorageService) ToForm() *Form {
 
 	form.AddField("ID", "ID", ss.ID, true)
 	form.AddField("Name", "Name", ss.Name, true)
-	form.AddField("Host", "Host", ss.Host, true)
-	form.AddField("Port", "Port", strconv.Itoa(ss.Port), true)
-	form.AddField("Protocol", "Protocol", ss.Protocol, true)
-	form.AddField("Bucket", "Bucket", ss.LoginExtra, false)
 	form.AddField("Description", "Description", ss.Description, false)
-	form.AddField("Login", "Login", ss.Login, false)
-	form.AddField("Password", "Password", ss.Password, false)
+
+	protocol := form.AddField("Protocol", "Protocol", ss.Protocol, true)
+	protocol.AddChoice("", "")
+	protocol.AddChoice("s3", "s3")
+	protocol.AddChoice("sftp", "sftp")
+
+	form.AddField("Host", "Host", ss.Host, true)
+	form.AddField("Port", "Port", strconv.Itoa(ss.Port), false)
+	form.AddField("Bucket", "Bucket", ss.LoginExtra, true)
+	form.AddField("Login", "Login", ss.Login, true)
+	form.AddField("Password", "Password", ss.Password, true)
 	form.AddField("LoginExtra", "Login Extra", ss.LoginExtra, false)
-	form.AddField("AllowsUpload", "Allows Upload", strconv.FormatBool(ss.AllowsUpload), true)
-	form.AddField("AllowsDownload", "Allows Download", strconv.FormatBool(ss.AllowsDownload), true)
+
+	allowsUpload := form.AddField("AllowsUpload", "Allows Upload", strconv.FormatBool(ss.AllowsUpload), false)
+	allowsUpload.Choices = YesNoChoices(ss.AllowsUpload)
+	allowsDownload := form.AddField("AllowsDownload", "Allows Download", strconv.FormatBool(ss.AllowsDownload), false)
+	allowsDownload.Choices = YesNoChoices(ss.AllowsDownload)
 
 	return form
 }

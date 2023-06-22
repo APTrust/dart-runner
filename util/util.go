@@ -392,3 +392,11 @@ var reUrl = regexp.MustCompile(`(^http://localhost)|(https?://(www\.)?[-a-zA-Z0-
 func LooksLikeHypertextURL(str string) bool {
 	return reUrl.MatchString(str)
 }
+
+// YesOrNo returns "Yes" if value is true, "No" if value is false.
+func YesOrNo(value bool) string {
+	if value {
+		return "Yes"
+	}
+	return "No"
+}

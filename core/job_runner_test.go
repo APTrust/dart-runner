@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -39,7 +38,6 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	assert.True(t, job.PackageOp.Result.Succeeded())
 	assert.True(t, job.ValidationOp.Result.Succeeded())
 	for _, op := range job.UploadOps {
-		fmt.Println(op.Errors)
 		assert.True(t, op.Result.Succeeded())
 	}
 

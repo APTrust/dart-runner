@@ -25,7 +25,7 @@ func TestUploadOperation(t *testing.T) {
 	op = core.NewUploadOperation(ss, files)
 	require.NotNil(t, op)
 	assert.False(t, op.Validate())
-	assert.Equal(t, 7, len(op.Errors))
+	assert.Equal(t, 8, len(op.Errors))
 	assert.Equal(t, "StorageService requires a valid ID.", op.Errors["StorageService.ID"])
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", op.Errors["StorageService.Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", op.Errors["StorageService.Host"])
@@ -36,6 +36,7 @@ func TestUploadOperation(t *testing.T) {
 
 	ss = &core.StorageService{
 		ID:       uuid.NewString(),
+		Name:     "Patrick",
 		Host:     "example.com",
 		Bucket:   "uploads",
 		Login:    "user@example.com",

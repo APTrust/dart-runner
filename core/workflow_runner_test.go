@@ -2,7 +2,6 @@ package core_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -63,9 +62,6 @@ func TestWorkflowRunner(t *testing.T) {
 
 	os.Stdout = origStdout
 	os.Stderr = origStderr
-
-	fmt.Println("STDOUT:", string(stdOutBytes))
-	fmt.Println("STDERR:", string(stdErrBytes))
 
 	assert.NotEmpty(t, stdOutBytes)
 	assert.Empty(t, string(stdErrBytes))

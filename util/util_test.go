@@ -431,3 +431,8 @@ func TestLooksLikeHyperTextURL(t *testing.T) {
 	assert.False(t, util.LooksLikeHypertextURL(""))
 	assert.False(t, util.LooksLikeHypertextURL("6"))
 }
+
+func TestYesOrNo(t *testing.T) {
+	assert.Equal(t, "Yes", util.YesOrNo(true))
+	assert.Equal(t, "No", util.YesOrNo(false))
+}

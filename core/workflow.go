@@ -39,7 +39,7 @@ func (w *Workflow) Validate() bool {
 		for _, ss := range w.StorageServices {
 			if !ss.Validate() {
 				for key, value := range ss.Errors {
-					uniqueKey := fmt.Sprintf("%s.%s", ss.Name, key)
+					uniqueKey := fmt.Sprintf("%s.StorageService.%s", ss.Name, key)
 					w.Errors[uniqueKey] = value
 				}
 			}

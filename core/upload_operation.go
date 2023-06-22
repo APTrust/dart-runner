@@ -34,7 +34,10 @@ func (u *UploadOperation) Validate() bool {
 	if u.StorageService == nil {
 		u.Errors["UploadOperation.StorageService"] = "UploadOperation requires a StorageService"
 	} else if !u.StorageService.Validate() {
-		u.Errors = u.StorageService.Errors
+		for key, errMsg := range u.StorageService.Errors {
+			ssKeyName := "StorageService." + key
+			u.Errors[ssKeyName] = errMsg
+		}
 	}
 	if u.SourceFiles == nil || len(u.SourceFiles) == 0 {
 		u.Errors["UploadOperation.SourceFiles"] = "UploadOperation requires one or more files to upload"

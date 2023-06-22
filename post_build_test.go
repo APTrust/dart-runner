@@ -131,8 +131,7 @@ func TestWorkflowBatchCommand(t *testing.T) {
 	}
 	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), nil)
 	assert.NotEmpty(t, stdout)
-	fmt.Println(string(stderr))
-	fmt.Println(string(stdout))
+
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
 

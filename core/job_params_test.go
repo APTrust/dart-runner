@@ -34,7 +34,7 @@ func getTestWorkflow(t *testing.T) *core.Workflow {
 }
 
 func getTestStorageService(protocol, host string) *core.StorageService {
-	ss := core.NewStorageService()
+	ss := &core.StorageService{}
 	ss.AllowsUpload = true
 	ss.Bucket = "test-bucket"
 	ss.Host = host

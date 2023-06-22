@@ -120,13 +120,12 @@ func initRoutes(router *gin.Engine) {
 	// Strorage Services
 	router.GET("/storage_services", controllers.StorageServiceIndex)
 	router.GET("/storage_services/new", controllers.StorageServiceNew)
-	router.POST("/storage_services/new", controllers.StorageServiceCreate)
+	router.POST("/storage_services/new", controllers.StorageServiceSave)
 	router.GET("/storage_services/edit/:id", controllers.StorageServiceEdit)
-	router.PUT("/storage_services/edit/:id", controllers.StorageServiceUpdate)
-	router.POST("/storage_services/edit/:id", controllers.StorageServiceUpdate)
+	router.PUT("/storage_services/edit/:id", controllers.StorageServiceSave)
+	router.POST("/storage_services/edit/:id", controllers.StorageServiceSave)
 	router.PUT("/storage_services/delete/:id", controllers.StorageServiceDelete)
 	router.POST("/storage_services/delete/:id", controllers.StorageServiceDelete)
-	router.GET("/storage_services/:id", controllers.StorageServiceShow)
 
 	// Workflows
 	router.GET("/workflows", controllers.WorkflowIndex)
