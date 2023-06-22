@@ -9,3 +9,5 @@ var ErrNotDeletable = errors.New("object cannot be deleted because it is require
 var ErrInvalidOperation = errors.New("this operation is invalid or forbidden")
 
 var ErrUnknownType = errors.New("unknown type")
+
+var ErrWrongTypeForForm = errors.New("cannot create form from result: query result is either a list or empty")

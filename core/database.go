@@ -70,12 +70,14 @@ func ObjSave(obj PersistentObject) error {
 func ObjFind(uuid string) *QueryResult {
 	var objType string
 	var objJson string
-	qr := NewQueryResult(objType)
+	qr := NewQueryResult(constants.ResultTypeSingle)
+	qr.ResultType = constants.ResultTypeSingle
 	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where uuid=?", uuid)
 	qr.Error = row.Scan(&objType, &objJson)
 	if qr.Error != nil {
 		return qr
 	}
+	qr.ObjType = objType
 	qr.ObjCount = 1
 	switch objType {
 	case constants.TypeAppSetting:
@@ -102,7 +104,9 @@ func ObjFind(uuid string) *QueryResult {
 }
 
 func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
-	qr := NewQueryResult(objType)
+	qr := NewQueryResult(constants.ResultTypeList)
+	qr.ObjType = objType
+	qr.ResultType = constants.ResultTypeList
 	qr.Offset = offset
 	qr.Limit = limit
 	qr.OrderBy = orderBy

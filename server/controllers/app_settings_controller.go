@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -11,13 +10,14 @@ import (
 // GET /app_settings/delete/:id
 // POST /app_settings/delete/:id
 func AppSettingDelete(c *gin.Context) {
-	id := c.Param("id")
-	result := core.ObjFind(id)
-	if result.Error != nil {
-		c.AbortWithError(http.StatusInternalServerError, result.Error)
+	// id := c.Param("id")
+	// result := core.ObjFind(id)
+	request := NewRequest(c)
+	if request.HasErrors() {
+		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	err := core.ObjDelete(result.AppSetting())
+	err := core.ObjDelete(request.QueryResult.AppSetting())
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -41,20 +41,13 @@ func AppSettingEdit(c *gin.Context) {
 
 // GET /app_settings
 func AppSettingIndex(c *gin.Context) {
-	offset := c.GetInt("offset")
-	limit := c.GetInt("limit")
-	if limit < 1 {
-		limit = 25
-	}
-	result := core.ObjList(constants.TypeAppSetting, "obj_name", limit, offset)
-	if result.Error != nil {
-		c.AbortWithError(http.StatusInternalServerError, result.Error)
+	request := NewRequest(c)
+	if request.HasErrors() {
+		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	data := gin.H{
-		"items": result.AppSettings,
-	}
-	c.HTML(http.StatusOK, "app_setting/list.html", data)
+	request.TemplateData["items"] = request.QueryResult.AppSettings
+	c.HTML(http.StatusOK, "app_setting/list.html", request.TemplateData)
 }
 
 // GET /app_settings/new

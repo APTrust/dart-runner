@@ -10,6 +10,7 @@ import (
 
 type Request struct {
 	ginCtx         *gin.Context
+	Errors         []error
 	Handler        string
 	ObjType        string
 	Action         string
@@ -25,9 +26,10 @@ var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete$`)
 func NewRequest(c *gin.Context) *Request {
 	request := &Request{
 		ginCtx:         c,
+		Errors:         make([]error, 0),
 		IsListResponse: false,
 		TemplateData: gin.H{
-			"currentUrl":  c.Request.URL,
+			"currentUrl":  c.Request.URL.Path,
 			"showAsModal": c.Query("modal") == "true",
 		},
 	}
@@ -63,6 +65,10 @@ TODO:
 
 */
 
+func (r *Request) HasErrors() bool {
+	return len(r.Errors) > 0
+}
+
 func (r *Request) initFromHandlerName() {
 	nameParts := strings.Split(r.ginCtx.HandlerName(), ".")
 	if len(nameParts) > 1 {
@@ -79,7 +85,13 @@ func (r *Request) loadObjects() {
 	objId := r.ginCtx.Param("id")
 	if !r.IsListResponse {
 		r.QueryResult = core.ObjFind(objId)
-		r.TemplateData["objectExistsInDB"], _ = core.ObjExists(objId)
+		r.TemplateData["objectExistsInDB"] = (r.QueryResult.ObjCount == 1)
+		form, err := r.QueryResult.GetForm()
+		if err != nil {
+			r.Errors = append(r.Errors, err)
+		} else {
+			r.TemplateData["form"] = form
+		}
 	} else {
 		orderBy := r.ginCtx.DefaultQuery("orderBy", "obj_name")
 		offset := r.ginCtx.GetInt("offset")
@@ -88,5 +100,8 @@ func (r *Request) loadObjects() {
 			limit = 25
 		}
 		r.QueryResult = core.ObjList(r.ObjType, orderBy, limit, offset)
+	}
+	if r.QueryResult.Error != nil {
+		r.Errors = append(r.Errors, r.QueryResult.Error)
 	}
 }

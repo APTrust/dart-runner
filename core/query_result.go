@@ -14,25 +14,26 @@ type QueryResult struct {
 	Offset             int
 	OrderBy            string
 	RemoteRepositories []*RemoteRepository
+	ResultType         string
 	StorageServices    []*StorageService
 }
 
-func NewQueryResult(objType string) *QueryResult {
+func NewQueryResult(resultType string) *QueryResult {
 	qr := &QueryResult{
-		ObjType: objType,
+		ResultType: resultType,
 	}
-	switch objType {
-	case constants.TypeAppSetting:
-		qr.AppSettings = make([]*AppSetting, 0)
-	case constants.TypeInternalSetting:
-		qr.InternalSettings = make([]*InternalSetting, 0)
-	case constants.TypeStorageService:
-		qr.StorageServices = make([]*StorageService, 0)
-	case constants.TypeRemoteRepository:
-		qr.RemoteRepositories = make([]*RemoteRepository, 0)
-	default:
-		qr.Error = constants.ErrUnknownType
-	}
+	// switch objType {
+	// case constants.TypeAppSetting:
+	// 	qr.AppSettings = make([]*AppSetting, 0)
+	// case constants.TypeInternalSetting:
+	// 	qr.InternalSettings = make([]*InternalSetting, 0)
+	// case constants.TypeStorageService:
+	// 	qr.StorageServices = make([]*StorageService, 0)
+	// case constants.TypeRemoteRepository:
+	// 	qr.RemoteRepositories = make([]*RemoteRepository, 0)
+	// default:
+	// 	qr.Error = constants.ErrUnknownType
+	// }
 	return qr
 }
 
@@ -62,4 +63,25 @@ func (qr *QueryResult) StorageService() *StorageService {
 		return qr.StorageServices[0]
 	}
 	return nil
+}
+
+func (qr *QueryResult) GetForm() (*Form, error) {
+	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount != 1 {
+		return nil, constants.ErrWrongTypeForForm
+	}
+	var form *Form
+	var err error
+	switch qr.ObjType {
+	case constants.TypeAppSetting:
+		form = qr.AppSetting().ToForm()
+	case constants.TypeInternalSetting:
+		form = qr.InternalSetting().ToForm()
+	case constants.TypeStorageService:
+		form = qr.StorageService().ToForm()
+	case constants.TypeRemoteRepository:
+		form = qr.RemoteRepository().ToForm()
+	default:
+		err = constants.ErrUnknownType
+	}
+	return form, err
 }
