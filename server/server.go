@@ -110,13 +110,12 @@ func initRoutes(router *gin.Engine) {
 	// Remote Repositories
 	router.GET("/remote_repositories", controllers.RemoteRepositoryIndex)
 	router.GET("/remote_repositories/new", controllers.RemoteRepositoryNew)
-	router.POST("/remote_repositories/new", controllers.RemoteRepositoryCreate)
+	router.POST("/remote_repositories/new", controllers.RemoteRepositorySave)
 	router.GET("/remote_repositories/edit/:id", controllers.RemoteRepositoryEdit)
-	router.PUT("/remote_repositories/edit/:id", controllers.RemoteRepositoryUpdate)
-	router.POST("/remote_repositories/edit/:id", controllers.RemoteRepositoryUpdate)
+	router.PUT("/remote_repositories/edit/:id", controllers.RemoteRepositorySave)
+	router.POST("/remote_repositories/edit/:id", controllers.RemoteRepositorySave)
 	router.PUT("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
 	router.POST("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
-	router.GET("/remote_repositories/:id", controllers.RemoteRepositoryShow)
 
 	// Strorage Services
 	router.GET("/storage_services", controllers.StorageServiceIndex)

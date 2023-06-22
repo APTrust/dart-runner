@@ -25,15 +25,6 @@ func AppSettingDelete(c *gin.Context) {
 
 // GET /app_settings/edit/:id
 func AppSettingEdit(c *gin.Context) {
-	// id := c.Param("id")
-	// result := core.ObjFind(id)
-	// if result.Error != nil {
-	// 	c.AbortWithError(http.StatusInternalServerError, result.Error)
-	// 	return
-	// }
-	// data := gin.H{
-	// 	"form": result.AppSetting().ToForm(),
-	// }
 	request := NewRequest(c)
 	if request.HasErrors() {
 		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])

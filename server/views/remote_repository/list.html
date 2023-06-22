@@ -4,7 +4,7 @@
 
 <h2>Remote Repositories</h2>
 <div class="pull-right mt-1 mb-3">
-  <a class="btn btn-primary" href="#" data-func="RemoteRepositoryCreate" role="button">New</a>
+  <a class="btn btn-primary" href="/remote_repositories/new" role="button">New</a>
 </div>
 <table class="table table-hover">
   <thead class="thead-inverse">
@@ -15,7 +15,7 @@
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
-    <tr class="clickable-row" data-func="RemoteRepositoryEdit" data-func-param="{{ $item.ID }}">
+    <tr class="clickable-row" onclick="location.href='/remote_repositories/edit/{{ $item.ID }}'">
       <td>{{ $item.Name }}</td>
       <td>{{ $item.Url }}</td>
     </tr>

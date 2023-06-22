@@ -84,9 +84,9 @@ func (repo *RemoteRepository) ToForm() *Form {
 	form.AddField("APIToken", "API Token", repo.APIToken, false)
 	form.AddField("LoginExtra", "Login Extra", repo.LoginExtra, false)
 
-	//pluginIdField := form.AddField("PluginID", "Plugin ID", repo.PluginID, false)
-	//pluginIdField.AddChoice("", "")
-	//pluginIdField.AddChoice("APTrustClient", PluginIdAPTrustClient)
+	pluginIdField := form.AddField("PluginID", "Plugin ID", repo.PluginID, false)
+	pluginIdField.AddChoice("", "")
+	pluginIdField.AddChoice("APTrustClient", constants.PluginIdAPTrustClient)
 
 	return form
 }
