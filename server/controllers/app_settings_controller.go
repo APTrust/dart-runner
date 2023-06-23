@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /app_settings/delete/:id
+// DELETE /app_settings/delete/:id
 // POST /app_settings/delete/:id
 func AppSettingDelete(c *gin.Context) {
 	request := NewRequest(c)
@@ -61,7 +61,7 @@ func AppSettingSave(c *gin.Context) {
 	setting := &core.AppSetting{}
 	err := c.Bind(setting)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 	err = core.ObjSave(setting)
@@ -71,7 +71,7 @@ func AppSettingSave(c *gin.Context) {
 			"form":             setting.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
 		}
-		c.HTML(http.StatusOK, "app_setting/form.html", data)
+		c.HTML(http.StatusBadRequest, "app_setting/form.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, "/app_settings")

@@ -81,7 +81,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/app_settings/edit/:id", controllers.AppSettingEdit)
 	router.PUT("/app_settings/edit/:id", controllers.AppSettingSave)
 	router.POST("/app_settings/edit/:id", controllers.AppSettingSave)
-	router.PUT("/app_settings/delete/:id", controllers.AppSettingDelete)
+	router.DELETE("/app_settings/delete/:id", controllers.AppSettingDelete)
 	router.POST("/app_settings/delete/:id", controllers.AppSettingDelete)
 
 	// BagIt Profiles

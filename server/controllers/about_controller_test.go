@@ -19,9 +19,9 @@ func TestAboutShow(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/about", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/about", nil)
 	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 	html := w.Body.String()
 
 	ok, notFound := AssertContainsAllStrings(html, expected)
