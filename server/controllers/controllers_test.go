@@ -11,12 +11,21 @@ import (
 	"github.com/APTrust/dart-runner/server"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var dartServer *gin.Engine
 
 func init() {
 	dartServer = server.InitAppEngine(true)
+}
+
+type PostTestSettings struct {
+	EndpointUrl              string
+	Params                   url.Values
+	ExpectedResponseCode     int
+	ExpectedRedirectLocation string
+	ExpectedContent          []string
 }
 
 func AssertContainsAllStrings(html string, expected []string) (allFound bool, notFound []string) {
@@ -48,4 +57,21 @@ func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
 	html := w.Body.String()
 	ok, notFound := AssertContainsAllStrings(html, expected)
 	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
+}
+
+func DoSimplePostTest(t *testing.T, settings PostTestSettings) {
+	w := httptest.NewRecorder()
+	req, err := NewPostRequest(settings.EndpointUrl, settings.Params)
+	require.Nil(t, err)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, settings.ExpectedResponseCode, w.Code)
+	if settings.ExpectedRedirectLocation != "" {
+		assert.Equal(t, settings.ExpectedRedirectLocation, w.Header().Get("Location"))
+	}
+	if len(settings.ExpectedContent) > 0 {
+		html := w.Body.String()
+		//fmt.Println(html)
+		ok, notFound := AssertContainsAllStrings(html, settings.ExpectedContent)
+		assert.True(t, ok, "Missing from page %s: %v", settings.EndpointUrl, notFound)
+	}
 }
