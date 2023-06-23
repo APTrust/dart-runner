@@ -5,6 +5,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,4 +73,38 @@ func TestInternalSettingValidation(t *testing.T) {
 	assert.Nil(t, result.Error)
 	require.NotNil(t, result.InternalSetting())
 	assert.Equal(t, s1.Name, result.InternalSetting().Name)
+}
+
+func TestInternalSettingToForm(t *testing.T) {
+	setting := core.NewInternalSetting("Setting 1", "Value 1")
+	form := setting.ToForm()
+	assert.Equal(t, 3, len(form.Fields))
+	assert.False(t, form.UserCanDelete)
+	assert.Equal(t, setting.ID, form.Fields["ID"].Value)
+	assert.Equal(t, setting.Name, form.Fields["Name"].Value)
+	assert.Equal(t, setting.Value, form.Fields["Value"].Value)
+
+	assert.Equal(t, "readonly", form.Fields["Name"].Attrs["readonly"])
+	assert.Equal(t, "readonly", form.Fields["Value"].Attrs["readonly"])
+}
+
+func TestInternalSettingPersistentObject(t *testing.T) {
+	setting := core.NewInternalSetting("Setting 1", "Value 1")
+	assert.Equal(t, constants.TypeInternalSetting, setting.ObjType())
+	assert.Equal(t, "InternalSetting", setting.ObjType())
+	assert.Equal(t, setting.ID, setting.ObjID())
+	assert.True(t, util.LooksLikeUUID(setting.ObjID()))
+	assert.False(t, setting.IsDeletable())
+	assert.Equal(t, "Setting 1", setting.ObjName())
+	assert.Equal(t, "InternalSetting: 'Setting 1' = 'Value 1'", setting.String())
+	assert.Empty(t, setting.GetErrors())
+
+	setting.Errors = map[string]string{
+		"Error 1": "Message 1",
+		"Error 2": "Message 2",
+	}
+
+	assert.Equal(t, 2, len(setting.GetErrors()))
+	assert.Equal(t, "Message 1", setting.GetErrors()["Error 1"])
+	assert.Equal(t, "Message 2", setting.GetErrors()["Error 2"])
 }

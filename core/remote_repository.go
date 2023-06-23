@@ -76,6 +76,7 @@ func (repo *RemoteRepository) Validate() bool {
 
 func (repo *RemoteRepository) ToForm() *Form {
 	form := NewForm(constants.TypeRemoteRepository, repo.ID, repo.Errors)
+	form.UserCanDelete = true
 
 	form.AddField("ID", "ID", repo.ID, true)
 	form.AddField("Name", "Name", repo.Name, true)

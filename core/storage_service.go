@@ -149,8 +149,7 @@ func (ss *StorageService) String() string {
 
 func (ss *StorageService) ToForm() *Form {
 	form := NewForm(constants.TypeStorageService, ss.ID, ss.Errors)
-
-	// TODO: Set protocol choices. Set choices for AllowsUpload/Download.
+	form.UserCanDelete = true
 
 	form.AddField("ID", "ID", ss.ID, true)
 	form.AddField("Name", "Name", ss.Name, true)
@@ -163,7 +162,7 @@ func (ss *StorageService) ToForm() *Form {
 
 	form.AddField("Host", "Host", ss.Host, true)
 	form.AddField("Port", "Port", strconv.Itoa(ss.Port), false)
-	form.AddField("Bucket", "Bucket", ss.LoginExtra, true)
+	form.AddField("Bucket", "Bucket", ss.Bucket, true)
 	form.AddField("Login", "Login", ss.Login, true)
 	form.AddField("Password", "Password", ss.Password, true)
 	form.AddField("LoginExtra", "Login Extra", ss.LoginExtra, false)

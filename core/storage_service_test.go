@@ -7,6 +7,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -165,4 +166,66 @@ func TestStorageServicePersistence(t *testing.T) {
 	result = core.ObjFind(ss1.ID)
 	assert.Equal(t, sql.ErrNoRows, result.Error)
 	assert.Nil(t, result.StorageService())
+}
+
+func TestStorageServiceToForm(t *testing.T) {
+	ss := core.NewStorageService()
+	ss.Name = "test service"
+	ss.AllowsUpload = true
+	ss.AllowsDownload = true
+	ss.Bucket = "the chum bucket"
+	ss.Description = "yadda yadda yadda"
+	ss.Host = "sftp.example.com"
+	ss.Login = "spongebob"
+	ss.LoginExtra = "login-xtra"
+	ss.Password = "patrick star"
+	ss.Port = 8080
+	ss.Protocol = constants.ProtocolSFTP
+
+	form := ss.ToForm()
+	assert.Equal(t, 12, len(form.Fields))
+	assert.True(t, form.UserCanDelete)
+	assert.Equal(t, ss.ID, form.Fields["ID"].Value)
+	assert.Equal(t, ss.Name, form.Fields["Name"].Value)
+	assert.Equal(t, "true", form.Fields["AllowsUpload"].Value)
+	assert.Equal(t, "true", form.Fields["AllowsDownload"].Value)
+	assert.Equal(t, ss.Bucket, form.Fields["Bucket"].Value)
+	assert.Equal(t, ss.Description, form.Fields["Description"].Value)
+	assert.Equal(t, ss.Host, form.Fields["Host"].Value)
+	assert.Equal(t, ss.Login, form.Fields["Login"].Value)
+	assert.Equal(t, ss.LoginExtra, form.Fields["LoginExtra"].Value)
+	assert.Equal(t, ss.Password, form.Fields["Password"].Value)
+	assert.Equal(t, "8080", form.Fields["Port"].Value)
+	assert.Equal(t, ss.Protocol, form.Fields["Protocol"].Value)
+
+	assert.True(t, form.Fields["ID"].Required)
+	assert.True(t, form.Fields["Name"].Required)
+	assert.True(t, form.Fields["Protocol"].Required)
+	assert.True(t, form.Fields["Host"].Required)
+	assert.True(t, form.Fields["Bucket"].Required)
+	assert.True(t, form.Fields["Login"].Required)
+	assert.True(t, form.Fields["Password"].Required)
+}
+
+func TestStorageServicePersistentObject(t *testing.T) {
+	ss := core.NewStorageService()
+	ss.Name = "test repo"
+
+	assert.Equal(t, constants.TypeStorageService, ss.ObjType())
+	assert.Equal(t, "StorageService", ss.ObjType())
+	assert.Equal(t, ss.ID, ss.ObjID())
+	assert.True(t, util.LooksLikeUUID(ss.ObjID()))
+	assert.True(t, ss.IsDeletable())
+	assert.Equal(t, "test repo", ss.ObjName())
+	assert.Equal(t, "StorageService: 'test repo'", ss.String())
+	assert.Empty(t, ss.GetErrors())
+
+	ss.Errors = map[string]string{
+		"Error 1": "Message 1",
+		"Error 2": "Message 2",
+	}
+
+	assert.Equal(t, 2, len(ss.GetErrors()))
+	assert.Equal(t, "Message 1", ss.GetErrors()["Error 1"])
+	assert.Equal(t, "Message 2", ss.GetErrors()["Error 2"])
 }

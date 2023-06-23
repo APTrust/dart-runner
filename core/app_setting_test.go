@@ -6,6 +6,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -86,4 +87,46 @@ func TestAppSettingValidation(t *testing.T) {
 	assert.Nil(t, result.Error)
 	require.NotNil(t, result.AppSetting())
 	assert.Equal(t, s1.Name, result.AppSetting().Name)
+}
+
+func TestAppSettingToForm(t *testing.T) {
+	setting := core.NewAppSetting("Setting 1", "Value 1")
+	form := setting.ToForm()
+	assert.Equal(t, 4, len(form.Fields))
+	assert.True(t, form.UserCanDelete)
+	assert.Equal(t, setting.ID, form.Fields["ID"].Value)
+	assert.Equal(t, setting.Name, form.Fields["Name"].Value)
+	assert.Equal(t, setting.Value, form.Fields["Value"].Value)
+
+	assert.Empty(t, form.Fields["Name"].Attrs["readonly"])
+	assert.True(t, form.Fields["Name"].Required)
+	assert.True(t, form.Fields["Value"].Required)
+
+	setting.UserCanDelete = false
+	form = setting.ToForm()
+	assert.False(t, form.UserCanDelete)
+	assert.Equal(t, "readonly", form.Fields["Name"].Attrs["readonly"])
+}
+
+func TestAppSettingPersistentObject(t *testing.T) {
+	setting := core.NewAppSetting("Setting 1", "Value 1")
+	assert.Equal(t, constants.TypeAppSetting, setting.ObjType())
+	assert.Equal(t, "AppSetting", setting.ObjType())
+	assert.Equal(t, setting.ID, setting.ObjID())
+	assert.True(t, util.LooksLikeUUID(setting.ObjID()))
+	assert.True(t, setting.IsDeletable())
+	assert.Equal(t, "Setting 1", setting.ObjName())
+	assert.Equal(t, "AppSetting: 'Setting 1' = 'Value 1'", setting.String())
+	assert.Empty(t, setting.GetErrors())
+
+	setting.UserCanDelete = false
+	setting.Errors = map[string]string{
+		"Error 1": "Message 1",
+		"Error 2": "Message 2",
+	}
+
+	assert.False(t, setting.IsDeletable())
+	assert.Equal(t, 2, len(setting.GetErrors()))
+	assert.Equal(t, "Message 1", setting.GetErrors()["Error 1"])
+	assert.Equal(t, "Message 2", setting.GetErrors()["Error 2"])
 }
