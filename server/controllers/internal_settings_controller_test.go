@@ -1,8 +1,6 @@
 package controllers_test
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -27,12 +25,5 @@ func TestInternalSettingsList(t *testing.T) {
 		"Value 2-2-2",
 	}
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/internal_settings", nil)
-	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	html := w.Body.String()
-
-	ok, notFound := AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page: %v", notFound)
+	DoSimpleGetTest(t, "/internal_settings", expected)
 }

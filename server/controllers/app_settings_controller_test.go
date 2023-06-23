@@ -31,14 +31,7 @@ func TestAppSettingsList(t *testing.T) {
 		"Value 2",
 	}
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/app_settings", nil)
-	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	html := w.Body.String()
-
-	ok, notFound := AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page: %v", notFound)
+	DoSimpleGetTest(t, "/app_settings", expected)
 }
 
 func TestAppSettingNew(t *testing.T) {
@@ -50,14 +43,7 @@ func TestAppSettingNew(t *testing.T) {
 		`name="Value"`,
 	}
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/app_settings/new", nil)
-	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	html := w.Body.String()
-
-	ok, notFound := AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page: %v", notFound)
+	DoSimpleGetTest(t, "/app_settings/new", expected)
 }
 
 func TestAppSettingSaveEditDelete(t *testing.T) {
@@ -106,16 +92,9 @@ func testNewSaveEditDeleteWithGoodParams(t *testing.T) {
 	assert.Equal(t, "/app_settings", w.Header().Get("Location"))
 
 	// Make sure it was created
-	w = httptest.NewRecorder()
 	id := params.Get("ID")
 	itemUrl := fmt.Sprintf("/app_settings/edit/%s", id)
-	req, err = http.NewRequest(http.MethodGet, itemUrl, nil)
-	require.Nil(t, err)
-	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	html := w.Body.String()
-	ok, notFound := AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page: %v", notFound)
+	DoSimpleGetTest(t, itemUrl, expected)
 
 	// Submit the Edit App Setting form with updated params.
 	w = httptest.NewRecorder()
@@ -131,15 +110,8 @@ func testNewSaveEditDeleteWithGoodParams(t *testing.T) {
 	// Make sure it was updated
 	expected[1] = "Web Test Name Edited"
 	expected[2] = "Web Test Value Edited"
-	w = httptest.NewRecorder()
 	itemUrl = fmt.Sprintf("/app_settings/edit/%s", id)
-	req, err = http.NewRequest(http.MethodGet, itemUrl, nil)
-	require.Nil(t, err)
-	dartServer.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	html = w.Body.String()
-	ok, notFound = AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page: %v", notFound)
+	DoSimpleGetTest(t, itemUrl, expected)
 
 	// Test App Setting Delete
 	w = httptest.NewRecorder()
