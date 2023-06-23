@@ -9,14 +9,6 @@ import (
 	"github.com/APTrust/dart-runner/util"
 )
 
-type DBObject struct {
-	ID        string
-	Type      string
-	Name      string
-	Json      string
-	UpdatedAt time.Time
-}
-
 type Artifact struct {
 	ID        string
 	BagName   string
@@ -224,47 +216,50 @@ func ObjDelete(obj PersistentObject) error {
 }
 
 func ArtifactSave(a *Artifact) error {
-	stmt := `insert into artifacts (uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at) values (?,?,?,?,?,?,?);`
+	stmt := `insert into artifacts (uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at) values (?,?,?,?,?,?,?)
+	on conflict do update set bag_name=excluded.bag_name, item_type=excluded.item_type, 
+	file_name=excluded.file_name, file_type=excluded.file_type, raw_data=excluded.raw_data, 
+	updated_at=excluded.updated_at where uuid=excluded.uuid`
 	_, err := Dart.DB.Exec(stmt, a.ID, a.BagName, a.ItemType, a.FileName, a.FileType, a.RawData, time.Now().UTC())
 	return err
 }
 
-func ArtifactGet(uuid string) (*Artifact, error) {
+func ArtifactFind(uuid string) (*Artifact, error) {
 	row := Dart.DB.QueryRow("select uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where uuid=?", uuid)
-	artifact := &Artifact{}
+	artifact := Artifact{}
 	err := row.Scan(
-		artifact.ID,
-		artifact.BagName,
-		artifact.ItemType,
-		artifact.FileName,
-		artifact.FileType,
-		artifact.RawData,
-		artifact.UpdatedAt,
+		&artifact.ID,
+		&artifact.BagName,
+		&artifact.ItemType,
+		&artifact.FileName,
+		&artifact.FileType,
+		&artifact.RawData,
+		&artifact.UpdatedAt,
 	)
-	return artifact, err
+	return &artifact, err
 }
 
 func ArtifactList(bagName string) ([]*Artifact, error) {
-	rows, err := Dart.DB.Query("select uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by updated_at desc, item_type, file_name", bagName)
+	rows, err := Dart.DB.Query("select uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by file_name", bagName)
 	if err != nil {
 		return nil, err
 	}
 	artifacts := make([]*Artifact, 0)
 	for rows.Next() {
-		artifact := &Artifact{}
+		artifact := Artifact{}
 		err = rows.Scan(
-			artifact.ID,
-			artifact.BagName,
-			artifact.ItemType,
-			artifact.FileName,
-			artifact.FileType,
-			artifact.RawData,
-			artifact.UpdatedAt,
+			&artifact.ID,
+			&artifact.BagName,
+			&artifact.ItemType,
+			&artifact.FileName,
+			&artifact.FileType,
+			&artifact.RawData,
+			&artifact.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-		artifacts = append(artifacts, artifact)
+		artifacts = append(artifacts, &artifact)
 	}
 	return artifacts, err
 
