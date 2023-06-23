@@ -61,6 +61,13 @@ var PreferredAlgsInOrder = []string{
 	AlgSha1,
 }
 
+var ItemTypes = []string{
+	TypeAppSetting,
+	TypeInternalSetting,
+	TypeRemoteRepository,
+	TypeStorageService,
+}
+
 // AppVersion is the version of DART Runner. This is set by
 // the linker at compile time in main.Version, which then
 // sets this var before it runs a job or workflow. This isn't

@@ -26,35 +26,35 @@ func NewQueryResult(resultType string) *QueryResult {
 }
 
 func (qr *QueryResult) AppSetting() *AppSetting {
-	if len(qr.AppSettings) == 1 {
+	if len(qr.AppSettings) > 0 {
 		return qr.AppSettings[0]
 	}
 	return nil
 }
 
 func (qr *QueryResult) InternalSetting() *InternalSetting {
-	if len(qr.InternalSettings) == 1 {
+	if len(qr.InternalSettings) > 0 {
 		return qr.InternalSettings[0]
 	}
 	return nil
 }
 
 func (qr *QueryResult) RemoteRepository() *RemoteRepository {
-	if len(qr.RemoteRepositories) == 1 {
+	if len(qr.RemoteRepositories) > 0 {
 		return qr.RemoteRepositories[0]
 	}
 	return nil
 }
 
 func (qr *QueryResult) StorageService() *StorageService {
-	if len(qr.StorageServices) == 1 {
+	if len(qr.StorageServices) > 0 {
 		return qr.StorageServices[0]
 	}
 	return nil
 }
 
 func (qr *QueryResult) GetForm() (*Form, error) {
-	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount != 1 {
+	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount < 1 {
 		return nil, constants.ErrWrongTypeForForm
 	}
 	var form *Form
