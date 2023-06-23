@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -76,10 +74,9 @@ func testNewWithMisingParams(t *testing.T) {
 		"Value cannot be empty",
 	}
 
-	data := url.Values{}
-
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, "/app_settings/new", strings.NewReader(data.Encode()))
+	req, err := NewPostRequest("/app_settings/new", url.Values{})
+	require.Nil(t, err)
 	dartServer.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	html := w.Body.String()
@@ -94,25 +91,23 @@ func testNewSaveEditDeleteWithGoodParams(t *testing.T) {
 		"Web Test Value 1",
 	}
 
-	data := url.Values{}
-	data.Set("ID", uuid.NewString())
-	data.Set("Name", "Web Test Name 1")
-	data.Set("Value", "Web Test Value 1")
-	data.Set("UserCanDelete", "true")
+	params := url.Values{}
+	params.Set("ID", uuid.NewString())
+	params.Set("Name", "Web Test Name 1")
+	params.Set("Value", "Web Test Value 1")
+	params.Set("UserCanDelete", "true")
 
 	// Submit the New App Setting form with valid params.
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodPost, "/app_settings/new", strings.NewReader(data.Encode()))
+	req, err := NewPostRequest("/app_settings/new", params)
 	require.Nil(t, err)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	dartServer.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusFound, w.Code)
 	assert.Equal(t, "/app_settings", w.Header().Get("Location"))
 
 	// Make sure it was created
 	w = httptest.NewRecorder()
-	id := data.Get("ID")
+	id := params.Get("ID")
 	itemUrl := fmt.Sprintf("/app_settings/edit/%s", id)
 	req, err = http.NewRequest(http.MethodGet, itemUrl, nil)
 	require.Nil(t, err)
@@ -124,13 +119,11 @@ func testNewSaveEditDeleteWithGoodParams(t *testing.T) {
 
 	// Submit the Edit App Setting form with updated params.
 	w = httptest.NewRecorder()
-	data.Set("Name", "Web Test Name Edited")
-	data.Set("Value", "Web Test Value Edited")
+	params.Set("Name", "Web Test Name Edited")
+	params.Set("Value", "Web Test Value Edited")
 	itemUrl = fmt.Sprintf("/app_settings/edit/%s", id)
-	req, err = http.NewRequest(http.MethodPost, itemUrl, strings.NewReader(data.Encode()))
+	req, err = NewPostRequest(itemUrl, params)
 	require.Nil(t, err)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	dartServer.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusFound, w.Code)
 	assert.Equal(t, "/app_settings", w.Header().Get("Location"))
@@ -151,10 +144,9 @@ func testNewSaveEditDeleteWithGoodParams(t *testing.T) {
 	// Test App Setting Delete
 	w = httptest.NewRecorder()
 	itemUrl = fmt.Sprintf("/app_settings/delete/%s", id)
-	req, err = http.NewRequest(http.MethodPost, itemUrl, nil)
+	req, err = NewPostRequest(itemUrl, url.Values{})
 	require.Nil(t, err)
 	dartServer.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusFound, w.Code)
 	assert.Equal(t, "/app_settings", w.Header().Get("Location"))
-
 }
