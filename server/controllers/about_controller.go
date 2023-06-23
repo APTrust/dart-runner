@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GET /about
 func AboutShow(c *gin.Context) {
 	templateData := gin.H{
 		"version":      "Version goes here",

@@ -54,8 +54,10 @@ func initTemplates(router *gin.Engine) {
 		router.LoadHTMLGlob("./views/**/*.html")
 	} else if util.FileExists("./server/views") {
 		router.LoadHTMLGlob("./server/views/**/*.html")
-	} else {
+	} else if util.FileExists("../server/views") {
 		router.LoadHTMLGlob("../server/views/**/*.html")
+	} else {
+		router.LoadHTMLGlob("../../server/views/**/*.html")
 	}
 }
 
