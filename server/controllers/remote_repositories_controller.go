@@ -73,7 +73,7 @@ func RemoteRepositorySave(c *gin.Context) {
 			"form":             repo.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
 		}
-		c.HTML(http.StatusOK, "remote_repository/form.html", data)
+		c.HTML(http.StatusBadRequest, "remote_repository/form.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, "/remote_repositories")
