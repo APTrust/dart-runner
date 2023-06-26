@@ -72,7 +72,7 @@ func StorageServiceSave(c *gin.Context) {
 			"form":             ss.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
 		}
-		c.HTML(http.StatusOK, "storage_service/form.html", data)
+		c.HTML(http.StatusBadRequest, "storage_service/form.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, "/storage_services")
