@@ -14,49 +14,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadProfile(jsonFile string) (*core.BagItProfile, error) {
-	filePath := path.Join(util.ProjectRoot(), "profiles", jsonFile)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	profile := &core.BagItProfile{}
-	err = json.Unmarshal(data, profile)
-	return profile, err
-}
+// func loadProfile(jsonFile string) (*core.BagItProfile, error) {
+// 	filePath := path.Join(util.ProjectRoot(), "profiles", jsonFile)
+// 	file, err := os.Open(filePath)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	data, err := ioutil.ReadAll(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	profile := &core.BagItProfile{}
+// 	err = json.Unmarshal(data, profile)
+// 	return profile, err
+// }
 
 // We have json files containing metadata that a read should
 // find when scanning a bag. We test our reader results against
 // this known good data.
-func loadValidatorFromJson(jsonFile string) (*core.Validator, error) {
+func loadValidatorFromJson(t *testing.T, jsonFile string) *core.Validator {
 	filePath := path.Join(util.PathToTestData(), "files", jsonFile)
 	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
+	require.Nil(t, err)
 	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+	require.Nil(t, err)
 	validator := &core.Validator{}
 	err = json.Unmarshal(data, validator)
-	if err != nil {
-		validator.Profile, err = loadProfile("aptrust-v2.2.json")
-	}
-	return validator, err
+	require.Nil(t, err)
+	validator.Profile = loadProfile(t, "aptrust-v2.2.json")
+	return validator
 }
 
 func TestTarredBagScanner(t *testing.T) {
-	expected, err := loadValidatorFromJson("tagsample_good_metadata.json")
-	require.Nil(t, err)
+	expected := loadValidatorFromJson(t, "tagsample_good_metadata.json")
 	require.NotNil(t, expected)
 
-	profile, err := loadProfile("aptrust-v2.2.json")
-	require.Nil(t, err)
+	profile := loadProfile(t, "aptrust-v2.2.json")
 	pathToBag := util.PathToUnitTestBag("example.edu.tagsample_good.tar")
 	validator, err := core.NewValidator(pathToBag, profile)
 	require.Nil(t, err)

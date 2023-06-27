@@ -20,9 +20,7 @@ const (
 
 func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *core.Bagger {
 	outputPath := path.Join(os.TempDir(), bagName)
-	profile, err := loadProfile(profileName)
-	require.Nil(t, err)
-	require.NotNil(t, profile)
+	profile := loadProfile(t, profileName)
 	bagger := core.NewBagger(outputPath, profile, files)
 	return bagger
 }
@@ -53,9 +51,7 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 	assert.Empty(t, bagger.Errors)
 
 	// Validate the bag
-	profile, err := loadProfile(profileName)
-	require.Nil(t, err)
-	require.NotNil(t, profile)
+	profile := loadProfile(t, profileName)
 	validator, err := core.NewValidator(bagger.OutputPath, profile)
 	require.Nil(t, err)
 

@@ -15,8 +15,7 @@ var btrProfile = "btr-v1.0.json"
 var emptyProfile = "empty_profile.json"
 
 func getValidator(t *testing.T, bag, profile string) *core.Validator {
-	bagItProfile, err := loadProfile(profile)
-	require.Nil(t, err)
+	bagItProfile := loadProfile(t, profile)
 
 	pathToBag := util.PathToUnitTestBag(bag)
 	validator, err := core.NewValidator(pathToBag, bagItProfile)
@@ -25,13 +24,12 @@ func getValidator(t *testing.T, bag, profile string) *core.Validator {
 }
 
 func TestValidator_ScanBag(t *testing.T) {
-	expected, err := loadValidatorFromJson("tagsample_good_metadata.json")
-	require.Nil(t, err)
+	expected := loadValidatorFromJson(t, "tagsample_good_metadata.json")
 	require.NotNil(t, expected)
 
 	v := getValidator(t, "example.edu.tagsample_good.tar", aptrustProfile)
 
-	err = v.ScanBag()
+	err := v.ScanBag()
 	require.Nil(t, err)
 
 	// The scanner should have loaded the validator with
