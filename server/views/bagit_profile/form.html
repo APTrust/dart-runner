@@ -1,0 +1,103 @@
+<h2>BagIt Profile</h2>
+
+{{ if .errors }}
+<div class="alert alert-danger" role="alert">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  <p>{{ .errMessage }}</p>
+  <ul class='text-danger'>
+    {{ range $i, $err := .errors }}
+    <li>{{ $err }}</li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}
+
+<form method="post" action="#" id="{{ .form.Fields.ID.Value }}">
+
+<nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <a class="nav-item nav-link active" id="navAboutTab" data-toggle="tab" href="#profileAbout" role="tab" aria-controls="profileAbout" aria-selected="true">About</a>
+    <a class="nav-item nav-link" id="navInfoTab" data-toggle="tab" href="#profileInfo" role="tab" aria-controls="profileInfo" aria-selected="false">Info</a>
+    <a class="nav-item nav-link" id="navGeneralTab" data-toggle="tab" href="#profileGeneral" role="tab" aria-controls="profileGeneral" aria-selected="false">General</a>
+    <a class="nav-item nav-link" id="navManifestsTab" data-toggle="tab" href="#profileManifests" role="tab" aria-controls="profileManifests" aria-selected="false">Manifests</a>
+    <a class="nav-item nav-link" id="navSerializationTab" data-toggle="tab" href="#profileSerialization" role="tab" aria-controls="profileSerialization" aria-selected="false">Serialization</a>
+
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Tag Files</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" id="navTagFilesAllowed" data-toggle="tab" href="#tagFilesAllowed" aria-controls="tagFilesAllowed" aria-selected="false">Show Tag Files Allowed</a>
+      <div class="dropdown-divider"></div>
+      {{ range $i, $tagFile := .tagFileNames }}
+      <a class="dropdown-item" id="navTags-{{ $tagFile }}" data-toggle="tab" href="#profileTags-{{ $tagFile }}" aria-controls="profileTags-{{ $tagFile }}" aria-selected="false">{{ $tagFile }}</a>
+      {{ end }}
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#BagItProfile/newTagFile?id={{ .bagItProfileId }}">Add New Tag File</a>
+    </div>
+
+  </div>
+</nav>
+
+
+<div class="tab-content mt-4" id="nav-tabContent">
+  <div class="tab-pane fade show active" role="tabpanel" id="profileAbout" aria-labelledby="navAboutTab">
+    {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.Description }}
+  </div>
+  <div class="tab-pane fade" role="tabpanel" id="profileInfo" aria-labelledby="navInfoTab">
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoIdentifier }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoContactEmail }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoContactName }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoExternalDescription }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoSourceOrganization }}
+    {{ template "partials/input_text.html" dict "field" .form.Fields.InfoVersion }}
+  </div>
+  <div class="tab-pane fade" role="tabpanel" id="profileGeneral" aria-labelledby="navGeneralTab">
+    {{ template "partials/input_select.html" dict "field" .form.Fields.AcceptBagItVersion }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.AllowFetchTxt }}
+  </div>
+  <div class="tab-pane fade" role="tabpanel" id="profileManifests" aria-labelledby="navManifestsTab">
+    {{ template "partials/input_select.html" dict "field" .form.Fields.ManifestsAllowed }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.ManifestsRequired }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.TagManifestsAllowed }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.TagManifestsRequired }}
+  </div>
+  <div class="tab-pane fade" role="tabpanel" id="profileSerialization" aria-labelledby="navSerializationTab">
+    {{ template "partials/input_select.html" dict "field" .form.Fields.Serialization }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.AcceptSerialization }}
+    {{ template "partials/input_select.html" dict "field" .form.Fields.TarDirMustMatchName }}
+  </div>
+
+  {{ range $i, $tagFile := .tagFileNames }}
+  <div class="tab-pane fade" role="tabpanel" id="profileTags-{{ $tagFile }}" aria-labelledby="navTags-{{ $tagFile }}" data-tag-file-name="{{ $tagFile }}">
+    {{ template "partials/profile_tags.html" dict "tags" "(lookup ../tagsByFile tagFile)" "bagItProfileId" .form.Fields.ID.Value "tagFileName" $tagFile }}
+  </div>
+  {{ end }}
+
+  <div class="tab-pane fade" role="tabpanel" id="tagFilesAllowed" aria-labelledby="tagFilesAllowed">
+    {{ template "partials/input_text.html" dict "field" .form.Fields.TagFilesAllowed }}
+  </div>
+
+
+</div>
+
+{{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+{{ template "partials/input_hidden.html" dict "field" .form.Fields.UserCanDelete }}
+{{ template "partials/input_hidden.html" dict "field" .form.Fields.BaseProfileID }}
+
+<div class="bottom-buttons">
+  <div class="pull-left">
+  {{ if not .form.Object.isBuiltIn  }}
+    <a class="btn btn-danger" href="/profiles/delete/{{ .form.Fields.ID.Value }}" role="button">Delete Profile</a>
+  {{ end }}
+    <a class="btn btn-outline-success" href="/profiles/export/{{ .form.Fields.ID.Value }}" role="button">Export Profile</a>
+  </div>
+
+  <div class="pull-right">
+    <a class="btn btn-primary" href="/proviles/update/{{ .form.Fields.ID.Value }}" role="button">Save</a>
+  </div>
+  <div class="pull-right mr-5">
+    <a class="btn btn-secondary" href="/profiles/list" role="button">Cancel</a>
+  </div>
+</div>
+
+
+</form>

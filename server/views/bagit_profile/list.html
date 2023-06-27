@@ -1,0 +1,23 @@
+<h2>BagIt Profiles</h2>
+<div class="pull-right mt-1 mb-3">
+    <a class="btn btn-outline-success" href="/profiles/importStart" role="button">Import Profile</a>
+  <a class="btn btn-primary" href="/profiles/new" role="button">New</a>
+</div>
+<table class="table table-hover">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $i, $profile := .items}}
+    <tr class="clickable-row" data-url="/profiles/edit?id={{ $profile.ID }}">
+      <td>{{ $profile.Name }}</td>
+      <td>{{ $profile.Description }}</td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+
+{{ template "partials/table_bottom_links.html" }}

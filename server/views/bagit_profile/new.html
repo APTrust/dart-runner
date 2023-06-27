@@ -1,0 +1,13 @@
+<form method="post" action="#" id="{{ .form.Fields.ID.Value }}">
+
+  {{ template "partials/input_select.html" dict "field" .form.Fields.BaseProfileID }}
+
+  <div class="bottom-buttons">
+    <div class="pull-right">
+      <a class="btn btn-primary" href="/profiles/create" role="button">Create</a>
+    </div>
+    <div class="pull-right mr-5">
+      <a class="btn btn-secondary" href="/profiles/list" role="button">Cancel</a>
+    </div>
+  </div>
+</form>
