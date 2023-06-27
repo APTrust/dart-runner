@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,13 +24,13 @@ func ProfileEdit(c *gin.Context) {
 
 // GET /profiles
 func ProfileIndex(c *gin.Context) {
-	request := NewRequest(c)
-	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
-		return
-	}
-	request.TemplateData["items"] = request.QueryResult.BagItProfiles
-	c.HTML(http.StatusOK, "bagit_profile/list.html", request.TemplateData)
+	// request := NewRequest(c)
+	// if request.HasErrors() {
+	// 	c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+	// 	return
+	// }
+	// request.TemplateData["items"] = request.QueryResult.BagItProfiles
+	// c.HTML(http.StatusOK, "bagit_profile/list.html", request.TemplateData)
 }
 
 // GET /profiles/new

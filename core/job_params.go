@@ -5,7 +5,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
@@ -20,7 +19,7 @@ type JobParams struct {
 	Files       []string          `json:"files"`
 	PackageName string            `json:"packageName"`
 	OutputPath  string            `json:"outputPath"`
-	Tags        []*bagit.Tag      `json:"tags"`
+	Tags        []*Tag            `json:"tags"`
 	Workflow    *Workflow         `json:"workflow"`
 }
 
@@ -30,7 +29,7 @@ type JobParams struct {
 // the output file (for now, a tarred bag, so something like "my_bag.tar").
 // outputPath is the directory into which we should write the bag.
 // files is a list of files to bag.
-func NewJobParams(workflow *Workflow, packageName, outputPath string, files []string, tags []*bagit.Tag) *JobParams {
+func NewJobParams(workflow *Workflow, packageName, outputPath string, files []string, tags []*Tag) *JobParams {
 	return &JobParams{
 		Errors:      make(map[string]string),
 		Files:       files,
@@ -45,7 +44,7 @@ func NewJobParams(workflow *Workflow, packageName, outputPath string, files []st
 // directly by the JobRunner.
 func (p *JobParams) ToJob() *Job {
 	job := NewJob()
-	job.BagItProfile = bagit.CloneProfile(p.Workflow.BagItProfile)
+	job.BagItProfile = CloneProfile(p.Workflow.BagItProfile)
 	job.WorkflowID = p.Workflow.ID
 	p.makePackageOp(job)
 	p.makeValidationOp(job)
@@ -84,7 +83,7 @@ func (p *JobParams) mergeTags(job *Job) {
 		key := fmt.Sprintf("%s/%s", t.TagFile, t.TagName)
 		profileTagDef := profile.GetTagDef(t.TagFile, t.TagName)
 		if profileTagDef == nil || alreadyMatched[key] {
-			profileTagDef = &bagit.TagDefinition{
+			profileTagDef = &TagDefinition{
 				TagFile: t.TagFile,
 				TagName: t.TagName,
 			}

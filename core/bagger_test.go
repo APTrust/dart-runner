@@ -1,4 +1,4 @@
-package bagit_test
+package core_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,12 +18,12 @@ const (
 	EmptyProfile = "empty_profile.json"
 )
 
-func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *bagit.Bagger {
+func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *core.Bagger {
 	outputPath := path.Join(os.TempDir(), bagName)
 	profile, err := loadProfile(profileName)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
-	bagger := bagit.NewBagger(outputPath, profile, files)
+	bagger := core.NewBagger(outputPath, profile, files)
 	return bagger
 }
 
@@ -56,7 +56,7 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 	profile, err := loadProfile(profileName)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
-	validator, err := bagit.NewValidator(bagger.OutputPath, profile)
+	validator, err := core.NewValidator(bagger.OutputPath, profile)
 	require.Nil(t, err)
 
 	err = validator.ScanBag()
@@ -73,7 +73,7 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 }
 
 // Set tags for bag-info.txt in the profile before we create the bag.
-func setBagInfoTags(profile *bagit.Profile) {
+func setBagInfoTags(profile *core.Profile) {
 	profile.SetTagValue("bag-info.txt", "Source-Organization", "University of Virginia")
 	profile.SetTagValue("bag-info.txt", "Bag-Count", "1 of 1")
 	profile.SetTagValue("bag-info.txt", "Internal-Sender-Description", "My stuff")
@@ -81,7 +81,7 @@ func setBagInfoTags(profile *bagit.Profile) {
 }
 
 // Set tags for aptrust-info.txt in the profile before we create the bag.
-func setAptInfoTags(profile *bagit.Profile) {
+func setAptInfoTags(profile *core.Profile) {
 	profile.SetTagValue("aptrust-info.txt", "Title", "Test Bag #0001")
 	profile.SetTagValue("aptrust-info.txt", "Description", "Eloquence and elocution")
 	profile.SetTagValue("aptrust-info.txt", "Access", "Consortia")
@@ -91,7 +91,7 @@ func setAptInfoTags(profile *bagit.Profile) {
 // Make sure that all items expected to be in the payload are actually there.
 // Just because manifest and payload match doesn't mean that payload contains
 // everything we intended to bag.
-func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInfo, actual map[string]*bagit.FileRecord) {
+func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInfo, actual map[string]*core.FileRecord) {
 	for _, xFileInfo := range expected {
 		if xFileInfo.IsDir() {
 			continue

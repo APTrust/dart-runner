@@ -1,14 +1,14 @@
-package bagit_test
+package core_test
 
 import (
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCopyProfileInfo(t *testing.T) {
-	info := bagit.ProfileInfo{
+	info := core.ProfileInfo{
 		BagItProfileIdentifier: "ident1",
 		BagItProfileVersion:    "version1",
 		ContactEmail:           "user@example.com",
@@ -16,7 +16,7 @@ func TestCopyProfileInfo(t *testing.T) {
 		ExternalDescription:    "external desc",
 		SourceOrganization:     "source org",
 	}
-	copyOfInfo := bagit.CopyProfileInfo(info)
+	copyOfInfo := core.CopyProfileInfo(info)
 	assert.Equal(t, info.BagItProfileVersion, copyOfInfo.BagItProfileVersion)
 	assert.Equal(t, info.BagItProfileIdentifier, copyOfInfo.BagItProfileIdentifier)
 	assert.Equal(t, info.ContactEmail, copyOfInfo.ContactEmail)

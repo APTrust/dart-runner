@@ -1,4 +1,4 @@
-package bagit
+package core
 
 // Tag describes a tag parsed from a BagIt file such as bag-info.txt.
 type Tag struct {

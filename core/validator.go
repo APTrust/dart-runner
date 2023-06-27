@@ -1,4 +1,4 @@
-package bagit
+package core
 
 import (
 	"encoding/json"

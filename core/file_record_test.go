@@ -1,17 +1,17 @@
-package bagit_test
+package core_test
 
 import (
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func getTestFileRecord() *bagit.FileRecord {
-	fr := bagit.NewFileRecord()
+func getTestFileRecord() *core.FileRecord {
+	fr := core.NewFileRecord()
 	fr.AddChecksum(constants.FileTypePayload, constants.AlgMd5, "1234")
 	fr.AddChecksum(constants.FileTypePayload, constants.AlgSha256, "5678")
 	fr.AddChecksum(constants.FileTypeManifest, constants.AlgMd5, "1234")
@@ -20,7 +20,7 @@ func getTestFileRecord() *bagit.FileRecord {
 }
 
 func TestNewFileRecord(t *testing.T) {
-	fr := bagit.NewFileRecord()
+	fr := core.NewFileRecord()
 	assert.NotNil(t, fr)
 	assert.NotNil(t, fr.Checksums)
 }
@@ -64,7 +64,7 @@ func TestFileRecordValidate(t *testing.T) {
 	// has a digest for the file, but we have no digest calculated
 	// from the file itself (i.e. where source = SourcePayloadFile)
 	sha256 := []string{constants.AlgSha256}
-	fr2 := bagit.NewFileRecord()
+	fr2 := core.NewFileRecord()
 	fr2.AddChecksum(constants.FileTypeManifest, constants.AlgSha256, "5678")
 	err = fr2.Validate(constants.FileTypePayload, sha256)
 	require.NotNil(t, err)
@@ -72,14 +72,14 @@ func TestFileRecordValidate(t *testing.T) {
 
 	// Test tag file. It's OK for a tag file to appear in the bag
 	// and be omitted from the tag manifest.
-	fr3 := bagit.NewFileRecord()
+	fr3 := core.NewFileRecord()
 	fr3.AddChecksum(constants.FileTypeTag, constants.AlgSha256, "5678")
 	err = fr3.Validate(constants.FileTypeTag, sha256)
 	assert.Nil(t, err)
 
 	// Not OK for a tag file to be listed in a manifest if the tag
 	// file is missing from the bag.
-	fr4 := bagit.NewFileRecord()
+	fr4 := core.NewFileRecord()
 	fr4.AddChecksum(constants.FileTypeTagManifest, constants.AlgSha256, "5678")
 	err = fr4.Validate(constants.FileTypeTag, sha256)
 	require.NotNil(t, err)

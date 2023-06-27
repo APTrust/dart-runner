@@ -143,7 +143,7 @@ func TestWorkflowBatchCommand(t *testing.T) {
 	}
 
 	outputFiles := []string{
-		"RunnerTestBagIt.tar",
+		"RunnerTestServer.tar",
 		"RunnerTestCore.tar",
 		"RunnerTestUtil.tar",
 	}

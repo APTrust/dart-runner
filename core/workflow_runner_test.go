@@ -31,7 +31,7 @@ func createBatchFile(t *testing.T) string {
 func runnerCleanup() {
 	os.Remove(path.Join(os.TempDir(), "test_batch.csv"))
 	os.Remove(path.Join(os.TempDir(), "RunnerTestCore.tar"))
-	os.Remove(path.Join(os.TempDir(), "RunnerTestBagIt.tar"))
+	os.Remove(path.Join(os.TempDir(), "RunnerTestServer.tar"))
 	os.Remove(path.Join(os.TempDir(), "RunnerTestUtil.tar"))
 }
 

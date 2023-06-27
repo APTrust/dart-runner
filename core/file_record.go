@@ -1,4 +1,4 @@
-package bagit
+package core
 
 import (
 	"fmt"
@@ -30,11 +30,11 @@ func (fr *FileRecord) AddChecksum(source, alg, digest string) {
 
 // Validate validates the following about the current file:
 //
-// * file is present in the payload directory
-// * file is listed in the payload manifests matching the
-//   specified algorithms.
-// * the checksums that the validator calculated on the file itself
-//   match the checksums in the manifests.
+//   - file is present in the payload directory
+//   - file is listed in the payload manifests matching the
+//     specified algorithms.
+//   - the checksums that the validator calculated on the file itself
+//     match the checksums in the manifests.
 //
 // Validate returns true if the checksums we calculated for the
 // file match the checksums in the manifests.

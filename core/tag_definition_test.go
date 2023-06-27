@@ -1,15 +1,15 @@
-package bagit_test
+package core_test
 
 import (
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTagDefIsLegalValue(t *testing.T) {
-	tagDef := &bagit.TagDefinition{
+	tagDef := &core.TagDefinition{
 		Values: []string{"one", "two", "three"},
 	}
 	assert.True(t, tagDef.IsLegalValue("one"))
@@ -29,7 +29,7 @@ func TestTagDefIsLegalValue(t *testing.T) {
 	assert.True(t, tagDef.IsLegalValue("marge"))
 }
 
-func testTagDefinitionCopy(t *testing.T, tagDef *bagit.TagDefinition) {
+func testTagDefinitionCopy(t *testing.T, tagDef *core.TagDefinition) {
 	copyOfTagDef := tagDef.Copy()
 	require.NotNil(t, copyOfTagDef)
 
@@ -41,7 +41,7 @@ func testTagDefinitionCopy(t *testing.T, tagDef *bagit.TagDefinition) {
 }
 
 func TestTagDefGetValue(t *testing.T) {
-	tagDef := &bagit.TagDefinition{}
+	tagDef := &core.TagDefinition{}
 	assert.Empty(t, tagDef.GetValue())
 
 	tagDef.DefaultValue = "Homer"
@@ -52,7 +52,7 @@ func TestTagDefGetValue(t *testing.T) {
 }
 
 func TestTagDefToFormattedString(t *testing.T) {
-	tagDef := &bagit.TagDefinition{
+	tagDef := &core.TagDefinition{
 		TagName:   "Description",
 		UserValue: "A bag of documents",
 	}

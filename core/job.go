@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
@@ -25,7 +24,7 @@ var TitleTags = []string{
 }
 
 type Job struct {
-	BagItProfile *bagit.Profile       `json:"bagItProfile"`
+	BagItProfile *Profile             `json:"bagItProfile"`
 	ByteCount    int64                `json:"byteCount"`
 	DirCount     int64                `json:"dirCount"`
 	Errors       map[string]string    `json:"errors"`

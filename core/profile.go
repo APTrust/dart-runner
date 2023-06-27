@@ -1,4 +1,4 @@
-package bagit
+package core
 
 import (
 	"encoding/json"
@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
 )
@@ -318,8 +317,8 @@ func (p *Profile) String() string {
 	return fmt.Sprintf("BagItProfile: %s", p.Name)
 }
 
-func (p *Profile) ToForm() *core.Form {
-	form := core.NewForm(constants.TypeBagItProfile, p.ID, p.Errors)
+func (p *Profile) ToForm() *Form {
+	form := NewForm(constants.TypeBagItProfile, p.ID, p.Errors)
 	form.UserCanDelete = p.IsDeletable()
 
 	// TODO: Fill out form.

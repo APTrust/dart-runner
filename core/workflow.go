@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/util"
 )
 
 type Workflow struct {
 	ID              string            `json:"id"`
-	BagItProfile    *bagit.Profile    `json:"bagItProfile"`
+	BagItProfile    *Profile          `json:"bagItProfile"`
 	Description     string            `json:"description"`
 	Errors          map[string]string `json:"-"`
 	Name            string            `json:"name"`
@@ -55,7 +54,7 @@ func (w *Workflow) Copy() *Workflow {
 	}
 	return &Workflow{
 		ID:              w.ID,
-		BagItProfile:    bagit.CloneProfile(w.BagItProfile),
+		BagItProfile:    CloneProfile(w.BagItProfile),
 		Description:     w.Description,
 		Errors:          w.Errors,
 		Name:            w.Name,

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
@@ -85,7 +84,7 @@ func (r *Runner) RunPackageOp() bool {
 		// TODO: Weed out duplicate files.
 		sourceFiles = append(sourceFiles, files...)
 	}
-	bagger := bagit.NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
+	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	ok := bagger.Run()
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.FileCount = bagger.PayloadFileCount()

@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/dimchansky/utfbom"
 )
 
@@ -16,7 +15,7 @@ type WorkflowCSVFile struct {
 	PathToFile string
 	reader     *csv.Reader
 	headers    []string
-	headerTags []*bagit.Tag
+	headerTags []*Tag
 	file       *os.File
 }
 
@@ -50,25 +49,25 @@ func (csvFile *WorkflowCSVFile) parseHeaders() error {
 	if err != nil {
 		return err
 	}
-	headerTags := make([]*bagit.Tag, len(headers))
+	headerTags := make([]*Tag, len(headers))
 	hasBagName := false
 	hasRootDir := false
 	for i, h := range headers {
 		if h == "Bag-Name" {
 			hasBagName = true
-			headerTags[i] = bagit.NewTag("", h, "")
+			headerTags[i] = NewTag("", h, "")
 			continue
 		}
 		if h == "Root-Directory" {
 			hasRootDir = true
-			headerTags[i] = bagit.NewTag("", h, "")
+			headerTags[i] = NewTag("", h, "")
 			continue
 		}
 		parts := strings.Split(h, "/")
 		if len(parts) != 2 {
 			return fmt.Errorf("Bag tag header '%s' in column %d. Header name should use tagFile/tagName pattern.", h, i)
 		}
-		headerTags[i] = bagit.NewTag(parts[0], parts[1], "")
+		headerTags[i] = NewTag(parts[0], parts[1], "")
 	}
 	if !hasBagName {
 		return fmt.Errorf("CSV file is missing Bag-Name column")
@@ -97,7 +96,7 @@ func (csvFile *WorkflowCSVFile) Headers() []string {
 // bagger won't use them. All other tags will have TagFile and TagName
 // attributes, with an empty Value. These are used internally to help
 // construct the tags in each WorkflowCSVEntry.
-func (csvFile *WorkflowCSVFile) HeaderTags() []*bagit.Tag {
+func (csvFile *WorkflowCSVFile) HeaderTags() []*Tag {
 	return csvFile.headerTags
 }
 

@@ -4,7 +4,6 @@ import (
 	"path"
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +24,7 @@ func TestWorkflowFromJson(t *testing.T) {
 
 	// Spot check the workflow's BagIt profile.
 	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	aptProfile, err := bagit.ProfileLoad(pathToProfile)
+	aptProfile, err := core.ProfileLoad(pathToProfile)
 	require.Nil(t, err)
 
 	assert.Equal(t, 14, len(workflow.BagItProfile.Tags))

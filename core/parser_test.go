@@ -1,14 +1,15 @@
-package bagit_test
+package core_test
 
 import (
-	"github.com/APTrust/dart-runner/bagit"
-	"github.com/APTrust/dart-runner/constants"
-	"github.com/APTrust/dart-runner/util"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var tagNames = []string{
@@ -40,7 +41,7 @@ func TestParseTagFile(t *testing.T) {
 	file, err := os.Open(tagfile)
 	require.Nil(t, err)
 	defer file.Close()
-	tags, err := bagit.ParseTagFile(file, "bag-info.txt")
+	tags, err := core.ParseTagFile(file, "bag-info.txt")
 	require.Nil(t, err)
 	assert.Equal(t, len(tagNames), len(tags))
 	for i, tag := range tags {
@@ -60,7 +61,7 @@ func TestParseManifest(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, constants.AlgSha256, alg)
 
-	checksums, err := bagit.ParseManifest(file)
+	checksums, err := core.ParseManifest(file)
 	require.Nil(t, err)
 
 	assert.Equal(t, len(expectedChecksums), len(checksums))

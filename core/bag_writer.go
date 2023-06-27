@@ -1,4 +1,4 @@
-package bagit
+package core
 
 import (
 	"github.com/APTrust/dart-runner/util"

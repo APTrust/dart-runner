@@ -5,7 +5,6 @@ import (
 	"path"
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
@@ -15,7 +14,7 @@ import (
 
 func getTestWorkflow(t *testing.T) *core.Workflow {
 	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := bagit.ProfileLoad(pathToProfile)
+	profile, err := core.ProfileLoad(pathToProfile)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 
@@ -45,8 +44,8 @@ func getTestStorageService(protocol, host string) *core.StorageService {
 	return ss
 }
 
-func getTestTags() []*bagit.Tag {
-	tags := []*bagit.Tag{
+func getTestTags() []*core.Tag {
+	tags := []*core.Tag{
 		{TagFile: "bag-info.txt", TagName: "Source-Organization", Value: "The Liberry"},
 		{TagFile: "aptrust-info.txt", TagName: "Title", Value: "Baggy Pants"},
 		{TagFile: "aptrust-info.txt", TagName: "Description", Value: "Those are chock full of heady goodness."},
@@ -60,7 +59,7 @@ func getTestTags() []*bagit.Tag {
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("tag-%d", i+1)
 		value := fmt.Sprintf("value-%d", i+1)
-		tags = append(tags, bagit.NewTag("custom-file.txt", name, value))
+		tags = append(tags, core.NewTag("custom-file.txt", name, value))
 	}
 	return tags
 }

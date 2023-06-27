@@ -1,11 +1,11 @@
-package bagit_test
+package core_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/APTrust/dart-runner/bagit"
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +21,7 @@ var fmDigests = []string{
 }
 
 func TestNewFileMap(t *testing.T) {
-	fm := bagit.NewFileMap(constants.FileTypePayload)
+	fm := core.NewFileMap(constants.FileTypePayload)
 	require.NotNil(t, fm)
 	assert.Equal(t, constants.FileTypePayload, fm.Type)
 	require.NotNil(t, fm.Files)
@@ -63,19 +63,19 @@ func TestValidateTagFileChecksums(t *testing.T) {
 	assert.Equal(t, 0, len(errs))
 }
 
-func makePayloadFileMap() *bagit.FileMap {
+func makePayloadFileMap() *core.FileMap {
 	return makeFileMap(constants.FileTypePayload, constants.FileTypeManifest, "data/file")
 }
 
-func makeTagFileMap() *bagit.FileMap {
+func makeTagFileMap() *core.FileMap {
 	return makeFileMap(constants.FileTypeTag, constants.FileTypeTagManifest, "tagfile")
 }
 
-func makeFileMap(fileType, manifestType, filename string) *bagit.FileMap {
-	fileMap := bagit.NewFileMap(fileType)
+func makeFileMap(fileType, manifestType, filename string) *core.FileMap {
+	fileMap := core.NewFileMap(fileType)
 	for i := 0; i < 5; i++ {
 		filename := fmt.Sprintf("%s%d", filename, i)
-		fr := bagit.NewFileRecord()
+		fr := core.NewFileRecord()
 		for j, alg := range fmAlgs {
 			fr.AddChecksum(fileType, alg, fmDigests[j])
 			fr.AddChecksum(manifestType, alg, fmDigests[j])
@@ -85,11 +85,11 @@ func makeFileMap(fileType, manifestType, filename string) *bagit.FileMap {
 	return fileMap
 }
 
-func makeTagFileMapWithoutManifestEntries() *bagit.FileMap {
-	fileMap := bagit.NewFileMap(constants.FileTypeTag)
+func makeTagFileMapWithoutManifestEntries() *core.FileMap {
+	fileMap := core.NewFileMap(constants.FileTypeTag)
 	for i := 0; i < 5; i++ {
 		filename := fmt.Sprintf("tagfile%d", i)
-		fr := bagit.NewFileRecord()
+		fr := core.NewFileRecord()
 		for j, alg := range fmAlgs {
 			fr.AddChecksum(constants.FileTypeTag, alg, fmDigests[j])
 		}

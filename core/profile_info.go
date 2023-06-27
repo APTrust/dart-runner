@@ -1,4 +1,4 @@
-package bagit
+package core
 
 // ProfileInfo contains meta info about the profile.
 type ProfileInfo struct {
