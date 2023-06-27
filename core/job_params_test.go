@@ -14,7 +14,7 @@ import (
 
 func getTestWorkflow(t *testing.T) *core.Workflow {
 	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := core.ProfileLoad(pathToProfile)
+	profile, err := core.BagItProfileLoad(pathToProfile)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 

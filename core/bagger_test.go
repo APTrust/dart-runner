@@ -73,7 +73,7 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 }
 
 // Set tags for bag-info.txt in the profile before we create the bag.
-func setBagInfoTags(profile *core.Profile) {
+func setBagInfoTags(profile *core.BagItProfile) {
 	profile.SetTagValue("bag-info.txt", "Source-Organization", "University of Virginia")
 	profile.SetTagValue("bag-info.txt", "Bag-Count", "1 of 1")
 	profile.SetTagValue("bag-info.txt", "Internal-Sender-Description", "My stuff")
@@ -81,7 +81,7 @@ func setBagInfoTags(profile *core.Profile) {
 }
 
 // Set tags for aptrust-info.txt in the profile before we create the bag.
-func setAptInfoTags(profile *core.Profile) {
+func setAptInfoTags(profile *core.BagItProfile) {
 	profile.SetTagValue("aptrust-info.txt", "Title", "Test Bag #0001")
 	profile.SetTagValue("aptrust-info.txt", "Description", "Eloquence and elocution")
 	profile.SetTagValue("aptrust-info.txt", "Access", "Consortia")

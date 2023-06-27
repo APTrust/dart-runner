@@ -24,7 +24,7 @@ var TitleTags = []string{
 }
 
 type Job struct {
-	BagItProfile *Profile             `json:"bagItProfile"`
+	BagItProfile *BagItProfile        `json:"bagItProfile"`
 	ByteCount    int64                `json:"byteCount"`
 	DirCount     int64                `json:"dirCount"`
 	Errors       map[string]string    `json:"errors"`

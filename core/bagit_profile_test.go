@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewBagItProfile(t *testing.T) {
-	p := core.NewProfile()
+	p := core.NewBagItProfile()
 	assert.NotNil(t, p)
 	assert.NotNil(t, p.AcceptBagItVersion)
 	assert.NotNil(t, p.AcceptSerialization)
@@ -30,7 +30,7 @@ func TestNewBagItProfile(t *testing.T) {
 // This also implicitly tests BagItProfileFromJson
 func TestBagItProfileLoad(t *testing.T) {
 	filename := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := core.ProfileLoad(filename)
+	profile, err := core.BagItProfileLoad(filename)
 	assert.Nil(t, err)
 	require.NotNil(t, profile)
 
@@ -42,19 +42,19 @@ func TestBagItProfileLoad(t *testing.T) {
 	assert.Equal(t, 9, len(profile.Tags[13].Values))
 
 	// Test with bad filename
-	_, err = core.ProfileLoad("__file_does_not_exist__")
+	_, err = core.BagItProfileLoad("__file_does_not_exist__")
 	assert.NotNil(t, err)
 
 	// Test with non-JSON file. This is a tar file.
 	filename = path.Join(util.PathToUnitTestBag("example.edu.tagsample_good.tar"))
-	_, err = core.ProfileLoad(filename)
+	_, err = core.BagItProfileLoad(filename)
 	assert.NotNil(t, err)
 
 	// Test to/from JSON
 	str, err := profile.ToJSON()
 	require.Nil(t, err)
 
-	copyOfProfile, err := core.ProfileFromJSON(str)
+	copyOfProfile, err := core.BagItProfileFromJSON(str)
 	assert.Nil(t, err)
 	require.NotNil(t, copyOfProfile)
 	assert.Equal(t, profile, copyOfProfile)
@@ -62,7 +62,7 @@ func TestBagItProfileLoad(t *testing.T) {
 
 func TestGetTagDef(t *testing.T) {
 	filename := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := core.ProfileLoad(filename)
+	profile, err := core.BagItProfileLoad(filename)
 	assert.Nil(t, err)
 	require.NotNil(t, profile)
 
@@ -82,7 +82,7 @@ func TestTagFileNames(t *testing.T) {
 		"bagit.txt",
 	}
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	apt, err := core.ProfileLoad(aptPath)
+	apt, err := core.BagItProfileLoad(aptPath)
 	require.Nil(t, err)
 	aptActual := apt.TagFileNames()
 	assert.Equal(t, len(aptExpected), len(aptActual))
@@ -95,7 +95,7 @@ func TestTagFileNames(t *testing.T) {
 		"bagit.txt",
 	}
 	btrPath := path.Join(util.ProjectRoot(), "profiles", "btr-v1.0.json")
-	btr, err := core.ProfileLoad(btrPath)
+	btr, err := core.BagItProfileLoad(btrPath)
 	require.Nil(t, err)
 	btrActual := btr.TagFileNames()
 	assert.Equal(t, len(btrExpected), len(btrActual))
@@ -106,7 +106,7 @@ func TestTagFileNames(t *testing.T) {
 
 func TestGetTagFileContents(t *testing.T) {
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	apt, err := core.ProfileLoad(aptPath)
+	apt, err := core.BagItProfileLoad(aptPath)
 	require.Nil(t, err)
 
 	descriptionTag, err := apt.FirstMatchingTag("TagName", "Description")
@@ -133,7 +133,7 @@ func TestGetTagFileContents(t *testing.T) {
 
 func TestMultipleTagValues(t *testing.T) {
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	apt, err := core.ProfileLoad(aptPath)
+	apt, err := core.BagItProfileLoad(aptPath)
 	require.Nil(t, err)
 
 	rights1 := &core.TagDefinition{
@@ -162,7 +162,7 @@ func TestMultipleTagValues(t *testing.T) {
 
 func TestSetTagValue(t *testing.T) {
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := core.ProfileLoad(aptPath)
+	profile, err := core.BagItProfileLoad(aptPath)
 	require.Nil(t, err)
 
 	profile.SetTagValue("bag-info.txt", "Payload-Oxum", "12345.2")
@@ -178,11 +178,11 @@ func TestSetTagValue(t *testing.T) {
 
 func TestCloneProfile(t *testing.T) {
 	aptPath := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	profile, err := core.ProfileLoad(aptPath)
+	profile, err := core.BagItProfileLoad(aptPath)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 
-	clone := core.CloneProfile(profile)
+	clone := core.BagItProfileClone(profile)
 	assert.Equal(t, profile.AllowFetchTxt, clone.AllowFetchTxt)
 	assert.Equal(t, profile.Serialization, clone.Serialization)
 	assert.ElementsMatch(t, profile.ManifestsAllowed, clone.ManifestsAllowed)

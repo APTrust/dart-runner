@@ -17,7 +17,7 @@ import (
 var bagitTxt embed.FS
 
 type Bagger struct {
-	Profile          *Profile
+	Profile          *BagItProfile
 	OutputPath       string
 	FilesToBag       []*util.ExtendedFileInfo
 	Errors           map[string]string
@@ -30,7 +30,7 @@ type Bagger struct {
 	bagName          string
 }
 
-func NewBagger(outputPath string, profile *Profile, filesToBag []*util.ExtendedFileInfo) *Bagger {
+func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.ExtendedFileInfo) *Bagger {
 	return &Bagger{
 		Profile:          profile,
 		OutputPath:       outputPath,

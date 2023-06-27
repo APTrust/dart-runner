@@ -9,7 +9,7 @@ import (
 
 type Workflow struct {
 	ID              string            `json:"id"`
-	BagItProfile    *Profile          `json:"bagItProfile"`
+	BagItProfile    *BagItProfile     `json:"bagItProfile"`
 	Description     string            `json:"description"`
 	Errors          map[string]string `json:"-"`
 	Name            string            `json:"name"`
@@ -54,7 +54,7 @@ func (w *Workflow) Copy() *Workflow {
 	}
 	return &Workflow{
 		ID:              w.ID,
-		BagItProfile:    CloneProfile(w.BagItProfile),
+		BagItProfile:    BagItProfileClone(w.BagItProfile),
 		Description:     w.Description,
 		Errors:          w.Errors,
 		Name:            w.Name,

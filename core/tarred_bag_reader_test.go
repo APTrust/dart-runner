@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadProfile(jsonFile string) (*core.Profile, error) {
+func loadProfile(jsonFile string) (*core.BagItProfile, error) {
 	filePath := path.Join(util.ProjectRoot(), "profiles", jsonFile)
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -24,7 +24,7 @@ func loadProfile(jsonFile string) (*core.Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	profile := &core.Profile{}
+	profile := &core.BagItProfile{}
 	err = json.Unmarshal(data, profile)
 	return profile, err
 }

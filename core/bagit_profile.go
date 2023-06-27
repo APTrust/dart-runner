@@ -13,15 +13,15 @@ import (
 	"github.com/google/uuid"
 )
 
-// Profile represents a DART-type Profile, as described at
-// https://aptrust.github.io/dart/Profile.html. This format differs
+// BagItProfile represents a DART-type BagItProfile, as described at
+// https://aptrust.github.io/dart/BagItProfile.html. This format differs
 // slightly from the profiles at
 // https://github.com/bagit-profiles/bagit-profiles-specification. The
 // DART specification is richer and can describe requirements that the
 // other profile format cannot. DART can convert between the two formats
 // as described in https://aptrust.github.io/dart-docs/users/bagit/importing/
 // and https://aptrust.github.io/dart-docs/users/bagit/exporting/.
-type Profile struct {
+type BagItProfile struct {
 	ID                   string            `json:"id"`
 	AcceptBagItVersion   []string          `json:"acceptBagItVersion"`
 	AcceptSerialization  []string          `json:"acceptSerialization"`
@@ -41,8 +41,8 @@ type Profile struct {
 	Tags                 []*TagDefinition  `json:"tags"`
 }
 
-func NewProfile() *Profile {
-	profile := &Profile{
+func NewBagItProfile() *BagItProfile {
+	profile := &BagItProfile{
 		AcceptBagItVersion:   make([]string, len(constants.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(constants.AcceptSerialization)),
 		AllowFetchTxt:        false,
@@ -61,8 +61,8 @@ func NewProfile() *Profile {
 	return profile
 }
 
-func CloneProfile(p *Profile) *Profile {
-	profile := &Profile{
+func BagItProfileClone(p *BagItProfile) *BagItProfile {
+	profile := &BagItProfile{
 		AcceptBagItVersion:   make([]string, len(p.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(p.AcceptSerialization)),
 		AllowFetchTxt:        false,
@@ -91,8 +91,8 @@ func CloneProfile(p *Profile) *Profile {
 	return profile
 }
 
-// ProfileLoad loads a BagIt Profile from the specified file.
-func ProfileLoad(filename string) (*Profile, error) {
+// BagItProfileLoad loads a BagIt Profile from the specified file.
+func BagItProfileLoad(filename string) (*BagItProfile, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -102,13 +102,13 @@ func ProfileLoad(filename string) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ProfileFromJSON(string(data))
+	return BagItProfileFromJSON(string(data))
 }
 
-// ProfileFromJSON converts a JSON representation of a BagIt Profile
+// BagItProfileFromJSON converts a JSON representation of a BagIt Profile
 // to a Profile object.
-func ProfileFromJSON(jsonData string) (*Profile, error) {
-	p := &Profile{}
+func BagItProfileFromJSON(jsonData string) (*BagItProfile, error) {
+	p := &BagItProfile{}
 	err := json.Unmarshal([]byte(jsonData), p)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func ProfileFromJSON(jsonData string) (*Profile, error) {
 }
 
 // ToJSON returns a JSON representation of this object.
-func (p *Profile) ToJSON() (string, error) {
+func (p *BagItProfile) ToJSON() (string, error) {
 	bytes, err := json.Marshal(p)
 	if err != nil {
 		return "", err
@@ -129,7 +129,7 @@ func (p *Profile) ToJSON() (string, error) {
 // and tag name.
 // Note: BagIt spec section 2.2.2 says tag names are case-insensitive.
 // https://tools.ietf.org/html/rfc8493#section-2.2.2
-func (p *Profile) GetTagDef(tagFile, tagName string) *TagDefinition {
+func (p *BagItProfile) GetTagDef(tagFile, tagName string) *TagDefinition {
 	for _, tagDef := range p.Tags {
 		// Try exact match first
 		if tagDef.TagFile == tagFile && tagDef.TagName == tagName {
@@ -143,7 +143,7 @@ func (p *Profile) GetTagDef(tagFile, tagName string) *TagDefinition {
 	return nil
 }
 
-func (p *Profile) FindMatchingTags(property, value string) ([]*TagDefinition, error) {
+func (p *BagItProfile) FindMatchingTags(property, value string) ([]*TagDefinition, error) {
 	matches := make([]*TagDefinition, 0)
 	for _, tagDef := range p.Tags {
 		var match *TagDefinition
@@ -178,7 +178,7 @@ func (p *Profile) FindMatchingTags(property, value string) ([]*TagDefinition, er
 	return matches, nil
 }
 
-func (p *Profile) FirstMatchingTag(property, value string) (*TagDefinition, error) {
+func (p *BagItProfile) FirstMatchingTag(property, value string) (*TagDefinition, error) {
 	for _, tagDef := range p.Tags {
 		switch property {
 		case "DefaultValue":
@@ -208,7 +208,7 @@ func (p *Profile) FirstMatchingTag(property, value string) (*TagDefinition, erro
 	return nil, nil
 }
 
-func (p *Profile) HasTagFile(name string) bool {
+func (p *BagItProfile) HasTagFile(name string) bool {
 	tagDef, _ := p.FirstMatchingTag("TagFile", name)
 	return tagDef != nil
 }
@@ -216,7 +216,7 @@ func (p *Profile) HasTagFile(name string) bool {
 // IsValid returns true if this profile is valid. This is not to be
 // confused with bag validation. We're just making sure the profile itself
 // is complete and makes sense.
-func (p *Profile) IsValid() bool {
+func (p *BagItProfile) IsValid() bool {
 	p.Errors = make(map[string]string)
 	if util.IsEmptyStringList(p.AcceptBagItVersion) {
 		p.Errors["BagItProfile.AcceptBagItVersion"] = "Profile must accept at least one BagIt version."
@@ -244,7 +244,7 @@ func (p *Profile) IsValid() bool {
 // TagFileNames returns the names of the tag files for which we
 // have actual tag definitions. The bag may require other tag
 // files, but we can't produce them if we don't have tag defs.
-func (p *Profile) TagFileNames() []string {
+func (p *BagItProfile) TagFileNames() []string {
 	distinct := make(map[string]bool)
 	for _, tagDef := range p.Tags {
 		distinct[tagDef.TagFile] = true
@@ -261,7 +261,7 @@ func (p *Profile) TagFileNames() []string {
 
 // GetTagFileContents returns the generated contents of the specified
 // tag file.
-func (p *Profile) GetTagFileContents(tagFileName string) (string, error) {
+func (p *BagItProfile) GetTagFileContents(tagFileName string) (string, error) {
 	tags, err := p.FindMatchingTags("TagFile", tagFileName)
 	if err != nil {
 		return "", err
@@ -276,7 +276,7 @@ func (p *Profile) GetTagFileContents(tagFileName string) (string, error) {
 // SetTagValue sets the value of the specified tag in the specified
 // file. It creates the tag if it doesn't already exist in the profile.
 // This currently supports only one instance of each tag in each file.
-func (p *Profile) SetTagValue(tagFile, tagName, value string) {
+func (p *BagItProfile) SetTagValue(tagFile, tagName, value string) {
 	tag := p.GetTagDef(tagFile, tagName)
 	if tag == nil {
 		tag = &TagDefinition{
@@ -293,31 +293,31 @@ func (p *Profile) SetTagValue(tagFile, tagName, value string) {
 
 // ---------------------------
 
-func (p *Profile) GetErrors() map[string]string {
+func (p *BagItProfile) GetErrors() map[string]string {
 	return p.Errors
 }
 
-func (p *Profile) IsDeletable() bool {
+func (p *BagItProfile) IsDeletable() bool {
 	return !p.IsBuiltIn
 }
 
-func (p *Profile) ObjID() string {
+func (p *BagItProfile) ObjID() string {
 	return p.ID
 }
 
-func (p *Profile) ObjName() string {
+func (p *BagItProfile) ObjName() string {
 	return p.Name
 }
 
-func (p *Profile) ObjType() string {
+func (p *BagItProfile) ObjType() string {
 	return constants.TypeBagItProfile
 }
 
-func (p *Profile) String() string {
+func (p *BagItProfile) String() string {
 	return fmt.Sprintf("BagItProfile: %s", p.Name)
 }
 
-func (p *Profile) ToForm() *Form {
+func (p *BagItProfile) ToForm() *Form {
 	form := NewForm(constants.TypeBagItProfile, p.ID, p.Errors)
 	form.UserCanDelete = p.IsDeletable()
 
@@ -326,6 +326,6 @@ func (p *Profile) ToForm() *Form {
 	return form
 }
 
-func (p *Profile) Validate() bool {
+func (p *BagItProfile) Validate() bool {
 	return p.IsValid()
 }

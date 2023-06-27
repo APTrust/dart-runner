@@ -24,7 +24,7 @@ func TestWorkflowFromJson(t *testing.T) {
 
 	// Spot check the workflow's BagIt profile.
 	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
-	aptProfile, err := core.ProfileLoad(pathToProfile)
+	aptProfile, err := core.BagItProfileLoad(pathToProfile)
 	require.Nil(t, err)
 
 	assert.Equal(t, 14, len(workflow.BagItProfile.Tags))

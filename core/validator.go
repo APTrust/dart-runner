@@ -14,7 +14,7 @@ import (
 
 type Validator struct {
 	PathToBag          string
-	Profile            *Profile
+	Profile            *BagItProfile
 	PayloadFiles       *FileMap
 	PayloadManifests   *FileMap
 	TagFiles           *FileMap
@@ -26,7 +26,7 @@ type Validator struct {
 	IgnoreOxumMismatch bool
 }
 
-func NewValidator(pathToBag string, profile *Profile) (*Validator, error) {
+func NewValidator(pathToBag string, profile *BagItProfile) (*Validator, error) {
 	if !util.FileExists(pathToBag) {
 		return nil, os.ErrNotExist
 	}
