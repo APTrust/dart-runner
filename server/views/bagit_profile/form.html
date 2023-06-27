@@ -1,3 +1,7 @@
+{{ define "bagit_profile/form.html" }}
+
+{{ template "partials/page_header.html" . }}
+
 <h2>BagIt Profile</h2>
 
 {{ if .errors }}
@@ -101,3 +105,7 @@
 
 
 </form>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

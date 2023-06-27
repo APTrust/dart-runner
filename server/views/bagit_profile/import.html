@@ -1,3 +1,7 @@
+{{ define "bagit_profile/import.html" }}
+
+{{ template "partials/page_header.html" . }}
+
 <div class="form-group" id="importSourceContainer">
     <div class="form-check">
         <input class="form-check-input" type="radio" name="importSource" id="importSourceUrl" value="URL">
@@ -33,3 +37,9 @@
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
   </div>
 </div>
+
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}
+

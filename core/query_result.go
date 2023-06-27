@@ -6,6 +6,7 @@ import (
 
 type QueryResult struct {
 	AppSettings        []*AppSetting
+	BagItProfiles      []*BagItProfile
 	Error              error
 	InternalSettings   []*InternalSetting
 	Limit              int
@@ -28,6 +29,13 @@ func NewQueryResult(resultType string) *QueryResult {
 func (qr *QueryResult) AppSetting() *AppSetting {
 	if len(qr.AppSettings) > 0 {
 		return qr.AppSettings[0]
+	}
+	return nil
+}
+
+func (qr *QueryResult) BagItProfile() *BagItProfile {
+	if len(qr.BagItProfiles) > 0 {
+		return qr.BagItProfiles[0]
 	}
 	return nil
 }
@@ -62,6 +70,8 @@ func (qr *QueryResult) GetForm() (*Form, error) {
 	switch qr.ObjType {
 	case constants.TypeAppSetting:
 		form = qr.AppSetting().ToForm()
+	case constants.TypeBagItProfile:
+		form = qr.BagItProfile().ToForm()
 	case constants.TypeInternalSetting:
 		form = qr.InternalSetting().ToForm()
 	case constants.TypeStorageService:

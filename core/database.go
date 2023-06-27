@@ -76,6 +76,10 @@ func ObjFind(uuid string) *QueryResult {
 		item := &AppSetting{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.AppSettings = append(qr.AppSettings, item)
+	case constants.TypeBagItProfile:
+		item := &BagItProfile{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.BagItProfiles = append(qr.BagItProfiles, item)
 	case constants.TypeInternalSetting:
 		item := &InternalSetting{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
@@ -115,7 +119,9 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 
 	switch objType {
 	case constants.TypeAppSetting:
-		appSettingsList(rows, qr)
+		appSettingList(rows, qr)
+	case constants.TypeBagItProfile:
+		bagItProfileList(rows, qr)
 	case constants.TypeInternalSetting:
 		internalSettingList(rows, qr)
 	case constants.TypeRemoteRepository:
@@ -140,10 +146,7 @@ func ObjExists(objId string) (bool, error) {
 	return count == 1, err
 }
 
-// TODO: Consolidate List methods into one inside of QueryResult,
-// and use switch internally.
-
-func appSettingsList(rows *sql.Rows, qr *QueryResult) {
+func appSettingList(rows *sql.Rows, qr *QueryResult) {
 	for rows.Next() {
 		var jsonBytes []byte
 		qr.Error = rows.Scan(&jsonBytes)
@@ -156,6 +159,22 @@ func appSettingsList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.AppSettings = append(qr.AppSettings, item)
+	}
+}
+
+func bagItProfileList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &BagItProfile{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.BagItProfiles = append(qr.BagItProfiles, item)
 	}
 }
 

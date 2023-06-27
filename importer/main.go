@@ -11,6 +11,7 @@ import (
 
 func main() {
 	ImportAppSettings()
+	ImportBagItProfiles()
 	ImportRemoteRepositories()
 	ImportStorageServices()
 }
@@ -20,6 +21,15 @@ func ImportAppSettings() {
 	appSettings := make(map[string]*core.AppSetting)
 	ParseJson(jsonBytes, &appSettings)
 	for _, setting := range appSettings {
+		SaveObject(setting)
+	}
+}
+
+func ImportBagItProfiles() {
+	jsonBytes := GetJson("BagItProfile.json")
+	profiles := make(map[string]*core.BagItProfile)
+	ParseJson(jsonBytes, &profiles)
+	for _, setting := range profiles {
 		SaveObject(setting)
 	}
 }
@@ -69,6 +79,6 @@ func SaveObject(obj core.PersistentObject) {
 			fmt.Println("  ", key, "->", value)
 		}
 	} else {
-		fmt.Printf("Saved setting %s\n", obj.ObjName())
+		fmt.Printf("Saved %s %s\n", obj.ObjType(), obj.ObjName())
 	}
 }

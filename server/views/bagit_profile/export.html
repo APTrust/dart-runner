@@ -1,3 +1,7 @@
+{{ define "bagit_profile/export.html" }}
+
+{{ template "partials/page_header.html" . }}
+
 <p class="text-info">
   Below is an export in BagIt Profile v1.3.0 format. Please be sure the BagIt-Profile-Identifier URL is correct before publishing this profile. Also note that this format cannot describe information about required tags outside of the bag-info.txt file.
 </p>
@@ -13,3 +17,7 @@
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
   </div>
 </div>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

@@ -85,17 +85,17 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/app_settings/delete/:id", controllers.AppSettingDelete)
 
 	// BagIt Profiles
-	router.GET("/profiles", controllers.ProfileIndex)
-	router.GET("/profiles/new", controllers.ProfileNew)
-	router.POST("/profiles/new", controllers.ProfileCreate)
-	router.GET("/profiles/edit/:id", controllers.ProfileEdit)
-	router.PUT("/profiles/edit/:id", controllers.ProfileUpdate)
-	router.POST("/profiles/edit/:id", controllers.ProfileUpdate)
-	router.PUT("/profiles/delete/:id", controllers.ProfileDelete)
-	router.POST("/profiles/delete/:id", controllers.ProfileDelete)
-	router.GET("/profiles/import_start", controllers.ProfileImport)
-	router.POST("/profiles/import", controllers.ProfileImport)
-	router.GET("/profiles/export", controllers.ProfileExport)
+	router.GET("/profiles", controllers.BagItProfileIndex)
+	router.GET("/profiles/new", controllers.BagItProfileNew)
+	router.POST("/profiles/new", controllers.BagItProfileCreate)
+	router.GET("/profiles/edit/:id", controllers.BagItProfileEdit)
+	router.PUT("/profiles/edit/:id", controllers.BagItProfileUpdate)
+	router.POST("/profiles/edit/:id", controllers.BagItProfileUpdate)
+	router.PUT("/profiles/delete/:id", controllers.BagItProfileDelete)
+	router.POST("/profiles/delete/:id", controllers.BagItProfileDelete)
+	router.GET("/profiles/import_start", controllers.BagItProfileImport)
+	router.POST("/profiles/import", controllers.BagItProfileImport)
+	router.GET("/profiles/export", controllers.BagItProfileExport)
 
 	// Internal Settings
 	router.GET("/internal_settings", controllers.InternalSettingIndex)

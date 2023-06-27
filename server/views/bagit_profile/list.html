@@ -1,3 +1,7 @@
+{{ define "bagit_profile/list.html" }}
+
+{{ template "partials/page_header.html" .}}
+
 <h2>BagIt Profiles</h2>
 <div class="pull-right mt-1 mb-3">
     <a class="btn btn-outline-success" href="/profiles/importStart" role="button">Import Profile</a>
@@ -21,3 +25,7 @@
 </table>
 
 {{ template "partials/table_bottom_links.html" }}
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}
