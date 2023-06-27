@@ -34,6 +34,7 @@ const (
 	SerializationOptional    = "optional"
 	SerializationRequired    = "required"
 	TypeAppSetting           = "AppSetting"
+	TypeBagItProfile         = "BagItProfile"
 	TypeInternalSetting      = "InternalSetting"
 	TypeRemoteRepository     = "RemoteRepository"
 	TypeStorageService       = "StorageService"
@@ -63,6 +64,7 @@ var PreferredAlgsInOrder = []string{
 
 var ItemTypes = []string{
 	TypeAppSetting,
+	TypeBagItProfile,
 	TypeInternalSetting,
 	TypeRemoteRepository,
 	TypeStorageService,

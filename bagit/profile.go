@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
 )
@@ -22,12 +23,14 @@ import (
 // as described in https://aptrust.github.io/dart-docs/users/bagit/importing/
 // and https://aptrust.github.io/dart-docs/users/bagit/exporting/.
 type Profile struct {
+	ID                   string            `json:"id"`
 	AcceptBagItVersion   []string          `json:"acceptBagItVersion"`
 	AcceptSerialization  []string          `json:"acceptSerialization"`
 	AllowFetchTxt        bool              `json:"allowFetchTxt"`
 	BagItProfileInfo     ProfileInfo       `json:"bagItProfileInfo"`
 	Description          string            `json:"description"`
 	Errors               map[string]string `json:"-"`
+	IsBuiltIn            bool              `json:"isBuiltIn"`
 	ManifestsAllowed     []string          `json:"manifestsAllowed"`
 	ManifestsRequired    []string          `json:"manifestsRequired"`
 	Name                 string            `json:"name"`
@@ -287,4 +290,43 @@ func (p *Profile) SetTagValue(tagFile, tagName, value string) {
 	} else {
 		tag.UserValue = value
 	}
+}
+
+// ---------------------------
+
+func (p *Profile) GetErrors() map[string]string {
+	return p.Errors
+}
+
+func (p *Profile) IsDeletable() bool {
+	return !p.IsBuiltIn
+}
+
+func (p *Profile) ObjID() string {
+	return p.ID
+}
+
+func (p *Profile) ObjName() string {
+	return p.Name
+}
+
+func (p *Profile) ObjType() string {
+	return constants.TypeBagItProfile
+}
+
+func (p *Profile) String() string {
+	return fmt.Sprintf("BagItProfile: %s", p.Name)
+}
+
+func (p *Profile) ToForm() *core.Form {
+	form := core.NewForm(constants.TypeBagItProfile, p.ID, p.Errors)
+	form.UserCanDelete = p.IsDeletable()
+
+	// TODO: Fill out form.
+
+	return form
+}
+
+func (p *Profile) Validate() bool {
+	return p.IsValid()
 }

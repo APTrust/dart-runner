@@ -1,6 +1,10 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 // ProfileCreate creates a new Profile.
 // Handles submission of new Profile form.
@@ -22,7 +26,13 @@ func ProfileEdit(c *gin.Context) {
 
 // GET /profiles
 func ProfileIndex(c *gin.Context) {
-
+	request := NewRequest(c)
+	if request.HasErrors() {
+		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		return
+	}
+	request.TemplateData["items"] = request.QueryResult.BagItProfiles
+	c.HTML(http.StatusOK, "bagit_profile/list.html", request.TemplateData)
 }
 
 // GET /profiles/new
@@ -30,8 +40,18 @@ func ProfileNew(c *gin.Context) {
 
 }
 
-// GET /profiles/show/:id
-func ProfileShow(c *gin.Context) {
+// GET /profiles/import_start
+func ProfileImportStart(c *gin.Context) {
+
+}
+
+// POST /profiles/import
+func ProfileImport(c *gin.Context) {
+
+}
+
+// GET /profiles/export
+func ProfileExport(c *gin.Context) {
 
 }
 

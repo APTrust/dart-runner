@@ -93,7 +93,9 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/profiles/edit/:id", controllers.ProfileUpdate)
 	router.PUT("/profiles/delete/:id", controllers.ProfileDelete)
 	router.POST("/profiles/delete/:id", controllers.ProfileDelete)
-	router.GET("/profiles/:id", controllers.ProfileShow)
+	router.GET("/profiles/import_start", controllers.ProfileImport)
+	router.POST("/profiles/import", controllers.ProfileImport)
+	router.GET("/profiles/export", controllers.ProfileExport)
 
 	// Internal Settings
 	router.GET("/internal_settings", controllers.InternalSettingIndex)
