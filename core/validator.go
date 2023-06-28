@@ -69,7 +69,7 @@ func (v *Validator) TagManifestAlgs() ([]string, error) {
 // though it maxes out at 30 checksum validation errors.
 func (v *Validator) Validate() bool {
 	// Make sure BagItProfile is present and valid.
-	if !v.Profile.IsValid() {
+	if !v.Profile.Validate() {
 		v.Errors = v.Profile.Errors
 		return false
 	}

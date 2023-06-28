@@ -224,7 +224,7 @@ func (b *Bagger) validateProfile() bool {
 	if b.Profile == nil {
 		b.Errors["Profile"] = "BagIt profile cannot be nil"
 	}
-	if !b.Profile.IsValid() {
+	if !b.Profile.Validate() {
 		b.Errors = b.Profile.Errors
 	}
 	return len(b.Errors) == 0

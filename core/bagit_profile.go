@@ -213,29 +213,35 @@ func (p *BagItProfile) HasTagFile(name string) bool {
 	return tagDef != nil
 }
 
-// IsValid returns true if this profile is valid. This is not to be
+// Validate returns true if this profile is valid. This is not to be
 // confused with bag validation. We're just making sure the profile itself
 // is complete and makes sense.
-func (p *BagItProfile) IsValid() bool {
+func (p *BagItProfile) Validate() bool {
 	p.Errors = make(map[string]string)
+	if !util.LooksLikeUUID(p.ID) {
+		p.Errors["ID"] = "Profile ID is missing."
+	}
+	if strings.TrimSpace(p.Name) == "" {
+		p.Errors["Name"] = "Profile requires a name."
+	}
 	if util.IsEmptyStringList(p.AcceptBagItVersion) {
-		p.Errors["BagItProfile.AcceptBagItVersion"] = "Profile must accept at least one BagIt version."
+		p.Errors["AcceptBagItVersion"] = "Profile must accept at least one BagIt version."
 	}
 	if util.IsEmptyStringList(p.ManifestsAllowed) {
-		p.Errors["BagItProfile.ManifestsAllowed"] = "Profile must allow at least one manifest algorithm."
+		p.Errors["ManifestsAllowed"] = "Profile must allow at least one manifest algorithm."
 	}
 	if !p.HasTagFile("bagit.txt") {
-		p.Errors["BagItProfile.BagIt"] = "Profile lacks requirements for bagit.txt tag file."
+		p.Errors["BagIt"] = "Profile lacks requirements for bagit.txt tag file."
 	}
 	if !p.HasTagFile("bag-info.txt") {
-		p.Errors["BagItProfile.BagInfo"] = "Profile lacks requirements for bag-info.txt tag file."
+		p.Errors["BagInfo"] = "Profile lacks requirements for bag-info.txt tag file."
 	}
 	if !util.StringListContains(constants.SerializationOptions, p.Serialization) {
-		p.Errors["BagItProfile.Serialization"] = fmt.Sprintf("Serialization must be one of: %s.", strings.Join(constants.SerializationOptions, ","))
+		p.Errors["Serialization"] = fmt.Sprintf("Serialization must be one of: %s.", strings.Join(constants.SerializationOptions, ","))
 	}
 	if p.Serialization == constants.SerializationOptional || p.Serialization == constants.SerializationRequired {
 		if util.IsEmptyStringList(p.AcceptSerialization) {
-			p.Errors["BagItProfile.AcceptSerialization"] = "When serialization is allowed, you must specify at least one serialization format."
+			p.Errors["AcceptSerialization"] = "When serialization is allowed, you must specify at least one serialization format."
 		}
 	}
 	return len(p.Errors) == 0
@@ -291,8 +297,6 @@ func (p *BagItProfile) SetTagValue(tagFile, tagName, value string) {
 	}
 }
 
-// ---------------------------
-
 func (p *BagItProfile) GetErrors() map[string]string {
 	return p.Errors
 }
@@ -324,8 +328,4 @@ func (p *BagItProfile) ToForm() *Form {
 	// TODO: Fill out form.
 
 	return form
-}
-
-func (p *BagItProfile) Validate() bool {
-	return p.IsValid()
 }

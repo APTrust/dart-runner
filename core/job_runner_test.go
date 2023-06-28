@@ -31,7 +31,7 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 		}
 	}()
 
-	require.True(t, job.Validate())
+	require.True(t, job.Validate(), job.Errors)
 	retVal := core.RunJob(job, withCleanup, false)
 	assert.Equal(t, constants.ExitOK, retVal)
 

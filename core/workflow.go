@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 type Workflow struct {
@@ -29,9 +30,9 @@ func WorkflowFromJson(pathToFile string) (*Workflow, error) {
 
 func (w *Workflow) Validate() bool {
 	w.Errors = make(map[string]string)
-	if w.BagItProfile != nil && !w.BagItProfile.IsValid() {
+	if w.BagItProfile != nil && !w.BagItProfile.Validate() {
 		for key, value := range w.BagItProfile.Errors {
-			w.Errors[key] = value
+			w.Errors["BagItProfile."+key] = value
 		}
 	}
 	if w.StorageServices != nil {
@@ -52,9 +53,14 @@ func (w *Workflow) Copy() *Workflow {
 	for i, ss := range w.StorageServices {
 		ssCopy[i] = ss.Copy()
 	}
+	profile := BagItProfileClone(w.BagItProfile)
+	// Profile needs ID to validate, but we don't want
+	// to step on the profile we just cloned, so give it
+	// a new id.
+	profile.ID = uuid.NewString()
 	return &Workflow{
 		ID:              w.ID,
-		BagItProfile:    BagItProfileClone(w.BagItProfile),
+		BagItProfile:    profile,
 		Description:     w.Description,
 		Errors:          w.Errors,
 		Name:            w.Name,

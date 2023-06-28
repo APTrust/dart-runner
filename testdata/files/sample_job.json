@@ -1,5 +1,6 @@
 {
 	"bagItProfile": {
+		"id": "5297d55c-304d-4d8b-97d3-6563dd9a5340",
 		"acceptBagItVersion": ["0.97", "1.0"],
 		"acceptSerialization": ["application/tar"],
 		"allowFetchTxt": false,

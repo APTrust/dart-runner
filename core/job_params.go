@@ -45,6 +45,7 @@ func NewJobParams(workflow *Workflow, packageName, outputPath string, files []st
 func (p *JobParams) ToJob() *Job {
 	job := NewJob()
 	job.BagItProfile = BagItProfileClone(p.Workflow.BagItProfile)
+	job.BagItProfile.ID = p.Workflow.BagItProfile.ID
 	job.WorkflowID = p.Workflow.ID
 	p.makePackageOp(job)
 	p.makeValidationOp(job)

@@ -1,12 +1,16 @@
 package core_test
 
 import (
+	"database/sql"
+	"fmt"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -212,16 +216,81 @@ func TestCloneProfile(t *testing.T) {
 
 func TestBagItProfilePersistence(t *testing.T) {
 	defer core.ClearDartTable()
-	// apt := loadProfile(t, "aptrust-v2.2.json")
-	// btr := loadProfile(t, "btr-v1.0.json")
+	aptProfile := loadProfile(t, "aptrust-v2.2.json")
+	btrProfile := loadProfile(t, "btr-v1.0.json")
+	emptyProfile := loadProfile(t, "empty_profile.json")
 
-	// TODO: Write test
+	assert.NoError(t, core.ObjSave(aptProfile))
+	assert.NoError(t, core.ObjSave(btrProfile))
+	assert.NoError(t, core.ObjSave(emptyProfile))
+
+	// Make sure profile was saved.
+	result := core.ObjFind(aptProfile.ID)
+	require.Nil(t, result.Error)
+	profile := result.BagItProfile()
+	require.NotNil(t, profile)
+	assert.Equal(t, aptProfile.ID, profile.ID)
+	assert.Equal(t, aptProfile.Name, profile.Name)
+	assert.Equal(t, aptProfile.TagFilesAllowed, profile.TagFilesAllowed)
+
+	// Make sure order, offset and limit work on list query.
+	result = core.ObjList(constants.TypeBagItProfile, "obj_name", 1, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 1, len(result.BagItProfiles))
+	assert.Equal(t, profile.ID, result.BagItProfiles[0].ID)
+
+	// Make sure we can get all results.
+	result = core.ObjList(constants.TypeBagItProfile, "obj_name", 100, 0)
+	require.Nil(t, result.Error)
+	require.Equal(t, 3, len(result.BagItProfiles))
+	assert.Equal(t, aptProfile.ID, result.BagItProfiles[0].ID)
+	assert.Equal(t, btrProfile.ID, result.BagItProfiles[1].ID)
+	assert.Equal(t, emptyProfile.ID, result.BagItProfiles[2].ID)
+
+	clonedProfile := core.BagItProfileClone(emptyProfile)
+	clonedProfile.IsBuiltIn = false
+	clonedProfile.ID = uuid.NewString()
+	assert.NoError(t, core.ObjSave(clonedProfile))
+
+	// Make sure delete works. Should return no error.
+	assert.Nil(t, core.ObjDelete(clonedProfile))
+
+	// Make sure the profile was truly deleted.
+	result = core.ObjFind(clonedProfile.ID)
+	assert.Equal(t, sql.ErrNoRows, result.Error)
+	assert.Nil(t, result.BagItProfile())
+
+	// User should not be able to delete APTrust
+	// profile because it's a built-in.
+	assert.Equal(t, constants.ErrNotDeletable, core.ObjDelete(aptProfile))
+
 }
 
 func TestBagItProfileValidation(t *testing.T) {
 	defer core.ClearDartTable()
+	p := core.NewBagItProfile()
+	p.AcceptBagItVersion = make([]string, 0)
+	p.AcceptSerialization = make([]string, 0)
+	p.Serialization = ""
+	assert.False(t, p.Validate())
 
-	// TODO: Write test
+	assert.Equal(t, "Profile ID is missing.", p.Errors["ID"])
+	assert.Equal(t, "Profile requires a name.", p.Errors["Name"])
+	assert.Equal(t, "Profile must accept at least one BagIt version.", p.Errors["AcceptBagItVersion"])
+	assert.Equal(t, "Profile must allow at least one manifest algorithm.", p.Errors["ManifestsAllowed"])
+	assert.Equal(t, "Profile lacks requirements for bagit.txt tag file.", p.Errors["BagIt"])
+	assert.Equal(t, "Profile lacks requirements for bag-info.txt tag file.", p.Errors["BagInfo"])
+
+	expected := fmt.Sprintf("Serialization must be one of: %s.", strings.Join(constants.SerializationOptions, ","))
+	assert.Equal(t, expected, p.Errors["Serialization"])
+
+	// No error here unless serialization is required.
+	assert.Empty(t, p.Errors["AcceptSerialization"])
+
+	p.Serialization = constants.SerializationRequired
+	p.Validate()
+	assert.Equal(t, "When serialization is allowed, you must specify at least one serialization format.", p.Errors["AcceptSerialization"])
+
 }
 
 func TestBagItProfileToForm(t *testing.T) {
@@ -230,6 +299,27 @@ func TestBagItProfileToForm(t *testing.T) {
 }
 
 func TestBagItProfilePersistentObject(t *testing.T) {
+	defer core.ClearDartTable()
 
-	// TODO: Write test
+	profile := loadProfile(t, "aptrust-v2.2.json")
+	assert.Equal(t, constants.TypeBagItProfile, profile.ObjType())
+	assert.Equal(t, profile.ID, profile.ObjID())
+	assert.True(t, util.LooksLikeUUID(profile.ObjID()))
+	assert.Equal(t, profile.Name, profile.ObjName())
+	assert.Equal(t, "BagItProfile: APTrust", profile.String())
+	assert.Empty(t, profile.GetErrors())
+
+	assert.False(t, profile.IsDeletable())
+	profile.IsBuiltIn = false
+	assert.True(t, profile.IsDeletable())
+
+	profile.Errors = map[string]string{
+		"Error 1": "Message 1",
+		"Error 2": "Message 2",
+	}
+
+	assert.Equal(t, 2, len(profile.GetErrors()))
+	assert.Equal(t, "Message 1", profile.GetErrors()["Error 1"])
+	assert.Equal(t, "Message 2", profile.GetErrors()["Error 2"])
+
 }
