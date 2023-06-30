@@ -294,6 +294,27 @@ func TestBagItProfileValidation(t *testing.T) {
 
 }
 
+func TestTagsInFile(t *testing.T) {
+	profile := loadProfile(t, "aptrust-v2.2.json")
+	tags := profile.TagsInFile("bagit.txt")
+	require.Equal(t, 2, len(tags))
+	assert.Equal(t, "BagIt-Version", tags[0].TagName)
+	assert.Equal(t, "Tag-File-Character-Encoding", tags[1].TagName)
+
+	tags = profile.TagsInFile("bag-info.txt")
+	require.Equal(t, 8, len(tags))
+	assert.Equal(t, "Bag-Count", tags[0].TagName)
+	assert.Equal(t, "Source-Organization", tags[7].TagName)
+
+	tags = profile.TagsInFile("aptrust-info.txt")
+	require.Equal(t, 4, len(tags))
+	assert.Equal(t, "Access", tags[0].TagName)
+	assert.Equal(t, "Title", tags[3].TagName)
+
+	tags = profile.TagsInFile("no-such-file.txt")
+	require.Equal(t, 0, len(tags))
+}
+
 func TestBagItProfileToForm(t *testing.T) {
 
 	// TODO: Write test

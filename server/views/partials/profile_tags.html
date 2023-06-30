@@ -15,7 +15,7 @@
   </thead>
   <tbody>
     {{ range $tag := .tags }}
-      {{ template "partials/tag_def_row.html"  dict "tag" $tag "bagItProfileId" .bagItProfileId }}
+      {{ template "partials/tag_def_row.html"  dict "tag" $tag "bagItProfileId" .ID }}
     {{ end }}
   </tbody>
 </table>

@@ -13,15 +13,17 @@ var reWhiteSpace = regexp.MustCompile(`[\s\r\n]+`)
 // TagDefinition describes a tag in a BagItProfile, whether it's
 // required, what values are allowed, etc.
 type TagDefinition struct {
-	DefaultValue string   `json:"defaultValue"`
-	EmptyOK      bool     `json:"emptyOK"`
-	Help         string   `json:"help"`
-	ID           string   `json:"id"`
-	Required     bool     `json:"required"`
-	TagFile      string   `json:"tagFile"`
-	TagName      string   `json:"tagName"`
-	UserValue    string   `json:"userValue"`
-	Values       []string `json:"values"`
+	DefaultValue  string   `json:"defaultValue"`
+	EmptyOK       bool     `json:"emptyOK"`
+	Help          string   `json:"help"`
+	ID            string   `json:"id"`
+	IsBuiltIn     bool     `json:"isBuiltIn"`
+	Required      bool     `json:"required"`
+	SystemMustSet bool     `json:"systemMustSet"`
+	TagFile       string   `json:"tagFile"`
+	TagName       string   `json:"tagName"`
+	UserValue     string   `json:"userValue"`
+	Values        []string `json:"values"`
 }
 
 // IsLegalValue returns true if val is a legal value for this tag definition.

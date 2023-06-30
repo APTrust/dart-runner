@@ -70,9 +70,12 @@
     {{ template "partials/input_select.html" dict "field" .form.Fields.TarDirMustMatchName }}
   </div>
 
+  {{ $tagsInFile := .tagsInFile }}
+  {{ $profileID := .form.Fields.ID.Value }}
   {{ range $i, $tagFile := .tagFileNames }}
+  {{ $tags := index $tagsInFile $tagFile }}
   <div class="tab-pane fade" role="tabpanel" id="profileTags-{{ $tagFile }}" aria-labelledby="navTags-{{ $tagFile }}" data-tag-file-name="{{ $tagFile }}">
-    {{ template "partials/profile_tags.html" dict "tags" "(lookup ../tagsByFile tagFile)" "bagItProfileId" .form.Fields.ID.Value "tagFileName" $tagFile }}
+    {{ template "partials/profile_tags.html" dict "tags" $tags "bagItProfileId" $profileID "tagFileName" $tagFile }}
   </div>
   {{ end }}
 

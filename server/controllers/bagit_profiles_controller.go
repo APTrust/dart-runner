@@ -27,7 +27,14 @@ func BagItProfileEdit(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	request.TemplateData["tagFileNames"] = request.QueryResult.BagItProfile().TagFileNames()
+	profile := request.QueryResult.BagItProfile()
+	request.TemplateData["tagFileNames"] = profile.TagFileNames()
+	tagMap := make(map[string][]*core.TagDefinition)
+	for _, name := range profile.TagFileNames() {
+		tagMap[name] = profile.TagsInFile(name)
+	}
+	request.TemplateData["tagsInFile"] = tagMap
+
 	c.HTML(http.StatusOK, "bagit_profile/form.html", request.TemplateData)
 }
 

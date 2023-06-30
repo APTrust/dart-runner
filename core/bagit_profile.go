@@ -270,6 +270,22 @@ func (p *BagItProfile) TagFileNames() []string {
 	return names
 }
 
+// TagsInFile returns all of the tag definition objects in tagFileName,
+// sorted by name. This is equivalent to calling FindMatchingTags("TagFile", tagFileName),
+// except it returns results in sorted order.
+func (p *BagItProfile) TagsInFile(tagFileName string) []*TagDefinition {
+	matches := make([]*TagDefinition, 0)
+	for _, tagDef := range p.Tags {
+		if tagDef.TagFile == tagFileName {
+			matches = append(matches, tagDef)
+		}
+	}
+	sort.Slice(matches, func(i, j int) bool {
+		return matches[i].TagName < matches[j].TagName
+	})
+	return matches
+}
+
 // GetTagFileContents returns the generated contents of the specified
 // tag file.
 func (p *BagItProfile) GetTagFileContents(tagFileName string) (string, error) {
