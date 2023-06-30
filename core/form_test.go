@@ -62,11 +62,34 @@ func TestAddField(t *testing.T) {
 	assert.Equal(t, "Field One", f1.Label)
 	assert.Equal(t, "Field1", f1.Name)
 	assert.Equal(t, "Value One", f1.Value)
+	assert.Equal(t, "Value One", f1.Values[0])
 	assert.Equal(t, "error one", f1.Error)
 	assert.True(t, f1.Required)
 
 	assert.Empty(t, f2.Error)
 	assert.Equal(t, "error three", f3.Error)
+}
+
+func TestAddMultiValueField(t *testing.T) {
+	errors := map[string]string{
+		"Field1": "error one",
+	}
+	values := []string{
+		"value1",
+		"value2",
+		"value3",
+	}
+	f := core.NewForm(constants.TypeAppSetting, constants.EmptyUUID, errors)
+	f1 := f.AddMultiValueField("Field1", "Field One", values, true)
+
+	assert.Equal(t, f1, f.Fields["Field1"])
+	assert.Equal(t, "AppSetting_Field1", f1.ID)
+	assert.Equal(t, "Field One", f1.Label)
+	assert.Equal(t, "Field1", f1.Name)
+	assert.Empty(t, f1.Value)
+	assert.Equal(t, values, f1.Values)
+	assert.Equal(t, "error one", f1.Error)
+	assert.True(t, f1.Required)
 }
 
 func TestFormToString(t *testing.T) {
