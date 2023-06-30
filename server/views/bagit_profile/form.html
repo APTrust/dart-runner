@@ -16,7 +16,7 @@
 </div>
 {{ end }}
 
-<form method="post" action="#" id="{{ .form.Fields.ID.Value }}">
+<form method="post" action="/profiles/edit/{{ .form.Fields.ID.Value }}" id="{{ .form.Fields.ID.Value }}">
 
 <nav>
   <div class="nav nav-tabs" id="nav-tab" role="tablist">
@@ -84,19 +84,18 @@
 </div>
 
 {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
-{{ template "partials/input_hidden.html" dict "field" .form.Fields.UserCanDelete }}
 {{ template "partials/input_hidden.html" dict "field" .form.Fields.BaseProfileID }}
 
 <div class="bottom-buttons">
   <div class="pull-left">
-  {{ if not .form.Object.isBuiltIn  }}
+  {{ if and .form.UserCanDelete .objectExistsInDB  }}
     <a class="btn btn-danger" href="/profiles/delete/{{ .form.Fields.ID.Value }}" role="button">Delete Profile</a>
   {{ end }}
     <a class="btn btn-outline-success" href="/profiles/export/{{ .form.Fields.ID.Value }}" role="button">Export Profile</a>
   </div>
 
   <div class="pull-right">
-    <a class="btn btn-primary" href="/proviles/update/{{ .form.Fields.ID.Value }}" role="button">Save</a>
+    <button class="btn btn-primary" type="submit" role="button">Save</a>
   </div>
   <div class="pull-right mr-5">
     <a class="btn btn-secondary" href="/profiles/list" role="button">Cancel</a>
@@ -104,7 +103,15 @@
 </div>
 
 
+
 </form>
+
+{{ if and .form.UserCanDelete .objectExistsInDB }}
+<form method="post" id="{{ .form.ObjType }}Delete" action="/app_settings/delete/{{ .form.ObjectID }}" style="display:none">
+  <input type="hidden" name="ID" value=".form.ObjectID"/>
+</form>
+{{ end }}
+
 
 {{ template "partials/page_footer.html" .}}
 

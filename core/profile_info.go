@@ -2,13 +2,13 @@ package core
 
 // ProfileInfo contains meta info about the profile.
 type ProfileInfo struct {
-	BagItProfileIdentifier string `json:"bagItProfileIdentifier"`
-	BagItProfileVersion    string `json:"bagItProfileVersion"`
-	ContactEmail           string `json:"contactEmail"`
-	ContactName            string `json:"contactName"`
-	ExternalDescription    string `json:"externalDescription"`
-	SourceOrganization     string `json:"sourceOrganization"`
-	Version                string `json:"version"`
+	BagItProfileIdentifier string `json:"bagItProfileIdentifier" form:"InfoIdentifier"`
+	BagItProfileVersion    string `json:"bagItProfileVersion" form:"InfoProfileVersion"`
+	ContactEmail           string `json:"contactEmail" form:"InfoContactEmail"`
+	ContactName            string `json:"contactName" form:"InfoContactName"`
+	ExternalDescription    string `json:"externalDescription" form:"InfoExternalDescription"`
+	SourceOrganization     string `json:"sourceOrganization" form:"InfoSourceOrganization"`
+	Version                string `json:"version" form:"InfoVersion"`
 }
 
 func CopyProfileInfo(info ProfileInfo) ProfileInfo {

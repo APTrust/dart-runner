@@ -41,6 +41,7 @@ type BagItProfile struct {
 	TagManifestsAllowed  []string          `json:"tagManifestsAllowed"`
 	TagManifestsRequired []string          `json:"tagManifestsRequired"`
 	Tags                 []*TagDefinition  `json:"tags"`
+	TarDirMustMatchName  bool              `json:"tarDirMustMatchName"`
 }
 
 func NewBagItProfile() *BagItProfile {
@@ -347,6 +348,7 @@ func (p *BagItProfile) ToForm() *Form {
 	form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
 	form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)
 	form.AddMultiValueField("TagManifestsRequired", "TagManifestsRequired", p.TagManifestsRequired, true)
+	form.AddField("TarDirMustMatchName", "TarDirMustMatchName", strconv.FormatBool(p.TarDirMustMatchName), true)
 
 	// BagItProfileInfo
 	form.AddField("InfoIdentifier", "Identifier", p.BagItProfileInfo.BagItProfileIdentifier, false)

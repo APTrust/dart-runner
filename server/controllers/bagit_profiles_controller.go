@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
 
@@ -62,6 +63,23 @@ func BagItProfileExport(c *gin.Context) {
 
 // PUT /profiles/edit/:id
 // POST /profiles/edit/:id
-func BagItProfileUpdate(c *gin.Context) {
+func BagItProfileSave(c *gin.Context) {
+	profile := &core.BagItProfile{}
+	err := c.Bind(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	err = core.ObjSave(profile)
+	if err != nil {
+		objectExistsInDB, _ := core.ObjExists(profile.ID)
+		data := gin.H{
+			"form":             profile.ToForm(),
+			"objectExistsInDB": objectExistsInDB,
+		}
+		c.HTML(http.StatusBadRequest, "bagit_profile/form.html", data)
+		return
+	}
+	c.Redirect(http.StatusFound, "/bagit_profiles")
 
 }
