@@ -8,6 +8,7 @@ type ProfileInfo struct {
 	ContactName            string `json:"contactName"`
 	ExternalDescription    string `json:"externalDescription"`
 	SourceOrganization     string `json:"sourceOrganization"`
+	Version                string `json:"version"`
 }
 
 func CopyProfileInfo(info ProfileInfo) ProfileInfo {
@@ -18,5 +19,6 @@ func CopyProfileInfo(info ProfileInfo) ProfileInfo {
 		ContactName:            info.ContactName,
 		ExternalDescription:    info.ExternalDescription,
 		SourceOrganization:     info.SourceOrganization,
+		Version:                info.Version,
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -27,6 +28,7 @@ type BagItProfile struct {
 	AcceptSerialization  []string          `json:"acceptSerialization"`
 	AllowFetchTxt        bool              `json:"allowFetchTxt"`
 	BagItProfileInfo     ProfileInfo       `json:"bagItProfileInfo"`
+	BaseProfileID        string            `json:"baseProfileId"`
 	Description          string            `json:"description"`
 	Errors               map[string]string `json:"-"`
 	IsBuiltIn            bool              `json:"isBuiltIn"`
@@ -67,6 +69,7 @@ func BagItProfileClone(p *BagItProfile) *BagItProfile {
 		AcceptBagItVersion:   make([]string, len(p.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(p.AcceptSerialization)),
 		AllowFetchTxt:        false,
+		BaseProfileID:        p.BaseProfileID,
 		Description:          p.Description,
 		Errors:               make(map[string]string),
 		ManifestsAllowed:     make([]string, len(p.ManifestsAllowed)),
@@ -326,7 +329,34 @@ func (p *BagItProfile) ToForm() *Form {
 	form := NewForm(constants.TypeBagItProfile, p.ID, p.Errors)
 	form.UserCanDelete = p.IsDeletable()
 
-	// TODO: Fill out form.
+	form.AddField("ID", "ID", p.ID, true)
+	form.AddMultiValueField("AcceptBagItVersion", "AcceptBagItVersion", p.AcceptBagItVersion, true)
+	form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
+	form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
+	form.AddField("BaseProfileID", "BaseProfileID", p.BaseProfileID, true)
+	form.AddField("Description", "Description", p.Description, true)
+	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(p.IsBuiltIn), true)
+	form.AddMultiValueField("ManifestsAllowed", "ManifestsAllowed", p.ManifestsAllowed, true)
+	form.AddMultiValueField("ManifestsRequired", "ManifestsRequired", p.ManifestsRequired, true)
+	nameField := form.AddField("Name", "Name", p.Name, true)
+	if p.IsBuiltIn {
+		nameField.Attrs["readonly"] = "readonly"
+	}
+	form.AddField("Serialization", "Serialization", p.Serialization, true)
+	form.AddMultiValueField("TagFilesAllowed", "TagFilesAllowed", p.TagFilesAllowed, true)
+	form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
+	form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)
+	form.AddMultiValueField("TagManifestsRequired", "TagManifestsRequired", p.TagManifestsRequired, true)
+
+	// BagItProfileInfo
+	form.AddField("InfoIdentifier", "Identifier", p.BagItProfileInfo.BagItProfileIdentifier, false)
+	form.AddField("InfoContactEmail", "Contact Email", p.BagItProfileInfo.ContactEmail, false)
+	form.AddField("InfoContactName", "Contact Name", p.BagItProfileInfo.ContactName, false)
+	form.AddField("InfoExternalDescription", "External Description", p.BagItProfileInfo.ExternalDescription, false)
+	form.AddField("InfoSourceOrganization", "Source Organization", p.BagItProfileInfo.SourceOrganization, false)
+	form.AddField("InfoVersion", "Version", p.BagItProfileInfo.Version, false)
+
+	// Tags
 
 	return form
 }

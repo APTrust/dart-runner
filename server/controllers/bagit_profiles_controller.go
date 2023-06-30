@@ -21,7 +21,12 @@ func BagItProfileDelete(c *gin.Context) {
 
 // GET /profiles/edit/:id
 func BagItProfileEdit(c *gin.Context) {
-
+	request := NewRequest(c)
+	if request.HasErrors() {
+		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		return
+	}
+	c.HTML(http.StatusOK, "bagit_profile/form.html", request.TemplateData)
 }
 
 // GET /profiles

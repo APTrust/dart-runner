@@ -16,7 +16,7 @@
   </thead>
   <tbody>
     {{ range $i, $profile := .items}}
-    <tr class="clickable-row" data-url="/profiles/edit?id={{ $profile.ID }}">
+    <tr class="clickable-row" onclick="location.href='/profiles/edit/{{ $profile.ID }}'">
       <td>{{ $profile.Name }}</td>
       <td>{{ $profile.Description }}</td>
     </tr>

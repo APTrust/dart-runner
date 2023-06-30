@@ -175,7 +175,10 @@ func TestCloneProfile(t *testing.T) {
 	profile := loadProfile(t, "aptrust-v2.2.json")
 
 	clone := core.BagItProfileClone(profile)
+	assert.Equal(t, profile.AcceptBagItVersion, clone.AcceptBagItVersion)
+	assert.Equal(t, profile.AcceptSerialization, clone.AcceptSerialization)
 	assert.Equal(t, profile.AllowFetchTxt, clone.AllowFetchTxt)
+	assert.Equal(t, profile.BaseProfileID, clone.BaseProfileID)
 	assert.Equal(t, profile.Serialization, clone.Serialization)
 	assert.ElementsMatch(t, profile.ManifestsAllowed, clone.ManifestsAllowed)
 	assert.ElementsMatch(t, profile.ManifestsRequired, clone.ManifestsRequired)

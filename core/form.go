@@ -17,6 +17,7 @@ type Field struct {
 	Name           string
 	Label          string
 	Value          string
+	Values         []string
 	Required       bool
 	Help           string
 	Hide           bool
@@ -35,6 +36,20 @@ func NewField(id, name, label, value string, required bool) *Field {
 		Name:       name,
 		Label:      label,
 		Value:      value,
+		Values:     []string{value},
+		Required:   required,
+		Choices:    make([]Choice, 0),
+		CssClasses: make([]string, 0),
+		Attrs:      make(map[string]string),
+	}
+}
+
+func NewMultiValueField(id, name, label string, values []string, required bool) *Field {
+	return &Field{
+		ID:         id,
+		Name:       name,
+		Label:      label,
+		Values:     values,
 		Required:   required,
 		Choices:    make([]Choice, 0),
 		CssClasses: make([]string, 0),
@@ -86,6 +101,14 @@ func NewForm(objType, objectId string, errors map[string]string) *Form {
 func (f *Form) AddField(name, label, value string, required bool) *Field {
 	id := fmt.Sprintf("%s_%s", f.ObjType, name)
 	f.Fields[name] = NewField(id, name, label, value, required)
+	f.Fields[name].Error = f.Errors[name]
+	return f.Fields[name]
+}
+
+func (f *Form) AddMultiValueField(name, label string, values []string, required bool) *Field {
+	id := fmt.Sprintf("%s_%s", f.ObjType, name)
+	f.Fields[name] = NewMultiValueField(id, name, label, values, required)
+	f.Fields[name].Attrs["multiple"] = "multiple"
 	f.Fields[name].Error = f.Errors[name]
 	return f.Fields[name]
 }
