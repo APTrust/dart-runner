@@ -72,7 +72,14 @@ func BagItProfileExport(c *gin.Context) {
 // PUT /profiles/edit/:id
 // POST /profiles/edit/:id
 func BagItProfileSave(c *gin.Context) {
+	// Load the existing profile here, so we get the existing
+	// tag definitions, which will not be on the submitted form.
 	profile := &core.BagItProfile{}
+	result := core.ObjFind(c.Param("id"))
+	if result.BagItProfile() != nil {
+		profile = result.BagItProfile()
+	}
+
 	err := c.Bind(profile)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
@@ -90,6 +97,6 @@ func BagItProfileSave(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "bagit_profile/form.html", data)
 		return
 	}
-	c.Redirect(http.StatusFound, "/bagit_profiles")
+	c.Redirect(http.StatusFound, "/profiles")
 
 }
