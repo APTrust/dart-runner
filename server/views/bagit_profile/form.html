@@ -5,12 +5,12 @@
 <h2>BagIt Profile</h2>
 
 {{ if .errors }}
-<div class="alert alert-danger" role="alert">
+<div class="alert" role="alert">
   <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
   <p>{{ .errMessage }}</p>
   <ul class='text-danger'>
-    {{ range $i, $err := .errors }}
-    <li>{{ $err }}</li>
+    {{ range $field, $err := .errors }}
+    <li>{{ $field }}: {{ $err }}</li>
     {{ end }}
   </ul>
 </div>

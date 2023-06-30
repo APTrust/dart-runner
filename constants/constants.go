@@ -46,7 +46,7 @@ var AcceptBagItVersion = []string{
 }
 
 var AcceptSerialization = []string{
-	".tar",
+	"application/tar",
 }
 
 var SerializationOptions = []string{

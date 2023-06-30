@@ -84,6 +84,8 @@ func BagItProfileSave(c *gin.Context) {
 		data := gin.H{
 			"form":             profile.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
+			"errMsg":           "Please correct the following errors",
+			"errors":           profile.Errors,
 		}
 		c.HTML(http.StatusBadRequest, "bagit_profile/form.html", data)
 		return
