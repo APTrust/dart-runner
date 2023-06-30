@@ -10,7 +10,6 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -249,7 +248,6 @@ func TestBagItProfilePersistence(t *testing.T) {
 
 	clonedProfile := core.BagItProfileClone(emptyProfile)
 	clonedProfile.IsBuiltIn = false
-	clonedProfile.ID = uuid.NewString()
 	assert.NoError(t, core.ObjSave(clonedProfile))
 
 	// Make sure delete works. Should return no error.

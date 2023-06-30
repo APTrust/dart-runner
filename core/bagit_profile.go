@@ -63,6 +63,7 @@ func NewBagItProfile() *BagItProfile {
 
 func BagItProfileClone(p *BagItProfile) *BagItProfile {
 	profile := &BagItProfile{
+		ID:                   uuid.NewString(),
 		AcceptBagItVersion:   make([]string, len(p.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(p.AcceptSerialization)),
 		AllowFetchTxt:        false,

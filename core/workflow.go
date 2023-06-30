@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/APTrust/dart-runner/util"
-	"github.com/google/uuid"
 )
 
 type Workflow struct {
@@ -54,10 +53,6 @@ func (w *Workflow) Copy() *Workflow {
 		ssCopy[i] = ss.Copy()
 	}
 	profile := BagItProfileClone(w.BagItProfile)
-	// Profile needs ID to validate, but we don't want
-	// to step on the profile we just cloned, so give it
-	// a new id.
-	profile.ID = uuid.NewString()
 	return &Workflow{
 		ID:              w.ID,
 		BagItProfile:    profile,
