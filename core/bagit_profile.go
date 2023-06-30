@@ -331,24 +331,43 @@ func (p *BagItProfile) ToForm() *Form {
 	form.UserCanDelete = p.IsDeletable()
 
 	form.AddField("ID", "ID", p.ID, true)
-	form.AddMultiValueField("AcceptBagItVersion", "AcceptBagItVersion", p.AcceptBagItVersion, true)
-	form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
+
+	bagitVersionField := form.AddMultiValueField("AcceptBagItVersion", "AcceptBagItVersion", p.AcceptBagItVersion, true)
+	bagitVersionField.Choices = MakeMultiChoiceList(constants.AcceptBagItVersion, p.AcceptBagItVersion)
+
+	acceptSerializationField := form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
+	acceptSerializationField.Choices = MakeMultiChoiceList(constants.AcceptSerialization, p.AcceptSerialization)
+
 	form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
 	form.AddField("BaseProfileID", "BaseProfileID", p.BaseProfileID, true)
 	form.AddField("Description", "Description", p.Description, true)
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(p.IsBuiltIn), true)
-	form.AddMultiValueField("ManifestsAllowed", "ManifestsAllowed", p.ManifestsAllowed, true)
-	form.AddMultiValueField("ManifestsRequired", "ManifestsRequired", p.ManifestsRequired, true)
+
+	manifestsAllowedField := form.AddMultiValueField("ManifestsAllowed", "ManifestsAllowed", p.ManifestsAllowed, true)
+	manifestsAllowedField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.ManifestsAllowed)
+
+	manifestsRequiredField := form.AddMultiValueField("ManifestsRequired", "ManifestsRequired", p.ManifestsRequired, true)
+	manifestsRequiredField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.ManifestsRequired)
+
 	nameField := form.AddField("Name", "Name", p.Name, true)
 	if p.IsBuiltIn {
 		nameField.Attrs["readonly"] = "readonly"
 	}
-	form.AddField("Serialization", "Serialization", p.Serialization, true)
+
+	serlializationField := form.AddField("Serialization", "Serialization", p.Serialization, true)
+	serlializationField.Choices = MakeChoiceList(constants.SerializationOptions, p.Serialization)
+
 	form.AddMultiValueField("TagFilesAllowed", "TagFilesAllowed", p.TagFilesAllowed, true)
 	form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
-	form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)
-	form.AddMultiValueField("TagManifestsRequired", "TagManifestsRequired", p.TagManifestsRequired, true)
-	form.AddField("TarDirMustMatchName", "TarDirMustMatchName", strconv.FormatBool(p.TarDirMustMatchName), true)
+
+	tagManifestsAllowedField := form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)
+	tagManifestsAllowedField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.TagManifestsAllowed)
+
+	tagManifestsRequiredField := form.AddMultiValueField("TagManifestsRequired", "TagManifestsRequired", p.TagManifestsRequired, true)
+	tagManifestsRequiredField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.TagManifestsRequired)
+
+	tarDirMustMatchField := form.AddField("TarDirMustMatchName", "TarDirMustMatchName", strconv.FormatBool(p.TarDirMustMatchName), true)
+	tarDirMustMatchField.Choices = YesNoChoices(p.TarDirMustMatchName)
 
 	// BagItProfileInfo
 	form.AddField("InfoIdentifier", "Identifier", p.BagItProfileInfo.BagItProfileIdentifier, false)
