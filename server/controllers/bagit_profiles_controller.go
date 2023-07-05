@@ -65,9 +65,13 @@ func BagItProfileImport(c *gin.Context) {
 
 }
 
-// GET /profiles/export
+// GET /profiles/export/:id
 func BagItProfileExport(c *gin.Context) {
-
+	data := map[string]string{
+		"modalTitle":   "This here is the title",
+		"modalContent": "<p>And this is <b>modal content</b> with some formatting.</p>",
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // PUT /profiles/edit/:id

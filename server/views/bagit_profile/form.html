@@ -94,7 +94,7 @@
   {{ if and .form.UserCanDelete .objectExistsInDB  }}
     <a class="btn btn-danger" href="/profiles/delete/{{ .form.Fields.ID.Value }}" role="button">Delete Profile</a>
   {{ end }}
-    <a class="btn btn-outline-success" href="/profiles/export/{{ .form.Fields.ID.Value }}" role="button">Export Profile</a>
+    <a class="btn btn-outline-success" onclick="loadIntoModal('get', '/profiles/export/{{ .form.Fields.ID.Value }}', '')" role="button">Export Profile</a>
   </div>
 
   <div class="pull-right">
