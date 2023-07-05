@@ -374,7 +374,9 @@ func (p *BagItProfile) ToForm() *Form {
 	serlializationField := form.AddField("Serialization", "Serialization", p.Serialization, true)
 	serlializationField.Choices = MakeChoiceList(constants.SerializationOptions, p.Serialization)
 
-	form.AddMultiValueField("TagFilesAllowed", "TagFilesAllowed", p.TagFilesAllowed, true)
+	tagFilesAllowed := strings.Join(p.TagFilesAllowed, "\n")
+	form.AddField("TagFilesAllowed", "TagFilesAllowed", tagFilesAllowed, true)
+
 	form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
 
 	tagManifestsAllowedField := form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)

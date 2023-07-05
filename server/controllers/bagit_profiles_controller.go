@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
@@ -84,6 +85,16 @@ func BagItProfileSave(c *gin.Context) {
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
+	}
+	// For tag files allowed, split lines into individual file names.
+	// This data comes from a textarea, with one file name per line.
+	if len(profile.TagFilesAllowed) == 1 {
+		rawString := strings.TrimSpace(profile.TagFilesAllowed[0])
+		allowed := strings.Split(rawString, "\n")
+		for i, _ := range allowed {
+			allowed[i] = strings.TrimSpace(allowed[i])
+		}
+		profile.TagFilesAllowed = allowed
 	}
 	err = core.ObjSave(profile)
 	if err != nil {
