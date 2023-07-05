@@ -354,7 +354,8 @@ func (p *BagItProfile) ToForm() *Form {
 	acceptSerializationField := form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
 	acceptSerializationField.Choices = MakeMultiChoiceList(constants.AcceptSerialization, p.AcceptSerialization)
 
-	form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
+	allowFetch := form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
+	allowFetch.Choices = YesNoChoices(p.AllowFetchTxt)
 	form.AddField("BaseProfileID", "BaseProfileID", p.BaseProfileID, true)
 	form.AddField("Description", "Description", p.Description, true)
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(p.IsBuiltIn), true)
