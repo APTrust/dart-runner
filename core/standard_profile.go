@@ -44,8 +44,10 @@ type StandardProfileInfo struct {
 // StandardProfileTagDef represents a tag definition in
 // BagIt Profile Spec version 1.3.0.
 type StandardProfileTagDef struct {
-	Required bool     `json:"required"`
-	Values   []string `json:"values"`
+	Required    bool     `json:"required"`
+	Recommended bool     `json:"recommended"`
+	Values      []string `json:"values"`
+	Description string   `json:"description"`
 }
 
 // NewStandardProfile creates a new StandardProfile object with all
@@ -63,6 +65,13 @@ func NewStandardProfile() *StandardProfile {
 		BagItProfileInfo:     StandardProfileInfo{},
 		BagInfo:              make(map[string]StandardProfileTagDef),
 	}
+}
+
+// StandardProfileFromJson converts the JSON in jsonBytes into a StandardProfile object.
+func StandardProfileFromJson(jsonBytes []byte) (*StandardProfile, error) {
+	p := NewStandardProfile()
+	err := json.Unmarshal(jsonBytes, p)
+	return p, err
 }
 
 // ToDartProfile converts a StandardProfile to a DART BagItProfile object.
@@ -91,8 +100,8 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	p.TagManifestsAllowed = sp.TagManifestsAllowed
 	p.TagManifestsRequired = sp.TagManifestsRequired
 
-	if sp.BagItProfileInfo.SourceOrganization != "" && sp.BagItProfileInfo.BagItProfileVersion != "" {
-		p.Name = fmt.Sprintf("%s (version %s)", sp.BagItProfileInfo.SourceOrganization, sp.BagItProfileInfo.BagItProfileVersion)
+	if sp.BagItProfileInfo.SourceOrganization != "" && sp.BagItProfileInfo.Version != "" {
+		p.Name = fmt.Sprintf("%s (version %s)", sp.BagItProfileInfo.SourceOrganization, sp.BagItProfileInfo.Version)
 	} else {
 		p.Name = fmt.Sprintf("Imported Profile - %s", time.Now().Format(time.RFC3339))
 	}
@@ -100,11 +109,17 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	// Standard profile can define tags only for bag-info.txt
 	tagDefs := make([]*TagDefinition, 0)
 	for name, tag := range sp.BagInfo {
+		help := tag.Description
+		if tag.Recommended {
+			help = fmt.Sprintf("(Recommended) %s", tag.Description)
+		}
 		tagDef := &TagDefinition{
 			TagFile:  "bag-info.txt",
 			TagName:  name,
 			Required: tag.Required,
 			Values:   tag.Values,
+			Help:     help,
+			EmptyOK:  !tag.Required,
 		}
 		tagDefs = append(tagDefs, tagDef)
 	}
@@ -113,8 +128,8 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	return p
 }
 
-// ToJson returns the StandardProfile object in pretty-printed JSON format.
-func (sp *StandardProfile) ToJson() (string, error) {
+// ToJSON returns the StandardProfile object in pretty-printed JSON format.
+func (sp *StandardProfile) ToJSON() (string, error) {
 	data, err := json.MarshalIndent(sp, "", "  ")
 	if err != nil {
 		return "", err

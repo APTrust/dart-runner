@@ -350,8 +350,10 @@ func (p *BagItProfile) ToStandardFormat() *StandardProfile {
 		}
 		if tagDef.TagFile == "bag-info.txt" {
 			sp.BagInfo[tagDef.TagName] = StandardProfileTagDef{
-				Required: tagDef.Required,
-				Values:   tagDef.Values,
+				Required:    tagDef.Required,
+				Values:      tagDef.Values,
+				Description: tagDef.Help,
+				Recommended: strings.Contains(tagDef.Help, "Recommended"),
 			}
 		} else {
 			// We can't specify tag info outside of bag-info.txt,
