@@ -2,7 +2,7 @@
 
 {{ template "partials/page_header.html" . }}
 
-<h2>BagIt Profile</h2>
+<h2>{{ .form.Fields.Name.Value }}</h2>
 
 {{ if .errors }}
 <div class="alert" role="alert">
@@ -20,11 +20,11 @@
 
 <nav>
   <div class="nav nav-tabs" id="nav-tab" role="tablist">
-    <a class="nav-item nav-link active" id="navAboutTab" data-toggle="tab" href="#profileAbout" role="tab" aria-controls="profileAbout" aria-selected="true">About</a>
-    <a class="nav-item nav-link" id="navInfoTab" data-toggle="tab" href="#profileInfo" role="tab" aria-controls="profileInfo" aria-selected="false">Info</a>
-    <a class="nav-item nav-link" id="navGeneralTab" data-toggle="tab" href="#profileGeneral" role="tab" aria-controls="profileGeneral" aria-selected="false">General</a>
-    <a class="nav-item nav-link" id="navManifestsTab" data-toggle="tab" href="#profileManifests" role="tab" aria-controls="profileManifests" aria-selected="false">Manifests</a>
-    <a class="nav-item nav-link" id="navSerializationTab" data-toggle="tab" href="#profileSerialization" role="tab" aria-controls="profileSerialization" aria-selected="false">Serialization</a>
+    <a class="nav-item nav-link active" id="navAboutTab" data-toggle="tab" href="#profileAbout" role="tab" aria-controls="profileAbout" aria-selected="true" onclick="submitFormInBackground('#{{ .form.Fields.ID.Value }}')">About</a>
+    <a class="nav-item nav-link" id="navInfoTab" data-toggle="tab" href="#profileInfo" role="tab" aria-controls="profileInfo" aria-selected="false" onclick="submitFormInBackground('#{{ .form.Fields.ID.Value }}')">Info</a>
+    <a class="nav-item nav-link" id="navGeneralTab" data-toggle="tab" href="#profileGeneral" role="tab" aria-controls="profileGeneral" aria-selected="false" onclick="submitFormInBackground('#{{ .form.Fields.ID.Value }}')">General</a>
+    <a class="nav-item nav-link" id="navManifestsTab" data-toggle="tab" href="#profileManifests" role="tab" aria-controls="profileManifests" aria-selected="false" onclick="submitFormInBackground('#{{ .form.Fields.ID.Value }}')">Manifests</a>
+    <a class="nav-item nav-link" id="navSerializationTab" data-toggle="tab" href="#profileSerialization" role="tab" aria-controls="profileSerialization" aria-selected="false" onclick="submitFormInBackground('#{{ .form.Fields.ID.Value }}')">Serialization</a>
 
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Tag Files</a>
     <div class="dropdown-menu">
