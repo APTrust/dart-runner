@@ -113,5 +113,42 @@ func BagItProfileSave(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, "/profiles")
+}
+
+// GET /profiles/new_tag/:profile_id
+func BagItProfileNewTag(c *gin.Context) {
+
+}
+
+// POST /profiles/new_tag/:profile_id
+func BagItProfileCreateTag(c *gin.Context) {
+
+}
+
+// GET /profiles/edit_tag/:profile_id/:tag_id
+func BagItProfileEditTag(c *gin.Context) {
+
+}
+
+// POST /profiles/edit_tag/:profile_id/:tag_id
+// PUT  /profiles/edit_tag/:profile_id/:tag_id
+func BagItProfileSaveTag(c *gin.Context) {
+
+}
+
+// POST /profiles/delete_tag/:profile_id/:tag_id
+// PUT  /profiles/delete_tag/:profile_id/:tag_id
+func BagItProfileDeleteTag(c *gin.Context) {
+
+}
+
+// POST /profiles/new_tag_file/:profile_id
+func BagItProfileCreateTagFile(c *gin.Context) {
+
+}
+
+// POST /profiles/delete_tag_file/:profile_id
+// PUT  /profiles/delete_tag_file/:profile_id
+func BagItProfileDeleteTagFile(c *gin.Context) {
 
 }
