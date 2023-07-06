@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -316,8 +317,80 @@ func TestTagsInFile(t *testing.T) {
 }
 
 func TestBagItProfileToForm(t *testing.T) {
+	profile := loadProfile(t, "aptrust-v2.2.json")
+	form := profile.ToForm()
 
-	// TODO: Write test
+	require.NotNil(t, form.Fields["ID"])
+	assert.Equal(t, profile.ID, form.Fields["ID"].Value)
+
+	require.NotNil(t, form.Fields["AcceptBagItVersion"])
+	assert.Equal(t, constants.AcceptBagItVersion, form.Fields["AcceptBagItVersion"].Values)
+
+	require.NotNil(t, form.Fields["AcceptSerialization"])
+	assert.Equal(t, constants.AcceptSerialization, form.Fields["AcceptSerialization"].Values)
+
+	require.NotNil(t, form.Fields["AllowFetchTxt"])
+	assert.Equal(t, strconv.FormatBool(profile.AllowFetchTxt), form.Fields["AllowFetchTxt"].Value)
+	assert.Equal(t, core.YesNoChoices(profile.AllowFetchTxt), form.Fields["AllowFetchTxt"].Choices)
+
+	require.NotNil(t, form.Fields["BaseProfileID"])
+	assert.Equal(t, profile.BaseProfileID, form.Fields["BaseProfileID"].Value)
+
+	require.NotNil(t, form.Fields["Description"])
+	assert.Equal(t, profile.Description, form.Fields["Description"].Value)
+
+	require.NotNil(t, form.Fields["IsBuiltIn"])
+	assert.Equal(t, "true", form.Fields["IsBuiltIn"].Value)
+
+	aptrustAlgs := []string{"md5", "sha256"}
+	require.NotNil(t, form.Fields["ManifestsAllowed"])
+	assert.Equal(t, aptrustAlgs, form.Fields["ManifestsAllowed"].Values)
+
+	require.NotNil(t, form.Fields["ManifestsRequired"])
+	assert.Equal(t, 1, len(form.Fields["ManifestsRequired"].Values))
+	assert.Equal(t, "md5", form.Fields["ManifestsRequired"].Values[0])
+
+	require.NotNil(t, form.Fields["Name"])
+	assert.Equal(t, profile.Name, form.Fields["Name"].Value)
+	assert.Equal(t, "readonly", form.Fields["Name"].Attrs["readonly"])
+
+	require.NotNil(t, form.Fields["Serialization"])
+	assert.Equal(t, profile.Serialization, form.Fields["Serialization"].Value)
+	assert.Equal(t, 4, len(form.Fields["Serialization"].Choices))
+
+	require.NotNil(t, form.Fields["TagFilesAllowed"])
+	assert.Equal(t, []string{"*\n"}, form.Fields["TagFilesAllowed"].Values)
+
+	require.NotNil(t, form.Fields["TagFilesRequired"])
+	assert.Empty(t, form.Fields["TagFilesRequired"].Values)
+
+	require.NotNil(t, form.Fields["TagManifestsAllowed"])
+	assert.Equal(t, aptrustAlgs, form.Fields["TagManifestsAllowed"].Values)
+
+	require.NotNil(t, form.Fields["TagManifestsRequired"])
+	assert.Empty(t, form.Fields["TagManifestsRequired"].Values)
+
+	require.NotNil(t, form.Fields["TarDirMustMatchName"])
+	assert.Equal(t, strconv.FormatBool(profile.TarDirMustMatchName), form.Fields["TarDirMustMatchName"].Value)
+	assert.Equal(t, core.YesNoChoices(profile.TarDirMustMatchName), form.Fields["TarDirMustMatchName"].Choices)
+
+	require.NotNil(t, form.Fields["InfoIdentifier"])
+	assert.Equal(t, profile.BagItProfileInfo.BagItProfileIdentifier, form.Fields["InfoIdentifier"].Value)
+
+	require.NotNil(t, form.Fields["InfoContactEmail"])
+	assert.Equal(t, profile.BagItProfileInfo.ContactEmail, form.Fields["InfoContactEmail"].Value)
+
+	require.NotNil(t, form.Fields["InfoContactName"])
+	assert.Equal(t, profile.BagItProfileInfo.ContactName, form.Fields["InfoContactName"].Value)
+
+	require.NotNil(t, form.Fields["InfoExternalDescription"])
+	assert.Equal(t, profile.BagItProfileInfo.ExternalDescription, form.Fields["InfoExternalDescription"].Value)
+
+	require.NotNil(t, form.Fields["InfoSourceOrganization"])
+	assert.Equal(t, profile.BagItProfileInfo.SourceOrganization, form.Fields["InfoSourceOrganization"].Value)
+
+	require.NotNil(t, form.Fields["InfoVersion"])
+	assert.Equal(t, profile.BagItProfileInfo.Version, form.Fields["InfoVersion"].Value)
 }
 
 func TestBagItProfileToStandardFormat(t *testing.T) {
