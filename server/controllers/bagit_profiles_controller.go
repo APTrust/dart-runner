@@ -127,7 +127,13 @@ func BagItProfileCreateTag(c *gin.Context) {
 
 // GET /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileEditTag(c *gin.Context) {
-
+	// TODO: Finish TagDefinition.ToForm() & use "tag_definition/form.html"
+	// This one displays in a modal.
+	data := map[string]string{
+		"modalTitle":   "Edit Some Tag",
+		"modalContent": "<p>And this is <b>modal content</b> with some formatting.</p>",
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /profiles/edit_tag/:profile_id/:tag_id

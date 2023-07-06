@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -70,4 +71,13 @@ func (t *TagDefinition) Copy() *TagDefinition {
 	}
 	copy(copyOfTagDef.Values, t.Values)
 	return copyOfTagDef
+}
+
+func (t *TagDefinition) ToForm() *Form {
+	form := NewForm(constants.TypeTagDefinition, t.ID, nil)
+	form.UserCanDelete = !t.IsBuiltIn
+
+	// TODO: Finish implementing this & test
+
+	return form
 }

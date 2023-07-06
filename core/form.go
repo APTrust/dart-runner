@@ -69,14 +69,11 @@ func (field *Field) AddChoice(label, value string) {
 
 // Form represents an HTML form.
 type Form struct {
-	ObjType        string
-	ObjectID       string
-	Fields         map[string]*Field
-	SubmitFunction string
-	CancelFunction string
-	DeleteFunction string
-	UserCanDelete  bool
-	Errors         map[string]string
+	ObjType       string
+	ObjectID      string
+	Fields        map[string]*Field
+	UserCanDelete bool
+	Errors        map[string]string
 }
 
 // NewForm creates a new form for the specified object type and id.
@@ -86,13 +83,10 @@ func NewForm(objType, objectId string, errors map[string]string) *Form {
 		errors = make(map[string]string)
 	}
 	return &Form{
-		ObjType:        objType,
-		ObjectID:       objectId,
-		Fields:         make(map[string]*Field),
-		CancelFunction: fmt.Sprintf("%sList", objType),
-		SubmitFunction: fmt.Sprintf("%sSave", objType),
-		DeleteFunction: fmt.Sprintf("%sDelete", objType),
-		Errors:         errors,
+		ObjType:  objType,
+		ObjectID: objectId,
+		Fields:   make(map[string]*Field),
+		Errors:   errors,
 	}
 }
 

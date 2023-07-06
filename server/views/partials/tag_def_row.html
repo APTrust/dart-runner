@@ -1,6 +1,6 @@
 {{ define "partials/tag_def_row.html" }}
 
-<tr class="clickable-row" data-url="#TagDefinition/edit?bagItProfileId={{ .bagItProfileId }}&id={{ .tag.ID }}" data-tag-id="{{ .tag.ID }}">
+<tr class="clickable-row" onclick="loadIntoModal('get', '/profiles/edit_tag/{{ .bagItProfileId }}/{{ .tag.ID }}')" data-tag-id="{{ .tag.ID }}">
     <td>
         {{ if .tag.Help }}
         <i class="fas fa-question-circle text-primary" data-toggle="popover" data-trigger="hover" title="{{ .tag.TagName }}" data-content="{{ .tag.Help }}"></i>

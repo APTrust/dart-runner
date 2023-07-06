@@ -42,9 +42,6 @@ func TestNewForm(t *testing.T) {
 	assert.Equal(t, constants.EmptyUUID, f.ObjectID)
 	assert.NotNil(t, f.Errors)
 	assert.NotNil(t, f.Fields)
-	assert.Equal(t, "AppSettingList", f.CancelFunction)
-	assert.Equal(t, "AppSettingDelete", f.DeleteFunction)
-	assert.Equal(t, "AppSettingSave", f.SubmitFunction)
 }
 
 func TestAddField(t *testing.T) {

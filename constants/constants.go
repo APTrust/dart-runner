@@ -38,6 +38,7 @@ const (
 	TypeInternalSetting      = "InternalSetting"
 	TypeRemoteRepository     = "RemoteRepository"
 	TypeStorageService       = "StorageService"
+	TypeTagDefinition        = "TagDefinition"
 )
 
 var AcceptBagItVersion = []string{
@@ -62,7 +63,16 @@ var PreferredAlgsInOrder = []string{
 	AlgSha1,
 }
 
-var ItemTypes = []string{
+var AllItemTypes = []string{
+	TypeAppSetting,
+	TypeBagItProfile,
+	TypeInternalSetting,
+	TypeRemoteRepository,
+	TypeStorageService,
+	TypeTagDefinition,
+}
+
+var SavableItemTypes = []string{
 	TypeAppSetting,
 	TypeBagItProfile,
 	TypeInternalSetting,

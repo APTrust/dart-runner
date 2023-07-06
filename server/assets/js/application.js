@@ -1,6 +1,6 @@
 // Global application script will go here.
 
-function loadIntoModal (method, url, data) {
+function loadIntoModal (method, url, data = {}) {
     $.ajax({
         url: url,
         type: method,
