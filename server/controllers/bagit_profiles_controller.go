@@ -129,10 +129,35 @@ func BagItProfileCreateTag(c *gin.Context) {
 func BagItProfileEditTag(c *gin.Context) {
 	// TODO: Finish TagDefinition.ToForm() & use "tag_definition/form.html"
 	// This one displays in a modal.
-	data := map[string]string{
-		"modalTitle":   "Edit Some Tag",
-		"modalContent": "<p>And this is <b>modal content</b> with some formatting.</p>",
+	result := core.ObjFind(c.Param("profile_id"))
+	if result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
 	}
+	profile := result.BagItProfile()
+	tag, err := profile.FirstMatchingTag("ID", c.Param("tag_id"))
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// sb := &strings.Builder{}
+	// templateData := gin.H{
+	// 	"bagItProfileID": profile.ID,
+	// 	"tag":            tag,
+	// 	"form":           tag.ToForm(),
+	// }
+	// err = util.Template.Lookup("tag_definition/form.html").Execute(sb, templateData)
+	// if err != nil {
+	// 	c.AbortWithError(http.StatusInternalServerError, err)
+	// 	return
+	// }
+
+	data := map[string]string{
+		"modalTitle":   "Edit Tag Definition",
+		"modalContent": tag.TagName,
+	}
+
 	c.JSON(http.StatusOK, data)
 }
 
