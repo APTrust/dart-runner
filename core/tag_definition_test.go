@@ -1,9 +1,11 @@
 package core_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,4 +66,35 @@ func TestTagDefToFormattedString(t *testing.T) {
                         documents
     `
 	assert.Equal(t, "Description: A bag of documents", tagDef.ToFormattedString())
+}
+
+func TestTagDefToForm(t *testing.T) {
+	tagDef := &core.TagDefinition{
+		ID:           uuid.NewString(),
+		TagName:      "FavoriteColor",
+		TagFile:      "custom-tags.txt",
+		Help:         "This is the help text.",
+		Values:       []string{"red", "green", "blue"},
+		DefaultValue: "green",
+	}
+	form := tagDef.ToForm()
+	assert.Equal(t, tagDef.ID, form.Fields["ID"].Value)
+	assert.Equal(t, tagDef.TagName, form.Fields["TagName"].Value)
+	assert.Equal(t, tagDef.TagFile, form.Fields["TagFile"].Value)
+	assert.Empty(t, form.Fields["TagName"].Attrs["readonly"])
+	assert.Empty(t, form.Fields["TagFile"].Attrs["readonly"])
+	assert.Equal(t, tagDef.DefaultValue, form.Fields["DefaultValue"].Value)
+	assert.Equal(t, tagDef.Help, form.Fields["Help"].Value)
+	assert.Equal(t, "false", form.Fields["Required"].Value)
+	assert.Equal(t, 3, len(form.Fields["Required"].Choices))
+	assert.Equal(t, len(tagDef.Values), len(strings.Split(form.Fields["Values"].Value, "\n")))
+	assert.Contains(t, form.Fields["Values"].Value, "red")
+	assert.Contains(t, form.Fields["Values"].Value, "green")
+	assert.Contains(t, form.Fields["Values"].Value, "blue")
+
+	tagDef.IsBuiltIn = true
+	form = tagDef.ToForm()
+	assert.Equal(t, "readonly", form.Fields["TagName"].Attrs["readonly"])
+	assert.Equal(t, "readonly", form.Fields["TagFile"].Attrs["readonly"])
+
 }

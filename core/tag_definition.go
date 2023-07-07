@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -77,7 +78,35 @@ func (t *TagDefinition) ToForm() *Form {
 	form := NewForm(constants.TypeTagDefinition, t.ID, nil)
 	form.UserCanDelete = !t.IsBuiltIn
 
-	// TODO: Finish implementing this & test
+	form.AddField("ID", "ID", t.ID, true)
+
+	helpField := form.AddField("Help", "Help Text", t.Help, false)
+	helpField.Help = "(Optional) Describe the significance of this tag so users know what data to enter."
+
+	tagNameField := form.AddField("TagName", "Tag Name", t.TagName, true)
+	tagFileField := form.AddField("TagFile", "Tag File", t.TagFile, true)
+	if t.IsBuiltIn {
+		tagNameField.Attrs["readonly"] = "readonly"
+		tagFileField.Attrs["readonly"] = "readonly"
+	}
+
+	// Allowed values will be displayed in a textarea, with one value per line.
+	trimmedValues := make([]string, len(t.Values))
+	for i, value := range t.Values {
+		trimmedValues[i] = strings.TrimSpace(value)
+	}
+	valuesStr := strings.Join(trimmedValues, "\n")
+	valuesField := form.AddField("Values", "Allowed Values", valuesStr, false)
+	valuesField.Help = "If you want to restrict the values allowed for this tag, enter the allowed values here, one item per line."
+
+	defaultValueField := form.AddField("DefaultValue", "Default Value", t.DefaultValue, false)
+	if len(trimmedValues) > 0 {
+		defaultValueField.Choices = MakeChoiceList(trimmedValues, strings.TrimSpace(t.DefaultValue))
+	}
+
+	requiredField := form.AddField("Required", "Required", strconv.FormatBool(t.Required), false)
+	requiredField.Help = "Does this tag require a value?"
+	requiredField.Choices = YesNoChoices(t.Required)
 
 	return form
 }
