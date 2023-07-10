@@ -1,5 +1,6 @@
 {{ define "partials/profile_tags.html" }}
 
+<h2>Tags in {{ .tagFileName }}</h2>
 <div class="pull-right mt-1 mb-3">
     <button class="btn btn-primary" type="button" onclick="loadIntoModal('get', 'New Tag in {{ .tagFileName }}', '/profiles/new_tag/{{ .bagItProfileID }}/{{ .tagFileName }}', '')" role="button">New Tag</button>
 </div>

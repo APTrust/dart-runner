@@ -38,11 +38,8 @@ func BagItProfileEdit(c *gin.Context) {
 		tagMap[name] = profile.TagsInFile(name)
 	}
 	request.TemplateData["tagsInFile"] = tagMap
-
-	// TODO: Set active tab in query string
 	request.TemplateData["activeTab"] = c.DefaultQuery("tab", "navAboutTab")
 	request.TemplateData["activeTagFile"] = c.Query("tagFile")
-
 	c.HTML(http.StatusOK, "bagit_profile/form.html", request.TemplateData)
 }
 
@@ -138,6 +135,7 @@ func BagItProfileNewTag(c *gin.Context) {
 		ID:        uuid.NewString(),
 		IsBuiltIn: false,
 		TagFile:   c.Param("tag_file"),
+		TagName:   "New-Tag",
 	}
 	templateData := gin.H{
 		"bagItProfileID": c.Param("profile_id"),
@@ -173,6 +171,9 @@ func BagItProfileEditTag(c *gin.Context) {
 // POST /profiles/edit_tag/:profile_id/:tag_id
 // PUT  /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileSaveTag(c *gin.Context) {
+
+	// TODO: Respond with JSON? Or HTML?
+
 	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -188,7 +189,7 @@ func BagItProfileSaveTag(c *gin.Context) {
 			"tag":            tag,
 			"form":           tag.ToForm(),
 		}
-		c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
+		c.HTML(http.StatusBadRequest, "tag_definition/form.html", templateData)
 		return
 	}
 
@@ -224,9 +225,10 @@ func BagItProfileSaveTag(c *gin.Context) {
 	// 	"tagsInFile":   tagMap,
 	// }
 
-	// TODO: Display correct tab
+	// Encode tab and name of tag file in query string
+	// so we display the correct view to the user.
 	query := url.Values{}
-	query.Set("tab", "Tag Files")
+	query.Set("tab", "navTagFilesTab")
 	query.Set("tagFile", tag.TagFile)
 	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()))
 

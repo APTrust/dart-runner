@@ -2,7 +2,8 @@
 
 <!-- Template does not include header or footer, because this form loads in a modal dialog. -->
 
-<h2>Tag Definition</h2>
+<h2>{{ .form.Fields.TagName.Value }}</h2>
+<p>In file {{ .form.Fields.TagFile.Value }}</p>
 
 <form method="post" action="/profiles/edit_tag/{{ .bagItProfileID }}/{{ .form.Fields.ID.Value }}"  id="{{ .form.Fields.ID.Value }}">
 
