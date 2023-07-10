@@ -28,6 +28,8 @@ function showModalContent (title, content) {
 }
 
 function submitFormInBackground(formId) {
+    console.log("submitFormInBackground")
+    
     let form = $(formId);
     if (form == null) {
         showAjaxAlert("Bad form id")

@@ -6,6 +6,7 @@ import (
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // BagItProfileCreate creates a new Profile.
@@ -125,9 +126,19 @@ func BagItProfileSave(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/profiles")
 }
 
-// GET /profiles/new_tag/:profile_id
+// GET /profiles/new_tag/:profile_id/:tag_file
 func BagItProfileNewTag(c *gin.Context) {
-
+	tag := &core.TagDefinition{
+		ID:        uuid.NewString(),
+		IsBuiltIn: false,
+		TagFile:   c.Param("tag_file"),
+	}
+	templateData := gin.H{
+		"bagItProfileID": c.Param("profile_id"),
+		"tag":            tag,
+		"form":           tag.ToForm(),
+	}
+	c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
 }
 
 // POST /profiles/new_tag/:profile_id
@@ -137,7 +148,6 @@ func BagItProfileCreateTag(c *gin.Context) {
 
 // GET /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileEditTag(c *gin.Context) {
-	// TODO: Finish TagDefinition.ToForm() & use "tag_definition/form.html"
 	// This one displays in a modal.
 	result := core.ObjFind(c.Param("profile_id"))
 	if result.Error != nil {

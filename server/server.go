@@ -98,7 +98,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/profiles/export/:id", controllers.BagItProfileExport)
 
 	// BagIt Profile Tags & Tag Files
-	router.GET("/profiles/new_tag/:profile_id", controllers.BagItProfileNewTag)
+	router.GET("/profiles/new_tag/:profile_id/:tag_file", controllers.BagItProfileNewTag)
 	router.POST("/profiles/new_tag/:profile_id", controllers.BagItProfileCreateTag)
 	router.GET("/profiles/edit_tag/:profile_id/:tag_id", controllers.BagItProfileEditTag)
 	router.PUT("/profiles/edit_tag/:profile_id/:tag_id", controllers.BagItProfileSaveTag)
