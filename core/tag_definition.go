@@ -11,21 +11,34 @@ import (
 )
 
 var reWhiteSpace = regexp.MustCompile(`[\s\r\n]+`)
+var TagsSetBySystem = []string{
+	"Bagging-Date",
+	"Bagging-Software",
+	"Payload-Oxum",
+	"DPN-Object-ID",
+	"First-Version-Object-ID",
+	"Bag-Size",
+	"BagIt-Profile-Identifier",
+}
 
 // TagDefinition describes a tag in a BagItProfile, whether it's
 // required, what values are allowed, etc.
 type TagDefinition struct {
-	DefaultValue  string   `json:"defaultValue"`
-	EmptyOK       bool     `json:"emptyOK"`
-	Help          string   `json:"help"`
-	ID            string   `json:"id"`
-	IsBuiltIn     bool     `json:"isBuiltIn"`
-	Required      bool     `json:"required"`
-	SystemMustSet bool     `json:"systemMustSet"`
-	TagFile       string   `json:"tagFile"`
-	TagName       string   `json:"tagName"`
-	UserValue     string   `json:"userValue"`
-	Values        []string `json:"values"`
+	DefaultValue    string            `json:"defaultValue"`
+	EmptyOK         bool              `json:"emptyOK"`
+	Errors          map[string]string `json:"-"`
+	Help            string            `json:"help"`
+	ID              string            `json:"id"`
+	IsBuiltIn       bool              `json:"isBuiltIn"`
+	IsUserAddedFile bool              `json:"isUserAddedFile"`
+	IsUserAddedTag  bool              `json:"isUserAddedTag"`
+	Required        bool              `json:"required"`
+	SystemMustSet   bool              `json:"systemMustSet"`
+	TagFile         string            `json:"tagFile"`
+	TagName         string            `json:"tagName"`
+	UserValue       string            `json:"userValue"`
+	Values          []string          `json:"values"`
+	WasAddedForJob  bool              `json:"wasAddedForJob"`
 }
 
 // IsLegalValue returns true if val is a legal value for this tag definition.
@@ -60,18 +73,43 @@ func (t *TagDefinition) ToFormattedString() string {
 // same as this TagDefinition.
 func (t *TagDefinition) Copy() *TagDefinition {
 	copyOfTagDef := &TagDefinition{
-		DefaultValue: t.DefaultValue,
-		EmptyOK:      t.EmptyOK,
-		Help:         t.Help,
-		ID:           t.ID,
-		Required:     t.Required,
-		TagFile:      t.TagFile,
-		TagName:      t.TagName,
-		UserValue:    t.UserValue,
-		Values:       make([]string, len(t.Values)),
+		DefaultValue:    t.DefaultValue,
+		EmptyOK:         t.EmptyOK,
+		Help:            t.Help,
+		ID:              t.ID,
+		IsBuiltIn:       t.IsBuiltIn,
+		IsUserAddedFile: t.IsUserAddedFile,
+		IsUserAddedTag:  t.IsUserAddedTag,
+		Required:        t.Required,
+		TagFile:         t.TagFile,
+		TagName:         t.TagName,
+		UserValue:       t.UserValue,
+		Values:          make([]string, len(t.Values)),
+	}
+	if t.Errors != nil {
+		copyOfTagDef.Errors = util.CopyMap[string, string](t.Errors)
 	}
 	copy(copyOfTagDef.Values, t.Values)
 	return copyOfTagDef
+}
+
+func (t *TagDefinition) Validate() bool {
+	t.Errors = make(map[string]string)
+	if util.IsEmpty(t.TagFile) {
+		t.Errors["TagFile"] = "You must specify a tag file."
+	}
+	if util.IsEmpty(t.TagName) {
+		t.Errors["TagName"] = "You must specify a tag name."
+	}
+	if !util.IsEmptyStringList(t.Values) {
+		if !util.IsEmpty(t.DefaultValue) && !util.StringListContains(t.Values, t.DefaultValue) {
+			t.Errors["DefaultValue"] = "The default value must be one of the allowed values."
+		}
+		if !util.IsEmpty(t.UserValue) && !util.StringListContains(t.Values, t.UserValue) {
+			t.Errors["UserValue"] = "The value must be one of the allowed values."
+		}
+	}
+	return len(t.Errors) == 0
 }
 
 func (t *TagDefinition) ToForm() *Form {
@@ -80,6 +118,8 @@ func (t *TagDefinition) ToForm() *Form {
 
 	form.AddField("ID", "ID", t.ID, true)
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(t.IsBuiltIn), true)
+	form.AddField("IsUserAddedFile", "IsUserAddedFile", strconv.FormatBool(t.IsUserAddedFile), true)
+	form.AddField("IsUserAddedTag", "IsUserAddedTag", strconv.FormatBool(t.IsUserAddedTag), true)
 
 	helpField := form.AddField("Help", "Help Text", t.Help, false)
 	helpField.Help = "(Optional) Describe the significance of this tag so users know what data to enter."

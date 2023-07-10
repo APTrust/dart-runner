@@ -96,5 +96,33 @@ func TestTagDefToForm(t *testing.T) {
 	form = tagDef.ToForm()
 	assert.Equal(t, "readonly", form.Fields["TagName"].Attrs["readonly"])
 	assert.Equal(t, "readonly", form.Fields["TagFile"].Attrs["readonly"])
+}
 
+func TestTagDefValidate(t *testing.T) {
+	tagDef := &core.TagDefinition{}
+	assert.False(t, tagDef.Validate())
+	assert.Equal(t, 2, len(tagDef.Errors))
+	assert.Equal(t, "You must specify a tag name.", tagDef.Errors["TagName"])
+	assert.Equal(t, "You must specify a tag file.", tagDef.Errors["TagFile"])
+
+	tagDef.TagName = "Test Tag"
+	tagDef.TagFile = "Test File"
+	assert.True(t, tagDef.Validate())
+	assert.Empty(t, tagDef.Errors)
+
+	tagDef.Values = []string{
+		"Spongebob",
+		"Patrick",
+		"Mister Crabs",
+	}
+	assert.True(t, tagDef.Validate())
+	assert.Empty(t, tagDef.Errors)
+
+	tagDef.DefaultValue = "Alice Cooper"
+	tagDef.UserValue = "Taylor Swift"
+
+	assert.False(t, tagDef.Validate())
+	assert.Equal(t, 2, len(tagDef.Errors))
+	assert.Equal(t, "The default value must be one of the allowed values.", tagDef.Errors["DefaultValue"])
+	assert.Equal(t, "The value must be one of the allowed values.", tagDef.Errors["UserValue"])
 }

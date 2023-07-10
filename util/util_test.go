@@ -376,6 +376,40 @@ func TestIsEmptyStringList(t *testing.T) {
 	assert.False(t, util.IsEmptyStringList(list3))
 }
 
+func TestIsEmpty(t *testing.T) {
+	assert.True(t, util.IsEmpty(""))
+	assert.True(t, util.IsEmpty("  "))
+	assert.True(t, util.IsEmpty("		"))
+	assert.True(t, util.IsEmpty(" \n \r "))
+	assert.False(t, util.IsEmpty("not empty"))
+}
+
+func TestCopyMap(t *testing.T) {
+	m1 := map[string]string{
+		"one":   "first",
+		"two":   "second",
+		"three": "third",
+	}
+	m2 := map[string]int64{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+
+	m1Copy := util.CopyMap[string, string](m1)
+	assert.Equal(t, len(m1), len(m1Copy))
+	for k, _ := range m1 {
+		assert.Equal(t, m1[k], m1Copy[k])
+	}
+
+	m2Copy := util.CopyMap[string, int64](m2)
+	assert.Equal(t, len(m2), len(m2Copy))
+	for k, _ := range m2 {
+		assert.Equal(t, m2[k], m2Copy[k])
+	}
+
+}
+
 func TestFileCommonPrefix(t *testing.T) {
 	list1 := []string{
 		"/user/joe/photo",

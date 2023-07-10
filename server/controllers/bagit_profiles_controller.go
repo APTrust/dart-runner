@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -36,6 +38,10 @@ func BagItProfileEdit(c *gin.Context) {
 		tagMap[name] = profile.TagsInFile(name)
 	}
 	request.TemplateData["tagsInFile"] = tagMap
+
+	// TODO: Set active tab in query string
+	request.TemplateData["activeTab"] = c.DefaultQuery("tab", "navAboutTab")
+	request.TemplateData["activeTabFile"] = c.Query("tagFile")
 
 	c.HTML(http.StatusOK, "bagit_profile/form.html", request.TemplateData)
 }
@@ -148,14 +154,8 @@ func BagItProfileCreateTag(c *gin.Context) {
 
 // GET /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileEditTag(c *gin.Context) {
-	// This one displays in a modal.
-	result := core.ObjFind(c.Param("profile_id"))
-	if result.Error != nil {
-		c.AbortWithError(http.StatusNotFound, result.Error)
-		return
-	}
-	profile := result.BagItProfile()
-	tag, err := profile.FirstMatchingTag("ID", c.Param("tag_id"))
+	// This displays in a modal.
+	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -173,6 +173,62 @@ func BagItProfileEditTag(c *gin.Context) {
 // POST /profiles/edit_tag/:profile_id/:tag_id
 // PUT  /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileSaveTag(c *gin.Context) {
+	profile, tag, err := loadProfileAndTag(c)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if tag == nil {
+		tag = &core.TagDefinition{}
+	}
+	c.Bind(tag)
+	if !tag.Validate() {
+		templateData := gin.H{
+			"bagItProfileID": profile.ID,
+			"tag":            tag,
+			"form":           tag.ToForm(),
+		}
+		c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
+		return
+	}
+
+	tagExists := false
+	for i, existingTag := range profile.Tags {
+		if existingTag.ID == tag.ID {
+			profile.Tags[i] = tag
+			tagExists = true
+			break
+		}
+	}
+	if !tagExists {
+		profile.Tags = append(profile.Tags, tag)
+	}
+
+	// Validation error here should not be possible, since we just
+	// pulled a valid profile from the DB and only altered
+	// or added a single tag, which we know by now is valid.
+	err = core.ObjSave(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// tagMap := make(map[string][]*core.TagDefinition)
+	// for _, name := range profile.TagFileNames() {
+	// 	tagMap[name] = profile.TagsInFile(name)
+	// }
+	// templateData := gin.H{
+	// 	"currentUrl":   c.Request.URL.Path,
+	// 	"showAsModal":  c.Query("modal") == "true",
+	// 	"tagFileNames": profile.TagFileNames(),
+	// 	"tagsInFile":   tagMap,
+	// }
+
+	// TODO: Display correct tab
+	query := url.Values{}
+	query.Set("tab", "Tag Files")
+	query.Set("tagFile", tag.TagFile)
+	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()))
 
 }
 
@@ -191,4 +247,14 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 // PUT  /profiles/delete_tag_file/:profile_id
 func BagItProfileDeleteTagFile(c *gin.Context) {
 
+}
+
+func loadProfileAndTag(c *gin.Context) (*core.BagItProfile, *core.TagDefinition, error) {
+	result := core.ObjFind(c.Param("profile_id"))
+	if result.Error != nil {
+		return nil, nil, result.Error
+	}
+	profile := result.BagItProfile()
+	tag, err := profile.FirstMatchingTag("ID", c.Param("tag_id"))
+	return profile, tag, err
 }

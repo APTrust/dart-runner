@@ -54,6 +54,21 @@ func IsEmptyStringList(list []string) bool {
 	return true
 }
 
+// CopyMap returns a copy of map orig
+func CopyMap[K, V comparable](orig map[K]V) map[K]V {
+	newCopy := make(map[K]V)
+	for k, v := range orig {
+		newCopy[k] = v
+	}
+	return newCopy
+}
+
+// IsEmpty returns true if string s is empty. Strings that are all
+// whitespace are considered empty.
+func IsEmpty(s string) bool {
+	return strings.TrimSpace(s) == ""
+}
+
 // IntListContains returns true if list contains item.
 func IntListContains(list []int, item int) bool {
 	if list != nil {
