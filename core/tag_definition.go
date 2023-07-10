@@ -79,6 +79,7 @@ func (t *TagDefinition) ToForm() *Form {
 	form.UserCanDelete = !t.IsBuiltIn
 
 	form.AddField("ID", "ID", t.ID, true)
+	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(t.IsBuiltIn), true)
 
 	helpField := form.AddField("Help", "Help Text", t.Help, false)
 	helpField.Help = "(Optional) Describe the significance of this tag so users know what data to enter."

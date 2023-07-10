@@ -141,24 +141,13 @@ func BagItProfileEditTag(c *gin.Context) {
 		return
 	}
 
-	// sb := &strings.Builder{}
-	// templateData := gin.H{
-	// 	"bagItProfileID": profile.ID,
-	// 	"tag":            tag,
-	// 	"form":           tag.ToForm(),
-	// }
-	// err = util.Template.Lookup("tag_definition/form.html").Execute(sb, templateData)
-	// if err != nil {
-	// 	c.AbortWithError(http.StatusInternalServerError, err)
-	// 	return
-	// }
-
-	data := map[string]string{
-		"modalTitle":   "Edit Tag Definition",
-		"modalContent": tag.TagName,
+	templateData := gin.H{
+		"bagItProfileID": profile.ID,
+		"tag":            tag,
+		"form":           tag.ToForm(),
 	}
 
-	c.JSON(http.StatusOK, data)
+	c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
 }
 
 // POST /profiles/edit_tag/:profile_id/:tag_id

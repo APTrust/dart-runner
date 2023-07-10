@@ -18,13 +18,10 @@
       {{ template "partials/input_text.html" dict "field" .form.Fields.DefaultValue }}
     {{ end }}
   
-    {{ template "partials/input_text.html" dict "field" .form.Fields.Help }}
+    {{ template "partials/input_textarea.html" dict "field" .form.Fields.Help }}
   
     {{ template "partials/input_hidden.html" dict "field" .form.Fields.TagFile }}
     {{ template "partials/input_hidden.html" dict "field" .form.Fields.IsBuiltIn }}
-    {{ template "partials/input_hidden.html" dict "field" .form.Fields.IsUserAddedFile }}
-    {{ template "partials/input_hidden.html" dict "field" .form.Fields.IsUserAddedTag }}
-    {{ template "partials/input_hidden.html" dict "field" .form.Fields.UserValue }}
     {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
  

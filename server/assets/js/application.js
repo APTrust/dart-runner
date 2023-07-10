@@ -1,6 +1,10 @@
 // Global application script will go here.
 
-function loadIntoModal (method, url, data = {}) {
+function loadIntoModal (method, modalTitle, url, data = {}) {
+    console.log(method)
+    console.log(modalTitle)
+    console.log(url)
+    console.log(data)
     $.ajax({
         url: url,
         type: method,
@@ -8,7 +12,7 @@ function loadIntoModal (method, url, data = {}) {
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     }).done(function (response) {
         console.log(response)
-        showModalContent(response);
+        showModalContent(modalTitle, response);
     }).fail(function (xhr, status, err) {
         showAjaxError("Error: "+ status);
         console.log(status)
@@ -17,9 +21,9 @@ function loadIntoModal (method, url, data = {}) {
     })
 }
 
-function showModalContent (response) {
-    $('#modalTitle').html(response.modalTitle);
-    $('#modalContent').html(response.modalContent);
+function showModalContent (title, content) {
+    $('#modalTitle').html(title);
+    $('#modalContent').html(content);
     $('#modal').modal('show');    
 }
 
