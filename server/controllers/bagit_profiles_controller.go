@@ -41,7 +41,7 @@ func BagItProfileEdit(c *gin.Context) {
 
 	// TODO: Set active tab in query string
 	request.TemplateData["activeTab"] = c.DefaultQuery("tab", "navAboutTab")
-	request.TemplateData["activeTabFile"] = c.Query("tagFile")
+	request.TemplateData["activeTagFile"] = c.Query("tagFile")
 
 	c.HTML(http.StatusOK, "bagit_profile/form.html", request.TemplateData)
 }
