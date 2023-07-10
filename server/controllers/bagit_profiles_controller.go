@@ -67,11 +67,21 @@ func BagItProfileImport(c *gin.Context) {
 
 // GET /profiles/export/:id
 func BagItProfileExport(c *gin.Context) {
-	data := map[string]string{
-		"modalTitle":   "This here is the title",
-		"modalContent": "<p>And this is <b>modal content</b> with some formatting.</p>",
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
 	}
-	c.JSON(http.StatusOK, data)
+	profile := result.BagItProfile()
+	profileJson, err := profile.ToStandardFormat().ToJSON()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, result.Error)
+		return
+	}
+	templateData := gin.H{
+		"json": profileJson,
+	}
+	c.HTML(http.StatusOK, "bagit_profile/export.html", templateData)
 }
 
 // PUT /profiles/edit/:id

@@ -58,3 +58,10 @@ function showAjaxError(message) {
     $("#ajaxErrorMessage").html(message)
     $("#ajaxError").show()
 }
+
+function copyToClipboard(copySourceId, messageDivId) {
+    let copyText = document.querySelector(copySourceId).textContent;
+    navigator.clipboard.writeText(copyText)
+    $(messageDivId).show();
+    $(messageDivId).fadeOut({duration: 1800});
+}
