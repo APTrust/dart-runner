@@ -172,6 +172,10 @@ func (ss *StorageService) ToForm() *Form {
 	allowsDownload := form.AddField("AllowsDownload", "Allows Download", strconv.FormatBool(ss.AllowsDownload), false)
 	allowsDownload.Choices = YesNoChoices(ss.AllowsDownload)
 
+	for field, errMsg := range ss.Errors {
+		form.Fields[field].Error = errMsg
+	}
+
 	return form
 }
 

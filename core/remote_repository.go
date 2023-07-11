@@ -89,6 +89,10 @@ func (repo *RemoteRepository) ToForm() *Form {
 	pluginIdField.AddChoice("", "")
 	pluginIdField.AddChoice("APTrustClient", constants.PluginIdAPTrustClient)
 
+	for field, errMsg := range repo.Errors {
+		form.Fields[field].Error = errMsg
+	}
+
 	return form
 }
 

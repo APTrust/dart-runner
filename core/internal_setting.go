@@ -73,6 +73,11 @@ func (setting *InternalSetting) ToForm() *Form {
 
 	valueField := form.AddField("Value", "Value", setting.Value, true)
 	valueField.Attrs["readonly"] = "readonly"
+
+	for field, errMsg := range setting.Errors {
+		form.Fields[field].Error = errMsg
+	}
+
 	return form
 }
 

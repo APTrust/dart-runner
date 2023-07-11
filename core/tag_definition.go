@@ -149,5 +149,9 @@ func (t *TagDefinition) ToForm() *Form {
 	requiredField.Help = "Does this tag require a value?"
 	requiredField.Choices = YesNoChoices(t.Required)
 
+	for field, errMsg := range t.Errors {
+		form.Fields[field].Error = errMsg
+	}
+
 	return form
 }

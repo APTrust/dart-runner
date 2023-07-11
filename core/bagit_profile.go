@@ -448,7 +448,9 @@ func (p *BagItProfile) ToForm() *Form {
 	form.AddField("InfoSourceOrganization", "Source Organization", p.BagItProfileInfo.SourceOrganization, false)
 	form.AddField("InfoVersion", "Version", p.BagItProfileInfo.Version, false)
 
-	// Tags
+	for field, errMsg := range p.Errors {
+		form.Fields[field].Error = errMsg
+	}
 
 	return form
 }

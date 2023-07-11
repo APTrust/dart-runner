@@ -11,7 +11,7 @@ function loadIntoModal (method, modalTitle, url, data = {}) {
         data: jQuery.param(data) ,
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     }).done(function (response) {
-        console.log(response)
+        //console.log(response)
         showModalContent(modalTitle, response);
     }).fail(function (xhr, status, err) {
         showAjaxError("Error: "+ status);
@@ -27,7 +27,7 @@ function showModalContent (title, content) {
     $('#modal').modal('show');    
 }
 
-function submitFormInBackground(formId) {
+function submitFormInBackground(formId, successCallback, failureCallback) {
     console.log("submitFormInBackground")
     
     let form = $(formId);
@@ -35,7 +35,7 @@ function submitFormInBackground(formId) {
         showAjaxAlert("Bad form id")
         return
     }
-    //console.log(form.serialize())
+    console.log(form.serialize())
     $.ajax({
         url: form.attr('action'),
         type: 'POST',
@@ -43,8 +43,15 @@ function submitFormInBackground(formId) {
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     }).done(function (response) {        
         //console.log(response)
+        if (successCallback != null) {
+            successCallback(response)
+        }
     }).fail(function (xhr, status, err) {
-        showAjaxError("Error: "+ status);
+        if (failureCallback != null) {
+            failureCallback(xhr, status, err)
+        } else {
+            showAjaxError("Error: "+ status)
+        }
         console.log(status)
         console.log(err)
         console.log(xhr)
@@ -66,4 +73,19 @@ function copyToClipboard(copySourceId, messageDivId) {
     navigator.clipboard.writeText(copyText)
     $(messageDivId).show();
     $(messageDivId).fadeOut({duration: 1800});
+}
+
+function submitTagDefForm(formId) {
+    let onSuccess = function(response) {
+        // We don't need to do anything here, since a successful
+        // save results in a redirect.
+        console.log("Saved tag definition")
+    }
+    let onFail = function(xhr, status, err) {
+        // Failure is typically a validation failure.
+        // Re-display the form to show specific error messages.
+        let modalTitle = $('#modalTitle').html()
+        showModalContent(modalTitle, xhr.responseText)        
+    }
+    submitFormInBackground(formId, onSuccess, onFail)
 }
