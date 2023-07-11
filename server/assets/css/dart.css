@@ -9,7 +9,7 @@ body, .navbar, .nav-item, .nav-link, .dropdown-menu, .dropdown-item, tr, th, td 
 }
 
 /* Any clickable element */
-.clickable, .clickable-card, .clickable-row, .repository-clickable-row, .local-file {
+.clickable, .clickable-card, .clickable-row, .clickable-cell, .repository-clickable-row, .local-file {
     cursor: pointer;
 }
 .local-file {

@@ -418,6 +418,32 @@ func TestSplitAndTrim(t *testing.T) {
 	assert.Equal(t, "three", values[2])
 }
 
+func TestRemoveFromSlice(t *testing.T) {
+	s1 := []string{
+		"zero",
+		"one",
+		"two",
+		"three",
+	}
+	s2 := []int{
+		0,
+		1,
+		2,
+		3,
+	}
+
+	newS1 := util.RemoveFromSlice[string](s1, 1)
+	assert.Equal(t, 3, len(newS1))
+	assert.Equal(t, "zero", newS1[0])
+	assert.Equal(t, "two", newS1[1])
+	assert.Equal(t, "three", newS1[2])
+
+	newS2 := util.RemoveFromSlice[int](s2, 1)
+	assert.Equal(t, 0, newS2[0])
+	assert.Equal(t, 2, newS2[1])
+	assert.Equal(t, 3, newS2[2])
+}
+
 func TestFileCommonPrefix(t *testing.T) {
 	list1 := []string{
 		"/user/joe/photo",

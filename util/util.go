@@ -63,6 +63,12 @@ func CopyMap[K, V comparable](orig map[K]V) map[K]V {
 	return newCopy
 }
 
+// RemoveFromSlice removes the item at index index from slice,
+// returning a new slice.
+func RemoveFromSlice[T any](list []T, index int) []T {
+	return append(list[:index], list[index+1:]...)
+}
+
 // IsEmpty returns true if string s is empty. Strings that are all
 // whitespace are considered empty.
 func IsEmpty(s string) bool {

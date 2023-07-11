@@ -238,7 +238,36 @@ func BagItProfileSaveTag(c *gin.Context) {
 // POST /profiles/delete_tag/:profile_id/:tag_id
 // PUT  /profiles/delete_tag/:profile_id/:tag_id
 func BagItProfileDeleteTag(c *gin.Context) {
-
+	profile, tag, err := loadProfileAndTag(c)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	tagIndex := -1
+	for i, tagDef := range profile.Tags {
+		if tagDef.ID == tag.ID {
+			tagIndex = i
+			break
+		}
+	}
+	if tagIndex < 0 {
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Tag was not found in this BagIt profile"))
+		return
+	}
+	profile.Tags = util.RemoveFromSlice[*core.TagDefinition](profile.Tags, tagIndex)
+	err = core.ObjSave(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	query := url.Values{}
+	query.Set("tab", "navTagFilesTab")
+	query.Set("tagFile", tag.TagFile)
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /profiles/new_tag_file/:profile_id

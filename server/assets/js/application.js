@@ -91,7 +91,11 @@ function submitTagDefForm(formId) {
     submitFormInBackground(formId, onSuccess, onFail)
 }
 
-
+function deleteTagDef(formId) {
+    if (confirm("Delete this tag definition?")) {
+        submitTagDefForm(formId)
+    }
+}
 
 // Page init
 $(function () {
