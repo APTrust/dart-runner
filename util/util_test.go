@@ -410,6 +410,14 @@ func TestCopyMap(t *testing.T) {
 
 }
 
+func TestSplitAndTrim(t *testing.T) {
+	str := " one  \r\n   two   \r\n    three  \r\n"
+	values := util.SplitAndTrim(str, "\n")
+	assert.Equal(t, "one", values[0])
+	assert.Equal(t, "two", values[1])
+	assert.Equal(t, "three", values[2])
+}
+
 func TestFileCommonPrefix(t *testing.T) {
 	list1 := []string{
 		"/user/joe/photo",

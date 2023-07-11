@@ -69,6 +69,18 @@ func IsEmpty(s string) bool {
 	return strings.TrimSpace(s) == ""
 }
 
+// SlitAndTrim splits string s on the specified separator, then
+// trims leading and trailing whitespace from each item in the
+// resulting slice. Returns a slice of trimmed strings.
+func SplitAndTrim(s, sep string) []string {
+	values := strings.Split(s, sep)
+	trimmedValues := make([]string, len(values))
+	for i, val := range values {
+		trimmedValues[i] = strings.TrimSpace(val)
+	}
+	return trimmedValues
+}
+
 // IntListContains returns true if list contains item.
 func IntListContains(list []int, item int) bool {
 	if list != nil {

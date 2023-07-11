@@ -79,7 +79,8 @@ function submitTagDefForm(formId) {
     let onSuccess = function(response) {
         // We don't need to do anything here, since a successful
         // save results in a redirect.
-        console.log("Saved tag definition")
+        // console.log("Saved tag definition")
+        location.href = response.location
     }
     let onFail = function(xhr, status, err) {
         // Failure is typically a validation failure.

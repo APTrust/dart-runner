@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -171,9 +172,6 @@ func BagItProfileEditTag(c *gin.Context) {
 // POST /profiles/edit_tag/:profile_id/:tag_id
 // PUT  /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileSaveTag(c *gin.Context) {
-
-	// TODO: Respond with JSON? Or HTML?
-
 	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -183,6 +181,12 @@ func BagItProfileSaveTag(c *gin.Context) {
 		tag = &core.TagDefinition{}
 	}
 	c.Bind(tag)
+
+	// On the HTML form, allowed values are displayed in a textarea,
+	// with one item per line. We need to split this into multiple
+	// values.
+	tag.Values = util.SplitAndTrim(tag.Values[0], "\n")
+
 	if !tag.Validate() {
 		templateData := gin.H{
 			"bagItProfileID": profile.ID,
@@ -193,6 +197,9 @@ func BagItProfileSaveTag(c *gin.Context) {
 		return
 	}
 
+	// If this is an existing tag, replace the old version
+	// with the newly edited one. Otherwise, append it to the
+	// list of existing tags.
 	tagExists := false
 	for i, existingTag := range profile.Tags {
 		if existingTag.ID == tag.ID {
@@ -214,24 +221,18 @@ func BagItProfileSaveTag(c *gin.Context) {
 		return
 	}
 
-	// tagMap := make(map[string][]*core.TagDefinition)
-	// for _, name := range profile.TagFileNames() {
-	// 	tagMap[name] = profile.TagsInFile(name)
-	// }
-	// templateData := gin.H{
-	// 	"currentUrl":   c.Request.URL.Path,
-	// 	"showAsModal":  c.Query("modal") == "true",
-	// 	"tagFileNames": profile.TagFileNames(),
-	// 	"tagsInFile":   tagMap,
-	// }
+	// Bad practice returning JSON here, when we return HTML above.
+	// However, this XHR request is tricky to handle otherwise.
+	// On successful save, we want to redirect, not just re-render.
 
-	// Encode tab and name of tag file in query string
-	// so we display the correct view to the user.
 	query := url.Values{}
 	query.Set("tab", "navTagFilesTab")
 	query.Set("tagFile", tag.TagFile)
-	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()))
-
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /profiles/delete_tag/:profile_id/:tag_id
