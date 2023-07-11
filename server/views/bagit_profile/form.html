@@ -95,7 +95,7 @@
 <div class="bottom-buttons">
   <div class="pull-left">
   {{ if and .form.UserCanDelete .objectExistsInDB  }}
-    <a class="btn btn-danger" href="/profiles/delete/{{ .form.Fields.ID.Value }}" role="button">Delete Profile</a>
+    <button type="button" class="btn btn-danger" onclick="deleteProfile('#DeleteProfile-{{ .form.Fields.ID.Value }}')" role="button">Delete Profile</button>
   {{ end }}
     <a class="btn btn-outline-success" onclick="loadIntoModal('get', 'BagIt Profile', '/profiles/export/{{ .form.Fields.ID.Value }}', '')" role="button">Export Profile</a>
   </div>
@@ -113,8 +113,8 @@
 </form>
 
 {{ if and .form.UserCanDelete .objectExistsInDB }}
-<form method="post" id="{{ .form.ObjType }}Delete" action="/app_settings/delete/{{ .form.ObjectID }}" style="display:none">
-  <input type="hidden" name="ID" value=".form.ObjectID"/>
+<form id="DeleteProfile-{{ .form.Fields.ID.Value }}" method="post" action="/profiles/delete/{{ .form.Fields.ID.Value }}">
+  <input type="hidden" name="ID" value="{{ .form.Fields.ID.Value }}" />
 </form>
 {{ end }}
 

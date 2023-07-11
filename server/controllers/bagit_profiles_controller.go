@@ -22,7 +22,21 @@ func BagItProfileCreate(c *gin.Context) {
 // GET /profiles/delete/:id
 // POST /profiles/delete/:id
 func BagItProfileDelete(c *gin.Context) {
-
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	profile := result.BagItProfile()
+	err := core.ObjDelete(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	data := map[string]string{
+		"status":   "OK",
+		"location": "/profiles",
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // GET /profiles/edit/:id

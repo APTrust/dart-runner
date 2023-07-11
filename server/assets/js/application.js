@@ -29,6 +29,7 @@ function showModalContent (title, content) {
 
 function submitFormInBackground(formId, successCallback, failureCallback) {
     console.log("submitFormInBackground")
+    console.log(formId)
     
     let form = $(formId);
     if (form == null) {
@@ -79,7 +80,8 @@ function submitTagDefForm(formId) {
     let onSuccess = function(response) {
         // We don't need to do anything here, since a successful
         // save results in a redirect.
-        // console.log("Saved tag definition")
+        console.log("Tag definition operation succeeded")
+        console.log(response)
         location.href = response.location
     }
     let onFail = function(xhr, status, err) {
@@ -96,6 +98,13 @@ function deleteTagDef(formId) {
         submitTagDefForm(formId)
     }
 }
+
+function deleteProfile(formId) {
+    if (confirm("Delete this BagIt profile?")) {
+        submitTagDefForm(formId)
+    }
+}
+
 
 // Page init
 $(function () {
