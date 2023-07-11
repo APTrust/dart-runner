@@ -1,4 +1,4 @@
-// Global application script will go here.
+// Global JS
 
 function loadIntoModal (method, modalTitle, url, data = {}) {
     console.log(method)
@@ -90,3 +90,10 @@ function submitTagDefForm(formId) {
     }
     submitFormInBackground(formId, onSuccess, onFail)
 }
+
+
+
+// Page init
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
