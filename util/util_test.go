@@ -444,6 +444,39 @@ func TestRemoveFromSlice(t *testing.T) {
 	assert.Equal(t, 3, newS2[2])
 }
 
+func TestIsType(t *testing.T) {
+	intList := []int{1, 2, 3, 4}
+	intArray := [3]int{1, 2, 3}
+	strList := []string{"one", "two", "three"}
+	strArray := [3]string{"one", "two", "three"}
+	intValue := 9
+	strValue := "nine"
+	strMap := map[string]int{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+
+	// Test IsListType on the above objects
+	assert.True(t, util.IsListType(intList))
+	assert.True(t, util.IsListType(intArray))
+	assert.True(t, util.IsListType(strList))
+	assert.True(t, util.IsListType(strArray))
+
+	assert.False(t, util.IsListType(intValue))
+	assert.False(t, util.IsListType(strValue))
+	assert.False(t, util.IsListType(strMap))
+
+	// Test IsMapType on the above objects
+	assert.False(t, util.IsMapType(intList))
+	assert.False(t, util.IsMapType(intArray))
+	assert.False(t, util.IsMapType(strList))
+	assert.False(t, util.IsMapType(strArray))
+	assert.False(t, util.IsMapType(intValue))
+	assert.False(t, util.IsMapType(strValue))
+	assert.True(t, util.IsMapType(strMap))
+}
+
 func TestFileCommonPrefix(t *testing.T) {
 	list1 := []string{
 		"/user/joe/photo",

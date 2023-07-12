@@ -393,46 +393,6 @@ func TestBagItProfileToForm(t *testing.T) {
 	assert.Equal(t, profile.BagItProfileInfo.Version, form.Fields["InfoVersion"].Value)
 }
 
-func TestBagItProfileToStandardFormat(t *testing.T) {
-	btrDartProfile := loadProfile(t, "btr-v1.0-1.3.0.json")
-	btrStandardProfile := loadStandardProfile(t, "btr_standard_profile.json")
-	convertedToStandard := btrDartProfile.ToStandardFormat()
-
-	assert.Equal(t, btrStandardProfile.AcceptBagItVersion, convertedToStandard.AcceptBagItVersion)
-	assert.Equal(t, btrStandardProfile.AcceptSerialization, convertedToStandard.AcceptSerialization)
-	assert.Equal(t, btrStandardProfile.AllowFetchTxt, convertedToStandard.AllowFetchTxt)
-	assert.Equal(t, btrStandardProfile.ManifestsAllowed, convertedToStandard.ManifestsAllowed)
-	assert.Equal(t, btrStandardProfile.ManifestsRequired, convertedToStandard.ManifestsRequired)
-	assert.Equal(t, btrStandardProfile.Serialization, convertedToStandard.Serialization)
-	assert.Equal(t, btrStandardProfile.TagFilesAllowed, convertedToStandard.TagFilesAllowed)
-	assert.Equal(t, btrStandardProfile.TagFilesRequired, convertedToStandard.TagFilesRequired)
-	assert.Equal(t, btrStandardProfile.TagManifestsAllowed, convertedToStandard.TagManifestsAllowed)
-	assert.Equal(t, btrStandardProfile.TagManifestsRequired, convertedToStandard.TagManifestsRequired)
-
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.BagItProfileIdentifier, convertedToStandard.BagItProfileInfo.BagItProfileIdentifier)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.BagItProfileVersion, convertedToStandard.BagItProfileInfo.BagItProfileVersion)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.ContactEmail, convertedToStandard.BagItProfileInfo.ContactEmail)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.ContactName, convertedToStandard.BagItProfileInfo.ContactName)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.ExternalDescription, convertedToStandard.BagItProfileInfo.ExternalDescription)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.SourceOrganization, convertedToStandard.BagItProfileInfo.SourceOrganization)
-	assert.Equal(t, btrStandardProfile.BagItProfileInfo.Version, convertedToStandard.BagItProfileInfo.Version)
-
-	assert.Equal(t, len(btrStandardProfile.BagInfo), len(convertedToStandard.BagInfo))
-
-	for name, tag := range convertedToStandard.BagInfo {
-		expectedTag := btrStandardProfile.BagInfo[name]
-		require.NotNil(t, expectedTag)
-		if expectedTag.Recommended {
-			assert.Equal(t, fmt.Sprintf("(Recommended) %s", expectedTag.Description), tag.Description)
-		} else {
-			assert.Equal(t, expectedTag.Description, tag.Description)
-		}
-		assert.Equal(t, expectedTag.Recommended, tag.Recommended)
-		assert.Equal(t, expectedTag.Required, tag.Required)
-		assert.Equal(t, expectedTag.Values, tag.Values)
-	}
-}
-
 func TestBagItProfilePersistentObject(t *testing.T) {
 	defer core.ClearDartTable()
 

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"sort"
@@ -87,13 +88,29 @@ func SplitAndTrim(s, sep string) []string {
 	return trimmedValues
 }
 
+// IsListType returns true if obj is a slice or array.
+func IsListType(obj interface{}) bool {
+	if obj == nil {
+		return false
+	}
+	rt := reflect.TypeOf(obj)
+	return rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array
+}
+
+// IsMapType returns true if obj is a map.
+func IsMapType(obj interface{}) bool {
+	if obj == nil {
+		return false
+	}
+	rt := reflect.TypeOf(obj)
+	return rt.Kind() == reflect.Map
+}
+
 // IntListContains returns true if list contains item.
 func IntListContains(list []int, item int) bool {
-	if list != nil {
-		for i := range list {
-			if list[i] == item {
-				return true
-			}
+	for i := range list {
+		if list[i] == item {
+			return true
 		}
 	}
 	return false

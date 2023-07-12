@@ -12,7 +12,7 @@ import (
 )
 
 func loadStandardProfile(t *testing.T, name string) *core.StandardProfile {
-	filename := path.Join(util.ProjectRoot(), "testdata", "files", name)
+	filename := path.Join(util.ProjectRoot(), "testdata", "profiles", name)
 	jsonBytes, err := os.ReadFile(filename)
 	require.Nil(t, err)
 	profile, err := core.StandardProfileFromJson(jsonBytes)
