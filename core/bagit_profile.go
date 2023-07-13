@@ -46,6 +46,7 @@ type BagItProfile struct {
 
 func NewBagItProfile() *BagItProfile {
 	profile := &BagItProfile{
+		ID:                   uuid.NewString(),
 		AcceptBagItVersion:   make([]string, len(constants.AcceptBagItVersion)),
 		AcceptSerialization:  make([]string, len(constants.AcceptSerialization)),
 		AllowFetchTxt:        false,
@@ -181,6 +182,7 @@ func (p *BagItProfile) initBagInfoTxt() {
 	for _, tagName := range tags {
 		if p.GetTagDef("bag-info.txt", tagName) == nil {
 			tag := &TagDefinition{
+				ID:       uuid.NewString(),
 				TagFile:  "bag-info.txt",
 				TagName:  tagName,
 				Required: false,

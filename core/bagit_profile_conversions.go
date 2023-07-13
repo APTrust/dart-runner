@@ -2,10 +2,13 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/stew/slice"
 )
 
@@ -112,4 +115,90 @@ func GuessProfileType(obj map[string]interface{}) string {
 		}
 	}
 	return profileType
+}
+
+func ProfileFromLOCOrdered(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
+	locOrderedProfile := &LOCOrderedProfile{}
+	err := json.Unmarshal(jsonBytes, locOrderedProfile)
+	if err != nil {
+		return nil, err
+	}
+	profile := NewBagItProfile()
+	profile.Name = getProfileName(sourceUrl)
+	profile.Description = profile.Name
+	for _, tagMap := range locOrderedProfile.Tags {
+		for tagName, locTagDef := range tagMap {
+			err = convertLOCTag(profile, tagName, locTagDef)
+			if err != nil {
+				return profile, err
+			}
+		}
+	}
+	return profile, nil
+}
+
+func ProfileFromLOCUnordered(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
+	locUnorderedProfile := make(map[string]LOCTagDef)
+	err := json.Unmarshal(jsonBytes, &locUnorderedProfile)
+	if err != nil {
+		return nil, err
+	}
+	profile := NewBagItProfile()
+	profile.Name = getProfileName(sourceUrl)
+	profile.Description = profile.Name
+	for tagName, locTagDef := range locUnorderedProfile {
+		err = convertLOCTag(profile, tagName, locTagDef)
+		if err != nil {
+			return profile, err
+		}
+	}
+	return profile, nil
+}
+
+func convertLOCTag(profile *BagItProfile, tagName string, locTagDef LOCTagDef) error {
+	var tagDef *TagDefinition
+	matchingTags, err := profile.FindMatchingTags("TagName", tagName)
+	if err != nil {
+		return err
+	}
+
+	// LOC profiles only define tags for the bag-info.txt file.
+	// If our DART profile already defines that tag in bag-info.txt,
+	// let's edit that tag definition instead of creating and appending
+	// a new/redundant tag def.
+	for _, t := range matchingTags {
+		if t.TagFile == "bag-info.txt" {
+			tagDef = t
+			break
+		}
+	}
+	if tagDef == nil {
+		// Not found in existing DART profile, so we'll create a new tag def.
+		tagDef = &TagDefinition{
+			ID:      uuid.NewString(),
+			TagFile: "bag-info.txt",
+			TagName: tagName,
+		}
+		profile.Tags = append(profile.Tags, tagDef)
+	}
+
+	// Now set the values
+	tagDef.Required = locTagDef.Required
+	tagDef.DefaultValue = locTagDef.DefaultValue
+	copy(tagDef.Values, locTagDef.Values)
+	if locTagDef.RequiredValue != "" {
+		tagDef.Required = true
+		tagDef.Values = []string{locTagDef.RequiredValue}
+		tagDef.DefaultValue = locTagDef.RequiredValue
+	}
+
+	return nil
+}
+
+func getProfileName(sourceUrl string) string {
+	name := fmt.Sprintf("Imported Profile %s", time.Now().Format(time.RFC3339))
+	if sourceUrl != "" {
+		name = fmt.Sprintf("Profile imported from %s", sourceUrl)
+	}
+	return name
 }

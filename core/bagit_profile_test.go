@@ -288,6 +288,7 @@ func TestBagItProfilePersistence(t *testing.T) {
 func TestBagItProfileValidation(t *testing.T) {
 	defer core.ClearDartTable()
 	p := core.NewBagItProfile()
+	p.ID = ""
 	p.AcceptBagItVersion = make([]string, 0)
 	p.AcceptSerialization = make([]string, 0)
 	p.Tags = make([]*core.TagDefinition, 0)
