@@ -37,6 +37,23 @@ func TestNewBagItProfile(t *testing.T) {
 	assert.NotNil(t, p.TagManifestsAllowed)
 	assert.NotNil(t, p.TagManifestsRequired)
 	assert.NotNil(t, p.Tags)
+
+	// Make sure basic tag definitions are present
+	// for bagit.txt and bag-info.txt.
+	bagitTags, err := p.FindMatchingTags("TagFile", "bagit.txt")
+	require.Nil(t, err)
+	assert.Equal(t, 2, len(bagitTags))
+	for _, tag := range bagitTags {
+		assert.True(t, tag.Required)
+	}
+
+	bagitTags, err = p.FindMatchingTags("TagFile", "bag-info.txt")
+	require.Nil(t, err)
+	assert.Equal(t, 15, len(bagitTags))
+	for _, tag := range bagitTags {
+		assert.False(t, tag.Required)
+	}
+
 }
 
 // This also implicitly tests BagItProfileFromJson
