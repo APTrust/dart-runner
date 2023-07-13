@@ -273,6 +273,7 @@ func TestBagItProfileValidation(t *testing.T) {
 	p := core.NewBagItProfile()
 	p.AcceptBagItVersion = make([]string, 0)
 	p.AcceptSerialization = make([]string, 0)
+	p.Tags = make([]*core.TagDefinition, 0)
 	p.Serialization = ""
 	assert.False(t, p.Validate())
 

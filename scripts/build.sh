@@ -39,4 +39,4 @@ mkdir -p dist/linux
 GOOS=linux GOARCH=amd64 go build -o dist/linux/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
 echo "Version info from latest build:"
-dist/linux/dart-runner --version
+dist/mac-x64/dart-runner --version

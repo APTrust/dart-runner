@@ -38,7 +38,7 @@ func build(t *testing.T) {
 	buildScript := path.Join(util.ProjectRoot(), "scripts", "build.sh")
 	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, os.Environ(), nil)
 	assert.NotEmpty(t, stdout)
-	assert.Equal(t, 0, exitCode, stderr)
+	assert.Equal(t, 0, exitCode, string(stderr))
 	if exitCode == 0 {
 		setupSucceeded = true
 	}
@@ -46,9 +46,15 @@ func build(t *testing.T) {
 
 // runner returns the path to the dart-runner executable created by build()
 func runner() string {
-	osName := "mac"
+	osName := "windows"
 	if runtime.GOOS == "linux" {
 		osName = "linux"
+	} else if runtime.GOOS == "darwin" {
+		if runtime.GOARCH == "amd64" {
+			osName = "mac-x64"
+		} else {
+			osName = "mac-arm64"
+		}
 	}
 	return path.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
 }
@@ -101,7 +107,7 @@ func TestRunJobCommand(t *testing.T) {
 	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()
 	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
-	require.Nil(t, err)
+	require.Nil(t, err, command)
 	require.True(t, len(string(jobParamsJson)) > 100)
 	args := []string{
 		fmt.Sprintf("--workflow=%s/postbuild_test_workflow.json", filesDir),
@@ -109,6 +115,10 @@ func TestRunJobCommand(t *testing.T) {
 	}
 	stdout, stderr, exitCode := util.ExecCommand(command, args, envForRunner(), jobParamsJson)
 	assert.NotEmpty(t, stdout)
+	if len(stderr) > 0 {
+		fmt.Println("JSON output from failed workflow test:")
+		fmt.Println(string(stdout))
+	}
 	assert.Empty(t, stderr, string(stderr))
 	require.Equal(t, 0, exitCode)
 

@@ -1,8 +1,8 @@
 package server
 
 import (
+	"html/template"
 	"io"
-	"text/template"
 
 	"github.com/APTrust/dart-runner/server/controllers"
 	"github.com/APTrust/dart-runner/util"

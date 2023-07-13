@@ -61,6 +61,8 @@ func NewBagItProfile() *BagItProfile {
 	}
 	copy(profile.AcceptBagItVersion, constants.AcceptBagItVersion)
 	copy(profile.AcceptSerialization, constants.AcceptSerialization)
+	profile.initBagitTxt()
+	profile.initBagInfoTxt()
 	return profile
 }
 
@@ -128,6 +130,65 @@ func (p *BagItProfile) ToJSON() (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func (p *BagItProfile) initBagitTxt() {
+	// BagIt spec says these two tags in bagit.txt file
+	// are always required.
+	if p.GetTagDef("bagit.txt", "Bagit-Version") == nil {
+		var version = &TagDefinition{
+			ID:           uuid.NewString(),
+			TagFile:      "bagit.txt",
+			TagName:      "BagIt-Version",
+			Required:     true,
+			DefaultValue: "1.0",
+			Help:         "Which version of the BagIt specification describes this bag's format?",
+		}
+		copy(version.Values, constants.AcceptBagItVersion)
+		p.Tags = append(p.Tags, version)
+	}
+	if p.GetTagDef("bagit.txt", "Tag-File-Character-Encoding") == nil {
+		var encoding = &TagDefinition{
+			ID:           uuid.NewString(),
+			TagFile:      "bagit.txt",
+			TagName:      "Tag-File-Character-Encoding",
+			Required:     true,
+			DefaultValue: "UTF-8",
+			Help:         "How are this bag's plain-text tag files encoded? (Hint: usually UTF-8)",
+		}
+		p.Tags = append(p.Tags, encoding)
+	}
+}
+
+func (p *BagItProfile) initBagInfoTxt() {
+	tags := []string{
+		"Bag-Count",
+		"Bag-Group-Identifier",
+		"Bag-Size",
+		"Bagging-Date",
+		"Bagging-Software",
+		"Contact-Email",
+		"Contact-Name",
+		"Contact-Phone",
+		"External-Description",
+		"External-Identifier",
+		"Internal-Sender-Description",
+		"Internal-Sender-Identifier",
+		"Organization-Address",
+		"Payload-Oxum",
+		"Source-Organization",
+	}
+	for _, tagName := range tags {
+		if p.GetTagDef("bag-info.txt", tagName) == nil {
+			tag := &TagDefinition{
+				TagFile:  "bag-info.txt",
+				TagName:  tagName,
+				Required: false,
+			}
+			p.Tags = append(p.Tags, tag)
+		}
+	}
+
 }
 
 // GetTagDef returns the TagDefinition for the specified tag file
