@@ -8,7 +8,8 @@ fi
 COMMIT=$(git rev-parse --short HEAD)
 TAG=$(git describe --tags 2> /dev/null)
 DATE=$(date +%Y-%m-%d)
-OS=$(uname -ms)
+OS=$(uname -s)
+ARCH=$(uname -m)
 
 BUILD_TAGS=""
 
@@ -39,4 +40,14 @@ mkdir -p dist/linux
 GOOS=linux GOARCH=amd64 go build -o dist/linux/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
 echo "Version info from latest build:"
-dist/mac-x64/dart-runner --version
+if [[ "$OS" == "Darwin" ]]; then
+    if [[ "$ARCH" == "x86_64" ]]; then
+        dist/mac-x64/dart-runner --version
+    else 
+        dist/mac-arm64/dart-runner --version
+    fi
+elif [[ "$OS" == "Linux" ]]; then
+    dist/linux/dart-runner --version
+else 
+    dist/windows/dart-runner --version
+fi
