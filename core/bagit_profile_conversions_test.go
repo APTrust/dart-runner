@@ -125,3 +125,141 @@ func testGuessProfileTypeFromJson(t *testing.T, jsonData []byte, expectedType st
 	require.Nil(t, err)
 	assert.Equal(t, expectedType, profileType)
 }
+
+func TestConvertFromLOCOrdered(t *testing.T) {
+	jsonData := loadTestProfile(t, "loc", "SANC-state-profile.json")
+	profile, err := core.ConvertProfile(jsonData, "https://example.com/ordered-profile.json")
+	require.Nil(t, err)
+	require.NotNil(t, profile)
+
+	assert.Equal(t, "Profile imported from https://example.com/ordered-profile.json", profile.Name)
+	assert.Equal(t, "Profile imported from https://example.com/ordered-profile.json", profile.Description)
+
+	expectedTagNames := []string{
+		"itemNumber",
+		"rcNumber",
+		"transferringAgencyName",
+		"creatingAgencyName",
+		"creatingAgencySubdivision",
+		"transferringEmployee",
+		"receivingInstitution",
+		"receivingInstitutionAddress",
+		"datesOfRecords (YYYY-MM-DD) - (YYYY-MM-DD)",
+		"digitalOriginality",
+		"Classification (for Access)",
+		"digitalContentStructure",
+		"Notes",
+	}
+	for _, tagName := range expectedTagNames {
+		tag, _ := profile.FirstMatchingTag("TagName", tagName)
+		assert.NotNil(t, tag, tagName)
+	}
+
+	tag, _ := profile.FirstMatchingTag("TagName", "receivingInstitutionAddress")
+	assert.Equal(t, "109 E. Jones St. Raleigh, NC 27601", tag.DefaultValue)
+	assert.True(t, tag.Required)
+
+	tag, _ = profile.FirstMatchingTag("TagName", "Classification (for Access)")
+	assert.Equal(t, "???", tag.DefaultValue)
+	assert.Equal(t, 6, len(tag.Values))
+	assert.True(t, tag.Required)
+}
+
+func TestConvertFromLOCUnordered(t *testing.T) {
+	jsonData := loadTestProfile(t, "loc", "unordered-loc-profile.json")
+	profile, err := core.ConvertProfile(jsonData, "https://example.com/unordered-profile.json")
+	require.Nil(t, err)
+	require.NotNil(t, profile)
+
+	assert.Equal(t, "Profile imported from https://example.com/unordered-profile.json", profile.Name)
+	assert.Equal(t, "Profile imported from https://example.com/unordered-profile.json", profile.Description)
+
+	expectedTagNames := []string{
+		"Send-To-Name",
+		"Send-To-Phone",
+		"Send-To-Email",
+		"External-Identifier",
+		"Media-Identifiers",
+		"Number-Of-Media-Shipped",
+		"Additional-Equipment",
+		"Ship-Date",
+		"Ship-Method",
+		"Ship-Tracking-Number",
+		"Ship-Media",
+		"Ship-To-Address",
+	}
+
+	for _, tagName := range expectedTagNames {
+		tag, _ := profile.FirstMatchingTag("TagName", tagName)
+		assert.NotNil(t, tag, tagName)
+	}
+
+	// Make sure this was overwritten correctly
+	tag, _ := profile.FirstMatchingTag("TagName", "External-Identifier")
+	assert.True(t, tag.Required)
+
+	tag, _ = profile.FirstMatchingTag("TagName", "Ship-To-Address")
+	assert.Equal(t, "World Digital Library, Library of Congress, 101 Independence Ave, SE, Washington, DC 20540 USA", tag.DefaultValue)
+	assert.True(t, tag.Required)
+}
+
+func TestConvertFromStandardProfile(t *testing.T) {
+	stdProfileJson := loadTestProfile(t, "standard", "bagProfileBar.json")
+	standardProfile, err := core.StandardProfileFromJson(stdProfileJson)
+	require.Nil(t, err)
+	require.NotNil(t, standardProfile)
+
+	jsonData := loadTestProfile(t, "standard", "bagProfileBar.json")
+	profile, err := core.ConvertProfile(jsonData, "")
+	require.Nil(t, err)
+	require.NotNil(t, profile)
+
+	assert.Equal(t, standardProfile.AcceptBagItVersion, profile.AcceptBagItVersion)
+	assert.Equal(t, standardProfile.AcceptSerialization, profile.AcceptSerialization)
+
+	assert.Equal(t, standardProfile.AllowFetchTxt, profile.AllowFetchTxt)
+
+	assert.Equal(t, standardProfile.BagItProfileInfo.BagItProfileIdentifier, profile.BagItProfileInfo.BagItProfileIdentifier)
+	assert.Equal(t, standardProfile.BagItProfileInfo.BagItProfileVersion, profile.BagItProfileInfo.BagItProfileVersion)
+	assert.Equal(t, standardProfile.BagItProfileInfo.ContactEmail, profile.BagItProfileInfo.ContactEmail)
+	assert.Equal(t, standardProfile.BagItProfileInfo.ContactName, profile.BagItProfileInfo.ContactName)
+	assert.Equal(t, standardProfile.BagItProfileInfo.ExternalDescription, profile.BagItProfileInfo.ExternalDescription)
+	assert.Equal(t, standardProfile.BagItProfileInfo.SourceOrganization, profile.BagItProfileInfo.SourceOrganization)
+	assert.Equal(t, standardProfile.BagItProfileInfo.Version, profile.BagItProfileInfo.Version)
+
+	assert.Equal(t, standardProfile.ManifestsAllowed, profile.ManifestsAllowed)
+	assert.Equal(t, standardProfile.ManifestsRequired, profile.ManifestsRequired)
+	assert.Equal(t, standardProfile.Serialization, profile.Serialization)
+	assert.Equal(t, standardProfile.TagFilesAllowed, profile.TagFilesAllowed)
+	assert.Equal(t, standardProfile.TagFilesRequired, profile.TagFilesRequired)
+	assert.Equal(t, standardProfile.TagManifestsAllowed, profile.TagManifestsAllowed)
+	assert.Equal(t, standardProfile.TagManifestsRequired, profile.TagManifestsRequired)
+
+	for tagName, stdTagDef := range standardProfile.BagInfo {
+		tag, _ := profile.FirstMatchingTag("TagName", tagName)
+		assert.NotNil(t, tag)
+		assert.Equal(t, "bag-info.txt", tag.TagFile)
+		assert.Equal(t, tagName, tag.TagName)
+		assert.Equal(t, stdTagDef.Required, tag.Required)
+		assert.Equal(t, stdTagDef.Values, tag.Values)
+		help := stdTagDef.Description
+		if stdTagDef.Recommended {
+			help = fmt.Sprintf("(Recommended) %s", stdTagDef.Description)
+		}
+		assert.Equal(t, help, tag.Help)
+	}
+}
+
+func TestConvertFromDartProfile(t *testing.T) {
+	pathToFile := path.Join(util.ProjectRoot(), "testdata", "profiles", "multi_manifest.json")
+	multiManifestProfile, err := core.BagItProfileLoad(pathToFile)
+	require.Nil(t, err)
+	require.NotNil(t, multiManifestProfile)
+
+	jsonData := loadTestProfile(t, "", "multi_manifest.json")
+	profile, err := core.ConvertProfile(jsonData, "")
+	require.Nil(t, err)
+	require.NotNil(t, profile)
+
+	assert.Equal(t, multiManifestProfile, profile)
+}

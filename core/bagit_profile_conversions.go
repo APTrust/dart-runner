@@ -186,6 +186,7 @@ func convertLOCTag(profile *BagItProfile, tagName string, locTagDef LOCTagDef) e
 			ID:      uuid.NewString(),
 			TagFile: "bag-info.txt",
 			TagName: tagName,
+			Values:  make([]string, len(locTagDef.Values)),
 		}
 		profile.Tags = append(profile.Tags, tagDef)
 	}
@@ -212,10 +213,14 @@ func getProfileName(sourceUrl string) string {
 	return name
 }
 
-// ImportProfile imports a BagIt profile into our local database. Accepted profile
+// ConvertProfile converts a BagIt profile from a known format to a
+// DART BagIt profile. It does not try to save the profile, because some
+// imported profiles may not have all required info, and that will cause
+// an error. User should be able to convert the profile and then edit it
+// to correct missing or invalid properties. Accepted profile
 // formats include Dart, Standard, LOC Ordered, and LOC Unordered.
-func ImportProfile(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
-	var dartProfile *BagItProfile
+func ConvertProfile(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
+	dartProfile := &BagItProfile{}
 	profileType, err := GuessProfileTypeFromJson(jsonBytes)
 	if err != nil {
 		return nil, err
@@ -236,9 +241,6 @@ func ImportProfile(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
 		dartProfile, err = ProfileFromLOCUnordered(jsonBytes, sourceUrl)
 	default:
 		err = fmt.Errorf("Cannot convert unrecognized BagIt profile type.")
-	}
-	if err == nil && dartProfile != nil && util.LooksLikeUUID(dartProfile.ID) {
-		err = ObjSave(dartProfile)
 	}
 	return dartProfile, err
 }

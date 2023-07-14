@@ -92,13 +92,21 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	p.Description = sp.BagItProfileInfo.ExternalDescription
 	p.ID = uuid.NewString()
 	p.IsBuiltIn = false
-	p.ManifestsAllowed = sp.ManifestsAllowed
-	p.ManifestsRequired = sp.ManifestsRequired
 	p.Serialization = sp.Serialization
-	p.TagFilesAllowed = sp.TagFilesAllowed
-	p.TagFilesRequired = sp.TagFilesRequired
-	p.TagManifestsAllowed = sp.TagManifestsAllowed
-	p.TagManifestsRequired = sp.TagManifestsRequired
+
+	p.ManifestsAllowed = make([]string, len(sp.ManifestsAllowed))
+	p.ManifestsRequired = make([]string, len(sp.ManifestsRequired))
+	p.TagFilesAllowed = make([]string, len(sp.TagFilesAllowed))
+	p.TagFilesRequired = make([]string, len(sp.TagFilesRequired))
+	p.TagManifestsAllowed = make([]string, len(sp.TagManifestsAllowed))
+	p.TagManifestsRequired = make([]string, len(sp.TagManifestsRequired))
+
+	copy(p.ManifestsAllowed, sp.ManifestsAllowed)
+	copy(p.ManifestsRequired, sp.ManifestsRequired)
+	copy(p.TagFilesAllowed, sp.TagFilesAllowed)
+	copy(p.TagFilesRequired, sp.TagFilesRequired)
+	copy(p.TagManifestsAllowed, sp.TagManifestsAllowed)
+	copy(p.TagManifestsRequired, sp.TagManifestsRequired)
 
 	if sp.BagItProfileInfo.SourceOrganization != "" && sp.BagItProfileInfo.Version != "" {
 		p.Name = fmt.Sprintf("%s (version %s)", sp.BagItProfileInfo.SourceOrganization, sp.BagItProfileInfo.Version)
