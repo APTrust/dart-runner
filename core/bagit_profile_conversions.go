@@ -117,6 +117,8 @@ func GuessProfileType(obj map[string]interface{}) string {
 	return profileType
 }
 
+// ProfileFromLOCOrdered converts the JSON representation of an
+// ordered Library of Congress BagIt profile to a DART BagIt profile.
 func ProfileFromLOCOrdered(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
 	locOrderedProfile := &LOCOrderedProfile{}
 	err := json.Unmarshal(jsonBytes, locOrderedProfile)
@@ -137,6 +139,8 @@ func ProfileFromLOCOrdered(jsonBytes []byte, sourceUrl string) (*BagItProfile, e
 	return profile, nil
 }
 
+// ProfileFromLOCUnordered converts the JSON representation of an
+// unordered Library of Congress BagIt profile to a DART BagIt profile.
 func ProfileFromLOCUnordered(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
 	locUnorderedProfile := make(map[string]LOCTagDef)
 	err := json.Unmarshal(jsonBytes, &locUnorderedProfile)
@@ -155,8 +159,12 @@ func ProfileFromLOCUnordered(jsonBytes []byte, sourceUrl string) (*BagItProfile,
 	return profile, nil
 }
 
+// convertLOCTag converts a Library of Congress tag definition to a DART tag def.
 func convertLOCTag(profile *BagItProfile, tagName string, locTagDef LOCTagDef) error {
 	var tagDef *TagDefinition
+
+	// There should never be an error here, unless we search on an
+	// unsupported field. TagName is supported.
 	matchingTags, err := profile.FindMatchingTags("TagName", tagName)
 	if err != nil {
 		return err
@@ -195,10 +203,42 @@ func convertLOCTag(profile *BagItProfile, tagName string, locTagDef LOCTagDef) e
 	return nil
 }
 
+// getProfileName returns a placeholder name for a newly imported profile.
 func getProfileName(sourceUrl string) string {
 	name := fmt.Sprintf("Imported Profile %s", time.Now().Format(time.RFC3339))
 	if sourceUrl != "" {
 		name = fmt.Sprintf("Profile imported from %s", sourceUrl)
 	}
 	return name
+}
+
+// ImportProfile imports a BagIt profile into our local database. Accepted profile
+// formats include Dart, Standard, LOC Ordered, and LOC Unordered.
+func ImportProfile(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
+	var dartProfile *BagItProfile
+	profileType, err := GuessProfileTypeFromJson(jsonBytes)
+	if err != nil {
+		return nil, err
+	}
+	switch profileType {
+	case constants.ProfileTypeDart:
+		err = json.Unmarshal(jsonBytes, dartProfile)
+	case constants.ProfileTypeStandard:
+		standardProfile := &StandardProfile{}
+		err = json.Unmarshal(jsonBytes, standardProfile)
+		if err != nil {
+			return nil, err
+		}
+		dartProfile = standardProfile.ToDartProfile()
+	case constants.ProfileTypeLOCOrdered:
+		dartProfile, err = ProfileFromLOCOrdered(jsonBytes, sourceUrl)
+	case constants.ProfileTypeLOCUnordered:
+		dartProfile, err = ProfileFromLOCUnordered(jsonBytes, sourceUrl)
+	default:
+		err = fmt.Errorf("Cannot convert unrecognized BagIt profile type.")
+	}
+	if err == nil && dartProfile != nil && util.LooksLikeUUID(dartProfile.ID) {
+		err = ObjSave(dartProfile)
+	}
+	return dartProfile, err
 }
