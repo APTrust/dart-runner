@@ -19,6 +19,8 @@ const (
 	FileTypePayload          = "payload file"
 	FileTypeTag              = "tag file"
 	FileTypeTagManifest      = "tag manifest"
+	ImportSourceUrl          = "url"
+	ImportSourceJson         = "json"
 	ItemTypeFile             = "file"
 	ItemTypeWorkResult       = "work result"
 	MaxS3ObjectSize          = int64(5497558138880) // 5TB
@@ -41,6 +43,7 @@ const (
 	SerializationRequired    = "required"
 	TypeAppSetting           = "AppSetting"
 	TypeBagItProfile         = "BagItProfile"
+	TypeBagItProfileImport   = "BagItProfileImport"
 	TypeInternalSetting      = "InternalSetting"
 	TypeRemoteRepository     = "RemoteRepository"
 	TypeStorageService       = "StorageService"

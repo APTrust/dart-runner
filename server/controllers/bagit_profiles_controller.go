@@ -107,6 +107,9 @@ func BagItProfileImportStart(c *gin.Context) {
 
 // POST /profiles/import
 func BagItProfileImport(c *gin.Context) {
+
+	// TODO: User core.BagItProfileImport instead.
+
 	importSource := c.PostForm("importSource")
 	importUrl := c.PostForm("txtUrl")
 	jsonData := []byte(c.PostForm("txtJson"))

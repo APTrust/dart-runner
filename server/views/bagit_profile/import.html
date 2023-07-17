@@ -58,20 +58,6 @@ function importSourceTextAreaClick(e) {
 $(function () {
   $('#importSourceUrl').click(importSourceUrlClick);
   $('#importSourceTextArea').click(importSourceTextAreaClick);
-  $("#profileImportForm").on( "submit", function(event) {
-    let source = $('input[name="importSource"]:checked')
-    if (source.val() == "URL" && $('#txtUrl').val().trim() == "") {
-      alert("Please specify a URL")
-      event.preventDefault()
-      return false
-    }
-    if (source.val() == "TextArea" && $('#txtJson').val().trim() == "") {
-      alert("Please enter the profile JSON")
-      event.preventDefault()
-      return false
-    }
-    return true
-  })
 })
 </script>
 
