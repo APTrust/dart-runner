@@ -435,5 +435,24 @@ func TestBagItProfilePersistentObject(t *testing.T) {
 	assert.Equal(t, 2, len(profile.GetErrors()))
 	assert.Equal(t, "Message 1", profile.GetErrors()["Error 1"])
 	assert.Equal(t, "Message 2", profile.GetErrors()["Error 2"])
+}
 
+func TestNewBagItProfileCreationForm(t *testing.T) {
+	defer core.ClearDartTable()
+
+	profilesToLoad := []string{
+		"aptrust-v2.2.json",
+		"btr-v1.0.json",
+		"empty_profile.json",
+	}
+	for _, name := range profilesToLoad {
+		profile := loadProfile(t, name)
+		require.Nil(t, core.ObjSave(profile))
+	}
+
+	form, err := core.NewBagItProfileCreationForm()
+	require.Nil(t, err)
+	field := form.Fields["BaseProfileID"]
+	require.NotNil(t, field)
+	assert.Equal(t, len(profilesToLoad), len(field.Choices))
 }

@@ -465,3 +465,26 @@ func (p *BagItProfile) ToForm() *Form {
 
 	return form
 }
+
+// NewBagItProfileCreationForm returns a form for starting the
+// BagIt Profile creation process. This form contains only a single
+// element: a select list containing a list of base profiles on
+// which to base the new profile.
+func NewBagItProfileCreationForm() (*Form, error) {
+	form := NewForm(constants.TypeBagItProfile, constants.EmptyUUID, nil)
+	result := ObjList(constants.TypeBagItProfile, "obj_name", 10000, 0)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	choices := make([]Choice, len(result.BagItProfiles))
+	for i, profile := range result.BagItProfiles {
+		choices[i] = Choice{
+			Label:    profile.Name,
+			Value:    profile.ID,
+			Selected: false,
+		}
+	}
+	baseProfileID := form.AddField("BaseProfileID", "BaseProfileID", "", true)
+	baseProfileID.Choices = choices
+	return form, nil
+}
