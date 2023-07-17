@@ -102,12 +102,43 @@ func BagItProfileNew(c *gin.Context) {
 
 // GET /profiles/import_start
 func BagItProfileImportStart(c *gin.Context) {
-
+	c.HTML(http.StatusOK, "bagit_profile/import.html", gin.H{})
 }
 
 // POST /profiles/import
 func BagItProfileImport(c *gin.Context) {
-
+	importSource := c.PostForm("importSource")
+	importUrl := c.PostForm("txtUrl")
+	jsonData := []byte(c.PostForm("txtJson"))
+	if importSource == "URL" {
+		if !util.LooksLikeURL(importUrl) {
+			data := gin.H{
+				"flash": "Please specificy a valid URL.",
+			}
+			c.HTML(http.StatusOK, "bagit_profile/import.html", data)
+		}
+		response, err := http.Get(importUrl)
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		_, err = response.Body.Read(jsonData)
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+	profile, err := core.ConvertProfile(jsonData, importUrl)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	err = core.ObjSave(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", profile.ID))
 }
 
 // GET /profiles/export/:id

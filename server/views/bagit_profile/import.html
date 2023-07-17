@@ -2,6 +2,8 @@
 
 {{ template "partials/page_header.html" . }}
 
+<form action="/profiles/import" method="post" id="profileImportForm">
+
 <div class="form-group" id="importSourceContainer">
     <div class="form-check">
         <input class="form-check-input" type="radio" name="importSource" id="importSourceUrl" value="URL">
@@ -31,12 +33,47 @@
 
 <div class="bottom-buttons">
   <div class="pull-right">
-    <button class="btn btn-primary" type="button" id="btnImport">Import</button>
+    <button type="submit" class="btn btn-primary" type="button" id="btnImport">Import</button>
   </div>
   <div class="pull-right mr-3">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+    <a role="button" class="btn btn-secondary" href="/profiles">Cancel</a>
   </div>
 </div>
+
+</form>
+
+
+<script>
+function importSourceUrlClick(e) {
+    $('#txtJsonContainer').hide()
+    $('#txtUrlContainer').show()
+}
+
+function importSourceTextAreaClick(e) {
+    $('#txtUrlContainer').hide()
+    $('#txtJsonContainer').show()
+}
+
+// Page init
+$(function () {
+  $('#importSourceUrl').click(importSourceUrlClick);
+  $('#importSourceTextArea').click(importSourceTextAreaClick);
+  $("#profileImportForm").on( "submit", function(event) {
+    let source = $('input[name="importSource"]:checked')
+    if (source.val() == "URL" && $('#txtUrl').val().trim() == "") {
+      alert("Please specify a URL")
+      event.preventDefault()
+      return false
+    }
+    if (source.val() == "TextArea" && $('#txtJson').val().trim() == "") {
+      alert("Please enter the profile JSON")
+      event.preventDefault()
+      return false
+    }
+    return true
+  })
+})
+</script>
 
 
 {{ template "partials/page_footer.html" .}}

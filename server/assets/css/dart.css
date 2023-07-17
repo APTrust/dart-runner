@@ -4,7 +4,8 @@ The Yeti defaults are too small.
 https://bootswatch.com/4/yeti/
 */
 
-body, .navbar, .nav-item, .nav-link, .dropdown-menu, .dropdown-item, tr, th, td {
+body, .navbar, .nav-item, .nav-link, .dropdown-menu, .dropdown-item, tr, th, td,
+.checkbox, .control-label, .form-control-feedback, .help-block, .radio, label {
     font-size: 1rem;
 }
 

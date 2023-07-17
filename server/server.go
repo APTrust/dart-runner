@@ -93,7 +93,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/profiles/edit/:id", controllers.BagItProfileSave)
 	router.PUT("/profiles/delete/:id", controllers.BagItProfileDelete)
 	router.POST("/profiles/delete/:id", controllers.BagItProfileDelete)
-	router.GET("/profiles/import_start", controllers.BagItProfileImport)
+	router.GET("/profiles/import", controllers.BagItProfileImportStart)
 	router.POST("/profiles/import", controllers.BagItProfileImport)
 	router.GET("/profiles/export/:id", controllers.BagItProfileExport)
 

@@ -105,7 +105,6 @@ function deleteProfile(formId) {
     }
 }
 
-
 // Page init
 $(function () {
     $('[data-toggle="popover"]').popover()
