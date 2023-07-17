@@ -268,6 +268,7 @@ func TestBagItProfilePersistence(t *testing.T) {
 	assert.Equal(t, emptyProfile.ID, result.BagItProfiles[2].ID)
 
 	clonedProfile := core.BagItProfileClone(emptyProfile)
+	clonedProfile.Name = fmt.Sprintf("Copy of %s", emptyProfile.Name)
 	clonedProfile.IsBuiltIn = false
 	assert.NoError(t, core.ObjSave(clonedProfile))
 

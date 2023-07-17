@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,24 @@ import (
 // Handles submission of new Profile form.
 // POST /profiles/new
 func BagItProfileCreate(c *gin.Context) {
-
+	baseProfileID := c.PostForm("BaseProfileID")
+	if baseProfileID == "" {
+		baseProfileID = constants.EmptyProfileID
+	}
+	result := core.ObjFind(baseProfileID)
+	if result.Error != nil {
+		c.AbortWithError(http.StatusInternalServerError, result.Error)
+		return
+	}
+	newProfile := core.BagItProfileClone(result.BagItProfile())
+	newProfile.BaseProfileID = baseProfileID
+	newProfile.Name = fmt.Sprintf("New profile based on %s", result.BagItProfile().Name)
+	err := core.ObjSave(newProfile)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", newProfile.ID))
 }
 
 // GET /profiles/delete/:id
@@ -71,7 +89,15 @@ func BagItProfileIndex(c *gin.Context) {
 
 // GET /profiles/new
 func BagItProfileNew(c *gin.Context) {
-
+	form, err := core.NewBagItProfileCreationForm()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	data := gin.H{
+		"form": form,
+	}
+	c.HTML(http.StatusFound, "bagit_profile/new.html", data)
 }
 
 // GET /profiles/import_start

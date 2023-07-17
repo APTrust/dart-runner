@@ -125,3 +125,13 @@ func TestArtifactPersistenceOperations(t *testing.T) {
 		require.Nil(t, err)
 	}
 }
+
+func TestFindConflictingUUID(t *testing.T) {
+	defer core.ClearDartTable()
+	appSetting := core.NewAppSetting("Name1", "Value1")
+	require.Nil(t, core.ObjSave(appSetting))
+
+	appSetting.ID = uuid.NewString()
+	err := core.ObjSave(appSetting)
+	assert.Equal(t, constants.ErrUniqueConstraint, err)
+}

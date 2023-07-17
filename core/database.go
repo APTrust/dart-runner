@@ -48,6 +48,9 @@ func ObjSave(obj PersistentObject) error {
 	if !obj.Validate() {
 		return constants.ErrObjecValidation
 	}
+	if FindConflictingUUID(obj) != "" {
+		return constants.ErrUniqueConstraint
+	}
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -144,6 +147,24 @@ func ObjExists(objId string) (bool, error) {
 	count := 0
 	err := Dart.DB.QueryRow("select count(*) from dart where uuid = ?", objId).Scan(&count)
 	return count == 1, err
+}
+
+// FindConflictingUUID returns the UUID of the object having the same name and type
+// as obj. The dart table has a unique constraint on obj_type + obj_name. That should
+// prevent inserts that conflict with the constraint, but it doesn't. The modernc sqlite
+// driver does not report an error on this conflict. It fails silently, So we check for
+// the conflict on our own with this function.
+//
+// If this returns a UUID, there's a conflict, and we can't do the insert. If it returns
+// an empty string, we're fine, and the insert can proceed.
+func FindConflictingUUID(obj PersistentObject) string {
+	uuid := ""
+	query := `select uuid from dart where obj_type=? and obj_name=? and uuid != ?`
+	err := Dart.DB.QueryRow(query, obj.ObjType(), obj.ObjName(), obj.ObjID()).Scan(&uuid)
+	if err == sql.ErrNoRows {
+		return ""
+	}
+	return uuid
 }
 
 func appSettingList(rows *sql.Rows, qr *QueryResult) {
