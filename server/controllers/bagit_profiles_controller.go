@@ -102,46 +102,30 @@ func BagItProfileNew(c *gin.Context) {
 
 // GET /profiles/import_start
 func BagItProfileImportStart(c *gin.Context) {
-	c.HTML(http.StatusOK, "bagit_profile/import.html", gin.H{})
+	form := core.NewBagItProfileImport("", "", nil).ToForm()
+	c.HTML(http.StatusOK, "bagit_profile/import.html", gin.H{"form": form})
 }
 
 // POST /profiles/import
 func BagItProfileImport(c *gin.Context) {
-
-	// TODO: User core.BagItProfileImport instead.
-
-	importSource := c.PostForm("importSource")
-	importUrl := c.PostForm("txtUrl")
-	jsonData := []byte(c.PostForm("txtJson"))
-	if importSource == "URL" {
-		if !util.LooksLikeURL(importUrl) {
-			data := gin.H{
-				"flash": "Please specificy a valid URL.",
-			}
-			c.HTML(http.StatusOK, "bagit_profile/import.html", data)
-		}
-		response, err := http.Get(importUrl)
-		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-		_, err = response.Body.Read(jsonData)
-		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-	}
-	profile, err := core.ConvertProfile(jsonData, importUrl)
+	bpi := &core.BagItProfileImport{}
+	// c.Bind(bpi) won't convert from string to []byte.
+	// In fact, calling Bind() here leads to a 404 with
+	// an error about strconv.ParseUint being given invalid syntax.
+	// So we bind the old fashioned way.
+	bpi.JsonData = []byte(c.PostForm("JsonData"))
+	bpi.URL = c.PostForm("URL")
+	bpi.ImportSource = c.PostForm("ImportSource")
+	convertedProfile, err := bpi.Convert()
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	err = core.ObjSave(convertedProfile)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "bagit_profile/import.html", gin.H{"form": bpi.ToForm()})
 		return
 	}
-	err = core.ObjSave(profile)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", profile.ID))
+	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", convertedProfile.ID))
 }
 
 // GET /profiles/export/:id

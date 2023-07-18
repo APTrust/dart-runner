@@ -68,18 +68,20 @@ func (bpi *BagItProfileImport) Validate() bool {
 func (bpi *BagItProfileImport) ToForm() *Form {
 	form := NewForm(constants.TypeBagItProfileImport, constants.EmptyUUID, bpi.Errors)
 
-	sourceField := form.AddField("ImportSource", "Source", bpi.ImportSource, true)
+	sourceField := form.AddField("ImportSource", "Import profile from", bpi.ImportSource, true)
 	sourceField.Choices = []Choice{
-		{Label: "", Value: ""},
-		{Label: "URL", Value: "URL"},
-		{Label: "JSON", Value: "JsonData"},
+		{Label: "Choose One", Value: ""},
+		{Label: "A URL", Value: constants.ImportSourceUrl},
+		{Label: "JSON Data", Value: constants.ImportSourceJson},
 	}
+	sourceField.Help = "Do you want to import a BagIt profile from a URL or from JSON data? If you choose a URL, be sure the URL returns raw JSON data. If you choose JSON, you can cut and paste the JSON data directly into a text box below."
 
 	urlField := form.AddField("URL", "URL", bpi.URL, false)
 	urlField.Help = "The URL from which to import the BagIt profile."
 
 	jsonDataField := form.AddField("JsonData", "Profile JSON", string(bpi.JsonData), false)
 	jsonDataField.Help = "Paste the BagIt profile JSON you want to convert here."
+	jsonDataField.Attrs["rows"] = "12"
 
 	return form
 }

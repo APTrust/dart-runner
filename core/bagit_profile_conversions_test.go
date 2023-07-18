@@ -3,6 +3,7 @@ package core_test
 import (
 	"fmt"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -132,8 +133,8 @@ func TestConvertFromLOCOrdered(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 
-	assert.Equal(t, "Profile imported from https://example.com/ordered-profile.json", profile.Name)
-	assert.Equal(t, "Profile imported from https://example.com/ordered-profile.json", profile.Description)
+	assert.True(t, strings.HasPrefix(profile.Name, "Profile imported from https://example.com/ordered-profile.json"))
+	assert.True(t, strings.HasPrefix(profile.Description, "Profile imported from https://example.com/ordered-profile.json"))
 
 	expectedTagNames := []string{
 		"itemNumber",
@@ -171,8 +172,8 @@ func TestConvertFromLOCUnordered(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 
-	assert.Equal(t, "Profile imported from https://example.com/unordered-profile.json", profile.Name)
-	assert.Equal(t, "Profile imported from https://example.com/unordered-profile.json", profile.Description)
+	assert.True(t, strings.HasPrefix(profile.Name, "Profile imported from https://example.com/unordered-profile.json"))
+	assert.True(t, strings.HasPrefix(profile.Description, "Profile imported from https://example.com/unordered-profile.json"))
 
 	expectedTagNames := []string{
 		"Send-To-Name",

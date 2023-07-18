@@ -6,7 +6,8 @@
            {{ .field.Label }} {{ if .field.Attrs.required}}<i class="fas fa-asterisk fa-xs text-danger"></i>{{ end }} 
            {{ if .field.Help}}<i class="fas fa-question-circle text-primary"></i>{{ end }}</label>
     <textarea id="{{ .field.ID }}" name="{{ .field.Name }}"
-           class="form-control {{ template "partials/classes.html" . }}" rows="4"
+           class="form-control {{ template "partials/classes.html" . }}" 
+           {{ if not .field.Attrs.rows }}rows="4"{{ end }}
            {{ template "partials/attrs.html" .field }} >{{ .field.Value }}</textarea>
     <small id="{{ .field.ID }}Error" class="form-text text-danger">
       {{ .field.Error }}

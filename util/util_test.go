@@ -54,6 +54,7 @@ func TestAlgorithmFromManifestName(t *testing.T) {
 func TestLooksLikeURL(t *testing.T) {
 	assert.True(t, util.LooksLikeURL("http://s3.amazonaws.com/bucket/key"))
 	assert.True(t, util.LooksLikeURL("https://s3.amazonaws.com/bucket/key"))
+	assert.True(t, util.LooksLikeURL("https://raw.githubusercontent.com/dpscollaborative/btr_bagit_profile/master/btr-bagit-profile.json"))
 	assert.False(t, util.LooksLikeURL("tpph\\backslash\\slackbash\\iaintnourl!"))
 	assert.False(t, util.LooksLikeURL(""))
 }

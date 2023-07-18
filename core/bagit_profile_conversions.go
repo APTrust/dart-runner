@@ -205,10 +205,12 @@ func convertLOCTag(profile *BagItProfile, tagName string, locTagDef LOCTagDef) e
 }
 
 // getProfileName returns a placeholder name for a newly imported profile.
+// We want to return a unique name to prevent unique constraint violation
+// on dart.obj_type + dart.obj_name.
 func getProfileName(sourceUrl string) string {
 	name := fmt.Sprintf("Imported Profile %s", time.Now().Format(time.RFC3339))
 	if sourceUrl != "" {
-		name = fmt.Sprintf("Profile imported from %s", sourceUrl)
+		name = fmt.Sprintf("Profile imported from %s (%s)", sourceUrl, time.Now().Format(time.RFC3339))
 	}
 	return name
 }
