@@ -227,12 +227,12 @@ func TestConvertFromStandardProfile(t *testing.T) {
 	assert.Equal(t, standardProfile.BagItProfileInfo.SourceOrganization, profile.BagItProfileInfo.SourceOrganization)
 	assert.Equal(t, standardProfile.BagItProfileInfo.Version, profile.BagItProfileInfo.Version)
 
-	assert.Equal(t, standardProfile.ManifestsAllowed, profile.ManifestsAllowed)
+	assert.Equal(t, constants.PreferredAlgsInOrder, profile.ManifestsAllowed)
 	assert.Equal(t, standardProfile.ManifestsRequired, profile.ManifestsRequired)
 	assert.Equal(t, standardProfile.Serialization, profile.Serialization)
 	assert.Equal(t, standardProfile.TagFilesAllowed, profile.TagFilesAllowed)
 	assert.Equal(t, standardProfile.TagFilesRequired, profile.TagFilesRequired)
-	assert.Equal(t, standardProfile.TagManifestsAllowed, profile.TagManifestsAllowed)
+	assert.Equal(t, constants.PreferredAlgsInOrder, profile.TagManifestsAllowed)
 	assert.Equal(t, standardProfile.TagManifestsRequired, profile.TagManifestsRequired)
 
 	for tagName, stdTagDef := range standardProfile.BagInfo {
@@ -261,5 +261,19 @@ func TestConvertFromDartProfile(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, profile)
 
-	assert.Equal(t, multiManifestProfile, profile)
+	assert.Equal(t, multiManifestProfile.ManifestsAllowed, profile.ManifestsAllowed)
+	assert.Equal(t, multiManifestProfile.ManifestsRequired, profile.ManifestsRequired)
+	assert.Equal(t, multiManifestProfile.TagManifestsAllowed, profile.TagManifestsAllowed)
+	assert.Equal(t, multiManifestProfile.TagManifestsRequired, profile.TagManifestsRequired)
+	assert.Equal(t, multiManifestProfile.Serialization, profile.Serialization)
+	assert.Equal(t, multiManifestProfile.AcceptSerialization, profile.AcceptSerialization)
+	assert.Equal(t, multiManifestProfile.AcceptBagItVersion, profile.AcceptBagItVersion)
+
+	for _, tag := range multiManifestProfile.Tags {
+		convertedTag, err := profile.FirstMatchingTag("TagName", tag.TagName)
+		require.Nil(t, err)
+		require.NotNil(t, convertedTag)
+	}
+
+	assert.True(t, profile.Validate(), profile.Errors)
 }

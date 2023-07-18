@@ -19,6 +19,12 @@
         "sourceOrganization": "aptrust.org",
         "version": "2.2"
     },
+    "manifestsAllowed": [
+        "md5",
+        "sha1",
+        "sha256",
+        "sha512"
+    ],
     "manifestsRequired": [
         "md5",
         "sha256"
@@ -204,6 +210,12 @@
         }
     ],
     "serialization": "required",
+    "tagManifestsAllowed": [
+        "md5",
+        "sha1",
+        "sha256",
+        "sha512"
+    ],
     "tagManifestsRequired": [
         "md5",
         "sha256"

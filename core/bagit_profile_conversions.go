@@ -242,5 +242,6 @@ func ConvertProfile(jsonBytes []byte, sourceUrl string) (*BagItProfile, error) {
 	default:
 		err = fmt.Errorf("Cannot convert unrecognized BagIt profile type.")
 	}
+	dartProfile.EnsureMinimumRequirements()
 	return dartProfile, err
 }

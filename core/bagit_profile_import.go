@@ -1,6 +1,7 @@
 package core
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -16,6 +17,11 @@ type BagItProfileImport struct {
 	Errors       map[string]string
 }
 
+// NewBagItProfileImport creates a new BagItProfileImport object.
+// Param importSource should be either constants.ImportSourceUrl or
+// constants.ImportSourceJson. If the source is a url, we'll fetch
+// the JSON from the sourceUrl. Otherwise, we'll use jsonData.
+// You only need to supply one or the other of the last two params.
 func NewBagItProfileImport(importSource, sourceUrl string, jsonData []byte) *BagItProfileImport {
 	return &BagItProfileImport{
 		ImportSource: importSource,
@@ -25,6 +31,8 @@ func NewBagItProfileImport(importSource, sourceUrl string, jsonData []byte) *Bag
 	}
 }
 
+// Convert converts the JSON data provided by the user to a DART-style
+// BagIt profile.
 func (bpi *BagItProfileImport) Convert() (*BagItProfile, error) {
 	if !bpi.Validate() {
 		return nil, constants.ErrObjecValidation
@@ -39,6 +47,9 @@ func (bpi *BagItProfileImport) Convert() (*BagItProfile, error) {
 	return ConvertProfile(bpi.JsonData, bpi.URL)
 }
 
+// Validate returns true if the object is valid, false if not.
+// If this returns false, specific errors will be recorded in
+// BagItProfileImport.Errors.
 func (bpi *BagItProfileImport) Validate() bool {
 	bpi.Errors = make(map[string]string)
 	if bpi.ImportSource != constants.ImportSourceUrl && bpi.ImportSource != constants.ImportSourceJson {
@@ -50,13 +61,14 @@ func (bpi *BagItProfileImport) Validate() bool {
 	if bpi.ImportSource == constants.ImportSourceJson && len(bpi.JsonData) < 2 {
 		bpi.Errors["JsonData"] = "Please enter JSON to be imported."
 	}
-	return len(bpi.Errors) > 0
+	return len(bpi.Errors) == 0
 }
 
+// ToForm returns a form for creating a BagItProfile import job.
 func (bpi *BagItProfileImport) ToForm() *Form {
 	form := NewForm(constants.TypeBagItProfileImport, constants.EmptyUUID, bpi.Errors)
 
-	sourceField := form.AddField("Import Source", "Source", bpi.ImportSource, true)
+	sourceField := form.AddField("ImportSource", "Source", bpi.ImportSource, true)
 	sourceField.Choices = []Choice{
 		{Label: "", Value: ""},
 		{Label: "URL", Value: "URL"},
@@ -77,8 +89,6 @@ func (bpi *BagItProfileImport) getUrl() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	jsonData := make([]byte, 0)
 	defer response.Body.Close()
-	_, err = response.Body.Read(jsonData)
-	return jsonData, err
+	return io.ReadAll(response.Body)
 }

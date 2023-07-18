@@ -133,6 +133,36 @@ func (p *BagItProfile) ToJSON() (string, error) {
 	return string(bytes), nil
 }
 
+// EnsureMinimumRequirements creates the minimum required attributes
+// for this profile to pass validation, if those attributes are not
+// already present. This function is required to flesh out some barebones
+// profiles that user may import from elsewhere. For example, traditional
+// Library of Congress profiles do not include any tag info for the
+// bagit.txt file, nor do they include info about required or allowed
+// manifest algorithms.
+func (p *BagItProfile) EnsureMinimumRequirements() {
+	if p.AcceptBagItVersion == nil || len(p.AcceptBagItVersion) < 1 {
+		copy(p.AcceptBagItVersion, constants.AcceptBagItVersion)
+	}
+	if p.ManifestsAllowed == nil || len(p.ManifestsAllowed) < 1 {
+		p.ManifestsAllowed = make([]string, len(constants.PreferredAlgsInOrder))
+		copy(p.ManifestsAllowed, constants.PreferredAlgsInOrder)
+	}
+	if p.TagManifestsAllowed == nil || len(p.TagManifestsAllowed) < 1 {
+		p.TagManifestsAllowed = make([]string, len(constants.PreferredAlgsInOrder))
+		copy(p.TagManifestsAllowed, constants.PreferredAlgsInOrder)
+	}
+	if p.AcceptSerialization == nil || len(p.AcceptSerialization) < 1 {
+		p.AcceptSerialization = make([]string, len(constants.AcceptSerialization))
+		copy(p.AcceptSerialization, constants.AcceptSerialization)
+	}
+	if p.Serialization == "" {
+		p.Serialization = constants.SerializationOptional
+	}
+	p.initBagitTxt()
+	p.initBagInfoTxt()
+}
+
 func (p *BagItProfile) initBagitTxt() {
 	// BagIt spec says these two tags in bagit.txt file
 	// are always required.
