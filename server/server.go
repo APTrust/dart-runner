@@ -105,6 +105,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/profiles/edit_tag/:profile_id/:tag_id", controllers.BagItProfileSaveTag)
 	router.POST("/profiles/delete_tag/:profile_id/:tag_id", controllers.BagItProfileDeleteTag)
 	router.PUT("/profiles/delete_tag/:profile_id/:tag_id", controllers.BagItProfileDeleteTag)
+	router.GET("/profiles/new_tag_file/:profile_id", controllers.BagItProfileNewTagFile)
 	router.POST("/profiles/new_tag_file/:profile_id", controllers.BagItProfileCreateTagFile)
 	router.POST("/profiles/delete_tag_file/:profile_id", controllers.BagItProfileDeleteTagFile)
 	router.PUT("/profiles/delete_tag_file/:profile_id", controllers.BagItProfileDeleteTagFile)

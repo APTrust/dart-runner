@@ -328,14 +328,80 @@ func BagItProfileDeleteTag(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
+// GET /profiles/new_tag_file/:profile_id
+func BagItProfileNewTagFile(c *gin.Context) {
+	form, profileID := getTagFileFormAndID(c)
+	data := gin.H{
+		"form":           form,
+		"bagItProfileID": profileID,
+	}
+	c.HTML(http.StatusOK, "bagit_profile/new_tag_file.html", data)
+}
+
 // POST /profiles/new_tag_file/:profile_id
 func BagItProfileCreateTagFile(c *gin.Context) {
+	form, profileID := getTagFileFormAndID(c)
+	tagFileName := strings.TrimSpace(c.PostForm("Name"))
+	if tagFileName == "" {
+		form.Fields["Name"].Error = "Name is required."
+		data := gin.H{
+			"form":           form,
+			"bagItProfileID": profileID,
+		}
+		c.HTML(http.StatusBadRequest, "bagit_profile/new_tag_file.html", data)
+		return
+	}
+	result := core.ObjFind(profileID)
+	if result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	profile := result.BagItProfile()
+	tags, err := profile.FindMatchingTags("TagFile", tagFileName)
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+	if len(tags) > 0 {
+		form.Fields["Name"].Error = "A tag file with this name already exists."
+		data := gin.H{
+			"form":           form,
+			"bagItProfileID": profileID,
+		}
+		c.HTML(http.StatusBadRequest, "bagit_profile/new_tag_file.html", data)
+		return
+	}
 
+	newTag := core.TagDefinition{
+		ID:              uuid.NewString(),
+		TagName:         "New-Tag",
+		TagFile:         tagFileName,
+		IsUserAddedFile: true,
+		IsUserAddedTag:  true,
+	}
+	profile.Tags = append(profile.Tags, &newTag)
+	err = core.ObjSave(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+
+	query := url.Values{}
+	query.Set("tab", "navTagFilesTab")
+	query.Set("tagFile", tagFileName)
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/profiles/edit/%s?%s", profileID, query.Encode()),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /profiles/delete_tag_file/:profile_id
 // PUT  /profiles/delete_tag_file/:profile_id
 func BagItProfileDeleteTagFile(c *gin.Context) {
+
+	// TODO: Add a button and implement this.
+	// This is actually an open request for DART 2.x.
 
 }
 
@@ -347,4 +413,11 @@ func loadProfileAndTag(c *gin.Context) (*core.BagItProfile, *core.TagDefinition,
 	profile := result.BagItProfile()
 	tag, err := profile.FirstMatchingTag("ID", c.Param("tag_id"))
 	return profile, tag, err
+}
+
+func getTagFileFormAndID(c *gin.Context) (*core.Form, string) {
+	profileID := c.Param("profile_id")
+	form := core.NewForm("", "", nil)
+	form.AddField("Name", "Tag File Name", "", true)
+	return form, profileID
 }

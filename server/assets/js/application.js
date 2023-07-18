@@ -93,6 +93,23 @@ function submitTagDefForm(formId) {
     submitFormInBackground(formId, onSuccess, onFail)
 }
 
+function submitNewTagFileForm(formId) {
+    let onSuccess = function(response) {
+        // We don't need to do anything here, since a successful
+        // save results in a redirect.
+        console.log("Created new tag file")
+        console.log(response)
+        location.href = response.location
+    }
+    let onFail = function(xhr, status, err) {
+        // Failure is typically a validation failure.
+        // Re-display the form to show specific error messages.
+        let modalTitle = $('#modalTitle').html()
+        showModalContent(modalTitle, xhr.responseText)        
+    }
+    submitFormInBackground(formId, onSuccess, onFail)
+}
+
 function deleteTagDef(formId) {
     if (confirm("Delete this tag definition?")) {
         submitTagDefForm(formId)

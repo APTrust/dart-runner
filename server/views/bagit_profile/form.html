@@ -34,7 +34,7 @@
       <a class="dropdown-item" id="navTags-{{ $tagFile }}" data-toggle="tab" href="#profileTags-{{ $tagFile }}" aria-controls="profileTags-{{ $tagFile }}" aria-selected="false">{{ $tagFile }}</a>
       {{ end }}
       <div class="dropdown-divider"></div>
-      <a class="dropdown-item" href="#BagItProfile/newTagFile?id={{ .bagItProfileId }}">Add New Tag File</a>
+      <a class="dropdown-item" role="button" onclick="loadIntoModal('get', 'New Tag File', '/profiles/new_tag_file/{{ .form.Fields.ID.Value }}')">Add New Tag File</a>
     </div>
 
   </div>

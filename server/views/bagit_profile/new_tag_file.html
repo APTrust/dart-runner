@@ -1,0 +1,18 @@
+{{ define "bagit_profile/new_tag_file.html" }}
+
+<form method="post" action="/profiles/new_tag_file/{{ .bagItProfileID }}" id="NewTagFileForm">
+
+    {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
+    
+    <div class="bottom-buttons">
+        <div class="pull-right">
+            <button class="btn btn-primary" type="button" onclick="submitNewTagFileForm('#NewTagFileForm')" role="button">Save</a>
+        </div>
+        <div class="pull-right mr-5">
+            <a class="btn btn-secondary" data-dismiss="modal" role="button">Cancel</a>
+        </div>
+    </div>
+  
+  </form>
+
+  {{ end }}
