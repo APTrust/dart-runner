@@ -1,6 +1,8 @@
 package controllers_test
 
 import (
+	"fmt"
+	"html"
 	"path"
 	"testing"
 
@@ -19,7 +21,49 @@ func TestBagItProfileDelete(t *testing.T) {
 }
 
 func TestBagItProfileEdit(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	aptProfile := loadProfile(t, constants.ProfileIDAPTrust)
+
+	// Make sure all elements of the profile appear in this form.
+	expected := []string{
+		aptProfile.Name,
+		aptProfile.Description,
+		aptProfile.BagItProfileInfo.BagItProfileIdentifier,
+		aptProfile.BagItProfileInfo.BagItProfileVersion,
+		aptProfile.BagItProfileInfo.ContactEmail,
+		aptProfile.BagItProfileInfo.ContactName,
+		aptProfile.BagItProfileInfo.ExternalDescription,
+		aptProfile.BagItProfileInfo.SourceOrganization,
+		aptProfile.BagItProfileInfo.Version,
+		aptProfile.ID,
+		aptProfile.Serialization,
+	}
+	stringLists := [][]string{
+		aptProfile.AcceptBagItVersion,
+		aptProfile.AcceptSerialization,
+		aptProfile.ManifestsAllowed,
+		aptProfile.ManifestsRequired,
+		aptProfile.TagFilesAllowed,
+		aptProfile.TagFilesRequired,
+		aptProfile.TagManifestsAllowed,
+		aptProfile.TagManifestsRequired,
+		aptProfile.TagFileNames(),
+	}
+	for _, list := range stringLists {
+		for _, item := range list {
+			if item != "" {
+				expected = append(expected, item)
+			}
+		}
+	}
+	for _, tag := range aptProfile.Tags {
+		expected = append(expected, tag.TagName)
+	}
+
+	editURL := fmt.Sprintf("/profiles/edit/%s", aptProfile.ID)
+	DoSimpleGetTest(t, editURL, expected)
 }
 
 func TestBagItProfileIndex(t *testing.T) {
@@ -62,7 +106,14 @@ func TestBagItProfileNew(t *testing.T) {
 }
 
 func TestBagItProfileImportStart(t *testing.T) {
-
+	expected := []string{
+		"Import profile from",
+		"A URL",
+		"JSON Data",
+		"BagItProfileImport_URL",
+		"BagItProfileImport_JsonData",
+	}
+	DoSimpleGetTest(t, "/profiles/import", expected)
 }
 
 func TestBagItProfileImport(t *testing.T) {
@@ -70,7 +121,32 @@ func TestBagItProfileImport(t *testing.T) {
 }
 
 func TestBagItProfileExport(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	aptProfile := loadProfile(t, constants.ProfileIDAPTrust)
+	standardFormat := aptProfile.ToStandardFormat()
+
+	expected := []string{
+		standardFormat.Serialization,
+		standardFormat.BagItProfileInfo.BagItProfileIdentifier,
+		standardFormat.BagItProfileInfo.BagItProfileVersion,
+		standardFormat.BagItProfileInfo.ContactEmail,
+		standardFormat.BagItProfileInfo.ContactName,
+		standardFormat.BagItProfileInfo.ExternalDescription,
+		standardFormat.BagItProfileInfo.SourceOrganization,
+		standardFormat.BagItProfileInfo.Version,
+	}
+
+	for tagName, tag := range standardFormat.BagInfo {
+		expected = append(expected, tagName)
+		if tag.Description != "" {
+			expected = append(expected, html.EscapeString(tag.Description))
+		}
+	}
+
+	exportURL := fmt.Sprintf("/profiles/export/%s", constants.ProfileIDAPTrust)
+	DoSimpleGetTest(t, exportURL, expected)
 }
 
 func TestBagItProfileSave(t *testing.T) {
