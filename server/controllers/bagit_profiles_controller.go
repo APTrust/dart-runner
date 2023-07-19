@@ -37,7 +37,7 @@ func BagItProfileCreate(c *gin.Context) {
 	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", newProfile.ID))
 }
 
-// GET /profiles/delete/:id
+// PUT /profiles/delete/:id
 // POST /profiles/delete/:id
 func BagItProfileDelete(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))

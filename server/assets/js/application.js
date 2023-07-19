@@ -24,7 +24,8 @@ function loadIntoModal (method, modalTitle, url, data = {}) {
 function showModalContent (title, content) {
     $('#modalTitle').html(title);
     $('#modalContent').html(content);
-    $('#modal').modal('show');    
+    $('[data-toggle="popover"]').popover()
+    $('#modal').modal('show');  
 }
 
 function submitFormInBackground(formId, successCallback, failureCallback) {

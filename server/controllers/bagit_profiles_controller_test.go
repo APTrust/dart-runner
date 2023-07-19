@@ -13,10 +13,12 @@ import (
 )
 
 func TestBagItProfileCreate(t *testing.T) {
-
+	// POST /profiles/new
 }
 
 func TestBagItProfileDelete(t *testing.T) {
+	// PUT /profiles/delete/:id
+	// POST /profiles/delete/:id
 
 }
 
@@ -117,7 +119,7 @@ func TestBagItProfileImportStart(t *testing.T) {
 }
 
 func TestBagItProfileImport(t *testing.T) {
-
+	// POST /profiles/import
 }
 
 func TestBagItProfileExport(t *testing.T) {
@@ -150,35 +152,79 @@ func TestBagItProfileExport(t *testing.T) {
 }
 
 func TestBagItProfileSave(t *testing.T) {
-
+	// PUT /profiles/edit/:id
+	// POST /profiles/edit/:id
 }
 
 func TestBagItProfileNewTag(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	expected := []string{
+		"In file aptrust-info.txt",
+		"Tag Name",
+		"Required",
+		"Allowed Values",
+		"Default Value",
+		"Help Text",
+	}
+
+	tagURL := fmt.Sprintf("/profiles/new_tag/%s/aptrust-info.txt", constants.ProfileIDAPTrust)
+	DoSimpleGetTest(t, tagURL, expected)
 }
 
 func TestBagItProfileEditTag(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	profile := loadProfile(t, constants.ProfileIDAPTrust)
+	tag, err := profile.FirstMatchingTag("TagName", "Storage-Option")
+	require.Nil(t, err)
+
+	expected := []string{
+		"Storage-Option",
+		tag.ID,
+		tag.DefaultValue,
+		"How do you want this bag to be stored in APTrust?",
+	}
+	expected = append(expected, tag.Values...)
+
+	tagURL := fmt.Sprintf("/profiles/edit_tag/%s/%s", profile.ID, tag.ID)
+	DoSimpleGetTest(t, tagURL, expected)
 }
 
 func TestBagItProfileSaveTag(t *testing.T) {
-
+	// POST /profiles/edit_tag/:profile_id/:tag_id
+	// PUT  /profiles/edit_tag/:profile_id/:tag_id
 }
 
 func TestBagItProfileDeleteTag(t *testing.T) {
-
+	// POST /profiles/delete_tag/:profile_id/:tag_id
+	// PUT  /profiles/delete_tag/:profile_id/:tag_id
 }
 
 func TestBagItProfileNewTagFile(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	expected := []string{
+		"Tag File Name",
+		`name="Name"`,
+		"Cancel",
+		"Save",
+	}
+
+	tagFileURL := fmt.Sprintf("/profiles/new_tag_file/%s", constants.ProfileIDAPTrust)
+	DoSimpleGetTest(t, tagFileURL, expected)
 }
 
 func TestBagItProfileCreateTagFile(t *testing.T) {
-
+	// POST /profiles/new_tag_file/:profile_id
 }
 
 func TestBagItProfileDeleteTagFile(t *testing.T) {
-
+	// POST /profiles/delete_tag_file/:profile_id
+	// PUT  /profiles/delete_tag_file/:profile_id
 }
 
 // This loads our standard DART profiles from the profiles
