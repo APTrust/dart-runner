@@ -60,11 +60,13 @@ function submitFormInBackground(formId, successCallback, failureCallback) {
 }
 
 function showAjaxAlert(message) {
+    console.log("Ajax Alert: " + message)
     $("#ajaxAlertMessage").html(message)
     $("#ajaxAlert").show()
 }
 
 function showAjaxError(message) {
+    console.log("Ajax Error: " + message)
     $("#ajaxErrorMessage").html(message)
     $("#ajaxError").show()
 }
@@ -110,9 +112,33 @@ function submitNewTagFileForm(formId) {
     submitFormInBackground(formId, onSuccess, onFail)
 }
 
-function deleteTagDef(formId) {
+function deleteTagFile(url, tagFileName) {
+    if (confirm("Delete this tag file?")) {
+        let data = {"tagFile": tagFileName}
+        $.ajax({
+            url: url,
+            type: "post",
+            data: jQuery.param(data) ,
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        }).done(function (response) {
+            location.href = response.location
+        }).fail(function (xhr, status, err) {
+            showModalContent("Error deleting tag file", xhr.responseText)        
+        })
+    }
+}
+
+function deleteTagDef(url) {
     if (confirm("Delete this tag definition?")) {
-        submitTagDefForm(formId)
+        $.ajax({
+            url: url,
+            type: "post",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        }).done(function (response) {
+            location.href = response.location
+        }).fail(function (xhr, status, err) {
+            showModalContent("Error deleting tag file", xhr.responseText)        
+        })    
     }
 }
 

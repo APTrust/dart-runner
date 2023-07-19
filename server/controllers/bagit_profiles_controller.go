@@ -399,10 +399,39 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 // POST /profiles/delete_tag_file/:profile_id
 // PUT  /profiles/delete_tag_file/:profile_id
 func BagItProfileDeleteTagFile(c *gin.Context) {
+	tagFileName := c.PostForm("tagFile")
+	if tagFileName == "bagit.txt" || tagFileName == "bag-info.txt" {
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("bagit.txt and bag-info.txt cannot be deleted"))
+		return
+	}
+	result := core.ObjFind(c.Param("profile_id"))
+	if result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	profile := result.BagItProfile()
+	newTagList := make([]*core.TagDefinition, 0)
+	for _, tag := range profile.Tags {
+		if tag.TagFile != tagFileName {
+			newTagList = append(newTagList, tag)
+		}
+	}
+	profile.Tags = newTagList
+	err := core.ObjSave(profile)
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
 
-	// TODO: Add a button and implement this.
-	// This is actually an open request for DART 2.x.
-
+	// Show the tab for bag-info.txt, since that one can't be deleted.
+	query := url.Values{}
+	query.Set("tab", "navTagFilesTab")
+	query.Set("tagFile", "bag-info.txt")
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/profiles/edit/%s?%s", profile.ID, query.Encode()),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 func loadProfileAndTag(c *gin.Context) (*core.BagItProfile, *core.TagDefinition, error) {

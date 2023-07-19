@@ -2,6 +2,10 @@
 
 <h2>Tags in {{ .tagFileName }}</h2>
 <div class="pull-right mt-1 mb-3">
+
+    {{ if (and (ne "bagit.txt" .tagFileName) (ne "bag-info.txt" .tagFileName)) }}
+    <button class="btn btn-danger mr-3" type="button" onclick="deleteTagFile('/profiles/delete_tag_file/{{ .bagItProfileID }}', '{{ .tagFileName }}')" role="button">Delete File</button>  
+    {{ end }}
     <button class="btn btn-primary" type="button" onclick="loadIntoModal('get', 'New Tag in {{ .tagFileName }}', '/profiles/new_tag/{{ .bagItProfileID }}/{{ .tagFileName }}', '')" role="button">New Tag</button>
 </div>
   

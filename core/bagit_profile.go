@@ -441,23 +441,29 @@ func (p *BagItProfile) ToForm() *Form {
 
 	form.AddField("ID", "ID", p.ID, true)
 
-	bagitVersionField := form.AddMultiValueField("AcceptBagItVersion", "AcceptBagItVersion", p.AcceptBagItVersion, true)
+	bagitVersionField := form.AddMultiValueField("AcceptBagItVersion", "Accept BagIt Version", p.AcceptBagItVersion, true)
 	bagitVersionField.Choices = MakeMultiChoiceList(constants.AcceptBagItVersion, p.AcceptBagItVersion)
+	bagitVersionField.Help = "Which BagIt versions are allowed in this profile?"
 
 	acceptSerializationField := form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
 	acceptSerializationField.Choices = MakeMultiChoiceList(constants.AcceptSerialization, p.AcceptSerialization)
+	acceptSerializationField.Help = "If bags using this profile can be serialized to tar, zip or other formats, enter the mime types for those formats here. E.g. application/x-tar, application/zip, etc. See https://en.wikipedia.org/wiki/List_of_archive_formats for a full list."
 
 	allowFetch := form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
 	allowFetch.Choices = YesNoChoices(p.AllowFetchTxt)
+	allowFetch.Help = "Does this profile allow the fetch.txt file to specify that some contents should be fetched from a URL rather than being packaged inside the bag?"
+
 	form.AddField("BaseProfileID", "BaseProfileID", p.BaseProfileID, true)
 	form.AddField("Description", "Description", p.Description, true)
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(p.IsBuiltIn), true)
 
 	manifestsAllowedField := form.AddMultiValueField("ManifestsAllowed", "ManifestsAllowed", p.ManifestsAllowed, true)
 	manifestsAllowedField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.ManifestsAllowed)
+	manifestsAllowedField.Help = "Which manifest algorithms are allowed in this profile? E.g. md5, sha1, sha256, sha512, etc."
 
 	manifestsRequiredField := form.AddMultiValueField("ManifestsRequired", "ManifestsRequired", p.ManifestsRequired, true)
 	manifestsRequiredField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.ManifestsRequired)
+	manifestsRequiredField.Help = "Which manifests MUST be present in this profile? Leave empty if users can choose from any of the allowed manifests."
 
 	nameField := form.AddField("Name", "Name", p.Name, true)
 	if p.IsBuiltIn {
@@ -466,17 +472,22 @@ func (p *BagItProfile) ToForm() *Form {
 
 	serlializationField := form.AddField("Serialization", "Serialization", p.Serialization, true)
 	serlializationField.Choices = MakeChoiceList(constants.SerializationOptions, p.Serialization)
+	serlializationField.Help = "Can bags using this profile be serialized to tar, zip, or some other format?"
 
 	tagFilesAllowed := strings.Join(p.TagFilesAllowed, "\n")
-	form.AddField("TagFilesAllowed", "TagFilesAllowed", tagFilesAllowed, true)
+	tfaField := form.AddField("TagFilesAllowed", "TagFilesAllowed", tagFilesAllowed, true)
+	tfaField.Help = "List tag files allowed, one item per line, or enter * to allow any tag files."
 
-	form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
+	tagFilesRequired := form.AddMultiValueField("TagFilesRequired", "TagFilesRequired", p.TagFilesRequired, true)
+	tagFilesRequired.Help = "Which tag files MUST be included in bags conforming to this profile? List them one per line. You don't need to include bagit.txt or bag-info.txt, as those are assumed."
 
 	tagManifestsAllowedField := form.AddMultiValueField("TagManifestsAllowed", "TagManifestsAllowed", p.TagManifestsAllowed, true)
 	tagManifestsAllowedField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.TagManifestsAllowed)
+	tagManifestsAllowedField.Help = "Which tag manifest algorithms are allowed in this profile? E.g. md5, sha1, sha256, sha512, etc."
 
 	tagManifestsRequiredField := form.AddMultiValueField("TagManifestsRequired", "TagManifestsRequired", p.TagManifestsRequired, true)
 	tagManifestsRequiredField.Choices = MakeMultiChoiceList(constants.PreferredAlgsInOrder, p.TagManifestsRequired)
+	tagManifestsRequiredField.Help = "Which tag manifests MUST be present in this profile? Leave empty if users can choose from any of the allowed manifests."
 
 	tarDirMustMatchField := form.AddField("TarDirMustMatchName", "TarDirMustMatchName", strconv.FormatBool(p.TarDirMustMatchName), true)
 	tarDirMustMatchField.Choices = YesNoChoices(p.TarDirMustMatchName)
