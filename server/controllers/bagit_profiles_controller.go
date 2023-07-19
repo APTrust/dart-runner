@@ -204,11 +204,6 @@ func BagItProfileNewTag(c *gin.Context) {
 	c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
 }
 
-// POST /profiles/new_tag/:profile_id
-func BagItProfileCreateTag(c *gin.Context) {
-
-}
-
 // GET /profiles/edit_tag/:profile_id/:tag_id
 func BagItProfileEditTag(c *gin.Context) {
 	// This displays in a modal.
