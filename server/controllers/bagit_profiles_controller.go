@@ -97,7 +97,7 @@ func BagItProfileNew(c *gin.Context) {
 	data := gin.H{
 		"form": form,
 	}
-	c.HTML(http.StatusFound, "bagit_profile/new.html", data)
+	c.HTML(http.StatusOK, "bagit_profile/new.html", data)
 }
 
 // GET /profiles/import_start

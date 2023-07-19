@@ -2,6 +2,8 @@
 
 {{ template "partials/page_header.html" .}}
 
+<h2>New BagIt Profile</h2>
+
 <form method="post" action="/profiles/new" id="{{ .form.Fields.ID.Value }}">
 
   {{ template "partials/input_select.html" dict "field" .form.Fields.BaseProfileID }}

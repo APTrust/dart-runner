@@ -453,7 +453,7 @@ func (p *BagItProfile) ToForm() *Form {
 	allowFetch.Choices = YesNoChoices(p.AllowFetchTxt)
 	allowFetch.Help = "Does this profile allow the fetch.txt file to specify that some contents should be fetched from a URL rather than being packaged inside the bag?"
 
-	form.AddField("BaseProfileID", "BaseProfileID", p.BaseProfileID, true)
+	form.AddField("BaseProfileID", "Base Profile", p.BaseProfileID, true)
 	form.AddField("Description", "Description", p.Description, true)
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(p.IsBuiltIn), true)
 
@@ -525,7 +525,7 @@ func NewBagItProfileCreationForm() (*Form, error) {
 			Selected: false,
 		}
 	}
-	baseProfileID := form.AddField("BaseProfileID", "BaseProfileID", "", true)
+	baseProfileID := form.AddField("BaseProfileID", "Base this profile on...", "", true)
 	baseProfileID.Choices = choices
 	return form, nil
 }
