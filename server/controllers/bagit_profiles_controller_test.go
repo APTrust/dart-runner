@@ -36,7 +36,7 @@ func TestBagItProfileCreate(t *testing.T) {
 	data := url.Values{}
 	data.Set("BaseProfileID", constants.ProfileIDEmpty)
 	settings := PostTestSettings{
-		EndpointUrl:          fmt.Sprintf("/profiles/new"),
+		EndpointUrl:          "/profiles/new",
 		Params:               data,
 		ExpectedResponseCode: http.StatusFound,
 		ExpectedContent:      expected,
@@ -48,7 +48,27 @@ func TestBagItProfileCreate(t *testing.T) {
 func TestBagItProfileDelete(t *testing.T) {
 	// PUT /profiles/delete/:id
 	// POST /profiles/delete/:id
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
 
+	// Note that this is an AJAX endpoint that returns
+	// JSON on success. The AJAX handler will redirect
+	// to the specified location.
+	expected := []string{
+		`{"location":"/profiles","status":"OK"}`,
+	}
+
+	emptyProfile := loadProfile(t, constants.ProfileIDEmpty)
+	copyOfProfile := core.BagItProfileClone(emptyProfile)
+	require.NoError(t, core.ObjSave(copyOfProfile))
+
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/delete/%s", copyOfProfile.ID),
+		Params:               url.Values{},
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
 }
 
 func TestBagItProfileEdit(t *testing.T) {
