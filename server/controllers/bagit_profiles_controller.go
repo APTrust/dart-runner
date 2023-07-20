@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -28,7 +29,7 @@ func BagItProfileCreate(c *gin.Context) {
 	}
 	newProfile := core.BagItProfileClone(result.BagItProfile())
 	newProfile.BaseProfileID = baseProfileID
-	newProfile.Name = fmt.Sprintf("New profile based on %s", result.BagItProfile().Name)
+	newProfile.Name = fmt.Sprintf("New profile based on %s %s", result.BagItProfile().Name, time.Now().Format(time.RFC3339))
 	err := core.ObjSave(newProfile)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)

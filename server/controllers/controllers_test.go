@@ -75,3 +75,20 @@ func DoSimplePostTest(t *testing.T, settings PostTestSettings) {
 		assert.True(t, ok, "Missing from page %s: %v", settings.EndpointUrl, notFound)
 	}
 }
+
+// DoPostTestWithRedirect posts data, follows the redirect, and then checks
+// the content of the redirect page to ensure it contains expected content.
+func DoPostTestWithRedirect(t *testing.T, settings PostTestSettings) {
+	w := httptest.NewRecorder()
+	req, err := NewPostRequest(settings.EndpointUrl, settings.Params)
+	require.Nil(t, err)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, settings.ExpectedResponseCode, w.Code)
+	if settings.ExpectedRedirectLocation != "" {
+		assert.Equal(t, settings.ExpectedRedirectLocation, w.Header().Get("Location"))
+	}
+	// Follow the redirect URL and see if it contains the expected content.
+	redirectUrl := w.Header().Get("Location")
+	require.NotEmpty(t, redirectUrl)
+	DoSimpleGetTest(t, redirectUrl, settings.ExpectedContent)
+}

@@ -3,17 +3,46 @@ package controllers_test
 import (
 	"fmt"
 	"html"
+	"net/http"
+	"net/url"
 	"path"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBagItProfileCreate(t *testing.T) {
 	// POST /profiles/new
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	emptyProfile := loadProfile(t, constants.ProfileIDEmpty)
+
+	expected := []string{
+		"New profile based on Empty Profile",
+		emptyProfile.Description,
+		emptyProfile.BagItProfileInfo.BagItProfileIdentifier,
+		"sha256",
+		"sha512",
+		"application/tar",
+	}
+
+	data := url.Values{}
+	data.Set("BaseProfileID", constants.ProfileIDEmpty)
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/new"),
+		Params:               data,
+		ExpectedResponseCode: http.StatusFound,
+		ExpectedContent:      expected,
+	}
+	DoPostTestWithRedirect(t, settings)
+
 }
 
 func TestBagItProfileDelete(t *testing.T) {
@@ -154,6 +183,39 @@ func TestBagItProfileExport(t *testing.T) {
 func TestBagItProfileSave(t *testing.T) {
 	// PUT /profiles/edit/:id
 	// POST /profiles/edit/:id
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	profile := loadProfile(t, constants.ProfileIDEmpty)
+	clonedProfile := core.BagItProfileClone(profile)
+	require.NoError(t, core.ObjSave(clonedProfile))
+	clonedProfile.BagItProfileInfo.BagItProfileIdentifier = "https://example.com/profiles/clone.json"
+	clonedProfile.Name = "King Pikachu"
+	clonedProfile.AcceptSerialization = []string{
+		"application/tar",
+		"application/zip",
+		"application/gzip",
+	}
+	clonedProfile.Serialization = constants.SerializationRequired
+
+	settings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/profiles/edit/%s", clonedProfile.ID),
+		Params:                   profileToFormData(clonedProfile),
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: "/profiles",
+	}
+	DoSimplePostTest(t, settings)
+
+	result := core.ObjFind(clonedProfile.ID)
+	require.Nil(t, result.Error)
+	savedProfile := result.BagItProfile()
+	require.NotNil(t, savedProfile)
+
+	// Spot check a few properties, including the ones we changed.
+	assert.Equal(t, clonedProfile.AcceptBagItVersion, savedProfile.AcceptBagItVersion)
+	assert.Equal(t, clonedProfile.Name, savedProfile.Name)
+	assert.Equal(t, clonedProfile.AcceptSerialization, savedProfile.AcceptSerialization)
+	assert.Equal(t, clonedProfile.BagItProfileInfo.BagItProfileIdentifier, savedProfile.BagItProfileInfo.BagItProfileIdentifier)
 }
 
 func TestBagItProfileNewTag(t *testing.T) {
@@ -252,4 +314,64 @@ func loadProfile(t *testing.T, profileID string) *core.BagItProfile {
 	profile := result.BagItProfile()
 	require.NotNil(t, profile)
 	return profile
+}
+
+// This converts a BagItProfile to a set of url.Values. Note
+// that this does not include tag definition values, as those
+// are edited on a separate form.
+func profileToFormData(p *core.BagItProfile) url.Values {
+	vals := url.Values{}
+	vals.Set("AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt))
+	vals.Set("BaseProfileID", p.BaseProfileID)
+	vals.Set("Description", p.Description)
+	vals.Set("ID", p.ID)
+	vals.Set("InfoContactEmail", p.BagItProfileInfo.ContactEmail)
+	vals.Set("InfoContactName", p.BagItProfileInfo.ContactName)
+	vals.Set("InfoExternalDescription", p.BagItProfileInfo.ExternalDescription)
+	vals.Set("InfoIdentifier", p.BagItProfileInfo.BagItProfileIdentifier)
+	vals.Set("InfoSourceOrganization", p.BagItProfileInfo.SourceOrganization)
+	vals.Set("InfoVersion", p.BagItProfileInfo.Version)
+	vals.Set("IsBuiltIn", strconv.FormatBool(p.IsBuiltIn))
+	vals.Set("Name", p.Name)
+	vals.Set("Serialization", p.Serialization)
+	vals.Set("TarDirMustMatchName", strconv.FormatBool(p.TarDirMustMatchName))
+
+	for _, val := range p.AcceptBagItVersion {
+		vals.Add("AcceptBagItVersion", val)
+	}
+	for _, val := range p.AcceptSerialization {
+		vals.Add("AcceptSerialization", val)
+	}
+	for _, val := range p.ManifestsAllowed {
+		vals.Add("ManifestsAllowed", val)
+	}
+	for _, val := range p.ManifestsRequired {
+		vals.Add("ManifestsRequired", val)
+	}
+	for _, val := range p.TagFilesAllowed {
+		vals.Add("TagFilesAllowed", val)
+	}
+	for _, val := range p.TagFilesRequired {
+		vals.Add("TagFilesRequired", val)
+	}
+	for _, val := range p.TagManifestsAllowed {
+		vals.Add("TagManifestsAllowed", val)
+	}
+	for _, val := range p.TagManifestsRequired {
+		vals.Add("TagManifestsRequired", val)
+	}
+	return vals
+}
+
+// This converts a tag definition to a set of url.Values.
+func tagDefToFormData(tag *core.TagDefinition) url.Values {
+	vals := url.Values{}
+	vals.Set("ID", tag.ID)
+	vals.Set("TagFile", tag.TagFile)
+	vals.Set("TagName", tag.TagName)
+	vals.Set("DefaultValue", tag.DefaultValue)
+	vals.Set("Help", tag.Help)
+	vals.Set("Values", strings.Join(tag.Values, "\r\n"))
+	vals.Set("Required", strconv.FormatBool(tag.Required))
+	return vals
 }

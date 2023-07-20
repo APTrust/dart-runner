@@ -78,7 +78,7 @@ func BagItProfileClone(p *BagItProfile) *BagItProfile {
 		Errors:               make(map[string]string),
 		ManifestsAllowed:     make([]string, len(p.ManifestsAllowed)),
 		ManifestsRequired:    make([]string, len(p.ManifestsRequired)),
-		Name:                 p.Name,
+		Name:                 fmt.Sprintf("Copy of %s", p.Name),
 		Serialization:        p.Serialization,
 		TagFilesAllowed:      make([]string, len(p.TagFilesAllowed)),
 		TagManifestsAllowed:  make([]string, len(p.TagManifestsAllowed)),

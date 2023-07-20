@@ -90,7 +90,7 @@ func TestJobParams(t *testing.T) {
 
 	// Job has the right profile
 	assert.NotNil(t, job.BagItProfile)
-	assert.Equal(t, workflow.BagItProfile.Name, job.BagItProfile.Name)
+	assert.Equal(t, "Copy of "+workflow.BagItProfile.Name, job.BagItProfile.Name)
 
 	// Job has correctly initialized package op
 	require.NotNil(t, job.PackageOp)
