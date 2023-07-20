@@ -1,6 +1,7 @@
 package controllers_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"html"
 	"net/http"
@@ -266,7 +267,6 @@ func testImportWithUrlReturningBadData(t *testing.T) {
 }
 
 func testImportWithBadJson(t *testing.T) {
-	// https://raw.githubusercontent.com/APTrust/dart-runner/master/testdata/files/bad_job_params.json
 	data := url.Values{}
 	data.Set("ImportSource", "json")
 	data.Set("JsonData", `{"packageName": "CantFindFiles.tar","files": ["/Users/does-not-exist/no-such-directory"]}`)
@@ -391,11 +391,78 @@ func TestBagItProfileEditTag(t *testing.T) {
 func TestBagItProfileSaveTag(t *testing.T) {
 	// POST /profiles/edit_tag/:profile_id/:tag_id
 	// PUT  /profiles/edit_tag/:profile_id/:tag_id
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	profile := loadProfile(t, constants.ProfileIDAPTrust)
+	tag, err := profile.FirstMatchingTag("TagName", "Storage-Option")
+	require.Nil(t, err)
+
+	tag.Values = append(tag.Values, "Fort Knox")
+	tag.DefaultValue = "Fort Knox"
+	tag.Help = "Everyone needs a little help sometimes."
+
+	redirectUrl := fmt.Sprintf("/profiles/edit/%s?tab=navTagFilesTab&tagFile=aptrust-info.txt", profile.ID)
+	jsonResponse := map[string]string{
+		"status":   "OK",
+		"location": redirectUrl,
+	}
+	expectedJson, err := json.Marshal(jsonResponse)
+	require.Nil(t, err)
+	expected := []string{
+		string(expectedJson),
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/edit_tag/%s/%s", profile.ID, tag.ID),
+		Params:               tagDefToFormData(tag),
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure that changes were saved
+	profile = loadProfile(t, constants.ProfileIDAPTrust)
+	tag, err = profile.FirstMatchingTag("TagName", "Storage-Option")
+	require.Nil(t, err)
+	assert.Equal(t, "Fort Knox", tag.DefaultValue)
+	assert.Equal(t, "Everyone needs a little help sometimes.", tag.Help)
+	assert.Contains(t, tag.Values, "Fort Knox")
 }
 
 func TestBagItProfileDeleteTag(t *testing.T) {
 	// POST /profiles/delete_tag/:profile_id/:tag_id
 	// PUT  /profiles/delete_tag/:profile_id/:tag_id
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	profile := loadProfile(t, constants.ProfileIDEmpty)
+	tag, err := profile.FirstMatchingTag("TagName", "Contact-Email")
+	require.Nil(t, err)
+
+	redirectUrl := fmt.Sprintf("/profiles/edit/%s?tab=navTagFilesTab&tagFile=bag-info.txt", profile.ID)
+	jsonResponse := map[string]string{
+		"status":   "OK",
+		"location": redirectUrl,
+	}
+	expectedJson, err := json.Marshal(jsonResponse)
+	require.Nil(t, err)
+	expected := []string{
+		string(expectedJson),
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/delete_tag/%s/%s", profile.ID, tag.ID),
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure tag was deleted
+	profile = loadProfile(t, constants.ProfileIDEmpty)
+	tag, err = profile.FirstMatchingTag("TagName", "Contact-Email")
+	require.Nil(t, err)
+	require.Nil(t, tag)
 }
 
 func TestBagItProfileNewTagFile(t *testing.T) {
@@ -413,13 +480,82 @@ func TestBagItProfileNewTagFile(t *testing.T) {
 	DoSimpleGetTest(t, tagFileURL, expected)
 }
 
-func TestBagItProfileCreateTagFile(t *testing.T) {
-	// POST /profiles/new_tag_file/:profile_id
+func TestCreateAndDeleteTagFile(t *testing.T) {
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	testBagItProfileCreateTagFile(t)
+	testBagItProfileDeleteTagFile(t)
 }
 
-func TestBagItProfileDeleteTagFile(t *testing.T) {
+func testBagItProfileCreateTagFile(t *testing.T) {
+	// POST /profiles/new_tag_file/:profile_id
+
+	profile := loadProfile(t, constants.ProfileIDEmpty)
+
+	redirectUrl := fmt.Sprintf("/profiles/edit/%s?tab=navTagFilesTab&tagFile=test-tag-file.txt", profile.ID)
+	jsonResponse := map[string]string{
+		"status":   "OK",
+		"location": redirectUrl,
+	}
+	expectedJson, err := json.Marshal(jsonResponse)
+	require.Nil(t, err)
+	expected := []string{
+		string(expectedJson),
+	}
+
+	params := url.Values{}
+	params.Set("Name", "test-tag-file.txt")
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/new_tag_file/%s", profile.ID),
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure it was added
+	profile = loadProfile(t, constants.ProfileIDEmpty)
+	tag, err := profile.FirstMatchingTag("TagFile", "test-tag-file.txt")
+	require.Nil(t, err)
+	require.NotNil(t, tag)
+	assert.Equal(t, "New-Tag", tag.TagName)
+	assert.True(t, util.LooksLikeUUID(tag.ID))
+}
+
+func testBagItProfileDeleteTagFile(t *testing.T) {
 	// POST /profiles/delete_tag_file/:profile_id
 	// PUT  /profiles/delete_tag_file/:profile_id
+	//
+	// Note that this relies on the success of the test above.
+	// We're going to delete the tag file we added there.
+
+	redirectUrl := fmt.Sprintf("/profiles/edit/%s?tab=navTagFilesTab&tagFile=bag-info.txt", constants.ProfileIDEmpty)
+	jsonResponse := map[string]string{
+		"status":   "OK",
+		"location": redirectUrl,
+	}
+	expectedJson, err := json.Marshal(jsonResponse)
+	require.Nil(t, err)
+	expected := []string{
+		string(expectedJson),
+	}
+
+	params := url.Values{}
+	params.Set("tagFile", "test-tag-file.txt")
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/profiles/delete_tag_file/%s", constants.ProfileIDEmpty),
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure the tag file was actually deleted
+	profile := loadProfile(t, constants.ProfileIDEmpty)
+	tag, err := profile.FirstMatchingTag("TagFile", "test-tag-file.txt")
+	require.Nil(t, err)
+	require.Nil(t, tag)
 }
 
 // This loads our standard DART profiles from the profiles
