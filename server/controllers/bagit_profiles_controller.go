@@ -29,7 +29,7 @@ func BagItProfileCreate(c *gin.Context) {
 	}
 	newProfile := core.BagItProfileClone(result.BagItProfile())
 	newProfile.BaseProfileID = baseProfileID
-	newProfile.Name = fmt.Sprintf("New profile based on %s %s", result.BagItProfile().Name, time.Now().Format(time.RFC3339))
+	newProfile.Name = fmt.Sprintf("New profile based on %s %s", result.BagItProfile().Name, time.Now().Format(time.Stamp))
 	err := core.ObjSave(newProfile)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -119,8 +119,17 @@ func BagItProfileImport(c *gin.Context) {
 	bpi.ImportSource = c.PostForm("ImportSource")
 	convertedProfile, err := bpi.Convert()
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		form := bpi.ToForm()
+		if form.Fields["ImportSource"].Error == "" {
+			form.Fields["ImportSource"].Error = "JSON is invalid or does not represent a recognizable BagIt profile structure: " + err.Error()
+		}
+		data := gin.H{
+			"form": form,
+		}
+		c.HTML(http.StatusBadRequest, "bagit_profile/import.html", data)
+		return
 	}
+	convertedProfile.Name = fmt.Sprintf("%s %s", convertedProfile.Name, time.Now().Format(time.Stamp))
 	err = core.ObjSave(convertedProfile)
 	if err != nil {
 		c.HTML(http.StatusBadRequest, "bagit_profile/import.html", gin.H{"form": bpi.ToForm()})

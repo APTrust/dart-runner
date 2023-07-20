@@ -169,6 +169,119 @@ func TestBagItProfileImportStart(t *testing.T) {
 
 func TestBagItProfileImport(t *testing.T) {
 	// POST /profiles/import
+	defer core.ClearDartTable()
+	saveTestProfiles(t)
+
+	testImportFromUrl(t)
+	testImportFromJson(t)
+	testImportWithInvalidUrl(t)
+	testImportWithUrlReturningBadData(t)
+	testImportWithBadJson(t)
+}
+
+func testImportFromUrl(t *testing.T) {
+	data := url.Values{}
+	data.Set("ImportSource", "url")
+	data.Set("URL", constants.BTRProfileIdentifier)
+
+	expected := []string{
+		"Beyond the Repository Bagit Profile Group (version 1.0)",
+		"Bagit Profile for Consistent Deposit to Distributed Digital Preservation Services",
+		constants.BTRProfileIdentifier,
+		"application/tar",
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          "/profiles/import",
+		Params:               data,
+		ExpectedResponseCode: http.StatusFound,
+		ExpectedContent:      expected,
+	}
+	DoPostTestWithRedirect(t, settings)
+}
+
+func testImportFromJson(t *testing.T) {
+
+	pathToFile := path.Join(util.ProjectRoot(), "testdata", "profiles", "standard", "bagProfileFoo.json")
+	jsonData, err := util.ReadFile(pathToFile)
+	require.Nil(t, err)
+
+	data := url.Values{}
+	data.Set("ImportSource", "json")
+	data.Set("JsonData", string(jsonData))
+
+	expected := []string{
+		"Yale University",
+		"http://www.library.yale.edu/mssa/bagitprofiles/disk_images.json",
+		"md5",
+		"application/zip",
+		"application/tar",
+		"0.96",
+		"0.97",
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          "/profiles/import",
+		Params:               data,
+		ExpectedResponseCode: http.StatusFound,
+		ExpectedContent:      expected,
+	}
+	DoPostTestWithRedirect(t, settings)
+}
+
+func testImportWithInvalidUrl(t *testing.T) {
+	data := url.Values{}
+	data.Set("ImportSource", "url")
+	data.Set("URL", "this here url ain't valid no ways")
+
+	expected := []string{
+		"Please specify a valid URL.",
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          "/profiles/import",
+		Params:               data,
+		ExpectedResponseCode: http.StatusBadRequest,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+}
+
+func testImportWithUrlReturningBadData(t *testing.T) {
+	data := url.Values{}
+	data.Set("ImportSource", "url")
+	data.Set("URL", "http://example.com") // This returns HTML, not JSON.
+
+	expected := []string{
+		"JSON is invalid or does not represent a recognizable BagIt profile structure",
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          "/profiles/import",
+		Params:               data,
+		ExpectedResponseCode: http.StatusBadRequest,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+}
+
+func testImportWithBadJson(t *testing.T) {
+	// https://raw.githubusercontent.com/APTrust/dart-runner/master/testdata/files/bad_job_params.json
+	data := url.Values{}
+	data.Set("ImportSource", "json")
+	data.Set("JsonData", `{"packageName": "CantFindFiles.tar","files": ["/Users/does-not-exist/no-such-directory"]}`)
+
+	expected := []string{
+		"JSON is invalid or does not represent a recognizable BagIt profile structure",
+	}
+
+	settings := PostTestSettings{
+		EndpointUrl:          "/profiles/import",
+		Params:               data,
+		ExpectedResponseCode: http.StatusBadRequest,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
 }
 
 func TestBagItProfileExport(t *testing.T) {

@@ -77,8 +77,6 @@ func StandardProfileFromJson(jsonBytes []byte) (*StandardProfile, error) {
 // ToDartProfile converts a StandardProfile to a DART BagItProfile object.
 func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	p := NewBagItProfile()
-	p.AcceptBagItVersion = sp.AcceptBagItVersion
-	p.AcceptSerialization = sp.AcceptSerialization
 	p.AllowFetchTxt = sp.AllowFetchTxt
 	p.BagItProfileInfo = ProfileInfo{
 		BagItProfileIdentifier: sp.BagItProfileInfo.BagItProfileIdentifier,
@@ -94,6 +92,8 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	p.IsBuiltIn = false
 	p.Serialization = sp.Serialization
 
+	p.AcceptBagItVersion = make([]string, len(sp.AcceptBagItVersion))
+	p.AcceptSerialization = make([]string, len(sp.AcceptSerialization))
 	p.ManifestsAllowed = make([]string, len(sp.ManifestsAllowed))
 	p.ManifestsRequired = make([]string, len(sp.ManifestsRequired))
 	p.TagFilesAllowed = make([]string, len(sp.TagFilesAllowed))
@@ -101,6 +101,8 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	p.TagManifestsAllowed = make([]string, len(sp.TagManifestsAllowed))
 	p.TagManifestsRequired = make([]string, len(sp.TagManifestsRequired))
 
+	copy(p.AcceptBagItVersion, sp.AcceptBagItVersion)
+	copy(p.AcceptSerialization, sp.AcceptSerialization)
 	copy(p.ManifestsAllowed, sp.ManifestsAllowed)
 	copy(p.ManifestsRequired, sp.ManifestsRequired)
 	copy(p.TagFilesAllowed, sp.TagFilesAllowed)
@@ -111,7 +113,7 @@ func (sp *StandardProfile) ToDartProfile() *BagItProfile {
 	if sp.BagItProfileInfo.SourceOrganization != "" && sp.BagItProfileInfo.Version != "" {
 		p.Name = fmt.Sprintf("%s (version %s)", sp.BagItProfileInfo.SourceOrganization, sp.BagItProfileInfo.Version)
 	} else {
-		p.Name = fmt.Sprintf("Imported Profile - %s", time.Now().Format(time.RFC3339))
+		p.Name = fmt.Sprintf("Imported Profile - %s", time.Now().Format(time.Stamp))
 	}
 
 	// Standard profile can define tags only for bag-info.txt

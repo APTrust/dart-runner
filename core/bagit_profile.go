@@ -442,11 +442,11 @@ func (p *BagItProfile) ToForm() *Form {
 	form.AddField("ID", "ID", p.ID, true)
 
 	bagitVersionField := form.AddMultiValueField("AcceptBagItVersion", "Accept BagIt Version", p.AcceptBagItVersion, true)
-	bagitVersionField.Choices = MakeMultiChoiceList(constants.AcceptBagItVersion, p.AcceptBagItVersion)
+	bagitVersionField.Choices = MakeMultiChoiceList(p.AcceptBagItVersion, p.AcceptBagItVersion)
 	bagitVersionField.Help = "Which BagIt versions are allowed in this profile?"
 
 	acceptSerializationField := form.AddMultiValueField("AcceptSerialization", "AcceptSerialization", p.AcceptSerialization, true)
-	acceptSerializationField.Choices = MakeMultiChoiceList(constants.AcceptSerialization, p.AcceptSerialization)
+	acceptSerializationField.Choices = MakeMultiChoiceList(p.AcceptSerialization, p.AcceptSerialization)
 	acceptSerializationField.Help = "If bags using this profile can be serialized to tar, zip or other formats, enter the mime types for those formats here. E.g. application/x-tar, application/zip, etc. See https://en.wikipedia.org/wiki/List_of_archive_formats for a full list."
 
 	allowFetch := form.AddField("AllowFetchTxt", "AllowFetchTxt", strconv.FormatBool(p.AllowFetchTxt), true)
