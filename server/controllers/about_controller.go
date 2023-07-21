@@ -21,16 +21,16 @@ func AboutShow(c *gin.Context) {
 	c.HTML(http.StatusOK, "about/index.html", templateData)
 }
 
-// GET /help
+// GET /open_external
 // This is an AJAX call.
 // TODO: Make context-sensitive. Go to the right page!
-func OpenHelpInNewWindow(c *gin.Context) {
-	helpUrl := "https://aptrust.github.io/dart-docs/users/getting_started/"
+func OpenExternalUrl(c *gin.Context) {
+	externalUrl := c.Query("url")
 	command := "open"
 	if runtime.GOOS == "windows" {
 		command = "start"
 	}
-	cmd := exec.Command(command, helpUrl)
+	cmd := exec.Command(command, externalUrl)
 	err := cmd.Start()
 	if err != nil {
 		data := map[string]string{

@@ -119,7 +119,7 @@ function deleteTagFile(url, tagFileName) {
         $.ajax({
             url: url,
             type: "post",
-            data: jQuery.param(data) ,
+            data: jQuery.param(data),
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         }).done(function (response) {
             location.href = response.location
@@ -149,10 +149,12 @@ function deleteProfile(formId) {
     }
 }
 
-function showHelp() {
+function openExternalUrl(url) {
+    let data = { "url": url }
     $.ajax({
-        url: "/help",
+        url: "/open_external",
         type: "get",
+        data: jQuery.param(data),
     }).done(function (response) {
         console.log("Show help succeeded")
     }).fail(function (xhr, status, err) {
