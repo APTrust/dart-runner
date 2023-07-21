@@ -149,6 +149,17 @@ function deleteProfile(formId) {
     }
 }
 
+function showHelp() {
+    $.ajax({
+        url: "/help",
+        type: "get",
+    }).done(function (response) {
+        console.log("Show help succeeded")
+    }).fail(function (xhr, status, err) {
+        alert(xhr.responseText)        
+    })        
+}
+
 // Page init
 $(function () {
     $('[data-toggle="popover"]').popover()

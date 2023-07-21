@@ -73,6 +73,7 @@ func initRoutes(router *gin.Engine) {
 	// About
 	router.GET("/", controllers.AboutShow)
 	router.GET("/about", controllers.AboutShow)
+	router.GET("/help", controllers.OpenHelpInNewWindow)
 
 	// App Settings
 	router.GET("/app_settings", controllers.AppSettingIndex)
