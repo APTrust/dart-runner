@@ -44,20 +44,7 @@ func OpenExternalUrl(c *gin.Context) {
 		command = "start"
 	}
 	cmd := exec.Command(command, externalUrl)
-	err := cmd.Start()
-	if err != nil {
-		data := map[string]string{
-			"status": strconv.Itoa(http.StatusInternalServerError),
-			"error":  err.Error(),
-		}
-		c.JSON(http.StatusInternalServerError, data)
-		return
-	}
-	data := map[string]string{
-		"status": strconv.Itoa(http.StatusOK),
-		"result": "OK",
-	}
-	c.JSON(http.StatusOK, data)
+	runCommand(c, cmd)
 }
 
 // GET /open_log
@@ -76,20 +63,7 @@ func OpenLog(c *gin.Context) {
 		command = "start"
 	}
 	cmd := exec.Command(command, logFile)
-	err = cmd.Start()
-	if err != nil {
-		data := map[string]string{
-			"status": strconv.Itoa(http.StatusInternalServerError),
-			"error":  err.Error(),
-		}
-		c.JSON(http.StatusInternalServerError, data)
-		return
-	}
-	data := map[string]string{
-		"status": strconv.Itoa(http.StatusOK),
-		"result": "OK",
-	}
-	c.JSON(http.StatusOK, data)
+	runCommand(c, cmd)
 }
 
 // GET /open_log_folder
@@ -99,20 +73,7 @@ func OpenLogFolder(c *gin.Context) {
 		command = "start"
 	}
 	cmd := exec.Command(command, core.Dart.Paths.LogDir)
-	err := cmd.Start()
-	if err != nil {
-		data := map[string]string{
-			"status": strconv.Itoa(http.StatusInternalServerError),
-			"error":  err.Error(),
-		}
-		c.JSON(http.StatusInternalServerError, data)
-		return
-	}
-	data := map[string]string{
-		"status": strconv.Itoa(http.StatusOK),
-		"result": "OK",
-	}
-	c.JSON(http.StatusOK, data)
+	runCommand(c, cmd)
 }
 
 // GET /open_data_folder
@@ -122,6 +83,10 @@ func OpenDataFolder(c *gin.Context) {
 		command = "start"
 	}
 	cmd := exec.Command(command, core.Dart.Paths.DataDir)
+	runCommand(c, cmd)
+}
+
+func runCommand(c *gin.Context, cmd *exec.Cmd) {
 	err := cmd.Start()
 	if err != nil {
 		data := map[string]string{
