@@ -71,7 +71,7 @@ func initRoutes(router *gin.Engine) {
 	router.Static("/assets", "./server/assets")
 
 	// About
-	router.GET("/", controllers.AboutShow)
+	router.GET("/", controllers.DashboardShow)
 	router.GET("/about", controllers.AboutShow)
 	router.GET("/help", controllers.OpenHelpInNewWindow)
 
