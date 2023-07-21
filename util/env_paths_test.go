@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"os"
+	"regexp"
 	"runtime"
 	"testing"
 
@@ -30,6 +31,17 @@ func TestPaths(t *testing.T) {
 	case "linux":
 		testLinuxPaths(t, p)
 	}
+}
+
+func TestLogFile(t *testing.T) {
+	p := util.NewPaths()
+	require.NotNil(t, p)
+	logFile, err := p.LogFile()
+	require.Nil(t, err)
+	assert.Contains(t, logFile, p.LogDir)
+
+	pattern := regexp.MustCompile(`dart(\d)*.log$`)
+	assert.True(t, pattern.MatchString(logFile))
 }
 
 func testMacOsPaths(t *testing.T, p *util.Paths) {

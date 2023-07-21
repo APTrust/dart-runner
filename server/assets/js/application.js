@@ -162,6 +162,17 @@ function openExternalUrl(url) {
     })        
 }
 
+function execCmd(url) {
+    $.ajax({
+        url: url,
+        type: "get",
+    }).done(function (response) {
+        console.log("Exec command succeeded")
+    }).fail(function (xhr, status, err) {
+        alert(xhr.responseText)        
+    })        
+}
+
 // Page init
 $(function () {
     $('[data-toggle="popover"]').popover()

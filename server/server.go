@@ -74,6 +74,9 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/", controllers.DashboardShow)
 	router.GET("/about", controllers.AboutShow)
 	router.GET("/open_external", controllers.OpenExternalUrl)
+	router.GET("/open_log", controllers.OpenLog)
+	router.GET("/open_log_folder", controllers.OpenLogFolder)
+	router.GET("/tail_log", controllers.TailLog)
 
 	// App Settings
 	router.GET("/app_settings", controllers.AppSettingIndex)

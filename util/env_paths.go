@@ -1,10 +1,13 @@
 package util
 
 import (
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
 	"runtime"
+	"time"
 )
 
 const AppName = "DART"
@@ -104,4 +107,20 @@ func (p *Paths) setLinux() {
 	p.CacheDir = cacheDir
 	p.LogDir = logDir
 	p.TempDir = path.Join(os.TempDir(), user.Name, AppName)
+}
+
+func (p *Paths) LogFile() (string, error) {
+	files, err := ioutil.ReadDir(p.LogDir)
+	if err != nil {
+		return "", err
+	}
+	lastMod := time.Time{}
+	var lastLog fs.FileInfo
+	for _, f := range files {
+		if f.ModTime().After(lastMod) {
+			lastMod = f.ModTime()
+			lastLog = f
+		}
+	}
+	return path.Join(p.LogDir, lastLog.Name()), nil
 }
