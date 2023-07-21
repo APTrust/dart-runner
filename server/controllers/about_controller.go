@@ -15,7 +15,7 @@ import (
 func AboutShow(c *gin.Context) {
 	logFile, err := core.Dart.Paths.LogFile()
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 

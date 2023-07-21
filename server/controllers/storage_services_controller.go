@@ -12,12 +12,12 @@ import (
 func StorageServiceDelete(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	err := core.ObjDelete(request.QueryResult.StorageService())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Redirect(http.StatusFound, "/storage_services")
@@ -28,7 +28,7 @@ func StorageServiceDelete(c *gin.Context) {
 func StorageServiceEdit(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	c.HTML(http.StatusOK, "storage_service/form.html", request.TemplateData)
@@ -38,7 +38,7 @@ func StorageServiceEdit(c *gin.Context) {
 func StorageServiceIndex(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	request.TemplateData["items"] = request.QueryResult.StorageServices
@@ -62,7 +62,7 @@ func StorageServiceSave(c *gin.Context) {
 	ss := &core.StorageService{}
 	err := c.Bind(ss)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	err = core.ObjSave(ss)

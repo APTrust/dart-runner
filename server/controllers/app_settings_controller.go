@@ -12,12 +12,12 @@ import (
 func AppSettingDelete(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	err := core.ObjDelete(request.QueryResult.AppSetting())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Redirect(http.StatusFound, "/app_settings")
@@ -27,7 +27,7 @@ func AppSettingDelete(c *gin.Context) {
 func AppSettingEdit(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	c.HTML(http.StatusOK, "app_setting/form.html", request.TemplateData)
@@ -37,7 +37,7 @@ func AppSettingEdit(c *gin.Context) {
 func AppSettingIndex(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	request.TemplateData["items"] = request.QueryResult.AppSettings
@@ -61,7 +61,7 @@ func AppSettingSave(c *gin.Context) {
 	setting := &core.AppSetting{}
 	err := c.Bind(setting)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
 		return
 	}
 	err = core.ObjSave(setting)

@@ -12,12 +12,12 @@ import (
 func RemoteRepositoryDelete(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	err := core.ObjDelete(request.QueryResult.RemoteRepository())
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Redirect(http.StatusFound, "/remote_repositories")
@@ -28,7 +28,7 @@ func RemoteRepositoryDelete(c *gin.Context) {
 func RemoteRepositoryEdit(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	c.HTML(http.StatusOK, "remote_repository/form.html", request.TemplateData)
@@ -38,7 +38,7 @@ func RemoteRepositoryEdit(c *gin.Context) {
 func RemoteRepositoryIndex(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	request.TemplateData["items"] = request.QueryResult.RemoteRepositories
@@ -63,7 +63,7 @@ func RemoteRepositorySave(c *gin.Context) {
 	repo := &core.RemoteRepository{}
 	err := c.Bind(repo)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	err = core.ObjSave(repo)

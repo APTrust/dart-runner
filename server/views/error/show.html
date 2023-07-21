@@ -1,0 +1,17 @@
+{{ define "error/show.html" }}
+
+{{ template "partials/page_header.html" .}}
+
+<h2>Oops!</h2>
+
+<p>{{ .error }}</p>
+
+<pre>
+    {{ .stackTrace }}
+</pre>
+
+<button type="button" class="btn btn-primary" onclick="history.back()" role="button">Go Back</button>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

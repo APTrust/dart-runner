@@ -24,7 +24,7 @@ func BagItProfileCreate(c *gin.Context) {
 	}
 	result := core.ObjFind(baseProfileID)
 	if result.Error != nil {
-		c.AbortWithError(http.StatusInternalServerError, result.Error)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, result.Error)
 		return
 	}
 	newProfile := core.BagItProfileClone(result.BagItProfile())
@@ -32,7 +32,7 @@ func BagItProfileCreate(c *gin.Context) {
 	newProfile.Name = fmt.Sprintf("New profile based on %s %s", result.BagItProfile().Name, time.Now().Format(time.Stamp))
 	err := core.ObjSave(newProfile)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", newProfile.ID))
@@ -43,13 +43,13 @@ func BagItProfileCreate(c *gin.Context) {
 func BagItProfileDelete(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
-		c.AbortWithError(http.StatusNotFound, result.Error)
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
 	profile := result.BagItProfile()
 	err := core.ObjDelete(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 	}
 	data := map[string]string{
 		"status":   "OK",
@@ -62,7 +62,7 @@ func BagItProfileDelete(c *gin.Context) {
 func BagItProfileEdit(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	profile := request.QueryResult.BagItProfile()
@@ -81,7 +81,7 @@ func BagItProfileEdit(c *gin.Context) {
 func BagItProfileIndex(c *gin.Context) {
 	request := NewRequest(c)
 	if request.HasErrors() {
-		c.AbortWithError(http.StatusInternalServerError, request.Errors[0])
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
 	request.TemplateData["items"] = request.QueryResult.BagItProfiles
@@ -92,7 +92,7 @@ func BagItProfileIndex(c *gin.Context) {
 func BagItProfileNew(c *gin.Context) {
 	form, err := core.NewBagItProfileCreationForm()
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	data := gin.H{
@@ -142,13 +142,13 @@ func BagItProfileImport(c *gin.Context) {
 func BagItProfileExport(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
-		c.AbortWithError(http.StatusNotFound, result.Error)
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
 	profile := result.BagItProfile()
 	profileJson, err := profile.ToStandardFormat().ToJSON()
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, result.Error)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, result.Error)
 		return
 	}
 	templateData := gin.H{
@@ -170,7 +170,7 @@ func BagItProfileSave(c *gin.Context) {
 
 	err := c.Bind(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
 		return
 	}
 	// For tag files allowed, split lines into individual file names.
@@ -219,7 +219,7 @@ func BagItProfileEditTag(c *gin.Context) {
 	// This displays in a modal.
 	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -237,7 +237,7 @@ func BagItProfileEditTag(c *gin.Context) {
 func BagItProfileSaveTag(c *gin.Context) {
 	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	if tag == nil {
@@ -280,7 +280,7 @@ func BagItProfileSaveTag(c *gin.Context) {
 	// or added a single tag, which we know by now is valid.
 	err = core.ObjSave(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -303,7 +303,7 @@ func BagItProfileSaveTag(c *gin.Context) {
 func BagItProfileDeleteTag(c *gin.Context) {
 	profile, tag, err := loadProfileAndTag(c)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	tagIndex := -1
@@ -314,13 +314,13 @@ func BagItProfileDeleteTag(c *gin.Context) {
 		}
 	}
 	if tagIndex < 0 {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Tag was not found in this BagIt profile"))
+		AbortWithErrorHTML(c, http.StatusBadRequest, fmt.Errorf("Tag was not found in this BagIt profile"))
 		return
 	}
 	profile.Tags = util.RemoveFromSlice[*core.TagDefinition](profile.Tags, tagIndex)
 	err = core.ObjSave(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
 	query := url.Values{}
@@ -358,13 +358,13 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 	}
 	result := core.ObjFind(profileID)
 	if result.Error != nil {
-		c.AbortWithError(http.StatusNotFound, result.Error)
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
 	profile := result.BagItProfile()
 	tags, err := profile.FindMatchingTags("TagFile", tagFileName)
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
 	if len(tags) > 0 {
@@ -387,7 +387,7 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 	profile.Tags = append(profile.Tags, &newTag)
 	err = core.ObjSave(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
 
@@ -406,12 +406,12 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 func BagItProfileDeleteTagFile(c *gin.Context) {
 	tagFileName := c.PostForm("tagFile")
 	if tagFileName == "bagit.txt" || tagFileName == "bag-info.txt" {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("bagit.txt and bag-info.txt cannot be deleted"))
+		AbortWithErrorHTML(c, http.StatusNotFound, fmt.Errorf("bagit.txt and bag-info.txt cannot be deleted"))
 		return
 	}
 	result := core.ObjFind(c.Param("profile_id"))
 	if result.Error != nil {
-		c.AbortWithError(http.StatusNotFound, result.Error)
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
 	profile := result.BagItProfile()
@@ -424,7 +424,7 @@ func BagItProfileDeleteTagFile(c *gin.Context) {
 	profile.Tags = newTagList
 	err := core.ObjSave(profile)
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
 
