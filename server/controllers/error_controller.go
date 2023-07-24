@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"fmt"
 	"runtime/debug"
 
@@ -22,8 +23,12 @@ func AbortWithErrorJSON(c *gin.Context, status int, err error) {
 
 func getResponseData(err error) gin.H {
 	stack := debug.Stack()
+	errorMessage := err.Error()
+	if err == sql.ErrNoRows {
+		errorMessage = "Object not found."
+	}
 	data := gin.H{
-		"error":      err.Error(),
+		"error":      errorMessage,
 		"stackTrace": string(stack),
 	}
 	return data
