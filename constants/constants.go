@@ -48,6 +48,7 @@ const (
 	TypeBagItProfile         = "BagItProfile"
 	TypeBagItProfileImport   = "BagItProfileImport"
 	TypeInternalSetting      = "InternalSetting"
+	TypeJob                  = "Job"
 	TypeRemoteRepository     = "RemoteRepository"
 	TypeStorageService       = "StorageService"
 	TypeTagDefinition        = "TagDefinition"

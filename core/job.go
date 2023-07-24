@@ -24,6 +24,7 @@ var TitleTags = []string{
 }
 
 type Job struct {
+	ID           string               `json:"id"`
 	BagItProfile *BagItProfile        `json:"bagItProfile"`
 	ByteCount    int64                `json:"byteCount"`
 	DirCount     int64                `json:"dirCount"`
@@ -269,4 +270,40 @@ func (job *Job) GetResultMessages() (stdoutMessage, stdErrMessage string) {
 
 	}
 	return stdoutMessage, stdErrMessage
+}
+
+// PersistentObject interface
+
+// ObjID returns this job's object id (uuid).
+func (job *Job) ObjID() string {
+	return job.ID
+}
+
+// ObjName returns this object's name, so names will be
+// searchable and sortable in the DB.
+func (job *Job) ObjName() string {
+	return job.Name()
+}
+
+// ObjType returns this object's type name.
+func (job *Job) ObjType() string {
+	return constants.TypeJob
+}
+
+func (job *Job) IsDeletable() bool {
+	return true
+}
+
+func (job *Job) String() string {
+	return fmt.Sprintf("Job: %s [%s]", job.Name(), job.ID)
+}
+
+func (job *Job) GetErrors() map[string]string {
+	return job.Errors
+}
+
+func (job *Job) ToForm() *Form {
+	form := NewForm(constants.TypeJob, job.ID, job.Errors)
+
+	return form
 }

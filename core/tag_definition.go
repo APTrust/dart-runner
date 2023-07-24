@@ -155,3 +155,90 @@ func (t *TagDefinition) ToForm() *Form {
 
 	return form
 }
+
+// // UnmarshalJson will unmarshal both current and malformed legacy (DART 2.x)
+// // TagDefinition structs into a current TagDefinition object.
+// // In some cases in DART 2.x, if a used defined a custom TagDefinition,
+// // empty and single-value Values property from the input form were saved as
+// // a string instead of an array of strings. This unmarshaler handles that case.
+// func (t *TagDefinition) UnmarshalJSON(data []byte) error {
+// 	var currentStruct struct {
+// 		DefaultValue    string            `json:"defaultValue"`
+// 		EmptyOK         bool              `json:"emptyOK"`
+// 		Errors          map[string]string `json:"-"`
+// 		Help            string            `json:"help"`
+// 		ID              string            `json:"id"`
+// 		IsBuiltIn       bool              `json:"isBuiltIn"`
+// 		IsUserAddedFile bool              `json:"isUserAddedFile"`
+// 		IsUserAddedTag  bool              `json:"isUserAddedTag"`
+// 		Required        bool              `json:"required"`
+// 		SystemMustSet   bool              `json:"systemMustSet"`
+// 		TagFile         string            `json:"tagFile"`
+// 		TagName         string            `json:"tagName"`
+// 		UserValue       string            `json:"userValue"`
+// 		Values          []string          `json:"values"`
+// 		WasAddedForJob  bool              `json:"wasAddedForJob"`
+// 	}
+
+// 	var malformedLegacyStruct struct {
+// 		DefaultValue    string            `json:"defaultValue"`
+// 		EmptyOK         bool              `json:"emptyOK"`
+// 		Errors          map[string]string `json:"-"`
+// 		Help            string            `json:"help"`
+// 		ID              string            `json:"id"`
+// 		IsBuiltIn       bool              `json:"isBuiltIn"`
+// 		IsUserAddedFile bool              `json:"isUserAddedFile"`
+// 		IsUserAddedTag  bool              `json:"isUserAddedTag"`
+// 		Required        bool              `json:"required"`
+// 		SystemMustSet   bool              `json:"systemMustSet"`
+// 		TagFile         string            `json:"tagFile"`
+// 		TagName         string            `json:"tagName"`
+// 		UserValue       string            `json:"userValue"`
+// 		Values          string            `json:"values"`
+// 		WasAddedForJob  bool              `json:"wasAddedForJob"`
+// 	}
+
+// 	// If this works, go with it.
+// 	err := json.Unmarshal(data, &currentStruct)
+// 	if err == nil {
+// 		t.DefaultValue = currentStruct.DefaultValue
+// 		t.EmptyOK = currentStruct.EmptyOK
+// 		t.Errors = currentStruct.Errors
+// 		t.Help = currentStruct.Help
+// 		t.ID = currentStruct.ID
+// 		t.IsBuiltIn = currentStruct.IsBuiltIn
+// 		t.IsUserAddedFile = currentStruct.IsUserAddedFile
+// 		t.IsUserAddedTag = currentStruct.IsUserAddedTag
+// 		t.Required = currentStruct.Required
+// 		t.SystemMustSet = currentStruct.SystemMustSet
+// 		t.TagFile = currentStruct.TagFile
+// 		t.TagName = currentStruct.TagName
+// 		t.UserValue = currentStruct.UserValue
+// 		t.Values = currentStruct.Values
+// 		t.WasAddedForJob = currentStruct.WasAddedForJob
+// 		return nil
+// 	}
+
+// 	// Otherwise, we're dealing with a malformed struct.
+// 	err = json.Unmarshal(data, &malformedLegacyStruct)
+// 	if err == nil {
+// 		t.DefaultValue = malformedLegacyStruct.DefaultValue
+// 		t.EmptyOK = malformedLegacyStruct.EmptyOK
+// 		t.Errors = malformedLegacyStruct.Errors
+// 		t.Help = malformedLegacyStruct.Help
+// 		t.ID = malformedLegacyStruct.ID
+// 		t.IsBuiltIn = malformedLegacyStruct.IsBuiltIn
+// 		t.IsUserAddedFile = malformedLegacyStruct.IsUserAddedFile
+// 		t.IsUserAddedTag = malformedLegacyStruct.IsUserAddedTag
+// 		t.Required = malformedLegacyStruct.Required
+// 		t.SystemMustSet = malformedLegacyStruct.SystemMustSet
+// 		t.TagFile = malformedLegacyStruct.TagFile
+// 		t.TagName = malformedLegacyStruct.TagName
+// 		t.UserValue = malformedLegacyStruct.UserValue
+// 		t.Values = []string{malformedLegacyStruct.Values}
+// 		t.WasAddedForJob = malformedLegacyStruct.WasAddedForJob
+// 		return err
+// 	}
+
+// 	return nil
+// }

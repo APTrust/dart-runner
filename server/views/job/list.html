@@ -1,0 +1,36 @@
+{{ define "job/list.html" }}
+
+{{ template "partials/page_header.html" .}}
+
+<h2>Jobs</h2>
+<div class="pull-right mt-1 mb-3">
+  <a class="btn btn-primary" href="/app_settings/new" role="button">New</a>
+</div>
+<table class="table table-hover">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Name</th>
+      <th>Created</th>
+      <th>Packaged</th>
+      <th>Validated</th>
+      <th>Uploaded</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $index, $item := .items }}
+    <tr class="clickable-row" onclick="location.href='/app_settings/edit/{{ $item.ID }}'">
+      <td>{{ $item.Name }}</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+
+{{ template "partials/table_bottom_links.html" . }}
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

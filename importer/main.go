@@ -14,6 +14,7 @@ func main() {
 	ImportBagItProfiles()
 	ImportRemoteRepositories()
 	ImportStorageServices()
+	// ImportJobs()
 }
 
 func ImportAppSettings() {
@@ -51,6 +52,15 @@ func ImportStorageServices() {
 		SaveObject(ss)
 	}
 }
+
+// func ImportJobs() {
+// 	jsonBytes := GetJson("Job.json")
+// 	jobs := make(map[string]*core.Job)
+// 	ParseJson(jsonBytes, &jobs)
+// 	for _, job := range jobs {
+// 		SaveObject(job)
+// 	}
+// }
 
 func GetJson(filename string) []byte {
 	dataDir := core.Dart.Paths.DataDir

@@ -87,6 +87,10 @@ func ObjFind(uuid string) *QueryResult {
 		item := &InternalSetting{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.InternalSettings = append(qr.InternalSettings, item)
+	case constants.TypeJob:
+		item := &Job{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.Jobs = append(qr.Jobs, item)
 	case constants.TypeStorageService:
 		item := &StorageService{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
@@ -127,6 +131,8 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 		bagItProfileList(rows, qr)
 	case constants.TypeInternalSetting:
 		internalSettingList(rows, qr)
+	case constants.TypeJob:
+		jobList(rows, qr)
 	case constants.TypeRemoteRepository:
 		remoteRepositoryList(rows, qr)
 	case constants.TypeStorageService:
@@ -212,6 +218,22 @@ func internalSettingList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.InternalSettings = append(qr.InternalSettings, item)
+	}
+}
+
+func jobList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &Job{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.Jobs = append(qr.Jobs, item)
 	}
 }
 

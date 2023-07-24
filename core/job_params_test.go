@@ -8,6 +8,7 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,6 +35,7 @@ func getTestWorkflow(t *testing.T) *core.Workflow {
 
 func getTestStorageService(protocol, host string) *core.StorageService {
 	ss := &core.StorageService{}
+	ss.ID = uuid.NewString()
 	ss.AllowsUpload = true
 	ss.Bucket = "test-bucket"
 	ss.Host = host

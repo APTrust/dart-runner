@@ -9,6 +9,7 @@ type QueryResult struct {
 	BagItProfiles      []*BagItProfile
 	Error              error
 	InternalSettings   []*InternalSetting
+	Jobs               []*Job
 	Limit              int
 	ObjCount           int
 	ObjType            string
@@ -43,6 +44,13 @@ func (qr *QueryResult) BagItProfile() *BagItProfile {
 func (qr *QueryResult) InternalSetting() *InternalSetting {
 	if len(qr.InternalSettings) > 0 {
 		return qr.InternalSettings[0]
+	}
+	return nil
+}
+
+func (qr *QueryResult) Job() *Job {
+	if len(qr.Jobs) > 0 {
+		return qr.Jobs[0]
 	}
 	return nil
 }

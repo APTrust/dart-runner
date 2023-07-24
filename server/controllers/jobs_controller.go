@@ -1,6 +1,10 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 // JobCreate creates a new Job.
 // Handles submission of new Job form.
@@ -22,6 +26,13 @@ func JobEdit(c *gin.Context) {
 
 // GET /jobs
 func JobIndex(c *gin.Context) {
+	request := NewRequest(c)
+	if request.HasErrors() {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
+		return
+	}
+	request.TemplateData["items"] = request.QueryResult.Jobs
+	c.HTML(http.StatusOK, "app_setting/list.html", request.TemplateData)
 
 }
 
