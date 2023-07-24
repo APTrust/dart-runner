@@ -1,6 +1,9 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // Dict returns an interface map suitable for passing into
 // sub templates.
@@ -17,4 +20,13 @@ func Dict(values ...interface{}) (map[string]interface{}, error) {
 		dict[key] = values[i+1]
 	}
 	return dict, nil
+}
+
+// DisplayDate returns a datetime in human-readable format.
+// This returns an empty string if time is empty.
+func DisplayDate(ts time.Time) string {
+	if ts.IsZero() {
+		return ""
+	}
+	return ts.Format(time.RFC822)
 }

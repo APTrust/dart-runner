@@ -10,7 +10,6 @@
   <thead class="thead-inverse">
     <tr>
       <th>Name</th>
-      <th>Created</th>
       <th>Packaged</th>
       <th>Validated</th>
       <th>Uploaded</th>
@@ -20,10 +19,9 @@
     {{ range $index, $item := .items }}
     <tr class="clickable-row" onclick="location.href='/app_settings/edit/{{ $item.ID }}'">
       <td>{{ $item.Name }}</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td class="{{ if $item.PackageSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.PackagedAt }}</td>
+      <td class="{{ if $item.ValidationSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.ValidatedAt }}</td>
+      <td class="{{ if $item.UploadSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.UploadedAt }}</td>
     </tr>
     {{ end }}
   </tbody>

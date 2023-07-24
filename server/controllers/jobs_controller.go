@@ -32,7 +32,7 @@ func JobIndex(c *gin.Context) {
 		return
 	}
 	request.TemplateData["items"] = request.QueryResult.Jobs
-	c.HTML(http.StatusOK, "app_setting/list.html", request.TemplateData)
+	c.HTML(http.StatusOK, "job/list.html", request.TemplateData)
 
 }
 
