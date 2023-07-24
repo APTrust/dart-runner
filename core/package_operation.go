@@ -60,3 +60,20 @@ func (p *PackageOperation) Validate() bool {
 	}
 	return len(p.Errors) == 0
 }
+
+func (p *PackageOperation) ToForm() *Form {
+	form := NewForm("PackageOperation", "", p.Errors)
+
+	serialization := form.AddField("BagItSerialization", "Serialization", p.BagItSerialization, false)
+	serialization.Choices = MakeChoiceList(constants.SerializationOptions, p.BagItSerialization)
+
+	form.AddField("OutputPath", "Output Path", p.OutputPath, true)
+	form.AddField("PackageName", "Package Name", p.PackageName, true)
+
+	packageFormat := form.AddField("PackageFormat", "Package Format", p.PackageFormat, true)
+	packageFormat.Choices = MakeChoiceList(constants.PackageFormats, p.PackageFormat)
+
+	form.AddMultiValueField("SourceFiles", "Files to Package", p.SourceFiles, false)
+
+	return form
+}

@@ -93,6 +93,12 @@ var SavableItemTypes = []string{
 	TypeStorageService,
 }
 
+// We have only one format at the moment, but in future we
+// may add OCFL and others.
+var PackageFormats = []string{
+	PackageFormatBagIt,
+}
+
 // AppVersion is the version of DART Runner. This is set by
 // the linker at compile time in main.Version, which then
 // sets this var before it runs a job or workflow. This isn't

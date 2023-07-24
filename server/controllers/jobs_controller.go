@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,6 +39,25 @@ func JobIndex(c *gin.Context) {
 
 // GET /jobs/new
 func JobNew(c *gin.Context) {
+	job := core.NewJob()
+	data := gin.H{
+		"job": job,
+	}
+	c.HTML(http.StatusOK, "job/files.html", data)
+}
+
+// GET /jobs/packaging/:id
+func JobShowPackaging(c *gin.Context) {
+	job := core.NewJob()
+	data := gin.H{
+		"job":  job,
+		"form": job.ToForm(),
+	}
+	c.HTML(http.StatusOK, "job/packaging.html", data)
+}
+
+// POST /jobs/packaging/:id
+func JobSavePackaging(c *gin.Context) {
 
 }
 

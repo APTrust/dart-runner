@@ -3,9 +3,11 @@ package core_test
 import (
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPackageOperation(t *testing.T) {
@@ -40,4 +42,28 @@ func TestPackageOperation(t *testing.T) {
 	op = core.NewPackageOperation("bag.tar", "/path/to/output", sourceFiles)
 	assert.True(t, op.Validate())
 	assert.Equal(t, 0, len(op.Errors))
+}
+
+func TestPackageOperationToForm(t *testing.T) {
+	sourceFiles := []string{
+		"/usr/local/photos",
+		"/usr/local/pdfs",
+		"/usr/local/music",
+	}
+	op := core.NewPackageOperation("photos.tar", "/home/josie/photos.tar", sourceFiles)
+	op.BagItSerialization = constants.SerializationRequired
+	op.PackageFormat = constants.PackageFormatBagIt
+
+	form := op.ToForm()
+	require.NotNil(t, form)
+	assert.Equal(t, 4, len(form.Fields["BagItSerialization"].Choices))
+	assert.Equal(t, constants.SerializationRequired, form.Fields["BagItSerialization"].Value)
+
+	assert.Equal(t, "/home/josie/photos.tar", form.Fields["OutputPath"].Value)
+	assert.Equal(t, "photos.tar", form.Fields["PackageName"].Value)
+
+	assert.Equal(t, 2, len(form.Fields["PackageFormat"].Choices))
+	assert.Equal(t, constants.PackageFormatBagIt, form.Fields["PackageFormat"].Value)
+
+	assert.Equal(t, sourceFiles, form.Fields["SourceFiles"].Values)
 }

@@ -304,6 +304,15 @@ func (job *Job) GetErrors() map[string]string {
 
 func (job *Job) ToForm() *Form {
 	form := NewForm(constants.TypeJob, job.ID, job.Errors)
+	form.AddField("ID", "ID", job.ID, true)
+	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile ID", job.BagItProfile.ID, false)
+	bagItProfile.Choices = BagItProfileChoiceList(job.BagItProfile.ID)
+
+	// PackageOp
+
+	// UploadOps
+
+	// ValidationOp
 
 	return form
 }

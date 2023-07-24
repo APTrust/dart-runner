@@ -1,0 +1,49 @@
+{{ define "job/packaging.html" }}
+
+{{ template "partials/page_header.html" .}}
+
+<h2>Packaging</h2>
+
+<p>
+    Note: Although this page displays a number of serialization formats,
+    DART currently supports only the "None" and ".tar" formats. Additional
+    formats will be coming soon.
+</p>
+
+<!-- { {> bannerAlert message = alertMessage } } -->
+
+<form method="post" action="#" id="{{ .job.ID }}">
+
+  <div style="display: {{ if .job.WorkflowID }} none {{ else }} block {{ end }};">
+    {{ template "partials/input_select.html" dict "field" .form.Fields.PackageFormat }}
+
+    <div id="jobProfileContainer" style='display: {{if eq "BagIt" .form.Fields.PackageFormat.Value }} block {{ else }} none {{ end }};'>
+        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
+        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItSerialization }}
+    </div>
+  </div>
+
+
+  {{ template "partials/input_text.html" dict "field" .form.Fields.PackageName }}
+
+
+  <div style="display: {{ if .job.WorkflowID}} none {{ else }} block {{ end }};">
+    {{ template "partials/input_text.html" dict "field" .form.Fields.OutputPath }}
+  </div>
+
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.PluginID }}
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+
+</form>
+
+<div class="pull-left" id="btnBackDiv">
+  <button type="submit" class="btn btn-primary" href="/jobs/packaging/{{ .job.ID }}?direction=back" role="button">&lt;&lt; Back</button>
+</div>
+
+<div class="pull-right" id="btnNextDiv">
+  <button type="submit" class="btn btn-primary" href="/jobs/packaging/{{ .job.ID }}?direction=next" role="button">Next &gt;&gt;</button>
+</div>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

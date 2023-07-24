@@ -4,11 +4,11 @@
 
 <h2>Files</h2>
 
-  <div id="dropZone" class="drop-zone">
+<div id="dropZone" class="drop-zone">
 
       <div class="text-center upload-icon-div" id="uploadIcon">
           <p>Drag and drop the items you want to package.</p>
-          <img src="assets/img/upload.png"/>
+          <img src="/assets/img/upload.png" alt="Drop files here">
       </div>
 
 
@@ -42,15 +42,15 @@
 
           </div>
       </div>
-  </div>
 </div>
 
+
 <div class="pull-left">
-  <a class="btn btn-danger" href="#Job/destroy?id={{ .job.id }}" role="button">Delete</a>
+  <a class="btn btn-danger" href="/jobs/delete/{{ .job.ID }}" role="button">Delete</a>
 </div>
 
 <div class="pull-right" id="btnJobPackagingDiv">
-  <a class="btn btn-primary" href="#JobPackaging/show?id={{ .job.id }}" role="button">Next &gt;&gt;</a>
+  <button type="submit" class="btn btn-primary" href="#JobPackaging/show?id={{ .job.ID }}" role="button">Next &gt;&gt;</a>
 </div>
 
 <script>
