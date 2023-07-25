@@ -1,0 +1,11 @@
+{{ define "partials/file_browser.html" }}
+
+<p>{{ .job.Name }}</p>
+
+<ol>
+    {{ range $index, $item := .items}}
+    <li>{{ $item.FullPath }}</li>
+    {{ end }}
+</ol>
+
+{{ end }}

@@ -3,6 +3,7 @@ package util_test
 import (
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -111,5 +112,23 @@ func TestRecursiveFileList(t *testing.T) {
 			}
 		}
 		assert.True(t, found, "File %s was not in list", expected)
+	}
+}
+
+func TestListDirectory(t *testing.T) {
+	dir := path.Join(util.ProjectRoot(), "util")
+	files, err := util.ListDirectory(dir)
+	require.Nil(t, err)
+	require.NotEmpty(t, files)
+	assert.True(t, len(files) > 10)
+}
+
+func TestGetWindowsDrives(t *testing.T) {
+	drives := util.GetWindowsDrives()
+	if runtime.GOOS == "windows" {
+		require.NotEmpty(t, drives)
+		assert.Contains(t, drives, "C:\\")
+	} else {
+		assert.Empty(t, drives)
 	}
 }

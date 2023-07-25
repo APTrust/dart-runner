@@ -17,9 +17,9 @@ func TestPaths(t *testing.T) {
 
 	homeDir, _ := os.UserHomeDir()
 	assert.Contains(t, p.DataDir, homeDir)
-	assert.Contains(t, p.ConfigDir, homeDir)
-	assert.Contains(t, p.CacheDir, homeDir)
-	assert.Contains(t, p.HomeDir, homeDir)
+	assert.Contains(t, p.Config, homeDir)
+	assert.Contains(t, p.Cache, homeDir)
+	assert.Contains(t, p.Home, homeDir)
 	assert.Contains(t, p.LogDir, homeDir)
 	assert.Contains(t, p.TempDir, util.AppName)
 
@@ -46,21 +46,29 @@ func TestLogFile(t *testing.T) {
 
 func testMacOsPaths(t *testing.T, p *util.Paths) {
 	assert.Contains(t, p.DataDir, "Library/Application Support")
-	assert.Contains(t, p.ConfigDir, "Library/Preferences")
-	assert.Contains(t, p.CacheDir, "Library/Caches")
+	assert.Contains(t, p.Config, "Library/Preferences")
+	assert.Contains(t, p.Cache, "Library/Caches")
 	assert.Contains(t, p.LogDir, "Library/Logs")
 }
 
 func testWindowsPaths(t *testing.T, p *util.Paths) {
 	assert.Contains(t, p.DataDir, "Data")
-	assert.Contains(t, p.ConfigDir, "Config")
-	assert.Contains(t, p.CacheDir, "Cache")
+	assert.Contains(t, p.Config, "Config")
+	assert.Contains(t, p.Cache, "Cache")
 	assert.Contains(t, p.LogDir, "Log")
 }
 
 func testLinuxPaths(t *testing.T, p *util.Paths) {
 	assert.Contains(t, p.DataDir, util.AppName)
-	assert.Contains(t, p.ConfigDir, util.AppName)
-	assert.Contains(t, p.CacheDir, util.AppName)
+	assert.Contains(t, p.Config, util.AppName)
+	assert.Contains(t, p.Cache, util.AppName)
 	assert.Contains(t, p.LogDir, util.AppName)
+}
+
+func TestDefaultPaths(t *testing.T) {
+	p := util.NewPaths()
+	defaultPaths, err := p.DefaultPaths()
+	require.Nil(t, err)
+	require.NotEmpty(t, defaultPaths)
+	assert.True(t, len(defaultPaths) > 4)
 }

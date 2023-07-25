@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -118,4 +119,36 @@ func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
 		return nil
 	})
 	return files, err
+}
+
+// ListDirectory returns a list of directory contents one level deep. It does
+// not recurse.
+func ListDirectory(dir string) ([]*ExtendedFileInfo, error) {
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, nil
+	}
+	files := make([]*ExtendedFileInfo, len(dirEntries))
+	for i, entry := range dirEntries {
+		fileInfo, err := entry.Info()
+		if err != nil {
+			return nil, nil
+		}
+		files[i] = NewExtendedFileInfo(path.Join(dir, fileInfo.Name()), fileInfo)
+	}
+	return files, nil
+}
+
+// GetWindowsDrives returns a list of Windows drives.
+func GetWindowsDrives() []string {
+	drives := make([]string, 0)
+	if runtime.GOOS == "windows" {
+		for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
+			_, err := os.Stat(string(drive) + ":\\")
+			if err == nil {
+				drives = append(drives, string(drive))
+			}
+		}
+	}
+	return drives
 }
