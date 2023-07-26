@@ -122,21 +122,28 @@ func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
 }
 
 // ListDirectory returns a list of directory contents one level deep. It does
-// not recurse.
+// not recurse. The list will contain directories first, followed by files.
 func ListDirectory(dir string) ([]*ExtendedFileInfo, error) {
 	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, nil
 	}
-	files := make([]*ExtendedFileInfo, len(dirEntries))
-	for i, entry := range dirEntries {
+	files := make([]*ExtendedFileInfo, 0)
+	directories := make([]*ExtendedFileInfo, 0)
+	for _, entry := range dirEntries {
 		fileInfo, err := entry.Info()
 		if err != nil {
 			return nil, nil
 		}
-		files[i] = NewExtendedFileInfo(path.Join(dir, fileInfo.Name()), fileInfo)
+		extFileInfo := NewExtendedFileInfo(path.Join(dir, fileInfo.Name()), fileInfo)
+		if entry.IsDir() {
+			directories = append(directories, extFileInfo)
+		} else {
+			files = append(files, extFileInfo)
+		}
 	}
-	return files, nil
+	allEntries := append(directories, files...)
+	return allEntries, nil
 }
 
 // GetWindowsDrives returns a list of Windows drives.

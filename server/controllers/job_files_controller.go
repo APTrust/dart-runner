@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
@@ -10,13 +13,19 @@ import (
 
 // GET /jobs/files/:id
 func JobShowFiles(c *gin.Context) {
-	job, items, err := GetJobAndDirList(c.Param("id"), c.Query("directory"))
+	directory := c.Query("directory")
+	job, items, err := GetJobAndDirList(c.Param("id"), directory)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 	}
+	parentDir, parentDirShortName := GetParentDir(directory)
+	showParentDirLink := directory != "" && directory != parentDir
 	data := gin.H{
-		"job":   job,
-		"items": items,
+		"job":                job,
+		"items":              items,
+		"parentDir":          parentDir,
+		"parentDirShortName": parentDirShortName,
+		"showParentDirLink":  showParentDirLink,
 	}
 	c.HTML(http.StatusOK, "partials/file_browser.html", data)
 }
@@ -74,4 +83,21 @@ func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInf
 		return nil, entries, result.Error
 	}
 	return result.Job(), entries, nil
+}
+
+func GetParentDir(dirName string) (string, string) {
+	parentDir := path.Dir(dirName)
+	var parentDirShortName string
+	parts := strings.Split(parentDir, string(os.PathSeparator))
+	if len(parts) > 0 {
+		parentDirShortName = parts[len(parts)-1]
+	}
+	if parentDirShortName == "" {
+		parentDirShortName = parentDir
+	}
+	if parentDirShortName == "." {
+		parentDirShortName = "Default Menu"
+		parentDir = ""
+	}
+	return parentDir, parentDirShortName
 }
