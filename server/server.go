@@ -41,8 +41,22 @@ func InitAppEngine(discardStdOut bool) *gin.Engine {
 func initTemplates(router *gin.Engine) {
 
 	router.SetFuncMap(template.FuncMap{
-		"dict":        util.Dict,
-		"displayDate": util.DisplayDate,
+		"dateISO":        util.DateISO,
+		"dateTimeISO":    util.DateTimeISO,
+		"dateTimeUS":     util.DateTimeUS,
+		"dateUS":         util.DateUS,
+		"dict":           util.Dict,
+		"displayDate":    util.DisplayDate,
+		"escapeAttr":     util.EscapeAttr,
+		"escapeHTML":     util.EscapeHTML,
+		"fileIconFor":    util.FileIconFor,
+		"humanSize":      util.HumanSize,
+		"strEq":          util.StrEq,
+		"truncate":       util.Truncate,
+		"truncateMiddle": util.TruncateMiddle,
+		"truncateStart":  util.TruncateStart,
+		"unixToISO":      util.UnixToISO,
+		"yesNo":          util.YesNo,
 	})
 
 	// Load the view templates

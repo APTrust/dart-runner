@@ -175,3 +175,12 @@ ul.ui-autocomplete {
     max-width: 80%;
     margin: 1.75rem auto;
 }
+
+
+/* 
+    Increase default fontawesome font size in file-browser-item
+*/
+.file-browser-item svg {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
