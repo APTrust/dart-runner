@@ -18,14 +18,21 @@ func JobShowFiles(c *gin.Context) {
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 	}
+	defaultPaths, err := core.Dart.Paths.DefaultPaths()
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+	}
 	parentDir, parentDirShortName := GetParentDir(directory)
 	showParentDirLink := directory != "" && directory != parentDir
+	showJumpMenu := directory != ""
 	data := gin.H{
 		"job":                job,
 		"items":              items,
 		"parentDir":          parentDir,
 		"parentDirShortName": parentDirShortName,
 		"showParentDirLink":  showParentDirLink,
+		"defaultPaths":       defaultPaths,
+		"showJumpMenu":       showJumpMenu,
 	}
 	c.HTML(http.StatusOK, "partials/file_browser.html", data)
 }
