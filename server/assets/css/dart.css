@@ -184,3 +184,35 @@ ul.ui-autocomplete {
     font-size: 1.5rem;
     margin-right: 0.5rem;
 }
+
+svg.fa-folder {
+    color: var(--yellow);
+}
+
+svg.fa-file-image {
+    color: var(--green);
+}
+
+svg.fa-file-audio {
+    color: var(--teal);
+}
+
+svg.fa-file-video {
+    color: var(--cyan);
+}
+
+svg.fa-file-code {
+    color: var(--indigo);
+}
+
+svg.fa-file-archive {
+    color: var(--orange);
+}
+
+svg.fa-file-word, svg.fa-file-powerpoint, svg.fa-file-excel {
+    color: var(--blue);
+}
+
+svg.fa-file-pdf {
+    color: var(--red);
+}
