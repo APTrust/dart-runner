@@ -2,9 +2,31 @@
 
 {{ template "partials/page_header.html" .}}
 
+<script>
+    function jumpToFolder(jumpMenu) {
+        if (jumpMenu.value == "") {
+            return
+        }
+        location = location.pathname + '?directory=' + encodeURIComponent(jumpMenu.value)
+    }
+</script>
+
 <p>{{ .job.Name }}</p>
 
-<!-- TODO: Add jump menu. -->
+{{ if .showJumpMenu }}
+<form method="get" action="">
+    <div class="form-group">
+        <select class="form-control" name="jumpMenu" id="jumpMenu" onchange="jumpToFolder(this)">
+            <option value="">-- Jump to folder --</option>
+            {{ range $index, $location := .defaultPaths }}
+            <option value="{{ $location.FullPath }}">{{ $location.FileInfo.Name }}</option>
+            {{ end }}
+        </select>
+    </div>
+</form>
+{{ end }}
+
+<p id="currentDir" title="{{ .currentDir }}"><b>{{ truncateMiddle .currentDir 36 }}</b></p>
 
 {{ if and .showParentDirLink }}
 <div class="file-browser-item" title="Parent Directory">
@@ -16,11 +38,11 @@
 {{ range $index, $item := .items}}
 
     {{ if $item.FileInfo.IsDir }} 
-    <div class="file-browser-item" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
+    <div class="file-browser-item" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
         <a href="/jobs/files/{{ $job.ID}}?directory={{ $item.FullPath }}">{{ $item.FileInfo.Name }}</a>
     </div>    
     {{ else }}
-    <div class="file-browser-item" title="{{ $item.FileInfo.Name }}">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 26 }}</div>    
+    <div class="file-browser-item" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
     {{ end }}
 
 {{ end }}

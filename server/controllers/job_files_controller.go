@@ -33,6 +33,7 @@ func JobShowFiles(c *gin.Context) {
 		"showParentDirLink":  showParentDirLink,
 		"defaultPaths":       defaultPaths,
 		"showJumpMenu":       showJumpMenu,
+		"currentDir":         directory,
 	}
 	c.HTML(http.StatusOK, "partials/file_browser.html", data)
 }
