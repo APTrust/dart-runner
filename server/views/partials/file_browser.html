@@ -46,11 +46,11 @@
         {{ range $index, $item := .items}}
 
             {{ if $item.FileInfo.IsDir }} 
-            <div class="file-browser-item" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
+            <div class="file-browser-item" draggable="true" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
                 <a href="/jobs/files/{{ $job.ID}}?directory={{ $item.FullPath }}">{{ $item.FileInfo.Name }}</a>
             </div>    
             {{ else }}
-            <div class="file-browser-item" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
+            <div class="file-browser-item" draggable="true" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
             {{ end }}
 
         {{ end }}

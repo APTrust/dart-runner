@@ -72,38 +72,61 @@
 
 
 <script>
+    // NOTE!!!
+    // 
+    // Trying to log e.dataTransfer to the console results
+    // in e.dataTransfer being set to null. This is a long-standing
+    // bug (or security feature?).
+    //
+    // See:
+    //
+    // https://stackoverflow.com/questions/11573710/event-datatransfer-files-is-empty-when-ondrop-is-fired
     function attachDragAndDropEvents() {
-        $(window).on('drop', function (e) {
+        document.querySelectorAll("[draggable='true']").forEach(item =>
+        item.addEventListener('dragstart', function(e){
+            var target = e.originalTarget || e.target
+            e.dataTransfer.dropEffect = "copy";
+            e.dataTransfer.setData("fullPath", target.dataset.fullPath);
+            e.dataTransfer.setData("itemType", target.dataset.itemType);
+            e.dataTransfer.setData("itemName", target.innerText.trim());
+        }))
+        var dropZone = document.querySelector('#dropZone')
+        dropZone.addEventListener('drop', function (e) {
             e.preventDefault();
-            e.stopPropagation();
-            console.log(e)
-            // When drag event is attached to document, use
-            // e.dataTransfer.files instead of what's below.
-            for (let f of e.originalEvent.dataTransfer.files) {
-                console.log(f);
-            }
-            $(e.currentTarget).removeClass('drop-zone-over');
+            let fullPath = e.dataTransfer.getData("fullPath")
+            let itemType = e.dataTransfer.getData("itemType")
+            let itemName = e.dataTransfer.getData("itemName")
+            console.log(itemType)
+            console.log(itemName)
+            console.log(fullPath)
+            e.currentTarget.classList.remove('drop-zone-over');
+
+            // TODO: Display the item in the drop zone.
+            // Also consider a mechanism to specify the item
+            // as payload file (99.99999% of the time) or as
+            // a custom tag file. 
+            //
+            // See https://github.com/APTrust/dart/issues/550
+
             return false;
         });
-        $(window).on('dragover', function (e) {
+        dropZone.addEventListener('dragover', function (e) {
             e.preventDefault();
-            e.stopPropagation();
-            $(e.currentTarget).addClass('drop-zone-over');
+            e.dataTransfer.dropEffect = "move";
+            e.currentTarget.classList.add('drop-zone-over');
             return false;
         });
-        $(window).on('dragleave', function (e) {
+        dropZone.addEventListener('dragleave', function (e) {
             e.preventDefault();
-            e.stopPropagation();
-            $(e.currentTarget).removeClass('drop-zone-over');
+            e.currentTarget.classList.remove('drop-zone-over');
             return false;
         });
-        $(window).on('dragend', function (e) {
+        dropZone.addEventListener('dragend', function (e) {
             e.preventDefault();
-            e.stopPropagation();
-            $(e.currentTarget).removeClass('drop-zone-over');
+            e.currentTarget.classList.remove('drop-zone-over');
             return false;
         });
-        console.log("Attached drag and drop events")
+        //console.log("Attached drag and drop events")
     }
     attachDragAndDropEvents();
 </script>
