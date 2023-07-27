@@ -1,8 +1,7 @@
 {{ define "partials/file_browser.html" }}
 
-{{ template "partials/page_header.html" .}}
-
 <script>
+    // TODO: Change to AJAX call
     function jumpToFolder(jumpMenu) {
         if (jumpMenu.value == "") {
             return
@@ -11,46 +10,56 @@
     }
 </script>
 
-<p>{{ .job.Name }}</p>
+<div class="row file-browser-top" id="fileBrowserTop">
 
-{{ if .showJumpMenu }}
-<form method="get" action="">
-    <div class="form-group">
-        <select class="form-control" name="jumpMenu" id="jumpMenu" onchange="jumpToFolder(this)">
-            <option value="">-- Jump to folder --</option>
-            {{ range $index, $location := .defaultPaths }}
-            <option value="{{ $location.FullPath }}">{{ $location.FileInfo.Name }}</option>
-            {{ end }}
-        </select>
-    </div>
-</form>
-{{ end }}
+    <div class="col-12">
 
-<p id="currentDir" title="{{ .currentDir }}"><b>{{ truncateMiddle .currentDir 36 }}</b></p>
-
-{{ if and .showParentDirLink }}
-<div class="file-browser-item" title="Parent Directory">
-<a href="/jobs/files/{{ .job.ID}}?directory={{ .parentDir }}"><i class="fas fa-angle-left"></i>{{ .parentDirShortName }}</a>
-</div>
-{{ end }}
-
-{{ $job := .job }}
-{{ range $index, $item := .items}}
-
-    {{ if $item.FileInfo.IsDir }} 
-    <div class="file-browser-item" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
-        <a href="/jobs/files/{{ $job.ID}}?directory={{ $item.FullPath }}">{{ $item.FileInfo.Name }}</a>
-    </div>    
-    {{ else }}
-    <div class="file-browser-item" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
+    {{ if .showJumpMenu }}
+    <form method="get" action="">
+        <div class="form-group">
+            <select class="form-control" name="jumpMenu" id="jumpMenu" onchange="jumpToFolder(this)">
+                <option value="">-- Jump to folder --</option>
+                {{ range $index, $location := .defaultPaths }}
+                <option value="{{ $location.FullPath }}">{{ $location.FileInfo.Name }}</option>
+                {{ end }}
+            </select>
+        </div>
+    </form>
     {{ end }}
 
-{{ end }}
+    <p id="currentDir" title="{{ .currentDir }}"><b>{{ truncateMiddle .currentDir 36 }}</b></p>
 
-{{ if not .items }}
-<div class="file-browser-item">Directory is empty</div>    
-{{ end }}
+    {{ if .showParentDirLink }}
+    <div class="file-browser-item" title="Parent Directory">
+    <a href="/jobs/files/{{ .job.ID}}?directory={{ .parentDir }}"><i class="fas fa-angle-left"></i>{{ .parentDirShortName }}</a>
+    </div>
+    {{ end }}
 
-{{ template "partials/page_footer.html" .}}
+    </div>
+</div>
+
+
+<div class="row file-browser-bottom" id="fileBrowserBottom">
+
+    <div class="col-12">
+        {{ $job := .job }}
+        {{ range $index, $item := .items}}
+
+            {{ if $item.FileInfo.IsDir }} 
+            <div class="file-browser-item" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
+                <a href="/jobs/files/{{ $job.ID}}?directory={{ $item.FullPath }}">{{ $item.FileInfo.Name }}</a>
+            </div>    
+            {{ else }}
+            <div class="file-browser-item" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
+            {{ end }}
+
+        {{ end }}
+
+        {{ if not .items }}
+        <div class="file-browser-item">Directory is empty</div>    
+        {{ end }}
+
+    </div>
+</div>
 
 {{ end }}

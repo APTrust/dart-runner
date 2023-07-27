@@ -105,6 +105,7 @@ hr.menu-divider {
     border-radius: 20px;
     padding: 20px;
     margin: 20px;
+    height: 550px;
 }
 
 .drop-zone-over {
@@ -176,10 +177,22 @@ ul.ui-autocomplete {
     margin: 1.75rem auto;
 }
 
+.file-browser-top {
+
+}
+
+.file-browser-bottom {
+    height: 450px;
+    overflow-y: scroll;
+    /* border: 1px solid #4285F4; */
+}
 
 /* 
     Increase default fontawesome font size in file-browser-item
 */
+.file-browser-item {
+    line-height: 1.8rem;
+}
 .file-browser-item svg {
     font-size: 1.5rem;
     margin-right: 0.5rem;
@@ -216,3 +229,4 @@ svg.fa-file-word, svg.fa-file-powerpoint, svg.fa-file-excel {
 svg.fa-file-pdf {
     color: var(--red);
 }
+

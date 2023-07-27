@@ -35,7 +35,7 @@ func JobShowFiles(c *gin.Context) {
 		"showJumpMenu":       showJumpMenu,
 		"currentDir":         directory,
 	}
-	c.HTML(http.StatusOK, "partials/file_browser.html", data)
+	c.HTML(http.StatusOK, "job/files.html", data)
 }
 
 // POST /jobs/files/:id

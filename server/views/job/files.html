@@ -1,61 +1,79 @@
 {{ define "job/files.html" }}
 
-{{ template "partials/page_header.html" .}}
+{{ template "partials/page_header.html" . }}
 
-<h2>Files</h2>
-
-<div id="dropZone" class="drop-zone">
-
-      <div class="text-center upload-icon-div" id="uploadIcon">
-          <p>Drag and drop the items you want to package.</p>
-          <img src="/assets/img/upload.png" alt="Drop files here">
-      </div>
-
-
-      <div class="panel panel-default" id="filesPanel" style="display:none;background-color:inherit;">
-          <div class="panel-body">
-              <table class="table table-hover" id="filesTable">
-                  <thead class="thead-inverse">
-                      <tr>
-                          <th>File Path</th>
-                          <th>Directories</th>
-                          <th>Files</th>
-                          <th>Total Size</th>
-                          <th></th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr id="fileTotals">
-                          <td>Totals</td>
-                          <td id="totalDirCount" data-total="0"></td>
-                          <td id="totalFileCount" data-total="0"></td>
-                          <td id="totalByteCount" data-total="0"></td>
-                          <td></td>
-                      </tr>
-                  </tbody>
-              </table>
-
-              <div class="alert alert-danger" role="alert" id="fileWarningContainer" style="display: none">
-                  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                  <div id="fileWarning"></div>
-              </div>
-
-          </div>
-      </div>
+<div class="row" id="jobFilesTitle">
+    <div class="col-12"><h2>Files</h2></div>
 </div>
 
+<div class="row" id="jobFilesContainer">
 
-<div class="pull-left">
-  <a class="btn btn-danger" href="/jobs/delete/{{ .job.ID }}" role="button">Delete</a>
+    <div class="col-4">
+        {{ template "partials/file_browser.html" . }}
+    </div>
+
+
+    <div class="col-8">
+
+        <div id="dropZone" class="drop-zone">
+
+            <div class="text-center upload-icon-div" id="uploadIcon">
+                <p>Drag and drop the items you want to package.</p>
+                <img src="/assets/img/upload.png" alt="Drop files here">
+            </div>
+
+
+            <div class="panel panel-default" id="filesPanel" style="display:none;background-color:inherit;">
+                <div class="panel-body">
+                    <table class="table table-hover" id="filesTable">
+                        <thead class="thead-inverse">
+                            <tr>
+                                <th>File Path</th>
+                                <th>Directories</th>
+                                <th>Files</th>
+                                <th>Total Size</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="fileTotals">
+                                <td>Totals</td>
+                                <td id="totalDirCount" data-total="0"></td>
+                                <td id="totalFileCount" data-total="0"></td>
+                                <td id="totalByteCount" data-total="0"></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="alert alert-danger" role="alert" id="fileWarningContainer" style="display: none">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <div id="fileWarning"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="pull-right" id="btnJobPackagingDiv">
-  <button type="submit" class="btn btn-primary" href="#JobPackaging/show?id={{ .job.ID }}" role="button">Next &gt;&gt;</a>
+<div class="row mt-3 mb-3">
+    <div class="col-12">
+        <div class="pull-left">
+            <a class="btn btn-danger" href="/jobs/delete/{{ .job.ID }}" role="button">Delete Job</a>
+        </div>
+
+        <div class="pull-right" id="btnJobPackagingDiv">
+            <button type="submit" class="btn btn-primary" href="#JobPackaging/show?id={{ .job.ID }}" role="button">Next
+                &gt;&gt;</a>
+        </div>
+    </div>
 </div>
+
 
 <script>
     function attachDragAndDropEvents() {
-        $(window).on('drop', function(e) {
+        $(window).on('drop', function (e) {
             e.preventDefault();
             e.stopPropagation();
             console.log(e)
@@ -67,19 +85,19 @@
             $(e.currentTarget).removeClass('drop-zone-over');
             return false;
         });
-        $(window).on('dragover', function(e) {
+        $(window).on('dragover', function (e) {
             e.preventDefault();
             e.stopPropagation();
             $(e.currentTarget).addClass('drop-zone-over');
             return false;
         });
-        $(window).on('dragleave', function(e) {
+        $(window).on('dragleave', function (e) {
             e.preventDefault();
             e.stopPropagation();
             $(e.currentTarget).removeClass('drop-zone-over');
             return false;
         });
-        $(window).on('dragend', function(e) {
+        $(window).on('dragend', function (e) {
             e.preventDefault();
             e.stopPropagation();
             $(e.currentTarget).removeClass('drop-zone-over');
@@ -89,6 +107,7 @@
     }
     attachDragAndDropEvents();
 </script>
+
 
 {{ template "partials/page_footer.html" .}}
 
