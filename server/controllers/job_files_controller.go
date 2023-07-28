@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -38,42 +39,61 @@ func JobShowFiles(c *gin.Context) {
 	c.HTML(http.StatusOK, "job/files.html", data)
 }
 
-// POST /jobs/files/:id
-func JobSaveFiles(c *gin.Context) {
-
+// POST /jobs/add_file/:id
+func JobAddFile(c *gin.Context) {
+	// TODO: Make this AJAX or preserve file browser path.
+	fileToAdd := c.PostForm("fullPath")
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	index := -1
+	for i, filename := range job.PackageOp.SourceFiles {
+		if fileToAdd == filename {
+			index = i
+			break
+		}
+	}
+	if index < 0 {
+		job.PackageOp.SourceFiles = append(job.PackageOp.SourceFiles, fileToAdd)
+		err := core.ObjSave(job)
+		if err != nil {
+			AbortWithErrorHTML(c, http.StatusNotFound, err)
+			return
+		}
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
 }
 
-/*
-
--- Linux --
-
-Home
-Documents
-Downloads
-Music
-Pictures
-Videos
-Trash
-
--- Mac --
-
-Home
-Desktop
-Documents
-Download
-
--- Windows --
-
-Desktop
-Downloads
-Documents
-Pictures
-Videos
-Root
-
-Also show attached volumes
-
-*/
+// POST /jobs/delete_file/:id
+func JobDeleteFile(c *gin.Context) {
+	// TODO: Make this AJAX or preserve file browser path.
+	fileToDelete := c.PostForm("fullPath")
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	index := -1
+	for i, filename := range job.PackageOp.SourceFiles {
+		if fileToDelete == filename {
+			index = i
+			break
+		}
+	}
+	if index >= 0 {
+		util.RemoveFromSlice[string](job.PackageOp.SourceFiles, index)
+		err := core.ObjSave(job)
+		if err != nil {
+			AbortWithErrorHTML(c, http.StatusNotFound, err)
+			return
+		}
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
+}
 
 func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInfo, error) {
 	var entries []*util.ExtendedFileInfo

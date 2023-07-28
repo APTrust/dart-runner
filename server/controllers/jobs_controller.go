@@ -17,7 +17,17 @@ func JobCreate(c *gin.Context) {
 // GET /jobs/delete/:id
 // POST /jobs/delete/:id
 func JobDelete(c *gin.Context) {
-
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	err := core.ObjDelete(result.Job())
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	c.Redirect(http.StatusFound, "/jobs")
 }
 
 // GET /jobs/edit/:id

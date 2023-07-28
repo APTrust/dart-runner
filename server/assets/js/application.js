@@ -1,10 +1,6 @@
 // Global JS
 
 function loadIntoModal (method, modalTitle, url, data = {}) {
-    console.log(method)
-    console.log(modalTitle)
-    console.log(url)
-    console.log(data)
     $.ajax({
         url: url,
         type: method,
@@ -139,6 +135,23 @@ function deleteTagDef(url) {
             location.href = response.location
         }).fail(function (xhr, status, err) {
             showModalContent("Error deleting tag file", xhr.responseText)        
+        })    
+    }
+}
+
+// TODO: Combine deleteTagDef and deleteJob into one generic function 
+// with params confirmationQuestion and url.
+function deleteJob(jobId) {
+    if (confirm("Delete this job?")) {
+        url = "/jobs/delete/" + jobId
+        $.ajax({
+            url: url,
+            type: "post",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        }).done(function (response) {
+            location.href = response.location
+        }).fail(function (xhr, status, err) {
+            showModalContent("Error deleting job", xhr.responseText)
         })    
     }
 }
