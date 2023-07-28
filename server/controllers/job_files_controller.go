@@ -36,6 +36,10 @@ func JobShowFiles(c *gin.Context) {
 		"showJumpMenu":       showJumpMenu,
 		"currentDir":         directory,
 	}
+
+	// TODO: Use file_row template to display files.
+	// We'll need to gather stats on these.
+
 	c.HTML(http.StatusOK, "job/files.html", data)
 }
 
