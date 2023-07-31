@@ -115,6 +115,28 @@ func TestRecursiveFileList(t *testing.T) {
 	}
 }
 
+func TestGetDirectoryStats(t *testing.T) {
+	dir := path.Join(util.ProjectRoot(), "server", "views")
+	dirStats := util.GetDirectoryStats(dir)
+	require.Empty(t, dirStats.Error)
+	assert.True(t, dirStats.DirCount > 10)
+	assert.True(t, dirStats.FileCount > dirStats.DirCount*2)
+	assert.True(t, dirStats.TotalBytes > 40000)
+
+	dirStats = util.GetDirectoryStats(path.Join(util.ProjectRoot(), "path-does", "not-exist"))
+	assert.Contains(t, dirStats.Error, "no such file or directory")
+
+	file := path.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
+	dirStats = util.GetDirectoryStats(file)
+	assert.Empty(t, dirStats.Error)
+	assert.Equal(t, 0, dirStats.DirCount)
+	assert.Equal(t, 1, dirStats.FileCount)
+
+	fileInfo, err := os.Stat(file)
+	require.Nil(t, err)
+	assert.Equal(t, fileInfo.Size(), dirStats.TotalBytes)
+}
+
 func TestListDirectory(t *testing.T) {
 	dir := path.Join(util.ProjectRoot(), "util")
 	files, err := util.ListDirectory(dir)

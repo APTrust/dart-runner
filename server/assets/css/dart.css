@@ -105,7 +105,8 @@ hr.menu-divider {
     border-radius: 20px;
     padding: 20px;
     margin: 20px;
-    height: 550px;
+    min-height: 550px;
+    overflow: auto;
 }
 
 .drop-zone-over {

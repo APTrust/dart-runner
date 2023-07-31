@@ -23,7 +23,7 @@
             </div>
 
 
-            <div class="panel panel-default" id="filesPanel" style="display:none;background-color:inherit;">
+            <div class="panel panel-default" id="filesPanel" style="display:{{ if .showJobFiles }} block {{ else }} none {{ end }};background-color:inherit;">
                 <div class="panel-body">
                     <table class="table table-hover" id="filesTable">
                         <thead class="thead-inverse">
@@ -36,6 +36,9 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {{ range $index, $filepath := .job.PackageOp.SourceFiles }}
+                                {{ template "job/file_row.html" $filepath }}
+                            {{ end }}
                             <tr id="fileTotals">
                                 <td>Totals</td>
                                 <td id="totalDirCount" data-total="0"></td>
@@ -52,7 +55,8 @@
                     </div>
 
                 </div>
-            </div>
+            </div>            
+
         </div>
     </div>
 </div>

@@ -35,6 +35,7 @@ func JobShowFiles(c *gin.Context) {
 		"defaultPaths":       defaultPaths,
 		"showJumpMenu":       showJumpMenu,
 		"currentDir":         directory,
+		"showJobFiles":       job.PackageOp != nil && len(job.PackageOp.SourceFiles) > 0,
 	}
 
 	// TODO: Use file_row template to display files.

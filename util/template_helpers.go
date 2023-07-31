@@ -155,3 +155,7 @@ func TruncateStart(str string, maxLen int) string {
 	}
 	return "..." + str[end:]
 }
+
+func DirStats(dir string) *DirectoryStats {
+	return GetDirectoryStats(dir)
+}

@@ -46,6 +46,7 @@ func initTemplates(router *gin.Engine) {
 		"dateTimeUS":     util.DateTimeUS,
 		"dateUS":         util.DateUS,
 		"dict":           util.Dict,
+		"dirStats":       util.DirStats,
 		"displayDate":    util.DisplayDate,
 		"escapeAttr":     util.EscapeAttr,
 		"escapeHTML":     util.EscapeHTML,

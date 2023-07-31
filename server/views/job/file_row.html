@@ -1,12 +1,18 @@
 {{ define "job/file_row.html" }}
 
-<tr class="filepath" data-filepath="{{ .filepath }}">
-    <td><span class="glyphicon glyphicon-{{ .iconType }}" aria-hidden="true" style="margin-right:10px"></span>{{ .filepath }}</td>
-    <td class="dirCount">{{ .dirCount }}</td>
-    <td class="fileCount">{{ .fileCount }}</td>
-    <td class="fileSize" data-bytes="{{ .byteCount }}">{{ .size }}</td>
-    <td class="clickable delete-file" data-url="#!" data-filepath="{{ .filepath }}">
-      <i class="fas fa-times text-danger" title="Delete {{ .filepath }}"></i>
+{{ $dirStats := dirStats . }}
+
+<tr class="filepath" data-filepath="{{ . }}">
+    {{ if $dirStats.RootIsFile }}
+    <td>{{ fileIconFor . }} {{ . }}</td>
+    {{ else }}
+    <td><i class="far fa-folder"></i> {{ . }}</td>
+    {{ end }}
+    <td class="dirCount">{{ $dirStats.DirCount }}</td>
+    <td class="fileCount">{{ $dirStats.FileCount }}</td>
+    <td class="fileSize" data-bytes="{{ $dirStats.TotalBytes }}">{{ $dirStats.TotalBytes }}</td>
+    <td class="clickable delete-file" data-url="#!" data-filepath="{{ . }}">
+      <i class="fas fa-times text-danger" title="Delete {{ . }}"></i>
     </td>
 </tr>
 

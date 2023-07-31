@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -34,7 +33,7 @@ func IsDirectory(path string) bool {
 // user's home directory. For example, on Linux, ~/data
 // would expand to something like /home/josie/data
 func ExpandTilde(filePath string) (string, error) {
-	if strings.Index(filePath, "~") < 0 {
+	if !strings.Contains(filePath, "~") {
 		return filePath, nil
 	}
 	usr, err := user.Current()
@@ -83,7 +82,7 @@ func ReadFile(filepath string) ([]byte, error) {
 		return nil, err
 	}
 	defer file.Close()
-	return ioutil.ReadAll(file)
+	return io.ReadAll(file)
 }
 
 func HasValidExtensionForMimeType(filename, mimeType string) (bool, error) {
@@ -119,6 +118,32 @@ func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
 		return nil
 	})
 	return files, err
+}
+
+// GetDirectoryStats returns the file count, directory count and total
+// number of bytes found recursively under directory dir.
+func GetDirectoryStats(dir string) *DirectoryStats {
+	dirStats := &DirectoryStats{}
+	rootStat, err := os.Stat(dir)
+	if err != nil {
+		dirStats.Error = err.Error()
+		return dirStats
+	}
+	dirStats.RootIsFile = !rootStat.IsDir()
+	items, err := RecursiveFileList(dir)
+	if err != nil {
+		dirStats.Error = err.Error()
+		return dirStats
+	}
+	for _, item := range items {
+		if item.FileInfo.IsDir() {
+			dirStats.DirCount++
+		} else {
+			dirStats.FileCount++
+			dirStats.TotalBytes += item.FileInfo.Size()
+		}
+	}
+	return dirStats
 }
 
 // ListDirectory returns a list of directory contents one level deep. It does
