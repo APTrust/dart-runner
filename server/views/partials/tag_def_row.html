@@ -16,7 +16,7 @@
         {{ .tag.DefaultValue }}
         {{ end }}
     </td>
-    <td class="clickable-cell" {{ if not .tag.IsBuiltIn }} onclick="deleteTagDef('/profiles/delete_tag/{{ .bagItProfileID }}/{{ .tag.ID }}')" {{ end }}>
+    <td class="clickable-cell" {{ if not .tag.IsBuiltIn }} onclick="confirmBackgroundDeletion('Delete this tag definition?', '/profiles/delete_tag/{{ .bagItProfileID }}/{{ .tag.ID }}')" {{ end }}>
         {{ if not .tag.IsBuiltIn }}
         <i class="fas fa-times text-danger" title="Delete {{ .tag.TagName }}"></i>
         {{ end }}

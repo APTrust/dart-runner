@@ -60,7 +60,7 @@
 <div class="row mt-3 mb-3">
     <div class="col-12">
         <div class="pull-left">
-            <button class="btn btn-danger" onclick="deleteJob('{{ .job.ID }}')" role="button">Delete Job</button>
+            <button class="btn btn-danger" onclick="confirmBackgroundDeletion('Delete this job?', '/jobs/delete/{{ .job.ID }}')" role="button">Delete Job</button>
         </div>
 
         <div class="pull-right" id="btnJobPackagingDiv">

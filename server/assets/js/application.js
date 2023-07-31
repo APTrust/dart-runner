@@ -109,44 +109,12 @@ function submitNewTagFileForm(formId) {
     submitFormInBackground(formId, onSuccess, onFail)
 }
 
-function deleteTagFile(url, tagFileName) {
-    if (confirm("Delete this tag file?")) {
-        let data = {"tagFile": tagFileName}
+function confirmBackgroundDeletion(question, url, data) {
+    if (confirm(question)) {
         $.ajax({
             url: url,
             type: "post",
-            data: jQuery.param(data),
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        }).done(function (response) {
-            location.href = response.location
-        }).fail(function (xhr, status, err) {
-            showModalContent("Error deleting tag file", xhr.responseText)        
-        })
-    }
-}
-
-function deleteTagDef(url) {
-    if (confirm("Delete this tag definition?")) {
-        $.ajax({
-            url: url,
-            type: "post",
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        }).done(function (response) {
-            location.href = response.location
-        }).fail(function (xhr, status, err) {
-            showModalContent("Error deleting tag file", xhr.responseText)        
-        })    
-    }
-}
-
-// TODO: Combine deleteTagDef and deleteJob into one generic function 
-// with params confirmationQuestion and url.
-function deleteJob(jobId) {
-    if (confirm("Delete this job?")) {
-        url = "/jobs/delete/" + jobId
-        $.ajax({
-            url: url,
-            type: "post",
+            data: data ? jQuery.param(data) : null,
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         }).done(function (response) {
             location.href = response.location
