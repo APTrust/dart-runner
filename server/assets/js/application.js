@@ -124,6 +124,38 @@ function confirmBackgroundDeletion(question, url, data) {
     }
 }
 
+function postDataInBackground(url, data) {
+    $.ajax({
+        url: url,
+        type: "post",
+        data: jQuery.param(data),
+        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+    }).done(function (response) {
+        location.href = response.location
+    }).fail(function (xhr, status, err) {
+        showModalContent("Error", xhr.responseText)
+    })    
+}
+
+function postForm(url, data) {
+    let form = document.createElement('form');
+    form.method = 'post'
+    form.action = url
+  
+    for (let key in data) {
+      if (data.hasOwnProperty(key)) {
+        let hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = key;
+        hiddenField.value = data[key];  
+        form.appendChild(hiddenField);
+      }
+    }
+    document.body.appendChild(form);
+    form.submit();
+  }
+  
+
 function deleteProfile(formId) {
     if (confirm("Delete this BagIt profile?")) {
         submitTagDefForm(formId)

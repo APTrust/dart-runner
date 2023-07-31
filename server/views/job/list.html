@@ -17,7 +17,7 @@
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
-    <tr class="clickable-row" onclick="location.href='/jobs/edit/{{ $item.ID }}'">
+    <tr class="clickable-row" onclick="location.href='/jobs/files/{{ $item.ID }}'">
       <td>{{ $item.Name }}</td>
       <td class="{{ if $item.PackageSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.PackagedAt }}</td>
       <td class="{{ if $item.ValidationSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.ValidatedAt }}</td>

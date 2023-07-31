@@ -123,7 +123,10 @@ func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
 // GetDirectoryStats returns the file count, directory count and total
 // number of bytes found recursively under directory dir.
 func GetDirectoryStats(dir string) *DirectoryStats {
-	dirStats := &DirectoryStats{}
+	dirStats := &DirectoryStats{
+		FullPath: dir,
+		BaseName: path.Base(dir),
+	}
 	rootStat, err := os.Stat(dir)
 	if err != nil {
 		dirStats.Error = err.Error()

@@ -91,17 +91,12 @@
             var target = e.originalTarget || e.target
             e.dataTransfer.dropEffect = "copy";
             e.dataTransfer.setData("fullPath", target.dataset.fullPath);
-            e.dataTransfer.setData("itemType", target.dataset.itemType);
-            e.dataTransfer.setData("itemName", target.innerText.trim());
         }))
         var dropZone = document.querySelector('#dropZone')
         dropZone.addEventListener('drop', function (e) {
             e.preventDefault();
             let fullPath = e.dataTransfer.getData("fullPath")
-            let itemType = e.dataTransfer.getData("itemType")
-            let itemName = e.dataTransfer.getData("itemName")
-            console.log(itemType)
-            console.log(itemName)
+            let fileBrowserPath = document.getElementById("currentDir").attributes.getNamedItem("title").value
             console.log(fullPath)
             e.currentTarget.classList.remove('drop-zone-over');
 
@@ -111,6 +106,12 @@
             // a custom tag file. 
             //
             // See https://github.com/APTrust/dart/issues/550
+            let url = "/jobs/add_file/{{ .job.ID }}"
+            let data = {
+                "fullPath": fullPath,
+                "directory": fileBrowserPath,
+            }
+            postForm(url, data)
 
             return false;
         });

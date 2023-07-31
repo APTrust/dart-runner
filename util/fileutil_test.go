@@ -119,6 +119,8 @@ func TestGetDirectoryStats(t *testing.T) {
 	dir := path.Join(util.ProjectRoot(), "server", "views")
 	dirStats := util.GetDirectoryStats(dir)
 	require.Empty(t, dirStats.Error)
+	assert.Equal(t, dir, dirStats.FullPath)
+	assert.Equal(t, path.Base(dir), dirStats.BaseName)
 	assert.True(t, dirStats.DirCount > 10)
 	assert.True(t, dirStats.FileCount > dirStats.DirCount*2)
 	assert.True(t, dirStats.TotalBytes > 40000)
@@ -129,6 +131,8 @@ func TestGetDirectoryStats(t *testing.T) {
 	file := path.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
 	dirStats = util.GetDirectoryStats(file)
 	assert.Empty(t, dirStats.Error)
+	assert.Equal(t, file, dirStats.FullPath)
+	assert.Equal(t, "nav.html", dirStats.BaseName)
 	assert.Equal(t, 0, dirStats.DirCount)
 	assert.Equal(t, 1, dirStats.FileCount)
 

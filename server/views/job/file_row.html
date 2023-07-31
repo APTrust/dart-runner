@@ -2,11 +2,11 @@
 
 {{ $dirStats := dirStats . }}
 
-<tr class="filepath" data-filepath="{{ . }}">
+<tr class="filepath" data-filepath="{{ . }}" title="{{ . }}">
     {{ if $dirStats.RootIsFile }}
-    <td>{{ fileIconFor . }} {{ . }}</td>
+    <td>{{ fileIconFor . }} {{ $dirStats.BaseName }}</td>
     {{ else }}
-    <td><i class="far fa-folder"></i> {{ . }}</td>
+    <td><i class="far fa-folder"></i> {{ $dirStats.BaseName }}</td>
     {{ end }}
     <td class="dirCount">{{ $dirStats.DirCount }}</td>
     <td class="fileCount">{{ $dirStats.FileCount }}</td>

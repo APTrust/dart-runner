@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -69,7 +70,10 @@ func JobAddFile(c *gin.Context) {
 			return
 		}
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
+	fileBrowserPath := c.PostForm("directory")
+	values := url.Values{}
+	values.Set("directory", fileBrowserPath)
+	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s?%s", job.ID, values.Encode()))
 }
 
 // POST /jobs/delete_file/:id
