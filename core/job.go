@@ -9,6 +9,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 // TitleTags is a list of BagItProfile tags to check to try to find a
@@ -38,7 +39,11 @@ type Job struct {
 
 func NewJob() *Job {
 	return &Job{
-		Errors: make(map[string]string),
+		ID:           uuid.NewString(),
+		Errors:       make(map[string]string),
+		PackageOp:    NewPackageOperation("", "", make([]string, 0)),
+		UploadOps:    make([]*UploadOperation, 0),
+		ValidationOp: NewValidationOperation(""),
 	}
 }
 

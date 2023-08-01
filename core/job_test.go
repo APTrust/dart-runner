@@ -25,8 +25,15 @@ func getTestJob(t *testing.T) *core.Job {
 func TestJobValidate(t *testing.T) {
 	job := core.NewJob()
 	assert.False(t, job.Validate())
-	require.Equal(t, 1, len(job.Errors))
-	assert.Equal(t, "Job has nothing to package, validate, or upload.", job.Errors["Job"])
+	//fmt.Println(job.Errors)
+	require.Equal(t, 5, len(job.Errors))
+	assert.Equal(t, "Validation requires a BagItProfile.", job.Errors["Job.Validate.BagItProfile"])
+	assert.Equal(t, "Validation requires a file or bag to validate.", job.Errors["Job.Validate.PathToBag"])
+	assert.Equal(t, "Output path is required.", job.Errors["PackageOperation.OutputPath"])
+	assert.Equal(t, "Package name is required.", job.Errors["PackageOperation.PackageName"])
+	assert.Equal(t, "Specify at least one file or directory to package.", job.Errors["PackageOperation.SourceFiles"])
+
+	//assert.Equal(t, "Job has nothing to package, validate, or upload.", job.Errors["Job"])
 
 	job = getTestJob(t)
 	assert.Equal(t, 0, len(job.Errors))

@@ -36,8 +36,10 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {{ $job := .job }}
+                            {{ $currentDir := .currentDir }}
                             {{ range $index, $filepath := .job.PackageOp.SourceFiles }}
-                                {{ template "job/file_row.html" $filepath }}
+                                {{ template "job/file_row.html"  dict "filepath" $filepath "job" $job "currentDir" $currentDir }}
                             {{ end }}
                             <tr id="fileTotals">
                                 <td>Totals</td>

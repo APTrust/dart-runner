@@ -64,7 +64,7 @@ func JobAddFile(c *gin.Context) {
 	}
 	if index < 0 {
 		job.PackageOp.SourceFiles = append(job.PackageOp.SourceFiles, fileToAdd)
-		err := core.ObjSave(job)
+		err := core.ObjSaveWithoutValidation(job)
 		if err != nil {
 			AbortWithErrorHTML(c, http.StatusNotFound, err)
 			return
@@ -94,14 +94,17 @@ func JobDeleteFile(c *gin.Context) {
 		}
 	}
 	if index >= 0 {
-		util.RemoveFromSlice[string](job.PackageOp.SourceFiles, index)
-		err := core.ObjSave(job)
+		job.PackageOp.SourceFiles = util.RemoveFromSlice[string](job.PackageOp.SourceFiles, index)
+		err := core.ObjSaveWithoutValidation(job)
 		if err != nil {
 			AbortWithErrorHTML(c, http.StatusNotFound, err)
 			return
 		}
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
+	fileBrowserPath := c.PostForm("directory")
+	values := url.Values{}
+	values.Set("directory", fileBrowserPath)
+	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s?%s", job.ID, values.Encode()))
 }
 
 func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInfo, error) {

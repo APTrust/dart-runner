@@ -44,8 +44,26 @@ func InitSchema() error {
 	return err
 }
 
+// ObjSave validates an object and then saves it if it passes validation.
+// If the object is invalid, this will return constants.ErrObjecValidation
+// and you can get a map of specific validation errors from obj.Errors.
+//
+// In rare cases, this may return constants.ErrUniqueConstraint, which means
+// the database already contains a different object with the same UUID.
 func ObjSave(obj PersistentObject) error {
-	if !obj.Validate() {
+	return objSave(obj, true)
+}
+
+// ObjSaveWithoutValidation saves an object without validating it first.
+// This is useful when creating new Jobs through the UI, since the user
+// must adjust settings on a number of screens to build up a fully valid
+// Job.
+func ObjSaveWithoutValidation(obj PersistentObject) error {
+	return objSave(obj, false)
+}
+
+func objSave(obj PersistentObject, validate bool) error {
+	if validate && !obj.Validate() {
 		return constants.ErrObjecValidation
 	}
 	if FindConflictingUUID(obj) != "" {

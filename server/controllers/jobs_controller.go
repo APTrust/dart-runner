@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/core"
@@ -50,10 +51,17 @@ func JobIndex(c *gin.Context) {
 // GET /jobs/new
 func JobNew(c *gin.Context) {
 	job := core.NewJob()
-	data := gin.H{
-		"job": job,
+	err := core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
 	}
-	c.HTML(http.StatusOK, "job/files.html", data)
+	err = core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
 }
 
 // GET /jobs/packaging/:id

@@ -109,6 +109,9 @@ function submitNewTagFileForm(formId) {
     submitFormInBackground(formId, onSuccess, onFail)
 }
 
+// This deletes an object via XHR if the user answers yes to the question.
+// On success, the endpoint will send a JSON response with location info.
+// On error, it will send HTML to display in the modal dialog.
 function confirmBackgroundDeletion(question, url, data) {
     if (confirm(question)) {
         $.ajax({
@@ -121,6 +124,15 @@ function confirmBackgroundDeletion(question, url, data) {
         }).fail(function (xhr, status, err) {
             showModalContent("Error deleting job", xhr.responseText)
         })    
+    }
+}
+
+// This deletes an object by constructing a form with the supplied data
+// and submitting it to the specified URL. This is a normal HTTP request
+// (not AJAX), so any response will replace the current page.
+function confirmForegroundDeletion(question, url, data) {
+    if (confirm(question)) {
+        postForm(url, data)
     }
 }
 

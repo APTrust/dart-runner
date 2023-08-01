@@ -17,7 +17,7 @@ func TestPackageOperation(t *testing.T) {
 	assert.Equal(t, 3, len(op.Errors))
 	assert.Equal(t, "Package name is required.", op.Errors["PackageOperation.PackageName"])
 	assert.Equal(t, "Output path is required.", op.Errors["PackageOperation.OutputPath"])
-	assert.Equal(t, "Specify at least one file or directory to package.", op.Errors["PackageOperation.sourceFiles"])
+	assert.Equal(t, "Specify at least one file or directory to package.", op.Errors["PackageOperation.SourceFiles"])
 
 	op.SourceFiles = append(op.SourceFiles, "file-does-not-exist")
 	assert.False(t, op.Validate())

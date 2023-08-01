@@ -38,7 +38,7 @@ func (p *PackageOperation) Validate() bool {
 		p.Errors["PackageOperation.OutputPath"] = "Output path is required."
 	}
 	if p.SourceFiles == nil || util.IsEmptyStringList(p.SourceFiles) {
-		p.Errors["PackageOperation.sourceFiles"] = "Specify at least one file or directory to package."
+		p.Errors["PackageOperation.SourceFiles"] = "Specify at least one file or directory to package."
 	}
 	missingFiles := make([]string, 0)
 	duplicateFiles := make([]string, 0)
