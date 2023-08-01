@@ -17,8 +17,9 @@
   <div style="display: {{ if .job.WorkflowID }} none {{ else }} block {{ end }};">
     {{ template "partials/input_select.html" dict "field" .form.Fields.PackageFormat }}
 
-    <div id="jobProfileContainer" style='display: {{if eq "BagIt" .form.Fields.PackageFormat.Value }} block {{ else }} none {{ end }};'>
-        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
+    <!-- div id="jobProfileContainer" style='display: {{if eq "BagIt" .form.Fields.PackageFormat.Value }} block {{ else }} none {{ end }};' -->
+    <div id="jobProfileContainer" style='display:block;'>
+    {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
         {{ template "partials/input_select.html" dict "field" .form.Fields.BagItSerialization }}
     </div>
   </div>
@@ -31,7 +32,6 @@
     {{ template "partials/input_text.html" dict "field" .form.Fields.OutputPath }}
   </div>
 
-  {{ template "partials/input_hidden.html" dict "field" .form.Fields.PluginID }}
   {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
 </form>

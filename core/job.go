@@ -310,10 +310,30 @@ func (job *Job) GetErrors() map[string]string {
 func (job *Job) ToForm() *Form {
 	form := NewForm(constants.TypeJob, job.ID, job.Errors)
 	form.AddField("ID", "ID", job.ID, true)
-	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile ID", job.BagItProfile.ID, false)
-	bagItProfile.Choices = BagItProfileChoiceList(job.BagItProfile.ID)
+
+	bagitProfileID := ""
+	serializationOptions := constants.AcceptSerialization
+	if job.BagItProfile != nil {
+		bagitProfileID = job.BagItProfile.ID
+		// TODO: Include serializations allowed in profile, if DART supports them.
+	}
+	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile ID", bagitProfileID, false)
+	bagItProfile.Choices = BagItProfileChoiceList(bagitProfileID)
+	bagItProfile.Help = "Choose the BagIt profile to which your bag should conform."
 
 	// PackageOp
+	packageFormat := form.AddField("PackageFormat", "Package Format", job.PackageOp.PackageFormat, true)
+	packageFormat.Choices = MakeChoiceList(constants.PackageFormats, job.PackageOp.PackageFormat)
+
+	serialization := form.AddField("BagItSerialization", "BagItSerialization", job.PackageOp.BagItSerialization, true)
+	serialization.Choices = MakeChoiceList(serializationOptions, job.PackageOp.BagItSerialization)
+	serialization.Help = "How should this bag be serialized or compressed?"
+
+	packageName := form.AddField("PackageName", "Package Name", job.PackageOp.PackageName, true)
+	packageName.Help = "The name of the folder or file to create. E.g. 'photos', 'photos.tar', etc."
+
+	outputPath := form.AddField("OutputPath", "Output Path", job.PackageOp.OutputPath, true)
+	outputPath.Help = "This is where DART will create the bag. This field updates automatically when you update the package name."
 
 	// UploadOps
 

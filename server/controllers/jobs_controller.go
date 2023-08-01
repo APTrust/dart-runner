@@ -76,7 +76,16 @@ func JobShowPackaging(c *gin.Context) {
 
 // POST /jobs/packaging/:id
 func JobSavePackaging(c *gin.Context) {
+	//direction := c.Query("direction")
 
+	// parse form
+	// validate packageop only
+	//  - on validation error, re-display page with errors
+	//  - if valid, save
+	// redirect:
+	//  - next = metadata
+	//  - back = files
+	//  - else = JobShowPackaging
 }
 
 // GET /jobs/show/:id

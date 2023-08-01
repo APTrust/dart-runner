@@ -38,16 +38,11 @@ func JobShowFiles(c *gin.Context) {
 		"currentDir":         directory,
 		"showJobFiles":       job.PackageOp != nil && len(job.PackageOp.SourceFiles) > 0,
 	}
-
-	// TODO: Use file_row template to display files.
-	// We'll need to gather stats on these.
-
 	c.HTML(http.StatusOK, "job/files.html", data)
 }
 
 // POST /jobs/add_file/:id
 func JobAddFile(c *gin.Context) {
-	// TODO: Make this AJAX or preserve file browser path.
 	fileToAdd := c.PostForm("fullPath")
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
@@ -78,7 +73,6 @@ func JobAddFile(c *gin.Context) {
 
 // POST /jobs/delete_file/:id
 func JobDeleteFile(c *gin.Context) {
-	// TODO: Make this AJAX or preserve file browser path.
 	fileToDelete := c.PostForm("fullPath")
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
