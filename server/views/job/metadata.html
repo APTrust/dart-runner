@@ -1,0 +1,78 @@
+{{ define "job/metadata.html" }}
+
+{{ template "partials/page_header.html" . }}
+
+<h2>Bag Metadata</h2>
+
+
+<div style="height: 50px;">
+  <div>
+    <div class="pull-right p-r-3">
+      <button type="button" class="btn btn-primary" id="btnToggleHidden" style="margin-left: 25px;">Show All Tags</button>
+    </div>
+    <div class="pull-right">
+      <a role="button" class="btn btn-primary" href="#JobMetadata/newTag?id={{ .job.ID }}" id="btnAddNewTag">Add New Tag</a>
+    </div>
+  </div>
+</div>
+
+
+<div>
+  <form>
+
+    {{ range $fileIndex, $tagFile := .tagFiles }}
+
+    <div class="card mb-3">
+      <div class="card-header">
+        <a data-toggle="collapse" href="#{{ $tagFile.Name }}" aria-expanded="true" aria-controls="{{ $tagFile.Name }}">{{ $tagFile.Name }}</a>
+        <div class="what-is-showing pull-right text-muted">
+          <i>Tags with default values are not showing.</i>
+        </div>
+      </div>
+      <div class="card-body collapse show" id={{ $tagFile.Name }}>
+
+        {{ range $fieldIndex, $field := $tagFile.Fields }}
+
+          {{ if $field.Choices }}
+
+            {{ template "partials/input_select.html" dict "field" $field }}
+
+          {{else if $field.looksLikeDescriptionTag }}
+
+            {{ template "partials/input_textarea.html" dict "field" $field }}
+
+          {{else if $field.wasAddedForJob }}
+
+            <!-- Needs to be text with delete option. -->
+
+            {{ template "partials/input_text.html" dict "field" $field }}
+
+          {{else}}
+
+            {{ template "partials/input_text.html" dict "field" $field }}
+
+          {{ end }}
+
+        {{ end }}
+
+      </div>
+    </div>
+
+    {{ end }}
+
+
+    <div>
+        <div class="pull-left" id="btnBackDiv">
+          <a class="btn btn-primary" href="#JobMetadata/back?id={{ .job.ID }}" role="button">&lt;&lt; Back</a>
+        </div>
+        <div class="pull-right" id="btnNextDiv">
+          <a class="btn btn-primary" href="#JobMetadata/next?id={{ .job.ID }}" role="button">Next &gt;&gt;</a>
+        </div>
+    </div>
+      
+  </form>
+</div>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}

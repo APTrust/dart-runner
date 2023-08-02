@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -139,6 +140,58 @@ func JobSavePackaging(c *gin.Context) {
 
 // GET /jobs/metadata/:id
 func JobShowMetadata(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+
+	// This struct holds all the tag form inputs for a tag file.
+	type TagFileForms struct {
+		Name   string
+		Fields []*core.Field
+	}
+
+	// TODO: Break this out and attach error messages
+	// where necessary.
+	//
+	// Get the list of tag files, in alpha order.
+	tagFileNames := job.BagItProfile.TagFileNames()
+	tagFiles := make([]TagFileForms, len(tagFileNames))
+	for i, tagFileName := range tagFileNames {
+		// Get list of tags in this file, in alpha order
+		tagDefs := job.BagItProfile.TagsInFile(tagFileName)
+		metadataTagFile := TagFileForms{
+			Name:   tagFileName,
+			Fields: make([]*core.Field, len(tagDefs)),
+		}
+		for j, tagDef := range tagDefs {
+			formGroupClass := ""
+			if tagDef.SystemMustSet || !util.IsEmpty(tagDef.DefaultValue) {
+				formGroupClass = "form-group-hidden"
+			}
+			field := &core.Field{
+				ID:             tagDef.ID,
+				Name:           tagDef.TagName,
+				Label:          tagDef.TagName,
+				Value:          tagDef.GetValue(),
+				Choices:        core.MakeChoiceList(tagDef.Values, tagDef.GetValue()),
+				Required:       tagDef.Required,
+				Help:           tagDef.Help,
+				FormGroupClass: formGroupClass,
+			}
+			metadataTagFile.Fields[j] = field
+		}
+		tagFiles[i] = metadataTagFile
+	}
+
+	data := gin.H{
+		"job":      job,
+		"form":     job.ToForm(),
+		"tagFiles": tagFiles,
+	}
+	c.HTML(http.StatusOK, "job/metadata.html", data)
 
 }
 
