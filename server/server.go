@@ -143,6 +143,8 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/jobs/delete/:id", controllers.JobDelete)
 	router.GET("/jobs/packaging/:id", controllers.JobShowPackaging)
 	router.POST("/jobs/packaging/:id", controllers.JobSavePackaging)
+	router.GET("/jobs/metadata/:id", controllers.JobShowMetadata)
+	router.POST("/jobs/metadata/:id", controllers.JobSaveMetadata)
 	router.GET("/jobs/files/:id", controllers.JobShowFiles)
 	router.POST("/jobs/add_file/:id", controllers.JobAddFile)
 	router.POST("/jobs/delete_file/:id", controllers.JobDeleteFile)

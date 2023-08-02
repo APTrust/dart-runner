@@ -22,7 +22,7 @@ func TestPackageOperation(t *testing.T) {
 	op.SourceFiles = append(op.SourceFiles, "file-does-not-exist")
 	assert.False(t, op.Validate())
 	assert.Equal(t, 3, len(op.Errors))
-	assert.Equal(t, "The following files are missing: file-does-not-exist", op.Errors["PackageOperation.sourceFiles"])
+	assert.Equal(t, "The following files are missing: file-does-not-exist", op.Errors["PackageOperation.SourceFiles"])
 
 	btr256 := util.PathToUnitTestBag("test.edu.btr_good_sha256.tar")
 	btr512 := util.PathToUnitTestBag("test.edu.btr_good_sha512.tar")
@@ -33,7 +33,7 @@ func TestPackageOperation(t *testing.T) {
 	}
 	op = core.NewPackageOperation("bag.tar", "/path/to/output", sourceFiles)
 	assert.False(t, op.Validate())
-	assert.Equal(t, "The following files are included more than once. Please remove duplicates: "+btr256, op.Errors["PackageOperation.sourceFiles"])
+	assert.Equal(t, "The following files are included more than once. Please remove duplicates: "+btr256, op.Errors["PackageOperation.SourceFiles"])
 
 	sourceFiles = []string{
 		btr256,

@@ -12,7 +12,7 @@
 
 <!-- { {> bannerAlert message = alertMessage } } -->
 
-<form method="post" action="#" id="{{ .job.ID }}">
+<form method="post" action="/jobs/packaging/{{ .job.ID }}" id="{{ .job.ID }}">
 
   <div style="display: {{ if .job.WorkflowID }} none {{ else }} block {{ end }};">
     {{ template "partials/input_select.html" dict "field" .form.Fields.PackageFormat }}
@@ -34,15 +34,19 @@
 
   {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
+  <input type="hidden" name="direction" value="next"/>
+
+
+  <div class="pull-left" id="btnBackDiv">
+    <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
+  </div>
+  
+  <div class="pull-right" id="btnNextDiv">
+    <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
+  </div>
+  
+
 </form>
-
-<div class="pull-left" id="btnBackDiv">
-  <button type="submit" class="btn btn-primary" href="/jobs/packaging/{{ .job.ID }}?direction=back" role="button">&lt;&lt; Back</button>
-</div>
-
-<div class="pull-right" id="btnNextDiv">
-  <button type="submit" class="btn btn-primary" href="/jobs/packaging/{{ .job.ID }}?direction=next" role="button">Next &gt;&gt;</button>
-</div>
 
 {{ template "partials/page_footer.html" .}}
 

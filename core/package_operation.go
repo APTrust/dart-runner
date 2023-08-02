@@ -53,10 +53,10 @@ func (p *PackageOperation) Validate() bool {
 		alreadySeen[sourceFile] = true
 	}
 	if len(missingFiles) > 0 {
-		p.Errors["PackageOperation.sourceFiles"] = fmt.Sprintf("The following files are missing: %s", strings.Join(missingFiles, ""))
+		p.Errors["PackageOperation.SourceFiles"] = fmt.Sprintf("The following files are missing: %s", strings.Join(missingFiles, ""))
 	}
 	if len(duplicateFiles) > 0 {
-		p.Errors["PackageOperation.sourceFiles"] += fmt.Sprintf("The following files are included more than once. Please remove duplicates: %s", strings.Join(duplicateFiles, ""))
+		p.Errors["PackageOperation.SourceFiles"] += fmt.Sprintf("The following files are included more than once. Please remove duplicates: %s", strings.Join(duplicateFiles, ""))
 	}
 	return len(p.Errors) == 0
 }
