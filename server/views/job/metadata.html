@@ -8,7 +8,7 @@
 <div style="height: 50px;">
   <div>
     <div class="pull-right p-r-3">
-      <button type="button" class="btn btn-primary" id="btnToggleHidden" style="margin-left: 25px;">Show All Tags</button>
+      <button type="button" class="btn btn-primary" id="btnToggleHidden" style="margin-left: 25px;" onclick="toggleTags()">Show All Tags</button>
     </div>
     <div class="pull-right">
       <a role="button" class="btn btn-primary" href="#JobMetadata/newTag?id={{ .job.ID }}" id="btnAddNewTag">Add New Tag</a>
@@ -33,15 +33,15 @@
 
         {{ range $fieldIndex, $field := $tagFile.Fields }}
 
-          {{ if $field.Choices }}
+          {{ if gt (len $field.Choices) 1 }}
 
             {{ template "partials/input_select.html" dict "field" $field }}
 
-          {{else if $field.looksLikeDescriptionTag }}
+          {{else if eq $field.Attrs.ControlType "textarea" }}
 
             {{ template "partials/input_textarea.html" dict "field" $field }}
 
-          {{else if $field.wasAddedForJob }}
+          {{else if eq $field.Attrs.WasAddedForJob "true" }}
 
             <!-- Needs to be text with delete option. -->
 
@@ -74,6 +74,24 @@
      
   </form>
 </div>
+
+
+<script>
+function toggleTags() {
+    let showAll = 'Show All Tags'
+    let hideDefaults = 'Hide Default Tags'
+    let currentText = $("#btnToggleHidden").text().trim()
+    $('.form-group-hidden').toggle()
+    if (currentText == showAll) {
+        $("#btnToggleHidden").text(hideDefaults)
+        $('.what-is-showing i').text('Showing all tags.')
+    } else {
+        $("#btnToggleHidden").text(showAll)
+        $('.what-is-showing i').text('Tags with default values are not showing.')
+    }
+}
+</script>
+
 
 {{ template "partials/page_footer.html" .}}
 

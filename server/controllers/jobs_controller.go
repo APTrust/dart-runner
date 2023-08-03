@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -141,9 +140,8 @@ func JobShowMetadata(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
-	showErrors, _ := strconv.ParseBool(c.Query("errors"))
 	job := result.Job()
-	tagFiles := GetTagFileForms(job, showErrors)
+	tagFiles := GetTagFileForms(job, false)
 	data := gin.H{
 		"job":      job,
 		"form":     job.ToForm(),
@@ -181,8 +179,13 @@ func JobSaveMetadata(c *gin.Context) {
 		c.Redirect(http.StatusFound, nextPage)
 	}
 	if TagErrorsExist(job.BagItProfile.Tags) && direction == "next" {
-		c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/metadata/%s?errors=true", job.ID))
-		return
+		tagFiles := GetTagFileForms(job, true)
+		data := gin.H{
+			"job":      job,
+			"form":     job.ToForm(),
+			"tagFiles": tagFiles,
+		}
+		c.HTML(http.StatusOK, "job/metadata.html", data)
 	}
 	c.Redirect(http.StatusFound, nextPage)
 }
@@ -214,6 +217,7 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 				formGroupClass = "form-group-hidden"
 			}
 			field := &core.Field{
+				Attrs:          make(map[string]string),
 				ID:             tagDef.ID,
 				Name:           fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName),
 				Label:          tagDef.TagName,
@@ -225,6 +229,12 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 			}
 			if withErrors {
 				field.Error = ValidateTagValue(tagDef)
+			}
+			if strings.Contains(strings.ToLower(tagDef.TagName), "description") {
+				field.Attrs["ControlType"] = "textarea"
+			}
+			if tagDef.WasAddedForJob {
+				field.Attrs["WasAddedForJob"] = "true"
 			}
 			metadataTagFile.Fields[j] = field
 		}
