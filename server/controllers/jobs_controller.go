@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -10,11 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// JobCreate creates a new Job.
-// Handles submission of new Job form.
-// POST /jobs/new
-func JobCreate(c *gin.Context) {
-
+// This struct holds all the tag form inputs for a tag file.
+// This is used on the metadata page.
+type TagFileForms struct {
+	Name   string
+	Fields []*core.Field
 }
 
 // GET /jobs/delete/:id
@@ -31,11 +32,6 @@ func JobDelete(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, "/jobs")
-}
-
-// GET /jobs/edit/:id
-func JobEdit(c *gin.Context) {
-
 }
 
 // GET /jobs
@@ -145,17 +141,63 @@ func JobShowMetadata(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
+	showErrors, _ := strconv.ParseBool(c.Query("errors"))
 	job := result.Job()
-
-	// This struct holds all the tag form inputs for a tag file.
-	type TagFileForms struct {
-		Name   string
-		Fields []*core.Field
+	tagFiles := GetTagFileForms(job, showErrors)
+	data := gin.H{
+		"job":      job,
+		"form":     job.ToForm(),
+		"tagFiles": tagFiles,
 	}
+	c.HTML(http.StatusOK, "job/metadata.html", data)
+}
 
-	// TODO: Break this out and attach error messages
-	// where necessary.
-	//
+// POST /jobs/metadata/:id
+func JobSaveMetadata(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	for _, tagDef := range job.BagItProfile.Tags {
+		fieldName := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
+		tagDef.UserValue = c.PostForm(fieldName)
+	}
+	err := core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	// Go to next or previous page, as specified by user
+	direction := c.PostForm("direction")
+	nextPage := fmt.Sprintf("/jobs/upload/%s", job.ID)
+
+	// If user wants to go back to the packaging page,
+	// let them go. We don't need to display the errors
+	// because they'll come back through this page again.
+	if direction == "previous" {
+		nextPage = fmt.Sprintf("/jobs/packaging/%s", job.ID)
+		c.Redirect(http.StatusFound, nextPage)
+	}
+	if TagErrorsExist(job.BagItProfile.Tags) && direction == "next" {
+		c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/metadata/%s?errors=true", job.ID))
+		return
+	}
+	c.Redirect(http.StatusFound, nextPage)
+}
+
+// GET /jobs/upload/:id
+func JobShowUpload(c *gin.Context) {
+
+}
+
+// POST /jobs/upload/:id
+func JobSaveUpload(c *gin.Context) {
+
+}
+
+func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 	// Get the list of tag files, in alpha order.
 	tagFileNames := job.BagItProfile.TagFileNames()
 	tagFiles := make([]TagFileForms, len(tagFileNames))
@@ -173,7 +215,7 @@ func JobShowMetadata(c *gin.Context) {
 			}
 			field := &core.Field{
 				ID:             tagDef.ID,
-				Name:           tagDef.TagName,
+				Name:           fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName),
 				Label:          tagDef.TagName,
 				Value:          tagDef.GetValue(),
 				Choices:        core.MakeChoiceList(tagDef.Values, tagDef.GetValue()),
@@ -181,32 +223,32 @@ func JobShowMetadata(c *gin.Context) {
 				Help:           tagDef.Help,
 				FormGroupClass: formGroupClass,
 			}
+			if withErrors {
+				field.Error = ValidateTagValue(tagDef)
+			}
 			metadataTagFile.Fields[j] = field
 		}
 		tagFiles[i] = metadataTagFile
 	}
+	return tagFiles
+}
 
-	data := gin.H{
-		"job":      job,
-		"form":     job.ToForm(),
-		"tagFiles": tagFiles,
+func ValidateTagValue(tagDef *core.TagDefinition) string {
+	tagValue := tagDef.GetValue()
+	if !tagDef.IsLegalValue(tagValue) {
+		return fmt.Sprintf("Tag has illegal value '%s'. Allowed values are: %s", tagValue, strings.Join(tagDef.Values, ","))
 	}
-	c.HTML(http.StatusOK, "job/metadata.html", data)
-
+	if tagDef.Required && !tagDef.EmptyOK && util.IsEmpty(tagValue) {
+		return "This tag requires a value."
+	}
+	return ""
 }
 
-// POST /jobs/metadata/:id
-func JobSaveMetadata(c *gin.Context) {
-
-}
-
-// GET /jobs/show/:id
-func JobShow(c *gin.Context) {
-
-}
-
-// PUT /jobs/edit/:id
-// POST /jobs/edit/:id
-func JobUpdate(c *gin.Context) {
-
+func TagErrorsExist(tags []*core.TagDefinition) bool {
+	for _, tagDef := range tags {
+		if ValidateTagValue(tagDef) != "" {
+			return true
+		}
+	}
+	return false
 }

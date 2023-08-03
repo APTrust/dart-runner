@@ -135,20 +135,17 @@ func initRoutes(router *gin.Engine) {
 	// Jobs
 	router.GET("/jobs", controllers.JobIndex)
 	router.GET("/jobs/new", controllers.JobNew)
-	router.POST("/jobs/new", controllers.JobCreate)
-	router.GET("/jobs/edit/:id", controllers.JobEdit)
-	router.PUT("/jobs/edit/:id", controllers.JobUpdate)
-	router.POST("/jobs/edit/:id", controllers.JobUpdate)
 	router.PUT("/jobs/delete/:id", controllers.JobDelete)
 	router.POST("/jobs/delete/:id", controllers.JobDelete)
 	router.GET("/jobs/packaging/:id", controllers.JobShowPackaging)
 	router.POST("/jobs/packaging/:id", controllers.JobSavePackaging)
 	router.GET("/jobs/metadata/:id", controllers.JobShowMetadata)
 	router.POST("/jobs/metadata/:id", controllers.JobSaveMetadata)
+	router.GET("/jobs/upload/:id", controllers.JobShowUpload)
+	router.POST("/jobs/upload/:id", controllers.JobSaveUpload)
 	router.GET("/jobs/files/:id", controllers.JobShowFiles)
 	router.POST("/jobs/add_file/:id", controllers.JobAddFile)
 	router.POST("/jobs/delete_file/:id", controllers.JobDeleteFile)
-	router.GET("/jobs/:id", controllers.JobShow)
 
 	// Remote Repositories
 	router.GET("/remote_repositories", controllers.RemoteRepositoryIndex)

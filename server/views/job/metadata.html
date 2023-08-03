@@ -18,7 +18,7 @@
 
 
 <div>
-  <form>
+  <form method="post" action="/jobs/metadata/{{ .job.ID }}" id="{{ .job.ID }}">
 
     {{ range $fileIndex, $tagFile := .tagFiles }}
 
@@ -61,15 +61,17 @@
     {{ end }}
 
 
-    <div>
-        <div class="pull-left" id="btnBackDiv">
-          <a class="btn btn-primary" href="#JobMetadata/back?id={{ .job.ID }}" role="button">&lt;&lt; Back</a>
-        </div>
-        <div class="pull-right" id="btnNextDiv">
-          <a class="btn btn-primary" href="#JobMetadata/next?id={{ .job.ID }}" role="button">Next &gt;&gt;</a>
-        </div>
-    </div>
+      <input type="hidden" name="direction" value="next"/>
+
+      <div class="pull-left mb-5" id="btnBackDiv">
+        <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
+      </div>
       
+      <div class="pull-right mb-5" id="btnNextDiv">
+        <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
+      </div>
+    
+     
   </form>
 </div>
 
