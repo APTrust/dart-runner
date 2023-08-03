@@ -19,7 +19,7 @@
 
     <!-- div id="jobProfileContainer" style='display: {{if eq "BagIt" .form.Fields.PackageFormat.Value }} block {{ else }} none {{ end }};' -->
     <div id="jobProfileContainer" style='display:block;'>
-    {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
+        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
         {{ template "partials/input_select.html" dict "field" .form.Fields.BagItSerialization }}
     </div>
   </div>

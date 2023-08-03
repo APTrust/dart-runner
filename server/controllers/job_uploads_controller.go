@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -31,7 +32,40 @@ func JobShowUpload(c *gin.Context) {
 
 // POST /jobs/upload/:id
 func JobSaveUpload(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	uploadTargets := c.PostFormArray("UploadTargets")
+	job.UploadOps = make([]*core.UploadOperation, len(uploadTargets))
+	for i, targetID := range uploadTargets {
+		ssResult := core.ObjFind(targetID)
+		if ssResult.Error != nil {
+			AbortWithErrorHTML(c, http.StatusNotFound, ssResult.Error)
+			return
+		}
+		job.UploadOps[i] = core.NewUploadOperation(ssResult.StorageService(), []string{job.PackageOp.OutputPath})
+	}
 
+	//
+	// TODO: Save WITH validation?
+	//       We may want to validate here and
+	//       show errors in the flash bar before
+	//       letting user move on to the Run page.
+	//
+	err := core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	direction := c.PostForm("direction")
+	nextPage := fmt.Sprintf("/jobs/run/%s", job.ID)
+	if direction == "previous" {
+		nextPage = fmt.Sprintf("/jobs/metadata/%s", job.ID)
+	}
+	c.Redirect(http.StatusFound, nextPage)
 }
 
 func GetUploadTargetsForm(job *core.Job) (*core.Form, error) {

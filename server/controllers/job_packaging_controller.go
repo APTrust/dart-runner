@@ -29,7 +29,7 @@ func JobSavePackaging(c *gin.Context) {
 	jobId := c.Param("id")
 	direction := c.PostForm("direction")
 	nextPage := fmt.Sprintf("/jobs/metadata/%s", jobId)
-	if direction == "back" {
+	if direction == "previous" {
 		nextPage = fmt.Sprintf("/jobs/files/%s", jobId)
 	}
 
@@ -39,7 +39,7 @@ func JobSavePackaging(c *gin.Context) {
 		return
 	}
 	job := result.Job()
-	job.PackageOp.BagItSerialization = c.PostForm("Serialization")
+	job.PackageOp.BagItSerialization = c.PostForm("BagItSerialization")
 	job.PackageOp.OutputPath = c.PostForm("OutputPath")
 	job.PackageOp.PackageFormat = c.PostForm("PackageFormat")
 	job.PackageOp.PackageName = c.PostForm("PackageName")

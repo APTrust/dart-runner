@@ -1,0 +1,98 @@
+{{ define "job/run.html" }}
+
+{{ template "partials/page_header.html" .}}
+
+<h2>Review and Run</h2>
+
+{{ if .job.PackageOp }}
+<div class="row">
+  <div class="col text-right font-weight-bold">Package Name</div>
+  <div class="col-10">{{ .job.PackageOp.PackageName }}</div>
+</div>
+
+{{ if .job.BagItProfile }}
+<div class="row">
+  <div class="col text-right font-weight-bold">BagIt Profile</div>
+  <div class="col-10">
+    {{ .job.BagItProfile.Name }} <br/>
+    {{ .job.BagItProfile.Description }}
+  </div>
+</div>
+{{ end }}
+
+<div class="row">
+  <div class="col text-right font-weight-bold">Payload Summary</div>
+  <div class="col-10">
+    {{ .job.DirCount }} Directories <br/>
+    {{ .job.FileCount }} Files <br/>
+    <!-- toHumanSize .job.ByteCount --> {{ .job.ByteCount }}<br/>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col text-right font-weight-bold">Files to Package</div>
+  <div class="col-10">
+    {{ range $index, $path := .job.PackageOp.SourceFiles }}
+      <!-- showPathWithTrim $path ../trimPath --> 
+      {{ $path }} <br/>
+    {{ end }}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col text-right font-weight-bold">Output Path</div>
+  <div class="col-10"><div id="output-path-link" data-url="{{ .job.PackageOp.OutputPath }}">{{ .job.PackageOp.OutputPath }}</div></div>
+</div>
+
+{{ end }} <!-- end if .job.BagItProfile  -->
+
+{{ if gt (len .job.UploadOps) 0 }}
+<div class="row">
+  <div class="col text-right font-weight-bold">Upload To</div>
+  <div class="col-10">
+    {{ range $index, $uploadOp := .job.UploadOps }}
+      {{ $uploadOp.StorageService.Name }} <br/>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+
+
+<div class="row" id="dartProcessContainer">
+
+</div>
+
+<div class="mt-5">
+  <div class="pull-left" id="btnBackDiv">
+    <a class="btn btn-primary" href="/jobs/upload/{{ .job.ID }}" role="button">&lt;&lt; Back</a>
+  </div>
+
+
+
+  <div class="pull-right" id="btnNextDiv">
+    {{ if not .job.WorkflowID }}
+    <a class="btn btn-info mr-5" href="/workflows/from_job/{{ .job.ID }}" role="button">Create Workflow</a>
+    {{  end }}
+
+    <!-- Though it acts like a link, this has to be a button so we can disable it after click. -->
+    <button id="btnRunJob" class="btn btn-success ml-5" onclick="runJob('{{ .job.ID }}')" role="button">Run Job</button>
+  </div>
+</div>
+
+<script>
+    function runJob(jobId) {
+        // Do AJAX post.
+        // On error, reload with errors.
+        // On success, we'll need to:
+        // - kick off the job
+        // - hook into an update stream (web socket?)
+        // - display progress, like the old DART
+        // - keep some kind of state that understands a job
+        //   is running, in case user navigates away from 
+        //   this page.
+    }
+</script>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}
