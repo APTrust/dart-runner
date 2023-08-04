@@ -103,7 +103,7 @@ func (u *UploadOperation) sendToS3() bool {
 // connections for S3 uploads. This returns true unless we're talking
 // to localhost (which we do in unit tests).
 func (u *UploadOperation) useSSL() bool {
-	return !strings.HasPrefix(u.StorageService.Host, "localhost")
+	return !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
 }
 
 func (u *UploadOperation) sendToSFTP() bool {

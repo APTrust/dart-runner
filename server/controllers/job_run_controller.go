@@ -24,4 +24,16 @@ func JobRunShow(c *gin.Context) {
 // POST /jobs/run/:id
 func JobRunExecute(c *gin.Context) {
 	// Run the job in response to user clicking the Run button.
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	returnCode := core.RunJob(job, false, false)
+	status := http.StatusOK
+	if returnCode != 0 {
+		status = http.StatusInternalServerError
+	}
+	c.JSON(status, job)
 }

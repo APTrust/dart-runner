@@ -54,6 +54,12 @@ func JobSavePackaging(c *gin.Context) {
 		job.BagItProfile = profileResult.BagItProfile()
 	}
 
+	if job.ValidationOp == nil {
+		job.ValidationOp = core.NewValidationOperation(job.PackageOp.OutputPath)
+	} else {
+		job.ValidationOp.PathToBag = job.PackageOp.OutputPath
+	}
+
 	ok := job.PackageOp.Validate()
 	if !ok {
 		// Errors from sub-object have sub-object prefix for
