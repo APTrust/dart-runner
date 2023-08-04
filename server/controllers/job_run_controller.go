@@ -75,13 +75,4 @@ func JobRunExecute(c *gin.Context) {
 		// core.Dart.Log.Error("While running job, client disconnected in middle of stream.")
 		fmt.Println("While running job, client disconnected in middle of stream.")
 	}
-	// returnCode := core.RunJob(job, false, false)
-	// status := http.StatusOK
-	// if returnCode != 0 {
-	// 	status = http.StatusInternalServerError
-	// }
-	// c.JSON(status, job)
 }
-
-// func StreamJsonResponse(c *gin.Context, job *core.Job) bool {
-// }

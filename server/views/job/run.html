@@ -81,26 +81,15 @@
 
 <script>
     function runJob(jobId) {
-        // Do AJAX post.
-        // On error, reload with errors.
-        // On success, we'll need to:
-        // - kick off the job
-        // - hook into an update stream (web socket?)
-        // - display progress, like the old DART
-        // - keep some kind of state that understands a job
-        //   is running, in case user navigates away from 
-        //   this page.
-        // $.ajax({
-        //     url: "/jobs/run/" + jobId,
-        //     type: 'POST',
-        //     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        // }).done(function (response) {        
-        //     console.log(response)
-        // }).fail(function (xhr, status, err) {
-        //     console.log(xhr)
-        // })    
 
-        let eventSrc = new EventSource("/jobs/run/" + jobId)
+      // TODO: Handle more specific messages when back end emits them.
+      //
+      // The general pattern for that is:
+      //
+      // sse.addEventListener("eventName", (e) => { code... });
+      // 
+
+      let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
           console.log(event)
           if (event.data == "EOF") {
