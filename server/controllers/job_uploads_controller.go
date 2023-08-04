@@ -61,7 +61,7 @@ func JobSaveUpload(c *gin.Context) {
 		return
 	}
 	direction := c.PostForm("direction")
-	nextPage := fmt.Sprintf("/jobs/run/%s", job.ID)
+	nextPage := fmt.Sprintf("/jobs/summary/%s", job.ID)
 	if direction == "previous" {
 		nextPage = fmt.Sprintf("/jobs/metadata/%s", job.ID)
 	}

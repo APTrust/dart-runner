@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -12,6 +13,45 @@ import (
 
 type Runner struct {
 	Job *Job
+}
+
+func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel chan string) int {
+	runner := &Runner{job}
+	if !runner.ValidateJob() {
+		runner.writeExitMessages(messageChannel)
+		return constants.ExitRuntimeErr
+	}
+	if !runner.RunPackageOp() {
+		runner.writeExitMessages(messageChannel)
+		return constants.ExitRuntimeErr
+	}
+	if !runner.RunValidationOp() {
+		runner.writeExitMessages(messageChannel)
+		return constants.ExitRuntimeErr
+	}
+	if !runner.RunUploadOps() {
+		runner.writeExitMessages(messageChannel)
+		return constants.ExitRuntimeErr
+	}
+	if deleteOnSuccess {
+		runner.cleanup()
+	} else {
+		runner.setNoCleanupMessage()
+	}
+
+	runner.writeExitMessages(messageChannel)
+
+	return constants.ExitOK
+}
+
+func (r *Runner) writeExitMessages(messageChannel chan string) {
+	result := NewJobResult(r.Job)
+	resultJson, err := json.Marshal(result)
+	if err != nil {
+		messageChannel <- err.Error()
+	} else {
+		messageChannel <- string(resultJson)
+	}
 }
 
 func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {

@@ -90,16 +90,26 @@
         // - keep some kind of state that understands a job
         //   is running, in case user navigates away from 
         //   this page.
-        $.ajax({
-            url: "/jobs/run/" + jobId,
-            type: 'POST',
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        }).done(function (response) {        
-            console.log(response)
-        }).fail(function (xhr, status, err) {
-            console.log(xhr)
-        })    
+        // $.ajax({
+        //     url: "/jobs/run/" + jobId,
+        //     type: 'POST',
+        //     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        // }).done(function (response) {        
+        //     console.log(response)
+        // }).fail(function (xhr, status, err) {
+        //     console.log(xhr)
+        // })    
 
+        let eventSrc = new EventSource("/jobs/run/" + jobId)
+        eventSrc.onmessage = (event) => {
+          console.log(event)
+          if (event.data == "EOF") {
+            eventSrc.close()
+          }
+        }
+        eventSrc.onerror = (event) => {
+          console.error(event)
+        }
     }
 </script>
 
