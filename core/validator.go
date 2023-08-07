@@ -13,6 +13,7 @@ import (
 )
 
 type Validator struct {
+	MessageChannel     chan *EventMessage
 	PathToBag          string
 	Profile            *BagItProfile
 	PayloadFiles       *FileMap
@@ -26,6 +27,7 @@ type Validator struct {
 	IgnoreOxumMismatch bool
 }
 
+// TODO: Deprecate this. New version should always use channel.
 func NewValidator(pathToBag string, profile *BagItProfile) (*Validator, error) {
 	if !util.FileExists(pathToBag) {
 		return nil, os.ErrNotExist
@@ -48,6 +50,18 @@ func NewValidator(pathToBag string, profile *BagItProfile) (*Validator, error) {
 		constants.FileTypeTag:         validator.TagFiles,
 		constants.FileTypeTagManifest: validator.TagManifests,
 	}
+	return validator, nil
+}
+
+func NewValidatorWithMessageChannel(pathToBag string, profile *BagItProfile, messageChannel chan *EventMessage) (*Validator, error) {
+	validator, err := NewValidator(pathToBag, profile)
+	if err != nil {
+		return validator, err
+	}
+	validator.PayloadFiles.MessageChannel = messageChannel
+	validator.PayloadManifests.MessageChannel = messageChannel
+	validator.TagFiles.MessageChannel = messageChannel
+	validator.TagManifests.MessageChannel = messageChannel
 	return validator, nil
 }
 

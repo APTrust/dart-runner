@@ -21,6 +21,7 @@ type Bagger struct {
 	OutputPath       string
 	FilesToBag       []*util.ExtendedFileInfo
 	Errors           map[string]string
+	MessageChannel   chan *EventMessage
 	PayloadFiles     *FileMap
 	PayloadManifests *FileMap
 	TagFiles         *FileMap
@@ -101,6 +102,7 @@ func (b *Bagger) reset() {
 
 func (b *Bagger) addPayloadFiles() bool {
 	for _, xFileInfo := range b.FilesToBag {
+		b.info(fmt.Sprintf("Adding %s", xFileInfo.FullPath))
 		pathInBag := b.pathForPayloadFile(xFileInfo.FullPath)
 		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
@@ -125,6 +127,7 @@ func (b *Bagger) addPayloadFiles() bool {
 func (b *Bagger) addManifests(whichKind string) bool {
 	for _, alg := range b.writer.DigestAlgs() {
 		tempFilePath, pathInBag, ok := b.writeManifest(whichKind, alg)
+		b.info(fmt.Sprintf("Adding %s", pathInBag))
 		defer os.Remove(tempFilePath)
 		if !ok {
 			return false
@@ -185,6 +188,7 @@ func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
 func (b *Bagger) addTagFiles() bool {
 	b.setBagInfoAutoValues()
 	for _, tagFileName := range b.Profile.TagFileNames() {
+		b.info(fmt.Sprintf("Adding %s", tagFileName))
 		contents, err := b.Profile.GetTagFileContents(tagFileName)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error getting tag file contents: %s", err.Error())
@@ -316,4 +320,11 @@ func (b *Bagger) finish() bool {
 		}
 	}
 	return true
+}
+
+func (b *Bagger) info(message string) {
+	if b.MessageChannel == nil {
+		return
+	}
+	b.MessageChannel <- InfoEvent(message)
 }

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -12,25 +11,29 @@ import (
 )
 
 type Runner struct {
-	Job *Job
+	Job            *Job
+	MessageChannel chan *EventMessage
 }
 
-func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel chan string) int {
-	runner := &Runner{job}
+func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel chan *EventMessage) int {
+	runner := &Runner{
+		Job:            job,
+		MessageChannel: messageChannel,
+	}
 	if !runner.ValidateJob() {
-		runner.writeExitMessages(messageChannel)
+		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunPackageOp() {
-		runner.writeExitMessages(messageChannel)
+		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunValidationOp() {
-		runner.writeExitMessages(messageChannel)
+		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunUploadOps() {
-		runner.writeExitMessages(messageChannel)
+		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
 	if deleteOnSuccess {
@@ -39,23 +42,21 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 		runner.setNoCleanupMessage()
 	}
 
-	runner.writeExitMessages(messageChannel)
+	runner.writeExitMessages()
 
 	return constants.ExitOK
 }
 
-func (r *Runner) writeExitMessages(messageChannel chan string) {
-	result := NewJobResult(r.Job)
-	resultJson, err := json.Marshal(result)
-	if err != nil {
-		messageChannel <- err.Error()
-	} else {
-		messageChannel <- string(resultJson)
+func (r *Runner) writeExitMessages() {
+	if r.MessageChannel == nil {
+		panic("JobRunner.MessageChannel is nil")
 	}
+	result := NewJobResult(r.Job)
+	r.MessageChannel <- FinishEvent(result)
 }
 
 func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
-	runner := &Runner{job}
+	runner := &Runner{Job: job}
 	if !runner.ValidateJob() {
 		runner.printExitMessages()
 		return constants.ExitRuntimeErr
@@ -125,6 +126,7 @@ func (r *Runner) RunPackageOp() bool {
 		sourceFiles = append(sourceFiles, files...)
 	}
 	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
+	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.FileCount = bagger.PayloadFileCount()
@@ -141,8 +143,29 @@ func (r *Runner) RunValidationOp() bool {
 	op := r.Job.ValidationOp
 	op.Result.Start()
 	ok := r.Job.ValidationOp.Validate()
-	r.setResultFileInfo(op.Result, op.PathToBag, op.Errors)
-	op.Result.Finish(op.Errors)
+	if !ok {
+		r.setResultFileInfo(op.Result, op.PathToBag, op.Errors)
+		op.Result.Finish(op.Errors)
+		return false
+	}
+	validator, err := NewValidatorWithMessageChannel(r.Job.PackageOp.OutputPath, r.Job.BagItProfile, r.MessageChannel)
+	if err != nil {
+		op.Result.Finish(validator.Errors)
+		return false
+	}
+	err = validator.ScanBag()
+	if err != nil {
+		errors := make(map[string]string)
+		if len(validator.Errors) > 0 {
+			errors = validator.Errors
+		} else {
+			errors["Validator.Scan"] = err.Error()
+		}
+		op.Result.Finish(errors)
+		return false
+	}
+	ok = validator.Validate()
+	op.Result.Finish(validator.Errors)
 	return ok
 }
 

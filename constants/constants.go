@@ -11,6 +11,10 @@ const (
 	DefaultProfileIdentifier = "https://raw.githubusercontent.com/APTrust/preservation-services/master/profiles/aptrust-v2.2.json"
 	EmptyProfileID           = "73d1b307-4d6b-494b-b0c9-a8595222ae5a"
 	EmptyUUID                = "00000000-0000-0000-0000-000000000000"
+	EventTypeInfo            = "info"
+	EventTypeWarning         = "warning"
+	EventTypeError           = "error"
+	EventTypeFinish          = "finish"
 	ExitOK                   = 0
 	ExitRuntimeErr           = 1
 	ExitUsageErr             = 2

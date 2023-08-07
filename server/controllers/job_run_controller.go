@@ -45,7 +45,7 @@ func JobRunExecute(c *gin.Context) {
 	// - validate - file checksum verified
 	// - upload - bytes written
 
-	messageChannel := make(chan string)
+	messageChannel := make(chan *core.EventMessage)
 	go func() {
 		defer close(messageChannel)
 		returnCode := core.RunJobWithMessageChannel(job, false, messageChannel)

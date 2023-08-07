@@ -19,15 +19,29 @@ const MaxErrors = 30
 // FileMap contains a map of FileRecord objects and some methods to
 // help validate those records.
 type FileMap struct {
-	Type  string
-	Files map[string]*FileRecord
+	Type           string
+	Files          map[string]*FileRecord
+	MessageChannel chan *EventMessage
 }
 
 // NewFileMap returns a pointer to a new FileMap object.
+//
+// TODO: Deprecate this. New version should always use channel.
 func NewFileMap(fileType string) *FileMap {
 	return &FileMap{
 		Type:  fileType,
 		Files: make(map[string]*FileRecord),
+	}
+}
+
+// NewFileMapWithChannel returns a pointer to a new FileMap object.
+// This object has a message channel to pass progress information back to
+// the front end.
+func NewFileMapWithChannel(fileType string, messageChannel chan *EventMessage) *FileMap {
+	return &FileMap{
+		Type:           fileType,
+		Files:          make(map[string]*FileRecord),
+		MessageChannel: messageChannel,
 	}
 }
 
@@ -37,6 +51,9 @@ func NewFileMap(fileType string) *FileMap {
 func (fm *FileMap) ValidateChecksums(algs []string) map[string]string {
 	errors := make(map[string]string)
 	for name, file := range fm.Files {
+		if fm.MessageChannel != nil {
+			fm.MessageChannel <- InfoEvent(fmt.Sprintf("Validating %s", name))
+		}
 		err := file.Validate(fm.Type, algs)
 		if err != nil {
 			errors[name] = err.Error()
