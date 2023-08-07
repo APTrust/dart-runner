@@ -177,8 +177,20 @@ func (r *Runner) RunUploadOps() bool {
 	// with remaining uploads.
 	allSucceeded := true
 	for _, op := range r.Job.UploadOps {
+		err := op.CalculatePayloadSize()
+		if err != nil {
+			op.Result.Finish(map[string]string{"Upload.CalculatePayloadSize": err.Error()})
+			allSucceeded = false
+			continue
+		}
 		op.Result.Start()
-		ok := op.DoUpload()
+		ok := false
+		if r.MessageChannel != nil {
+			progress := NewS3UploadProgress(op.PayloadSize, r.MessageChannel)
+			ok = op.DoUploadWithProgress(progress)
+		} else {
+			ok = op.DoUpload()
+		}
 		if op.SourceFiles != nil && len(op.SourceFiles) > 0 {
 			r.setResultFileInfo(op.Result, op.SourceFiles[0], op.Errors)
 		}

@@ -51,4 +51,8 @@ func TestUploadOperation(t *testing.T) {
 	require.NotNil(t, op)
 	assert.True(t, op.Validate())
 	assert.Empty(t, op.Errors)
+
+	assert.EqualValues(t, 0, op.PayloadSize)
+	assert.NoError(t, op.CalculatePayloadSize())
+	assert.EqualValues(t, 62464, op.PayloadSize)
 }

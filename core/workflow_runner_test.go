@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -57,8 +57,8 @@ func TestWorkflowRunner(t *testing.T) {
 
 	stdOutWriter.Close()
 	stdErrWriter.Close()
-	stdOutBytes, _ := ioutil.ReadAll(stdOutReader)
-	stdErrBytes, _ := ioutil.ReadAll(stdErrReader)
+	stdOutBytes, _ := io.ReadAll(stdOutReader)
+	stdErrBytes, _ := io.ReadAll(stdErrReader)
 
 	os.Stdout = origStdout
 	os.Stderr = origStderr
