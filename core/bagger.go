@@ -98,6 +98,14 @@ func (b *Bagger) PayloadOxum() string {
 	return fmt.Sprintf("%d.%d", b.PayloadFiles.TotalBytes(), b.PayloadFiles.FileCount())
 }
 
+// GetTotalFilesBagged returns the total number of files bagged,
+// including payload files, tag files, and manifests. This will
+// be zero if the bagger has not run yet, so call this after
+// calling Run() to get an accurate number.
+func (b *Bagger) GetTotalFilesBagged() int64 {
+	return b.currentFileNum
+}
+
 func (b *Bagger) reset() {
 	b.totalFileCount = int64(len(b.FilesToBag) + len(b.Profile.TagFileNames()) + len(b.Profile.ManifestsRequired))
 	b.currentFileNum = 0
@@ -328,6 +336,7 @@ func (b *Bagger) finish() bool {
 
 func (b *Bagger) info(message string) {
 	if b.MessageChannel == nil {
+		b.currentFileNum += 1
 		return
 	}
 	eventMessage := InfoEvent(constants.StagePackage, message)

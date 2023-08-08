@@ -66,6 +66,10 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 	xFileInfoList, err := util.RecursiveFileList(util.PathToTestData())
 	require.Nil(t, err)
 	assertAllPayloadFilesPresent(t, xFileInfoList, validator.PayloadFiles.Files)
+
+	// GetTotalFilesBagged should return the number of payload
+	// and non-payload files bagged.
+	assert.True(t, bagger.GetTotalFilesBagged() > bagger.PayloadFileCount())
 }
 
 // Set tags for bag-info.txt in the profile before we create the bag.

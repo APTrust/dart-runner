@@ -129,7 +129,8 @@ func (r *Runner) RunPackageOp() bool {
 	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
 	r.Job.ByteCount = bagger.PayloadBytes()
-	r.Job.FileCount = bagger.PayloadFileCount()
+	r.Job.PayloadFileCount = bagger.PayloadFileCount()
+	r.Job.TotalFileCount = bagger.GetTotalFilesBagged()
 	r.setResultFileInfo(op.Result, op.OutputPath, bagger.Errors)
 	op.Result.Finish(bagger.Errors)
 	return ok
@@ -148,10 +149,15 @@ func (r *Runner) RunValidationOp() bool {
 		op.Result.Finish(op.Errors)
 		return false
 	}
-	validator, err := NewValidatorWithMessageChannel(r.Job.PackageOp.OutputPath, r.Job.BagItProfile, r.MessageChannel)
+	validator, err := NewValidator(r.Job.PackageOp.OutputPath, r.Job.BagItProfile)
 	if err != nil {
 		op.Result.Finish(validator.Errors)
 		return false
+	}
+	// When running from the UI, we'll have a message channel to pass
+	// info back to the front end. When running from command line, we won't.
+	if r.MessageChannel != nil {
+		validator.MessageChannel = r.MessageChannel
 	}
 	err = validator.ScanBag()
 	if err != nil {

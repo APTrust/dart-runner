@@ -25,16 +25,17 @@ var TitleTags = []string{
 }
 
 type Job struct {
-	ID           string               `json:"id"`
-	BagItProfile *BagItProfile        `json:"bagItProfile"`
-	ByteCount    int64                `json:"byteCount"`
-	DirCount     int64                `json:"dirCount"`
-	Errors       map[string]string    `json:"errors"`
-	FileCount    int64                `json:"fileCount"`
-	PackageOp    *PackageOperation    `json:"packageOp"`
-	UploadOps    []*UploadOperation   `json:"uploadOps"`
-	ValidationOp *ValidationOperation `json:"validationOp"`
-	WorkflowID   string               `json:"workflowId"`
+	ID               string               `json:"id"`
+	BagItProfile     *BagItProfile        `json:"bagItProfile"`
+	ByteCount        int64                `json:"byteCount"`
+	DirCount         int64                `json:"dirCount"`
+	Errors           map[string]string    `json:"errors"`
+	PayloadFileCount int64                `json:"fileCount"` // still fileCount in JSON for legacy compatibility
+	TotalFileCount   int64                `json:"totalFileCount"`
+	PackageOp        *PackageOperation    `json:"packageOp"`
+	UploadOps        []*UploadOperation   `json:"uploadOps"`
+	ValidationOp     *ValidationOperation `json:"validationOp"`
+	WorkflowID       string               `json:"workflowId"`
 }
 
 func NewJob() *Job {

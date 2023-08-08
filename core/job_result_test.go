@@ -16,7 +16,7 @@ func getJobForJobResult() *core.Job {
 		job.UploadOps[i] = core.NewUploadOperation(core.NewStorageService(), []string{})
 	}
 	job.ByteCount = 12345
-	job.FileCount = 16
+	job.PayloadFileCount = 16
 	return job
 }
 
@@ -25,7 +25,7 @@ func TestJobResult(t *testing.T) {
 	jobResult := core.NewJobResult(job)
 	assert.Equal(t, job.Name(), jobResult.JobName)
 	assert.Equal(t, job.ByteCount, jobResult.PayloadByteCount)
-	assert.Equal(t, job.FileCount, jobResult.PayloadFileCount)
+	assert.Equal(t, job.PayloadFileCount, jobResult.PayloadFileCount)
 	assert.NotNil(t, jobResult.PackageResult)
 	assert.NotNil(t, jobResult.ValidationResult)
 	assert.Equal(t, 3, len(jobResult.UploadResults))

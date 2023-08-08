@@ -53,18 +53,6 @@ func NewValidator(pathToBag string, profile *BagItProfile) (*Validator, error) {
 	return validator, nil
 }
 
-func NewValidatorWithMessageChannel(pathToBag string, profile *BagItProfile, messageChannel chan *EventMessage) (*Validator, error) {
-	validator, err := NewValidator(pathToBag, profile)
-	if err != nil {
-		return validator, err
-	}
-	validator.PayloadFiles.MessageChannel = messageChannel
-	validator.PayloadManifests.MessageChannel = messageChannel
-	validator.TagFiles.MessageChannel = messageChannel
-	validator.TagManifests.MessageChannel = messageChannel
-	return validator, nil
-}
-
 func (v *Validator) MapForPath(pathInBag string) *FileMap {
 	return v.mapForType[util.BagFileType(pathInBag)]
 }
@@ -107,16 +95,44 @@ func (v *Validator) Validate() bool {
 	// a full scan during the ScanBag() stage.
 	v.AssertOxumsMatch()
 
+	currentFileNum := 0
+	estimatedFileCount := len(v.PayloadFiles.Files) + int(v.TagFiles.FileCount())
+	callback := func(eventType, message string) {
+		pctComplete := 0
+		if estimatedFileCount > 0 && currentFileNum > 0 {
+			pctComplete = int(float64(currentFileNum) * 100 / float64(estimatedFileCount))
+		}
+		eventMessage := &EventMessage{
+			EventType: eventType,
+			Stage:     constants.StageValidate,
+			Message:   message,
+			Total:     int64(estimatedFileCount),
+			Current:   int64(currentFileNum),
+			Percent:   pctComplete,
+		}
+		v.MessageChannel <- eventMessage
+		currentFileNum += 1
+	}
+
 	// Validate payload checksums
 	algs, _ := v.PayloadManifestAlgs()
-	errors := v.PayloadFiles.ValidateChecksums(algs)
+	var errors map[string]string
+	if v.MessageChannel == nil {
+		errors = v.PayloadFiles.ValidateChecksums(algs)
+	} else {
+		errors = v.PayloadFiles.ValidateChecksumsWithCallback(algs, callback)
+	}
 	for key, value := range errors {
 		v.Errors[key] = value
 	}
 
 	// Validate tag file checksums
 	algs, _ = v.TagManifestAlgs()
-	errors = v.TagFiles.ValidateChecksums(algs)
+	if v.MessageChannel == nil {
+		errors = v.TagFiles.ValidateChecksums(algs)
+	} else {
+		errors = v.TagFiles.ValidateChecksumsWithCallback(algs, callback)
+	}
 	for key, value := range errors {
 		v.Errors[key] = value
 	}

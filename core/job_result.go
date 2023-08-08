@@ -25,7 +25,7 @@ func NewJobResult(job *Job) *JobResult {
 	jobResult := &JobResult{
 		JobName:          job.Name(),
 		PayloadByteCount: job.ByteCount,
-		PayloadFileCount: job.FileCount,
+		PayloadFileCount: job.PayloadFileCount,
 		Succeeded:        len(job.Errors) == 0,
 		UploadResults:    make([]*OperationResult, 0),
 	}

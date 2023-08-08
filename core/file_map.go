@@ -21,9 +21,8 @@ const MaxErrors = 30
 // FileMap contains a map of FileRecord objects and some methods to
 // help validate those records.
 type FileMap struct {
-	Type           string
-	Files          map[string]*FileRecord
-	MessageChannel chan *EventMessage
+	Type  string
+	Files map[string]*FileRecord
 }
 
 // NewFileMap returns a pointer to a new FileMap object.
@@ -36,25 +35,26 @@ func NewFileMap(fileType string) *FileMap {
 	}
 }
 
-// NewFileMapWithChannel returns a pointer to a new FileMap object.
-// This object has a message channel to pass progress information back to
-// the front end.
-func NewFileMapWithChannel(fileType string, messageChannel chan *EventMessage) *FileMap {
-	return &FileMap{
-		Type:           fileType,
-		Files:          make(map[string]*FileRecord),
-		MessageChannel: messageChannel,
-	}
-}
-
 // ValidateChecksums validates all checksums for all files in this
 // FileMap. Param algs is a list of algorithms for manifests found
 // in the bag.
 func (fm *FileMap) ValidateChecksums(algs []string) map[string]string {
+	return fm.validateChecksums(algs, nil)
+}
+
+// ValidateChecksumsWithCallback validates all checksums for all files in this
+// FileMap. Param algs is a list of algorithms for manifests found
+// in the bag. Param callback is a function to send Event messages back to
+// the front end.
+func (fm *FileMap) ValidateChecksumsWithCallback(algs []string, callback func(string, string)) map[string]string {
+	return fm.validateChecksums(algs, callback)
+}
+
+func (fm *FileMap) validateChecksums(algs []string, callback func(string, string)) map[string]string {
 	errors := make(map[string]string)
 	for name, file := range fm.Files {
-		if fm.MessageChannel != nil {
-			fm.MessageChannel <- InfoEvent(constants.StageValidate, fmt.Sprintf("Validating %s", name))
+		if callback != nil {
+			callback(constants.EventTypeInfo, fmt.Sprintf("Validating %s", name))
 		}
 		err := file.Validate(fm.Type, algs)
 		if err != nil {
