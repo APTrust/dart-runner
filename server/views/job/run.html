@@ -91,14 +91,64 @@
 
       let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
-          console.log(event)
+          // console.log(event)
           if (event.data == "EOF") {
             eventSrc.close()
+            return
+          }
+          if (!event.data) {
+            console.log("Malformed message")
+            console.log(event)
+            return
+          }
+          var data
+          try {
+            data = JSON.parse(event.data)
+          } catch (ex) {
+            console.log(ex)
+            console.log(event)
+            return
+          }
+
+          switch (data.stage) {
+            case "pre-run":
+              showPreRunMessage(data)
+              break
+            case "package":
+              showPackageMessage(data)
+              break
+            case "validate":
+              showValidationMessage(data)
+              break
+            case "upload":
+              showUploadMessage(data)
+              break
+            default:
+              console.log("Unexpected message or missing stage")
+              console.log(data)
           }
         }
         eventSrc.onerror = (event) => {
           console.error(event)
         }
+    }
+
+    // The only pre-run message we'll get is one saying the job
+    // can't be run because it's invalid.
+    function showPreRunMessage(data) {
+      console.log("Pre-run: ", data)
+    }
+
+    function showPackageMessage(data) {
+      console.log("Package: ", data)
+    }
+
+    function showValidationMessage(data) {
+      console.log("Validate: ", data)
+    }
+
+    function showUploadMessage(data) {
+      console.log("Upload: ", data)
     }
 </script>
 

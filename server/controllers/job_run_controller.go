@@ -48,8 +48,8 @@ func JobRunExecute(c *gin.Context) {
 	messageChannel := make(chan *core.EventMessage)
 	go func() {
 		defer close(messageChannel)
-		returnCode := core.RunJobWithMessageChannel(job, false, messageChannel)
-		c.SSEvent("message", fmt.Sprintf("Exit code = %d", returnCode))
+		_ = core.RunJobWithMessageChannel(job, false, messageChannel)
+		//c.SSEvent("message", fmt.Sprintf("Exit code = %d", returnCode))
 		c.SSEvent("message", "EOF")
 	}()
 
