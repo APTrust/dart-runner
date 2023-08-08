@@ -19,6 +19,9 @@ type EventMessage struct {
 	EventType string     `json:"eventType"`
 	Stage     string     `json:"stage"`
 	Message   string     `json:"message"`
+	Total     int64      `json:"total"`
+	Current   int64      `json:"current"`
+	Percent   int        `json:"percent"`
 	JobResult *JobResult `json:"jobResult,omitempty"`
 }
 

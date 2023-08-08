@@ -29,6 +29,8 @@ type Bagger struct {
 	writer           BagWriter
 	pathPrefix       string
 	bagName          string
+	currentFileNum   int64
+	totalFileCount   int64
 }
 
 func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.ExtendedFileInfo) *Bagger {
@@ -97,6 +99,8 @@ func (b *Bagger) PayloadOxum() string {
 }
 
 func (b *Bagger) reset() {
+	b.totalFileCount = int64(len(b.FilesToBag) + len(b.Profile.TagFileNames()) + len(b.Profile.ManifestsRequired))
+	b.currentFileNum = 0
 	b.Errors = make(map[string]string)
 }
 
@@ -326,5 +330,31 @@ func (b *Bagger) info(message string) {
 	if b.MessageChannel == nil {
 		return
 	}
-	b.MessageChannel <- InfoEvent(constants.StagePackage, message)
+	eventMessage := InfoEvent(constants.StagePackage, message)
+	eventMessage.Current = b.currentFileNum
+	eventMessage.Total = b.totalFileCount
+	if b.currentFileNum > 0 {
+		eventMessage.Percent = int(float64(b.currentFileNum) * 100 / float64(b.totalFileCount))
+	}
+
+	// How can percent surpass 100, and why do we fudge it?
+	//
+	// We do this because, while we know ahead of time the number of payload
+	// files we have to bag, we don't know the number of tag files and manifests.
+	//
+	// When calculating totalFileCount, we guess the number of manifests using
+	// the BagIt profile's required manifests, and we guess the number of tag
+	// files using the Profile's RequiredTagFiles. However, the user can add
+	// additional tag files and manifests on a per-job basis. If they do, the
+	// actual total file cound will be slightly higher than we anticipated.
+	//
+	// Tag and manifest files are usually small and all of them together are
+	// usually added to the bag in a fraction of a second. So the user may see
+	// the progress bar stick at 100% for a fraction of a second.
+	if eventMessage.Percent > 100 {
+		eventMessage.Percent = 100
+	}
+
+	b.MessageChannel <- eventMessage
+	b.currentFileNum += 1
 }

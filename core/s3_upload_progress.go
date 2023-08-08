@@ -30,6 +30,10 @@ func (p *S3UploadProgress) Read(b []byte) (int, error) {
 	sent := util.ToHumanSize(p.Current, 1024)
 
 	message := fmt.Sprintf("Sent %s of %s (%d%%)", sent, total, p.Percent)
-	p.MessageChannel <- InfoEvent(constants.StageUpload, message)
+	eventMessage := InfoEvent(constants.StageUpload, message)
+	eventMessage.Total = p.Total
+	eventMessage.Current = p.Current
+	eventMessage.Percent = p.Percent
+	p.MessageChannel <- eventMessage
 	return int(byteCount), nil
 }

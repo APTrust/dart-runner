@@ -15,7 +15,7 @@ func TestInfoEvent(t *testing.T) {
 	assert.Equal(t, constants.StagePackage, e.Stage)
 	assert.Equal(t, constants.EventTypeInfo, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"info","stage":"package","message":"Hey diddly ho, Homer!"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"info","stage":"package","message":"Hey diddly ho, Homer!","total":0,"current":0,"percent":0}`, e.ToJson())
 }
 
 func TestWarningEvent(t *testing.T) {
@@ -24,7 +24,7 @@ func TestWarningEvent(t *testing.T) {
 	assert.Equal(t, constants.StagePreRun, e.Stage)
 	assert.Equal(t, constants.EventTypeWarning, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"warning","stage":"pre-run","message":"Rock stars! Is there anything they don't know?"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"warning","stage":"pre-run","message":"Rock stars! Is there anything they don't know?","total":0,"current":0,"percent":0}`, e.ToJson())
 }
 
 func TestErrorEvent(t *testing.T) {
@@ -33,7 +33,7 @@ func TestErrorEvent(t *testing.T) {
 	assert.Equal(t, constants.StageValidate, e.Stage)
 	assert.Equal(t, constants.EventTypeError, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"error","stage":"validate","message":"The internet? Pfft! Is that thing still around?"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"error","stage":"validate","message":"The internet? Pfft! Is that thing still around?","total":0,"current":0,"percent":0}`, e.ToJson())
 }
 
 func TestFinishEvent(t *testing.T) {
