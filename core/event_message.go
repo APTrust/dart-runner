@@ -17,14 +17,16 @@ import (
 // failure of the job.
 type EventMessage struct {
 	EventType string     `json:"eventType"`
+	Stage     string     `json:"stage"`
 	Message   string     `json:"message"`
 	JobResult *JobResult `json:"jobResult,omitempty"`
 }
 
 // InfoMessage creates a new EventMessage with EventType info.
 // This event has no JobResult.
-func InfoEvent(message string) *EventMessage {
+func InfoEvent(stage, message string) *EventMessage {
 	return &EventMessage{
+		Stage:     stage,
 		EventType: constants.EventTypeInfo,
 		Message:   message,
 	}
@@ -32,8 +34,9 @@ func InfoEvent(message string) *EventMessage {
 
 // WarningMessage creates a new EventMessage with EventType warning.
 // This event has no JobResult.
-func WarningEvent(message string) *EventMessage {
+func WarningEvent(stage, message string) *EventMessage {
 	return &EventMessage{
+		Stage:     stage,
 		EventType: constants.EventTypeWarning,
 		Message:   message,
 	}
@@ -41,8 +44,9 @@ func WarningEvent(message string) *EventMessage {
 
 // ErrorMessage creates a new EventMessage with EventType error.
 // This event has no JobResult.
-func ErrorEvent(message string) *EventMessage {
+func ErrorEvent(stage, message string) *EventMessage {
 	return &EventMessage{
+		Stage:     stage,
 		EventType: constants.EventTypeError,
 		Message:   message,
 	}
@@ -58,6 +62,7 @@ func FinishEvent(jobResult *JobResult) *EventMessage {
 	}
 	return &EventMessage{
 		EventType: constants.EventTypeFinish,
+		Stage:     constants.StageFinish,
 		Message:   message,
 		JobResult: jobResult,
 	}
@@ -68,7 +73,7 @@ func FinishEvent(jobResult *JobResult) *EventMessage {
 func (e *EventMessage) ToJson() string {
 	data, err := json.Marshal(e)
 	if err != nil {
-		return fmt.Sprintf("Error serializin job result: %v", err)
+		return fmt.Sprintf("Error serializing job result: %v", err)
 	}
 	return string(data)
 }

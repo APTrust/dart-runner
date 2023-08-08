@@ -326,5 +326,5 @@ func (b *Bagger) info(message string) {
 	if b.MessageChannel == nil {
 		return
 	}
-	b.MessageChannel <- InfoEvent(message)
+	b.MessageChannel <- InfoEvent(constants.StagePackage, message)
 }

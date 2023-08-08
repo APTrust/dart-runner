@@ -5,6 +5,8 @@ import (
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/APTrust/dart-runner/constants"
 )
 
 // MaxErrors is the maximum number of errors the validator will
@@ -52,7 +54,7 @@ func (fm *FileMap) ValidateChecksums(algs []string) map[string]string {
 	errors := make(map[string]string)
 	for name, file := range fm.Files {
 		if fm.MessageChannel != nil {
-			fm.MessageChannel <- InfoEvent(fmt.Sprintf("Validating %s", name))
+			fm.MessageChannel <- InfoEvent(constants.StageValidate, fmt.Sprintf("Validating %s", name))
 		}
 		err := file.Validate(fm.Type, algs)
 		if err != nil {

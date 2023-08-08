@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -29,6 +30,6 @@ func (p *S3UploadProgress) Read(b []byte) (int, error) {
 	sent := util.ToHumanSize(p.Current, 1024)
 
 	message := fmt.Sprintf("Sent %s of %s (%d%%)", sent, total, p.Percent)
-	p.MessageChannel <- InfoEvent(message)
+	p.MessageChannel <- InfoEvent(constants.StageUpload, message)
 	return int(byteCount), nil
 }

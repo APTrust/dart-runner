@@ -11,26 +11,29 @@ import (
 
 func TestInfoEvent(t *testing.T) {
 	message := "Hey diddly ho, Homer!"
-	e := core.InfoEvent(message)
+	e := core.InfoEvent(constants.StagePackage, message)
+	assert.Equal(t, constants.StagePackage, e.Stage)
 	assert.Equal(t, constants.EventTypeInfo, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"info","message":"Hey diddly ho, Homer!"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"info","stage":"package","message":"Hey diddly ho, Homer!"}`, e.ToJson())
 }
 
 func TestWarningEvent(t *testing.T) {
 	message := "Rock stars! Is there anything they don't know?"
-	e := core.WarningEvent(message)
+	e := core.WarningEvent(constants.StagePreRun, message)
+	assert.Equal(t, constants.StagePreRun, e.Stage)
 	assert.Equal(t, constants.EventTypeWarning, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"warning","message":"Rock stars! Is there anything they don't know?"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"warning","stage":"pre-run","message":"Rock stars! Is there anything they don't know?"}`, e.ToJson())
 }
 
 func TestErrorEvent(t *testing.T) {
 	message := "The internet? Pfft! Is that thing still around?"
-	e := core.ErrorEvent(message)
+	e := core.ErrorEvent(constants.StageValidate, message)
+	assert.Equal(t, constants.StageValidate, e.Stage)
 	assert.Equal(t, constants.EventTypeError, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"error","message":"The internet? Pfft! Is that thing still around?"}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"error","stage":"validate","message":"The internet? Pfft! Is that thing still around?"}`, e.ToJson())
 }
 
 func TestFinishEvent(t *testing.T) {
@@ -38,6 +41,7 @@ func TestFinishEvent(t *testing.T) {
 	jobResult := core.NewJobResult(job)
 	e := core.FinishEvent(jobResult)
 	assert.Equal(t, constants.EventTypeFinish, e.EventType)
+	assert.Equal(t, constants.StageFinish, e.Stage)
 	assert.Equal(t, "Job succeeded", e.Message)
 	assert.Equal(t, jobResult, e.JobResult)
 	resultJson, _ := json.Marshal(jobResult)
