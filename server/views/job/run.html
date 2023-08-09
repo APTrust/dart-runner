@@ -80,6 +80,10 @@
 </div>
 
 <script>
+    
+    var runningJobId = '{{ .job.ID }}'
+    var completedUploads = []
+
     function runJob(jobId) {
 
       // TODO: Handle more specific messages when back end emits them.
@@ -150,6 +154,180 @@
     function showUploadMessage(data) {
       console.log("Upload: ", data)
     }
+
+
+    // -------------------------------------------------------------------
+
+
+    function initRunningJobDisplay(dartProcess) {
+        // Clear this on each init
+        completedUploads = [];
+        let job = Job.find(dartProcess.jobId);
+
+        showDivs(job, dartProcess);
+        if ($('#output-path-link').length) {
+            $('#output-path-link').removeClass('local-file')
+        }
+        let controller = this;
+
+        // If user moves from JobRunController to DashboardController
+        // (both of which derive from this class), we don't want
+        // listeners to be attached twice. Re-adding the listeners
+        // causes them to render content in elements on the current
+        // page.
+        dartProcess.process.removeAllListeners('message');
+        dartProcess.process.removeAllListeners('exit');
+
+        dartProcess.process.on('message', (data) => {
+            controller.renderChildProcOutput(data, dartProcess);
+        });
+
+        dartProcess.process.on('exit', (code, signal) => {
+            Context.logger.info(`Process ${dartProcess.process.pid} exited with code ${code}, signal ${signal}`);
+            delete Context.childProcesses[dartProcess.id];
+            controller.renderOutcome(dartProcess, code);
+        });
+    }
+
+    function showDivs(job, dartProcess) {
+        let processDiv = $('#dartProcessContainer');
+        if (job.packageOp && job.packageOp.outputPath) {
+            initProgressBar(dartProcess, 'packageInfo');
+            $(`#${dartProcess.id} div.packageInfo`).show();
+            if (job.packageOp.packageFormat == 'BagIt') {
+                initProgressBar(dartProcess, 'validationInfo');
+                $(`#${dartProcess.id} div.validationInfo`).show();
+            }
+        }
+        if (job.uploadOps.length > 0) {
+            initProgressBar(dartProcess, 'uploadInfo');
+            $(`#${dartProcess.id} div.uploadInfo`).show();
+        }
+        processDiv.show();
+    }
+
+
+    function renderPackageInfo(data, dartProcess) {
+        let [detailDiv, progressBar] = getDivs(dartProcess, 'packageInfo');
+        if (data.action == 'fileAdded') {
+            let shortName = Util.trimToLength(data.msg, 80, 'middle');
+            detailDiv.text(Context.y18n.__('Added file %s', shortName));
+            setProgressBar(progressBar, data);
+        } else if (data.action == 'completed') {
+            if (data.status == Constants.OP_SUCCEEDED) {
+                markSuccess(detailDiv, progressBar, data.msg);
+                if ($('#output-path-link').length) {
+                    $('#output-path-link').addClass('local-file')
+                }
+            } else {
+                markFailed(detailDiv, progressBar, data.msg);
+            }
+        } else {
+            detailDiv.text(data.msg);
+        }
+    }
+
+    function renderValidationInfo(data, dartProcess) {
+        let [detailDiv, progressBar] = getDivs(dartProcess, 'validationInfo');
+        if (data.action == 'checksum') {
+            let shortName = Util.trimToLength(data.msg, 80, 'middle');
+            detailDiv.text(Context.y18n.__('Validating %s', shortName));
+            setProgressBar(progressBar, data);
+        } else if (data.action == 'completed') {
+            if (data.status == Constants.OP_SUCCEEDED) {
+                markSuccess(detailDiv, progressBar, data.msg);
+            } else {
+                markFailed(detailDiv, progressBar, data.msg);
+            }
+        }
+    }
+
+    function renderUploadInfo(data, dartProcess) {
+        let [detailDiv, progressBar] = getDivs(dartProcess, 'uploadInfo');
+        if (data.action == 'start') {
+            detailDiv.text(data.msg);
+            // We can have multiple uploads, so we re-initialize the
+            // progress bar each time we get a start event.
+            initProgressBar(dartProcess, 'uploadInfo');
+        } else if (data.action == 'completed') {
+            if (data.status == Constants.OP_SUCCEEDED) {
+                completedUploads.push(data.msg);
+                markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"));
+            } else {
+                markFailed(detailDiv, progressBar, data.msg);
+            }
+        } else if (data.action == 'status'){
+            detailDiv.text(data.msg);
+            setProgressBar(progressBar, data);
+        }
+    }
+
+    function getDivs(dartProcess, section) {
+        let selectorPrefix = `#${dartProcess.id} div.${section} div.detail`;
+        let detailDiv = $(`${selectorPrefix} div.message`);
+        let progressBar = $(`${selectorPrefix} div.progress-bar`);
+        return [detailDiv, progressBar];
+    }
+
+
+    function initProgressBar(dartProcess, section) {
+        let [_, progressBar] = getDivs(dartProcess, section);
+        if (progressBar) {
+            progressBar.removeClass("bg-success");
+            progressBar.removeClass("bg-danger");
+            let initialClasses = ["progress-bar-striped", "progress-bar-animated"];
+            for (let cssClass of initialClasses) {
+                if (progressBar.hasClass(cssClass)) {
+                    progressBar.addClass(cssClass);
+                }
+            }
+        }
+    }
+
+    function setProgressBar(progressBar, data) {
+        // Sometimes the data object does not include percentComplete,
+        // and when percentComplete is unknown, it's set to -1.
+        if (isNaN(data.percentComplete) || data.percentComplete < 0) {
+            return;
+        }
+        // In bag creation, progress bar hits 100% when all payload
+        // files are added. We have to add tag files and manifests
+        // afterward, and we don't want the bar to bounce, so no
+        // changes after it reaches 100%.
+        //
+        // Similarly with validation, the bar hits 100% when all checksums
+        // have been verified, but the validator still has a few remaining
+        // tasks, including tag file validation.
+        //
+        // In both cases, the bar will stick at 100% for a second or two.
+        // When all items are complete, the bar animation will stop and
+        // the bar will turn green.
+        if (parseInt(progressBar.attr("aria-valuenow"), 10) != 100) {
+            progressBar.attr("aria-valuenow", data.percentComplete);
+            progressBar.css("width", data.percentComplete + '%');
+        }
+    }
+
+    function markSuccess(detailDiv, progressBar, message) {
+        detailDiv.html(message);
+        if (progressBar) {
+            setProgressBar(progressBar, { percentComplete: 100 });
+            progressBar.removeClass("progress-bar-striped progress-bar-animated");
+            progressBar.addClass("bg-success");
+        }
+    }
+
+    function markFailed(detailDiv, progressBar, message) {
+        detailDiv.html(message);
+        if (progressBar) {
+            progressBar.removeClass("progress-bar-striped progress-bar-animated");
+            progressBar.attr("aria-valuenow", 100);
+            progressBar.css("width", '100%');
+            progressBar.addClass("bg-danger");
+        }
+    }
+
+
 </script>
 
 {{ template "partials/page_footer.html" .}}
