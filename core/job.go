@@ -278,6 +278,16 @@ func (job *Job) GetResultMessages() (stdoutMessage, stdErrMessage string) {
 	return stdoutMessage, stdErrMessage
 }
 
+// HasPackageOp returns true if this job includes a package operation.
+func (job *Job) HasPackageOp() bool {
+	return job.PackageOp != nil
+}
+
+// HasUploadOps returns true if this job includes one or more upload operations.
+func (job *Job) HasUploadOps() bool {
+	return len(job.UploadOps) > 0 && job.UploadOps[0] != nil
+}
+
 // PersistentObject interface
 
 // ObjID returns this job's object id (uuid).

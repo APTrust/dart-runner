@@ -1,17 +1,13 @@
 {{ define "partials/dart_process.html" }}
 
-<div class="container mb-3" id="{{ .item.id }}">
+<div class="container mb-3" id="{{ .ID }}">
   <div class="row">
     <div class="col-3">Job</div>
-    <div class="col-9">{{ .item.name }}</div>
-  </div>
-  <div class="row">
-    <div class="col-3">Process Id</div>
-    <div class="col-9">{{ .item.process.pid }}</div>
+    <div class="col-9">{{ .Name }}</div>
   </div>
   <div class="row">
     <div class="col-3">Started At</div>
-    <div class="col-9">{{ .item.startedAt }}</div>
+    <div class="col-9"> N/A </div>
   </div>
   <div class="row packageInfo" style="display:none">
     <div class="col-3">Packaging</div>

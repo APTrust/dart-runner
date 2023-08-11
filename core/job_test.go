@@ -68,6 +68,15 @@ func TestJobFromJson(t *testing.T) {
 	job, err := core.JobFromJson(pathToJobFile)
 	require.Nil(t, err)
 	require.NotNil(t, job)
+
+	assert.True(t, job.HasPackageOp())
+	assert.True(t, job.HasUploadOps())
+
+	job.PackageOp = nil
+	job.UploadOps = make([]*core.UploadOperation, 0)
+
+	assert.False(t, job.HasPackageOp())
+	assert.False(t, job.HasUploadOps())
 }
 
 func TestJobPersistence(t *testing.T) {
