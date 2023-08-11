@@ -228,13 +228,9 @@ func (r *Runner) RunUploadOps() bool {
 		op.Result.Finish(op.Errors)
 		if !ok {
 			allSucceeded = false
-			if r.MessageChannel != nil {
-				r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, false)
-			}
-		} else {
-			if r.MessageChannel != nil {
-				r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, true)
-			}
+		}
+		if r.MessageChannel != nil {
+			r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, ok)
 		}
 	}
 	return allSucceeded

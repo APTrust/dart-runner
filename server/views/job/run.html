@@ -202,22 +202,6 @@
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
         }
-        //if (data.eventType == 'info') {
-            // let shortName = Util.trimToLength(data.message, 80, 'middle');
-            // detailDiv.text(Context.y18n.__('Added file %s', shortName));
-            // setProgressBar(progressBar, data);
-        // } else if (data.eventType == 'completed') {
-        //     if (data.status == Constants.OP_SUCCEEDED) {
-        //         markSuccess(detailDiv, progressBar, data.message);
-        //         if ($('#output-path-link').length) {
-        //             $('#output-path-link').addClass('local-file')
-        //         }
-        //     } else {
-        //         markFailed(detailDiv, progressBar, data.message);
-        //     }
-        // } else {
-        //     detailDiv.text(data.message);
-        // }
     }
 
     function renderValidationInfo(data, jobId) {
@@ -233,17 +217,6 @@
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
         }
-        // if (data.action == 'checksum') {
-        //     let shortName = Util.trimToLength(data.message, 80, 'middle');
-        //     detailDiv.text(Context.y18n.__('Validating %s', shortName));
-        //     setProgressBar(progressBar, data);
-        // } else if (data.action == 'completed') {
-        //     if (data.status == Constants.OP_SUCCEEDED) {
-        //         markSuccess(detailDiv, progressBar, data.message);
-        //     } else {
-        //         markFailed(detailDiv, progressBar, data.message);
-        //     }
-        // }
     }
 
     function renderUploadInfo(data, jobId) {
@@ -259,22 +232,6 @@
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
         }
-        // if (data.action == 'start') {
-        //     detailDiv.text(data.message);
-        //     // We can have multiple uploads, so we re-initialize the
-        //     // progress bar each time we get a start event.
-        //     initProgressBar(jobId, 'uploadInfo');
-        // } else if (data.action == 'completed') {
-        //     if (data.status == Constants.OP_SUCCEEDED) {
-        //         completedUploads.push(data.message);
-        //         markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"));
-        //     } else {
-        //         markFailed(detailDiv, progressBar, data.message);
-        //     }
-        // } else if (data.action == 'status'){
-        //     detailDiv.text(data.message);
-        //     setProgressBar(progressBar, data);
-        // }
     }
 
     function getDivs(jobId, section) {
