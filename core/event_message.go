@@ -18,6 +18,7 @@ import (
 type EventMessage struct {
 	EventType string     `json:"eventType"`
 	Stage     string     `json:"stage"`
+	Status    string     `json:"status"`
 	Message   string     `json:"message"`
 	Total     int64      `json:"total"`
 	Current   int64      `json:"current"`
@@ -32,6 +33,7 @@ func InfoEvent(stage, message string) *EventMessage {
 		Stage:     stage,
 		EventType: constants.EventTypeInfo,
 		Message:   message,
+		Status:    constants.StatusRunning,
 	}
 }
 
@@ -42,6 +44,7 @@ func WarningEvent(stage, message string) *EventMessage {
 		Stage:     stage,
 		EventType: constants.EventTypeWarning,
 		Message:   message,
+		Status:    constants.StatusRunning,
 	}
 }
 
@@ -52,6 +55,7 @@ func ErrorEvent(stage, message string) *EventMessage {
 		Stage:     stage,
 		EventType: constants.EventTypeError,
 		Message:   message,
+		Status:    constants.StatusRunning, // caller can change to StatusFailed if this is fatal
 	}
 }
 
@@ -60,14 +64,17 @@ func ErrorEvent(stage, message string) *EventMessage {
 // to "info" if the job succeeded or to "error" if it failed.
 func FinishEvent(jobResult *JobResult) *EventMessage {
 	message := "Job failed"
+	status := constants.StatusFailed
 	if jobResult.Succeeded {
 		message = "Job succeeded"
+		status = constants.StatusSuccess
 	}
 	return &EventMessage{
 		EventType: constants.EventTypeFinish,
 		Stage:     constants.StageFinish,
 		Message:   message,
 		JobResult: jobResult,
+		Status:    status,
 	}
 }
 

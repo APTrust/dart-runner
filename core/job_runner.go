@@ -25,14 +25,21 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunPackageOp() {
+		runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, false)
 		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
+	runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, true)
+
 	if !runner.RunValidationOp() {
+		runner.writeStageOutcome(constants.StageValidate, runner.Job.ValidationOp.Result.Info, false)
 		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
+	runner.writeStageOutcome(constants.StageValidate, runner.Job.ValidationOp.Result.Info, true)
+
 	if !runner.RunUploadOps() {
+		runner.writeStageOutcome(constants.StageUpload, "One or more uploads failed", false)
 		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
@@ -41,6 +48,7 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 	} else {
 		runner.setNoCleanupMessage()
 	}
+	runner.writeStageOutcome(constants.StageUpload, "All uploads completed", true)
 
 	runner.writeExitMessages()
 
@@ -53,6 +61,23 @@ func (r *Runner) writeExitMessages() {
 	}
 	result := NewJobResult(r.Job)
 	r.MessageChannel <- FinishEvent(result)
+}
+
+func (r *Runner) writeStageOutcome(stage, message string, succeeded bool) {
+	if r.MessageChannel == nil {
+		panic("JobRunner.MessageChannel is nil")
+	}
+	status := constants.StatusFailed
+	if succeeded {
+		status = constants.StatusSuccess
+	}
+	eventMessage := &EventMessage{
+		EventType: constants.EventTypeFinish,
+		Stage:     stage,
+		Status:    status,
+		Message:   message,
+	}
+	r.MessageChannel <- eventMessage
 }
 
 func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
@@ -203,6 +228,13 @@ func (r *Runner) RunUploadOps() bool {
 		op.Result.Finish(op.Errors)
 		if !ok {
 			allSucceeded = false
+			if r.MessageChannel != nil {
+				r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, false)
+			}
+		} else {
+			if r.MessageChannel != nil {
+				r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, true)
+			}
 		}
 	}
 	return allSucceeded

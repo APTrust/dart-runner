@@ -123,11 +123,11 @@
               renderPackageInfo(data, jobId)
               break
             case "validate":
-              showValidationMessage(data)
+              //showValidationMessage(data)
               renderValidationInfo(data, jobId)
               break
             case "upload":
-              showUploadMessage(data)
+              //showUploadMessage(data)
               renderUploadInfo(data, jobId)
               break
             default:
@@ -184,14 +184,24 @@
             initProgressBar(jobId, 'uploadInfo');
             $(`#${jobId} div.uploadInfo`).show();
         }
+        $(`#${jobId}-start-time`).text(new Date().toLocaleString());
         processDiv.show();
     }
 
 
     function renderPackageInfo(data, jobId) {
         let [detailDiv, progressBar] = getDivs(jobId, 'packageInfo');
-        detailDiv.text(data.message)
-        setProgressBar(progressBar, data);
+        if (data.eventType == "finish") {
+          console.log(data)
+          if (data.status == "success") {
+            markSuccess(detailDiv, progressBar, data.message)
+          } else {
+            markFailed(detailDiv, progressBar, data.message)
+          }
+        } else { // info message
+          detailDiv.text(data.message)
+          setProgressBar(progressBar, data);
+        }
         //if (data.eventType == 'info') {
             // let shortName = Util.trimToLength(data.message, 80, 'middle');
             // detailDiv.text(Context.y18n.__('Added file %s', shortName));
@@ -212,8 +222,17 @@
 
     function renderValidationInfo(data, jobId) {
         let [detailDiv, progressBar] = getDivs(jobId, 'validationInfo');
-        detailDiv.text(data.message)
-        setProgressBar(progressBar, data);
+        if (data.eventType == "finish") {
+          console.log(data)
+          if (data.status == "success") {
+            markSuccess(detailDiv, progressBar, data.message)
+          } else {
+            markFailed(detailDiv, progressBar, data.message)
+          }
+        } else { // info message
+          detailDiv.text(data.message)
+          setProgressBar(progressBar, data);
+        }
         // if (data.action == 'checksum') {
         //     let shortName = Util.trimToLength(data.message, 80, 'middle');
         //     detailDiv.text(Context.y18n.__('Validating %s', shortName));
@@ -228,9 +247,18 @@
     }
 
     function renderUploadInfo(data, jobId) {
-        let [detailDiv, progressBar] = getDivs(jobId, 'uploadInfo');
-        detailDiv.text(data.message)
-        setProgressBar(progressBar, data);
+        let [detailDiv, progressBar] = getDivs(jobId, 'uploadInfo')
+        if (data.eventType == "finish") {
+          if (data.status == "success") {
+            completedUploads.push(data.message)
+            markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"))
+          } else {
+            markFailed(detailDiv, progressBar, data.message)
+          }
+        } else { // info message
+          detailDiv.text(data.message)
+          setProgressBar(progressBar, data);
+        }
         // if (data.action == 'start') {
         //     detailDiv.text(data.message);
         //     // We can have multiple uploads, so we re-initialize the
@@ -298,7 +326,7 @@
     function markSuccess(detailDiv, progressBar, message) {
         detailDiv.html(message);
         if (progressBar) {
-            setProgressBar(progressBar, { percentComplete: 100 });
+            setProgressBar(progressBar, { percent: 100 });
             progressBar.removeClass("progress-bar-striped progress-bar-animated");
             progressBar.addClass("bg-success");
         }
