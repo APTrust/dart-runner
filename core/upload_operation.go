@@ -65,7 +65,7 @@ func (u *UploadOperation) CalculatePayloadSize() error {
 		}
 		if stat.IsDir() {
 			children, err := util.RecursiveFileList(fileOrDir)
-			if err == nil {
+			if err != nil {
 				return err
 			}
 			for _, child := range children {

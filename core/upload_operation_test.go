@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"path"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -55,4 +56,20 @@ func TestUploadOperation(t *testing.T) {
 	assert.EqualValues(t, 0, op.PayloadSize)
 	assert.NoError(t, op.CalculatePayloadSize())
 	assert.EqualValues(t, 62464, op.PayloadSize)
+
+	// Test with directory in source files.
+	// This should calculate the size of all files
+	// under that directory.
+	files = []string{
+		path.Join(util.ProjectRoot(), "core"),
+	}
+	op = core.NewUploadOperation(ss, files)
+	require.NotNil(t, op)
+	assert.True(t, op.Validate())
+	assert.Empty(t, op.Errors)
+
+	assert.EqualValues(t, 0, op.PayloadSize)
+	assert.NoError(t, op.CalculatePayloadSize())
+	assert.True(t, op.PayloadSize > 300000)
+
 }

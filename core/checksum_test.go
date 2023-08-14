@@ -30,4 +30,8 @@ func TestChecksumSourceName(t *testing.T) {
 
 	cs.Algorithm = constants.AlgSha512
 	assert.Equal(t, "manifest-sha512.txt", cs.SourceName())
+
+	cs.Source = constants.FileTypeTagManifest
+	cs.Algorithm = constants.AlgSha512
+	assert.Equal(t, "tagmanifest-sha512.txt", cs.SourceName())
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -66,11 +67,14 @@ func TestAppSettingValidation(t *testing.T) {
 	defer core.ClearDartTable()
 
 	s1 := core.NewAppSetting("", "")
+	s1.ID = ""
 	assert.False(t, s1.Validate())
+	assert.Equal(t, "ID must be a valid uuid.", s1.Errors["ID"])
 	assert.Equal(t, "Name cannot be empty.", s1.Errors["Name"])
 	assert.Equal(t, "Value cannot be empty.", s1.Errors["Value"])
 	assert.Equal(t, constants.ErrObjecValidation, core.ObjSave(s1))
 
+	s1.ID = uuid.NewString()
 	s1.Name = "Setting 1 Name"
 	assert.False(t, s1.Validate())
 	assert.Equal(t, "", s1.Errors["Name"])
