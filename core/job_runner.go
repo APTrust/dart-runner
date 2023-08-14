@@ -32,11 +32,11 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 	runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, true)
 
 	if !runner.RunValidationOp() {
-		runner.writeStageOutcome(constants.StageValidate, runner.Job.ValidationOp.Result.Info, false)
+		runner.writeStageOutcome(constants.StageValidation, runner.Job.ValidationOp.Result.Info, false)
 		runner.writeExitMessages()
 		return constants.ExitRuntimeErr
 	}
-	runner.writeStageOutcome(constants.StageValidate, runner.Job.ValidationOp.Result.Info, true)
+	runner.writeStageOutcome(constants.StageValidation, runner.Job.ValidationOp.Result.Info, true)
 
 	if !runner.RunUploadOps() {
 		runner.writeStageOutcome(constants.StageUpload, "One or more uploads failed", false)

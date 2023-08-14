@@ -104,7 +104,7 @@ func (v *Validator) Validate() bool {
 		}
 		eventMessage := &EventMessage{
 			EventType: eventType,
-			Stage:     constants.StageValidate,
+			Stage:     constants.StageValidation,
 			Message:   message,
 			Total:     int64(estimatedFileCount),
 			Current:   int64(currentFileNum),

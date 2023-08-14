@@ -51,7 +51,7 @@ const (
 	StageFinish              = "finish"
 	StagePackage             = "package"
 	StagePreRun              = "pre-run"
-	StageValidate            = "validate"
+	StageValidation          = "validation"
 	StageUpload              = "upload"
 	StatusFailed             = "failed"
 	StatusRunning            = "running"

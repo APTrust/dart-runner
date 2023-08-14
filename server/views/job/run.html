@@ -114,50 +114,12 @@
             return
           }
 
-          switch (data.stage) {
-            case "pre-run":
-              showPreRunMessage(data)
-              break
-            case "package":
-              showPackageMessage(data)
-              renderPackageInfo(data, jobId)
-              break
-            case "validate":
-              //showValidationMessage(data)
-              renderValidationInfo(data, jobId)
-              break
-            case "upload":
-              //showUploadMessage(data)
-              renderUploadInfo(data, jobId)
-              break
-            default:
-              console.log("Unexpected message or missing stage")
-              console.log(data)
-          }
+          renderInfo(data, jobId)
         }
         eventSrc.onerror = (event) => {
           console.error(event)
         }
     }
-
-    // The only pre-run message we'll get is one saying the job
-    // can't be run because it's invalid.
-    function showPreRunMessage(data) {
-      console.log("Pre-run: ", data)
-    }
-
-    function showPackageMessage(data) {
-      console.log("Package: ", data)
-    }
-
-    function showValidationMessage(data) {
-      console.log("Validate: ", data)
-    }
-
-    function showUploadMessage(data) {
-      console.log("Upload: ", data)
-    }
-
 
     // -------------------------------------------------------------------
 
@@ -188,50 +150,23 @@
         processDiv.show();
     }
 
-
-    function renderPackageInfo(data, jobId) {
-        let [detailDiv, progressBar] = getDivs(jobId, 'packageInfo');
-        if (data.eventType == "finish") {
-          console.log(data)
-          if (data.status == "success") {
-            markSuccess(detailDiv, progressBar, data.message)
-          } else {
-            markFailed(detailDiv, progressBar, data.message)
-          }
-        } else { // info message
-          detailDiv.text(data.message)
-          setProgressBar(progressBar, data);
-        }
-    }
-
-    function renderValidationInfo(data, jobId) {
-        let [detailDiv, progressBar] = getDivs(jobId, 'validationInfo');
-        if (data.eventType == "finish") {
-          console.log(data)
-          if (data.status == "success") {
-            markSuccess(detailDiv, progressBar, data.message)
-          } else {
-            markFailed(detailDiv, progressBar, data.message)
-          }
-        } else { // info message
-          detailDiv.text(data.message)
-          setProgressBar(progressBar, data);
-        }
-    }
-
-    function renderUploadInfo(data, jobId) {
-        let [detailDiv, progressBar] = getDivs(jobId, 'uploadInfo')
-        if (data.eventType == "finish") {
-          if (data.status == "success") {
+    function renderInfo(data, jobId) {
+      let divName = data.stage + "Info"
+      let [detailDiv, progressBar] = getDivs(jobId, divName);
+      if (data.eventType == "finish") {
+        console.log(data)
+        if (data.status == "success") {
+          if (divName == "") {
             completedUploads.push(data.message)
             markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"))
           } else {
-            markFailed(detailDiv, progressBar, data.message)
+            markSuccess(detailDiv, progressBar, data.message)
           }
         } else { // info message
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
         }
+      }
     }
 
     function getDivs(jobId, section) {
@@ -240,7 +175,6 @@
         let progressBar = $(`${selectorPrefix} div.progress-bar`);
         return [detailDiv, progressBar];
     }
-
 
     function initProgressBar(jobId, section) {
         let [_, progressBar] = getDivs(jobId, section);

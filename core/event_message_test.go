@@ -29,11 +29,11 @@ func TestWarningEvent(t *testing.T) {
 
 func TestErrorEvent(t *testing.T) {
 	message := "The internet? Pfft! Is that thing still around?"
-	e := core.ErrorEvent(constants.StageValidate, message)
-	assert.Equal(t, constants.StageValidate, e.Stage)
+	e := core.ErrorEvent(constants.StageValidation, message)
+	assert.Equal(t, constants.StageValidation, e.Stage)
 	assert.Equal(t, constants.EventTypeError, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"error","stage":"validate","status":"running","message":"The internet? Pfft! Is that thing still around?","total":0,"current":0,"percent":0}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"error","stage":"validation","status":"running","message":"The internet? Pfft! Is that thing still around?","total":0,"current":0,"percent":0}`, e.ToJson())
 }
 
 func TestFinishEvent(t *testing.T) {
