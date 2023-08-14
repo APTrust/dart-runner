@@ -22,22 +22,11 @@ func TestPackageOperation(t *testing.T) {
 	op.SourceFiles = append(op.SourceFiles, "file-does-not-exist")
 	assert.False(t, op.Validate())
 	assert.Equal(t, 3, len(op.Errors))
-	assert.Equal(t, "The following files are missing: file-does-not-exist", op.Errors["PackageOperation.SourceFiles"])
-
-	btr256 := util.PathToUnitTestBag("test.edu.btr_good_sha256.tar")
-	btr512 := util.PathToUnitTestBag("test.edu.btr_good_sha512.tar")
+	assert.Equal(t, "Specify at least one file or directory to package.", op.Errors["PackageOperation.SourceFiles"])
 
 	sourceFiles := []string{
-		btr256,
-		btr256,
-	}
-	op = core.NewPackageOperation("bag.tar", "/path/to/output", sourceFiles)
-	assert.False(t, op.Validate())
-	assert.Equal(t, "The following files are included more than once. Please remove duplicates: "+btr256, op.Errors["PackageOperation.SourceFiles"])
-
-	sourceFiles = []string{
-		btr256,
-		btr512,
+		util.PathToUnitTestBag("test.edu.btr_good_sha256.tar"),
+		util.PathToUnitTestBag("test.edu.btr_good_sha512.tar"),
 	}
 	op = core.NewPackageOperation("bag.tar", "/path/to/output", sourceFiles)
 	assert.True(t, op.Validate())
@@ -66,4 +55,26 @@ func TestPackageOperationToForm(t *testing.T) {
 	assert.Equal(t, constants.PackageFormatBagIt, form.Fields["PackageFormat"].Value)
 
 	assert.Equal(t, sourceFiles, form.Fields["SourceFiles"].Values)
+}
+
+func TestPruneSourceFiles(t *testing.T) {
+	op := core.NewPackageOperation("", "", []string{})
+	op.SourceFiles = append(op.SourceFiles, "file-does-not-exist")
+	assert.Equal(t, 1, len(op.SourceFiles))
+
+	// Prune should remove the one file that does not exist.
+	op.PruneSourceFiles()
+	assert.Equal(t, 0, len(op.SourceFiles))
+
+	btr256 := util.PathToUnitTestBag("test.edu.btr_good_sha256.tar")
+	sourceFiles := []string{
+		btr256,
+		btr256,
+	}
+	op = core.NewPackageOperation("bag.tar", "/path/to/output", sourceFiles)
+	assert.Equal(t, 2, len(op.SourceFiles))
+
+	// Prune should remove duplicate entries from SourceFiles.
+	op.PruneSourceFiles()
+	assert.Equal(t, 1, len(op.SourceFiles))
 }

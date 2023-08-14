@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -31,6 +30,7 @@ func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *
 
 func (p *PackageOperation) Validate() bool {
 	p.Errors = make(map[string]string)
+	p.PruneSourceFiles()
 	if strings.TrimSpace(p.PackageName) == "" {
 		p.Errors["PackageOperation.PackageName"] = "Package name is required."
 	}
@@ -40,25 +40,21 @@ func (p *PackageOperation) Validate() bool {
 	if p.SourceFiles == nil || util.IsEmptyStringList(p.SourceFiles) {
 		p.Errors["PackageOperation.SourceFiles"] = "Specify at least one file or directory to package."
 	}
-	missingFiles := make([]string, 0)
-	duplicateFiles := make([]string, 0)
+	return len(p.Errors) == 0
+}
+
+// PruneSourceFiles removes non-existent files and directories
+// from SouceFiles and de-dupes duplicates.
+func (p *PackageOperation) PruneSourceFiles() {
 	alreadySeen := make(map[string]bool)
+	cleanSourceFileList := make([]string, 0)
 	for _, sourceFile := range p.SourceFiles {
-		if !util.FileExists(sourceFile) {
-			missingFiles = append(missingFiles, sourceFile)
-		}
-		if alreadySeen[sourceFile] {
-			duplicateFiles = append(duplicateFiles, sourceFile)
+		if util.FileExists(sourceFile) && !alreadySeen[sourceFile] {
+			cleanSourceFileList = append(cleanSourceFileList, sourceFile)
 		}
 		alreadySeen[sourceFile] = true
 	}
-	if len(missingFiles) > 0 {
-		p.Errors["PackageOperation.SourceFiles"] = fmt.Sprintf("The following files are missing: %s", strings.Join(missingFiles, ""))
-	}
-	if len(duplicateFiles) > 0 {
-		p.Errors["PackageOperation.SourceFiles"] += fmt.Sprintf("The following files are included more than once. Please remove duplicates: %s", strings.Join(duplicateFiles, ""))
-	}
-	return len(p.Errors) == 0
+	p.SourceFiles = cleanSourceFileList
 }
 
 func (p *PackageOperation) ToForm() *Form {
