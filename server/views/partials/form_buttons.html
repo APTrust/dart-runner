@@ -1,9 +1,9 @@
 {{ define "partials/form_buttons.html" }}
 
-<div class="bottom-buttons">
+<div class="bottom-buttons mt-3 mb-5">
     {{ if and .form.UserCanDelete .objectExistsInDB }}
     <div class="pull-left">
-      <a class="btn btn-danger" href="javascript:confirmDeletion('{{ .form.DeleteFunction }}')" role="button">Delete</a>
+      <a class="btn btn-danger" href="javascript:confirmDeletion('{{ .form.ObjType }}', '{{ .form.ObjectID }}')" role="button">Delete</a>
     </div>
     {{ end }}
     <div class="pull-right">
@@ -15,8 +15,8 @@
   </div>
 
 <script>
-  function confirmDeletion(formName) {
-    let form = document.forms[formName]
+  function confirmDeletion(objType, objId) {
+    var form = document.forms[objId] || document.forms[objType]
     if (!form) {
       alert("Deletion form is missing.")
       return
