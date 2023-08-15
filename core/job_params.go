@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
@@ -80,7 +79,7 @@ func (p *JobParams) mergeTags(job *Job) {
 	alreadyMatched := make(map[string]bool)
 	profile := job.BagItProfile
 	for _, t := range p.Tags {
-		key := fmt.Sprintf("%s/%s", t.TagFile, t.TagName)
+		key := t.FullyQualifiedName()
 		profileTagDef := profile.GetTagDef(t.TagFile, t.TagName)
 		if profileTagDef == nil || alreadyMatched[key] {
 			profileTagDef = &TagDefinition{

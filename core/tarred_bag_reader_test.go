@@ -95,7 +95,7 @@ func tarReaderTestFileMaps(t *testing.T, expected, actual *core.FileMap) {
 func tarReaderTestTags(t *testing.T, expected, actual []*core.Tag) {
 	require.Equal(t, len(expected), len(actual))
 	for i, expectedTag := range expected {
-		message := fmt.Sprintf("%s/%s", expectedTag.TagFile, expectedTag.TagName)
+		message := expectedTag.FullyQualifiedName()
 		actualTag := actual[i]
 		assert.Equal(t, expectedTag.TagFile, actualTag.TagFile, message)
 		assert.Equal(t, expectedTag.TagName, actualTag.TagName, message)

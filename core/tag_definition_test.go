@@ -88,6 +88,14 @@ func TestTagDefToFormattedString(t *testing.T) {
 	assert.Equal(t, "Description: A bag of documents", tagDef.ToFormattedString())
 }
 
+func TestTagDefFQName(t *testing.T) {
+	tagDef := &core.TagDefinition{
+		TagFile: "bag-info.txt",
+		TagName: "Source-Organization",
+	}
+	assert.Equal(t, "bag-info.txt/Source-Organization", tagDef.FullyQualifiedName())
+}
+
 func TestTagDefToForm(t *testing.T) {
 	tagDef := &core.TagDefinition{
 		ID:           uuid.NewString(),

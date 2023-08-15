@@ -65,6 +65,13 @@ func (t *TagDefinition) GetValue() string {
 	return val
 }
 
+// FullyQualifiedName returns the tag defintion's fully qualified
+// name, which is the tag file followed by a slash followed by the
+// tag name. E.g. bag-info.txt/Source-Organization.
+func (t *TagDefinition) FullyQualifiedName() string {
+	return fmt.Sprintf("%s/%s", t.TagFile, t.TagName)
+}
+
 // ToFormattedString returns the tag as string in a format suitable
 // for writing to a tag file. Following LOC's bagit.py, this function
 // does not break lines into 79 character chunks. It prints the whole

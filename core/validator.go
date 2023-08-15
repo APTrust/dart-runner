@@ -346,7 +346,7 @@ func (v *Validator) checkForbiddenTagFiles() bool {
 func (v *Validator) validateTags() bool {
 	valid := true
 	for _, tagDef := range v.Profile.Tags {
-		key := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
+		key := tagDef.FullyQualifiedName()
 		tags := v.GetTags(tagDef.TagFile, tagDef.TagName)
 		if len(tags) == 0 && tagDef.Required {
 			v.Errors[key] = "Required tag is missing."

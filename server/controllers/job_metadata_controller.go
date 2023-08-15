@@ -43,8 +43,7 @@ func JobSaveMetadata(c *gin.Context) {
 	}
 	job := result.Job()
 	for _, tagDef := range job.BagItProfile.Tags {
-		fieldName := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
-		tagDef.UserValue = c.PostForm(fieldName)
+		tagDef.UserValue = c.PostForm(tagDef.FullyQualifiedName())
 	}
 	err := core.ObjSaveWithoutValidation(job)
 	if err != nil {
@@ -93,7 +92,7 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 			field := &core.Field{
 				Attrs:          make(map[string]string),
 				ID:             tagDef.ID,
-				Name:           fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName),
+				Name:           tagDef.FullyQualifiedName(),
 				Label:          tagDef.TagName,
 				Value:          tagDef.GetValue(),
 				Choices:        core.MakeChoiceList(tagDef.Values, tagDef.GetValue()),
