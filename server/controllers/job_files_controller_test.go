@@ -3,6 +3,8 @@ package controllers_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"testing"
@@ -74,9 +76,52 @@ func TestJobShowFiles(t *testing.T) {
 }
 
 func TestJobAddFile(t *testing.T) {
+	defer core.ClearDartTable()
+	job := loadTestJob(t)
+	assert.NoError(t, core.ObjSave(job))
 
+	// Add a new file to this job via JobAddFile.
+	// Make sure we get the expected redirect and not an error.
+	fileToAdd := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	params := url.Values{}
+	params.Add("fullPath", fileToAdd)
+	postTestSettings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/jobs/add_file/%s", job.ID),
+		Params:                   params,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: fmt.Sprintf("/jobs/files/%s?directory=", job.ID),
+	}
+	DoSimplePostTest(t, postTestSettings)
+
+	// Now load the files page and make sure all of the original
+	// files plus the new one we just added are present.
+	expected := make([]string, len(job.PackageOp.SourceFiles))
+	copy(expected, job.PackageOp.SourceFiles)
+	expected = append(expected, fileToAdd)
+	DoSimpleGetTest(t, fmt.Sprintf("/jobs/files/%s", job.ID), expected)
 }
 
 func TestJobDeleteFile(t *testing.T) {
+	defer core.ClearDartTable()
+	job := loadTestJob(t)
+	assert.NoError(t, core.ObjSave(job))
 
+	// Delete the server/assets folder from the job.
+	fileToDelete := job.PackageOp.SourceFiles[1]
+	params := url.Values{}
+	params.Add("fullPath", fileToDelete)
+	postTestSettings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/jobs/delete_file/%s", job.ID),
+		Params:                   params,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: fmt.Sprintf("/jobs/files/%s?directory=", job.ID),
+	}
+	DoSimplePostTest(t, postTestSettings)
+
+	// Make sure that file was actually removed from the job.
+	result := core.ObjFind(job.ID)
+	require.Nil(t, result.Error)
+	sourceFiles := result.Job().PackageOp.SourceFiles
+	assert.Equal(t, 2, len(sourceFiles))
+	assert.False(t, util.StringListContains(sourceFiles, fileToDelete))
 }
