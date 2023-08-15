@@ -241,6 +241,14 @@ func (p *BagItProfile) GetTagDef(tagFile, tagName string) *TagDefinition {
 	return nil
 }
 
+func (p *BagItProfile) GetTagByFullyQualifiedName(fullyQualifiedName string) *TagDefinition {
+	parts := strings.SplitN(fullyQualifiedName, "/", 2)
+	if len(parts) == 2 {
+		return p.GetTagDef(parts[0], parts[1])
+	}
+	return nil
+}
+
 func (p *BagItProfile) FindMatchingTags(property, value string) ([]*TagDefinition, error) {
 	matches := make([]*TagDefinition, 0)
 	for _, tagDef := range p.Tags {

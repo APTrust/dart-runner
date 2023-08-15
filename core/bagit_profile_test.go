@@ -98,6 +98,21 @@ func TestGetTagDef(t *testing.T) {
 	assert.Nil(t, tagDef)
 }
 
+func TestGetTagByFQName(t *testing.T) {
+	profile := loadProfile(t, "aptrust-v2.2.json")
+
+	tagDef := profile.GetTagByFullyQualifiedName("aptrust-info.txt/Access")
+	require.NotNil(t, tagDef)
+	assert.Equal(t, "aptrust-info.txt", tagDef.TagFile)
+	assert.Equal(t, "Access", tagDef.TagName)
+
+	tagDef = profile.GetTagByFullyQualifiedName("aptrust-info.txt/Tag-Does-Not-Exist")
+	assert.Nil(t, tagDef)
+
+	tagDef = profile.GetTagByFullyQualifiedName("malformed tag name")
+	assert.Nil(t, tagDef)
+}
+
 func TestTagFileNames(t *testing.T) {
 	aptExpected := []string{
 		"aptrust-info.txt",
