@@ -8,6 +8,7 @@ import (
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // This struct holds all the tag form inputs for a tag file.
@@ -71,6 +72,32 @@ func JobSaveMetadata(c *gin.Context) {
 		c.HTML(http.StatusOK, "job/metadata.html", data)
 	}
 	c.Redirect(http.StatusFound, nextPage)
+}
+
+// GET /jobs/add_tag/:id
+func JobAddTag(c *gin.Context) {
+	tagDef := core.TagDefinition{
+		ID:             uuid.NewString(),
+		IsBuiltIn:      false,
+		IsUserAddedTag: true,
+		WasAddedForJob: true,
+	}
+	form := tagDef.ToForm()
+	data := gin.H{
+		"jobID": c.Param("id"),
+		"form":  form,
+	}
+	c.HTML(http.StatusOK, "job/new_tag.html", data)
+}
+
+// POST /jobs/add_tag/:id
+func JobSaveTag(c *gin.Context) {
+
+}
+
+// POST /jobs/delete_tag/:id
+func JobDeleteTag(c *gin.Context) {
+
 }
 
 func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {

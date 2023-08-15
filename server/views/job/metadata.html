@@ -11,7 +11,7 @@
       <button type="button" class="btn btn-primary" id="btnToggleHidden" style="margin-left: 25px;" onclick="toggleTags()">Show All Tags</button>
     </div>
     <div class="pull-right">
-      <a role="button" class="btn btn-primary" href="#JobMetadata/newTag?id={{ .job.ID }}" id="btnAddNewTag">Add New Tag</a>
+      <button role="button" class="btn btn-primary" onclick="loadIntoModal('GET', 'New Tag', '/jobs/add_tag/{{ .job.ID }}')" id="btnAddNewTag">Add New Tag</button>
     </div>
   </div>
 </div>

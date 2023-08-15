@@ -161,6 +161,10 @@ func (t *TagDefinition) ToForm() *Form {
 	requiredField.Help = "Does this tag require a value?"
 	requiredField.Choices = YesNoChoices(t.Required)
 
+	// This field is used only when adding a new tag to a job
+	// on the jobs/metadata page.
+	form.AddField("UserValue", "Value", t.UserValue, false)
+
 	for field, errMsg := range t.Errors {
 		form.Fields[field].Error = errMsg
 	}

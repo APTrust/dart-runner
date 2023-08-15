@@ -1,0 +1,20 @@
+{{ define "job/new_tag.html" }}
+
+<form method="post" action="/jobs/add_tag/{{ .jobID }}" id="{{ .jobID }}-new-tag">
+
+    {{ template "partials/input_text.html" dict "field" .form.Fields.TagFile }}
+  
+    {{ template "partials/input_text.html" dict "field" .form.Fields.TagName }}
+  
+    {{ template "partials/input_text.html" dict "field" .form.Fields.UserValue }}
+  
+    {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+  
+    <div class="bottom-buttons">
+      <div class="pull-right">
+      <button type="submit" class="btn btn-primary" role="button">Save</button>
+      </div>
+    </div>
+  </form>
+
+  {{ end }}
