@@ -1,6 +1,6 @@
 {{ define "job/new_tag.html" }}
 
-<form method="post" action="/jobs/add_tag/{{ .jobID }}" id="{{ .jobID }}-new-tag">
+<form method="post" action="/jobs/add_tag/{{ .jobID }}" id="NewTagForm">
 
     {{ template "partials/input_text.html" dict "field" .form.Fields.TagFile }}
   
@@ -12,7 +12,7 @@
   
     <div class="bottom-buttons">
       <div class="pull-right">
-      <button type="submit" class="btn btn-primary" role="button">Save</button>
+      <button type="button" class="btn btn-primary" onclick="submitNewTagFileForm('#NewTagForm')" role="button">Save</button>
       </div>
     </div>
   </form>

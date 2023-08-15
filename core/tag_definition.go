@@ -132,6 +132,7 @@ func (t *TagDefinition) ToForm() *Form {
 	form.AddField("IsBuiltIn", "IsBuiltIn", strconv.FormatBool(t.IsBuiltIn), true)
 	form.AddField("IsUserAddedFile", "IsUserAddedFile", strconv.FormatBool(t.IsUserAddedFile), true)
 	form.AddField("IsUserAddedTag", "IsUserAddedTag", strconv.FormatBool(t.IsUserAddedTag), true)
+	form.AddField("WasAddedForJob", "WasAddedForJob", strconv.FormatBool(t.WasAddedForJob), true)
 
 	helpField := form.AddField("Help", "Help Text", t.Help, false)
 	helpField.Help = "(Optional) Describe the significance of this tag so users know what data to enter."

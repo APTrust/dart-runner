@@ -92,7 +92,43 @@ func JobAddTag(c *gin.Context) {
 
 // POST /jobs/add_tag/:id
 func JobSaveTag(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	tagDef := &core.TagDefinition{}
+	err := c.ShouldBind(tagDef)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusBadRequest, err)
+		return
+	}
+	if !tagDef.Validate() {
+		form := tagDef.ToForm()
+		data := gin.H{
+			"jobID": c.Param("id"),
+			"form":  form,
+		}
+		c.HTML(http.StatusBadRequest, "job/new_tag.html", data)
+		return
+	}
+	tagDef.IsBuiltIn = false
+	tagDef.IsUserAddedTag = true
+	tagDef.WasAddedForJob = true
+	job.BagItProfile.Tags = append(job.BagItProfile.Tags, tagDef)
+	job.BagItProfile.FlagUserAddedTagFiles()
+	err = core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
 
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/jobs/metadata/%s", job.ID),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /jobs/delete_tag/:id
@@ -134,7 +170,13 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 				field.Attrs["ControlType"] = "textarea"
 			}
 			if tagDef.WasAddedForJob {
-				field.Attrs["WasAddedForJob"] = "true"
+				field.Attrs["data-was-added-for-job"] = "true"
+			}
+			if tagDef.IsUserAddedTag {
+				field.Attrs["data-is-user-added-tag"] = "true"
+			}
+			if tagDef.IsUserAddedFile {
+				field.Attrs["data-is-user-added-file"] = "true"
 			}
 			if tagDef.SystemMustSet() {
 				field.Attrs["readonly"] = "readonly"

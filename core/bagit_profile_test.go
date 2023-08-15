@@ -204,6 +204,46 @@ func TestSetTagValue(t *testing.T) {
 	assert.Equal(t, "911", tag.GetValue())
 }
 
+func TestFlagUserAddedTagFiles(t *testing.T) {
+	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile.FlagUserAddedTagFiles()
+	for _, tagDef := range profile.Tags {
+		assert.False(t, tagDef.IsUserAddedFile)
+	}
+
+	t1 := &core.TagDefinition{
+		TagFile:        "custom1.txt",
+		TagName:        "Tag-1",
+		IsUserAddedTag: true,
+	}
+	t2 := &core.TagDefinition{
+		TagFile:        "custom1.txt",
+		TagName:        "Tag-2",
+		IsUserAddedTag: true,
+	}
+	t3 := &core.TagDefinition{
+		TagFile:        "custom2.txt",
+		TagName:        "Tag-3",
+		IsUserAddedTag: true,
+	}
+	t4 := &core.TagDefinition{
+		TagFile:        "custom2.txt",
+		TagName:        "Tag-4",
+		IsUserAddedTag: false,
+	}
+	profile.Tags = append(profile.Tags, t1, t2, t3, t4)
+
+	profile.FlagUserAddedTagFiles()
+	for _, tagDef := range profile.Tags {
+		if tagDef.TagFile == "custom1.txt" {
+			assert.True(t, tagDef.IsUserAddedFile)
+		} else {
+			assert.False(t, tagDef.IsUserAddedFile)
+		}
+	}
+
+}
+
 func TestCloneProfile(t *testing.T) {
 	profile := loadProfile(t, "aptrust-v2.2.json")
 

@@ -356,6 +356,7 @@ func (p *BagItProfile) Validate() bool {
 // TagFileNames returns the names of the tag files for which we
 // have actual tag definitions. The bag may require other tag
 // files, but we can't produce them if we don't have tag defs.
+// The list will include user-added tag files.
 func (p *BagItProfile) TagFileNames() []string {
 	distinct := make(map[string]bool)
 	for _, tagDef := range p.Tags {
@@ -369,6 +370,34 @@ func (p *BagItProfile) TagFileNames() []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// FlagUserAddedTagFiles sets IsUserAddedFile to true on tag definitions
+// where the user added the tag file to the profile. The user can do this
+// on a per-job basis through the jobs/metadata UI page and through the
+// BagIt Profile editor.
+func (p *BagItProfile) FlagUserAddedTagFiles() {
+	fileHasOnlyUserAddedTags := make(map[string]bool)
+	for _, tagDef := range p.Tags {
+		if tagDef.TagFile == "bagit.txt" || tagDef.TagFile == "bag-info.txt" {
+			continue
+		}
+		if _, ok := fileHasOnlyUserAddedTags[tagDef.TagFile]; !ok {
+			fileHasOnlyUserAddedTags[tagDef.TagFile] = tagDef.IsUserAddedTag
+			continue
+		}
+		if !tagDef.IsUserAddedTag {
+			fileHasOnlyUserAddedTags[tagDef.TagFile] = false
+		}
+	}
+	for fileName, isUserAddedFile := range fileHasOnlyUserAddedTags {
+		if isUserAddedFile {
+			tagDefs, _ := p.FindMatchingTags("TagFile", fileName)
+			for _, tagDef := range tagDefs {
+				tagDef.IsUserAddedFile = true
+			}
+		}
+	}
 }
 
 // TagsInFile returns all of the tag definition objects in tagFileName,
