@@ -87,7 +87,7 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 		}
 		for j, tagDef := range tagDefs {
 			formGroupClass := ""
-			if tagDef.SystemMustSet || !util.IsEmpty(tagDef.DefaultValue) {
+			if tagDef.SystemMustSet() || !util.IsEmpty(tagDef.DefaultValue) {
 				formGroupClass = "form-group-hidden"
 			}
 			field := &core.Field{
@@ -109,6 +109,9 @@ func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {
 			}
 			if tagDef.WasAddedForJob {
 				field.Attrs["WasAddedForJob"] = "true"
+			}
+			if tagDef.SystemMustSet() {
+				field.Attrs["readonly"] = "readonly"
 			}
 			metadataTagFile.Fields[j] = field
 		}

@@ -31,6 +31,26 @@ func TestTagDefIsLegalValue(t *testing.T) {
 	assert.True(t, tagDef.IsLegalValue("marge"))
 }
 
+func TestSystemMustSet(t *testing.T) {
+	for _, tagName := range core.TagsSetBySystem {
+		tagDef := &core.TagDefinition{
+			TagFile: "bag-info.txt",
+			TagName: tagName,
+		}
+		assert.True(t, tagDef.SystemMustSet())
+
+		// If this tag is outside bag-info.txt,
+		// the system does not have to set it.
+		tagDef.TagFile = "custom.txt"
+		assert.False(t, tagDef.SystemMustSet())
+	}
+	tagDef := &core.TagDefinition{
+		TagFile: "bag-info.txt",
+		TagName: "Custom-Tag",
+	}
+	assert.False(t, tagDef.SystemMustSet())
+}
+
 func testTagDefinitionCopy(t *testing.T, tagDef *core.TagDefinition) {
 	copyOfTagDef := tagDef.Copy()
 	require.NotNil(t, copyOfTagDef)

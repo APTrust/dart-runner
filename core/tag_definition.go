@@ -15,8 +15,6 @@ var TagsSetBySystem = []string{
 	"Bagging-Date",
 	"Bagging-Software",
 	"Payload-Oxum",
-	"DPN-Object-ID",
-	"First-Version-Object-ID",
 	"Bag-Size",
 	"BagIt-Profile-Identifier",
 }
@@ -33,12 +31,19 @@ type TagDefinition struct {
 	IsUserAddedFile bool              `json:"isUserAddedFile"`
 	IsUserAddedTag  bool              `json:"isUserAddedTag"`
 	Required        bool              `json:"required"`
-	SystemMustSet   bool              `json:"systemMustSet"`
 	TagFile         string            `json:"tagFile"`
 	TagName         string            `json:"tagName"`
 	UserValue       string            `json:"userValue"`
 	Values          []string          `json:"values"`
 	WasAddedForJob  bool              `json:"wasAddedForJob"`
+}
+
+// SystemMustSet returns true if the value for this tag must be
+// set by the bagger at runtime. This applies to tags like Bag-Size,
+// Payload-Oxum, Bagging-Software and a few others in the bag-info.txt
+// file. See TagsSetBySystem for a full list.
+func (t *TagDefinition) SystemMustSet() bool {
+	return t.TagFile == "bag-info.txt" && util.StringListContains(TagsSetBySystem, t.TagName)
 }
 
 // IsLegalValue returns true if val is a legal value for this tag definition.
