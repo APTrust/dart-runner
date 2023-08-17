@@ -67,3 +67,11 @@ func TestJobSaveMetadata(t *testing.T) {
 		assert.Equal(t, value, tag.GetValue(), tag.FullyQualifiedName())
 	}
 }
+
+func TestJobSaveTag(t *testing.T) {
+
+}
+
+func TestJobDeleteTag(t *testing.T) {
+
+}

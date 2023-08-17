@@ -133,7 +133,34 @@ func JobSaveTag(c *gin.Context) {
 
 // POST /jobs/delete_tag/:id
 func JobDeleteTag(c *gin.Context) {
-
+	tagId := c.PostForm("tagId")
+	if !util.LooksLikeUUID(tagId) {
+		AbortWithErrorJSON(c, http.StatusBadRequest, fmt.Errorf("Missing or invalid tag id."))
+		return
+	}
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := result.Job()
+	tags := make([]*core.TagDefinition, 0)
+	for _, tagDef := range job.BagItProfile.Tags {
+		if tagDef.ID != tagId {
+			tags = append(tags, tagDef)
+		}
+	}
+	job.BagItProfile.Tags = tags
+	err := core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/jobs/metadata/%s", job.ID),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 func GetTagFileForms(job *core.Job, withErrors bool) []TagFileForms {

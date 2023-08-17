@@ -90,6 +90,25 @@ function toggleTags() {
         $('.what-is-showing i').text('Tags with default values are not showing.')
     }
 }
+
+function attachDeleteHandlers() {
+  var deletableTags = $('*[data-was-added-for-job="true"]') 
+  deletableTags.each(function(index, element){
+    let tagId = element.id //dataset['tagId']
+    //let label = $(`label[for="tagId"]`)
+    console.log(tagId)
+    var deleteId = `delete-${tagId}`
+    var html = `<span style="float: right; cursor:pointer;" title="Delete this tag" id="${deleteId}"><i class="fas fa-times text-danger"></i></span>`
+    $(html).insertBefore(element)
+    var selector = "#" + deleteId
+    $(selector).on('click', function(ev) {
+      let data = { 'tagId': tagId }
+      confirmBackgroundDeletion('Delete this tag?', '/jobs/delete_tag/{{ .job.ID }}', data)
+    })
+  })
+}
+
+attachDeleteHandlers()
 </script>
 
 
