@@ -49,17 +49,15 @@ func NewPostRequest(endpointUrl string, params url.Values) (*http.Request, error
 	return req, err
 }
 
-func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
+func GetUrl(t *testing.T, endpointUrl string) string {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, endpointUrl, nil)
 	dartServer.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	html := w.Body.String()
-	ok, notFound := AssertContainsAllStrings(html, expected)
-	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
+	return w.Body.String()
 }
 
-func DoSimplePostTest(t *testing.T, settings PostTestSettings) {
+func PostUrl(t *testing.T, settings PostTestSettings) string {
 	w := httptest.NewRecorder()
 	req, err := NewPostRequest(settings.EndpointUrl, settings.Params)
 	require.Nil(t, err)
@@ -68,9 +66,18 @@ func DoSimplePostTest(t *testing.T, settings PostTestSettings) {
 	if settings.ExpectedRedirectLocation != "" {
 		assert.Equal(t, settings.ExpectedRedirectLocation, w.Header().Get("Location"))
 	}
+	return w.Body.String()
+}
+
+func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
+	html := GetUrl(t, endpointUrl)
+	ok, notFound := AssertContainsAllStrings(html, expected)
+	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
+}
+
+func DoSimplePostTest(t *testing.T, settings PostTestSettings) {
+	html := PostUrl(t, settings)
 	if len(settings.ExpectedContent) > 0 {
-		html := w.Body.String()
-		//fmt.Println(html)
 		ok, notFound := AssertContainsAllStrings(html, settings.ExpectedContent)
 		assert.True(t, ok, "Missing from page %s: %v", settings.EndpointUrl, notFound)
 	}

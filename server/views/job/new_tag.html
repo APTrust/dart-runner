@@ -9,6 +9,9 @@
     {{ template "partials/input_text.html" dict "field" .form.Fields.UserValue }}
   
     {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
+    {{ template "partials/input_hidden.html" dict "field" .form.Fields.IsBuiltIn }}
+    {{ template "partials/input_hidden.html" dict "field" .form.Fields.IsUserAddedTag }}
+    {{ template "partials/input_hidden.html" dict "field" .form.Fields.WasAddedForJob }}
   
     <div class="bottom-buttons">
       <div class="pull-right">
