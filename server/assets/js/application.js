@@ -1,6 +1,14 @@
 // Global JS
 
-function loadIntoModal (method, modalTitle, url, data = {}) {
+function loadIntoModal (method, modalTitle, url, formId = '') {
+    var data = {}
+    if (method == 'post' && formId.trim() != '') {
+        let form = document.getElementById(formId)
+        if (form && form instanceof HTMLFormElement) {
+            data = Object.fromEntries(new FormData(form))
+            //console.log(data)
+        }
+    }
     $.ajax({
         url: url,
         type: method,
@@ -8,9 +16,17 @@ function loadIntoModal (method, modalTitle, url, data = {}) {
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     }).done(function (response) {
         //console.log(response)
-        showModalContent(modalTitle, response);
+        showModalContent(modalTitle, response)
     }).fail(function (xhr, status, err) {
-        showAjaxError("Error: "+ status);
+        //let data = xhr.responseJSON
+        // if (data.error) {
+        //     showModalContent(modalTitle, "Test failed: " + data.error)
+        // } else if (data.status) {
+        //     showModalContent(modalTitle, "Test failed: " + data.status)
+        // }
+        //showAjaxError("Error: "+ xhr.responseText);
+
+        showModalContent(modalTitle, xhr.responseText)        
         console.log(status)
         console.log(err)
         console.log(xhr)

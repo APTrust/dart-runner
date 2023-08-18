@@ -31,6 +31,7 @@ func StorageServiceEdit(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
+	request.TemplateData["showTestButton"] = request.QueryResult.StorageService().Validate()
 	c.HTML(http.StatusOK, "storage_service/form.html", request.TemplateData)
 }
 
@@ -71,10 +72,38 @@ func StorageServiceSave(c *gin.Context) {
 		data := gin.H{
 			"form":             ss.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
+			"showTestButton":   false,
 		}
 		c.HTML(http.StatusBadRequest, "storage_service/form.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, "/storage_services")
+}
 
+// POST /storage_services/test/:id
+func StorageServiceTestConnection(c *gin.Context) {
+	ss := &core.StorageService{}
+	err := c.Bind(ss)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Save this, because the user has likely been adjusting
+	// hostname, credentials, or other attributes. But if the
+	// save fails, continue with the test anyway.
+	core.ObjSave(ss)
+
+	status := http.StatusOK
+	result := "Connection succeeded!"
+	err = ss.TestConnection()
+	if err != nil {
+		status = http.StatusInternalServerError
+		result = err.Error()
+	}
+	data := gin.H{
+		"ss":     ss,
+		"result": result,
+	}
+	c.HTML(status, "storage_service/test.html", data)
 }

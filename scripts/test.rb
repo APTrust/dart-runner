@@ -103,6 +103,7 @@ class TestRunner
     # .env.test file.
     buckets = [
       "dart-runner.test",
+      "test",
     ]
     buckets.each do |bucket|
       full_bucket = File.join(base, "minio", bucket)

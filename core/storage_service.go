@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,6 +10,8 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type StorageService struct {
@@ -185,4 +188,46 @@ func (ss *StorageService) GetErrors() map[string]string {
 
 func (ss *StorageService) IsDeletable() bool {
 	return true
+}
+
+func (ss *StorageService) TestConnection() error {
+	if ss.Protocol == constants.ProtocolS3 {
+		return ss.testS3Connection()
+	} else if ss.Protocol == constants.ProtocolSFTP {
+		return ss.testSFTPConnection()
+	}
+	proto := ss.Protocol
+	if proto == "" {
+		proto = "undefined"
+	}
+	return fmt.Errorf("Protocol '%s' is not supported", proto)
+}
+
+func (ss *StorageService) testS3Connection() error {
+	accessKeyId := ss.GetLogin()
+	secretKey := ss.GetPassword()
+	useSSL := !strings.HasPrefix(ss.Host, "localhost") && !strings.HasPrefix(ss.Host, "127.0.0.1")
+	options := &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
+		Secure: useSSL,
+	}
+	client, err := minio.New(ss.HostAndPort(), options)
+	if err != nil {
+		return err
+	}
+	opts := minio.ListObjectsOptions{
+		Recursive: true,
+		MaxKeys:   5,
+	}
+	objectChan := client.ListObjects(context.Background(), ss.Bucket, opts)
+	for object := range objectChan {
+		if object.Err != nil {
+			return object.Err
+		}
+	}
+	return nil
+}
+
+func (ss *StorageService) testSFTPConnection() error {
+	return fmt.Errorf("SFTP protocol is not yet supported.")
 }

@@ -171,6 +171,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/storage_services/edit/:id", controllers.StorageServiceSave)
 	router.PUT("/storage_services/delete/:id", controllers.StorageServiceDelete)
 	router.POST("/storage_services/delete/:id", controllers.StorageServiceDelete)
+	router.POST("/storage_services/test/:id", controllers.StorageServiceTestConnection)
 
 	// Workflows
 	router.GET("/workflows", controllers.WorkflowIndex)
