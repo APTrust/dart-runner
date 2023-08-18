@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -170,4 +171,40 @@ func testSSNewSaveEditDeleteWithGoodParams(t *testing.T) {
 	// Make sure the item really was deleted
 	queryResult = core.ObjFind(id)
 	assert.Error(t, queryResult.Error)
+}
+
+// This test should be run from ./scripts/test.rb, so we know
+// the local minio test service is running. Otherwise, you'll
+// have to start the service manually with this command from
+// the dart-runner project root directory:
+//
+// ./bin/linux/minio server --address=localhost:9899 ~/tmp/minio
+func TestStorageServiceConnection(t *testing.T) {
+	defer core.ClearDartTable()
+	ss := core.GetLocalMinioTestService()
+	//assert.NoError(t, core.ObjSave(ss))
+
+	expected := []string{
+		ss.Name,
+		"succeeded",
+	}
+
+	params := url.Values{}
+	params.Set("ID", ss.ID)
+	params.Set("Name", ss.Name)
+	params.Set("Host", ss.Host)
+	params.Set("Protocol", ss.Protocol)
+	params.Set("Port", strconv.Itoa(ss.Port))
+	params.Set("Bucket", ss.Bucket)
+	params.Set("Login", ss.Login)
+	params.Set("Password", ss.Password)
+
+	settings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/storage_services/test/%s", ss.ID),
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, settings)
+
 }

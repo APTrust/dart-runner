@@ -231,3 +231,33 @@ func (ss *StorageService) testS3Connection() error {
 func (ss *StorageService) testSFTPConnection() error {
 	return fmt.Errorf("SFTP protocol is not yet supported.")
 }
+
+// GetLocalMinioTestService returns a StorageService that can connect
+// to a locally running Minio service. This service only exists in our
+// dev and test environments. When testing, the service is started
+// automatically by ./scripts/test.rb. If you're not running tests, you'll
+// need to start the service manually by changing into the project root
+// directory and running:
+//
+// ./bin/linux/minio server --address=localhost:9899 ~/tmp/minio
+//
+// This service does not exist outside our dev and testing environments,
+// so attempts to connect to it will fail!
+func GetLocalMinioTestService() *StorageService {
+	// Note that ./scripts/test.rb starts a local minio service.
+	// We can connect to this in our tests.
+	return &StorageService{
+		ID:             "d9ba0629-6870-48a3-9dd7-89e21410453b",
+		AllowsDownload: true,
+		AllowsUpload:   true,
+		Bucket:         "test",
+		Description:    "Local minio s3 service",
+		Host:           "127.0.0.1",
+		Login:          "minioadmin",
+		LoginExtra:     "",
+		Name:           "Local Minio",
+		Password:       "minioadmin",
+		Port:           9899,
+		Protocol:       "s3",
+	}
+}

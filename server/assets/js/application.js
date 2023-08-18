@@ -18,14 +18,6 @@ function loadIntoModal (method, modalTitle, url, formId = '') {
         //console.log(response)
         showModalContent(modalTitle, response)
     }).fail(function (xhr, status, err) {
-        //let data = xhr.responseJSON
-        // if (data.error) {
-        //     showModalContent(modalTitle, "Test failed: " + data.error)
-        // } else if (data.status) {
-        //     showModalContent(modalTitle, "Test failed: " + data.status)
-        // }
-        //showAjaxError("Error: "+ xhr.responseText);
-
         showModalContent(modalTitle, xhr.responseText)        
         console.log(status)
         console.log(err)
@@ -72,12 +64,14 @@ function submitFormInBackground(formId, successCallback, failureCallback) {
     })    
 }
 
+// TODO: Deprecate/remove?
 function showAjaxAlert(message) {
     console.log("Ajax Alert: " + message)
     $("#ajaxAlertMessage").html(message)
     $("#ajaxAlert").show()
 }
 
+// TODO: Deprecate/remove?
 function showAjaxError(message) {
     console.log("Ajax Error: " + message)
     $("#ajaxErrorMessage").html(message)

@@ -13,25 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getLocalMinioTestService() *core.StorageService {
-	// Note that ./scripts/test.rb starts a local minio service.
-	// We can connect to this in our tests.
-	return &core.StorageService{
-		ID:             "d9ba0629-6870-48a3-9dd7-89e21410453b",
-		AllowsDownload: true,
-		AllowsUpload:   true,
-		Bucket:         "test",
-		Description:    "Local minio s3 service",
-		Host:           "127.0.0.1",
-		Login:          "minioadmin",
-		LoginExtra:     "",
-		Name:           "Local Minio",
-		Password:       "minioadmin",
-		Port:           9899,
-		Protocol:       "s3",
-	}
-}
-
 func TestStorageService(t *testing.T) {
 	ss := &core.StorageService{}
 	assert.False(t, ss.Validate())
@@ -258,6 +239,6 @@ func TestStorageServiceConnectionS3(t *testing.T) {
 	//
 	// You may also have to `mkdir ~/tmp/minio/test` if it doesn't
 	// yet exist.
-	ss := getLocalMinioTestService()
+	ss := core.GetLocalMinioTestService()
 	assert.NoError(t, ss.TestConnection())
 }
