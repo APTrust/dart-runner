@@ -12,6 +12,10 @@ import (
 	"github.com/pkg/sftp"
 )
 
+// SSHConnect returns an ssh connection or an error. If the StorageService
+// specifies LoginExtra, this will treat that as the path to the SSH key;
+// otherwise, it will use ss.Password as the password. In either case, it
+// uses ss.Login as the user name.
 func SSHConnect(ss *StorageService) (*goph.Client, error) {
 	var auth goph.Auth
 	var err error
@@ -26,6 +30,10 @@ func SSHConnect(ss *StorageService) (*goph.Client, error) {
 	return goph.New(ss.Login, ss.HostAndPort(), auth)
 }
 
+// SFTPConnect returns an sftp connection or an error. If the StorageService
+// specifies LoginExtra, this will treat that as the path to the SSH key;
+// otherwise, it will use ss.Password as the password. In either case, it
+// uses ss.Login as the user name.
 func SFTPConnect(ss *StorageService) (*sftp.Client, error) {
 	conn, err := SSHConnect(ss)
 	if err != nil {
@@ -34,6 +42,14 @@ func SFTPConnect(ss *StorageService) (*sftp.Client, error) {
 	return conn.NewSftp()
 }
 
+// SFTPUpload uploads a file to the SFTP server described in the
+// StorageService param. localPath is the path to the local file
+// that you want to upload to the remote server. The uploadProgress
+// param should be nil except when running a job from the UI.
+// For jobs launched from the UI, the uploadProgress object will
+// pass progress info back to the front end. Be sure to set
+// uploadProgress.Total to the size of the file and make sure
+// the MessageChannel is initialized.
 func SFTPUpload(ss *StorageService, localPath string, uploadProgress *S3UploadProgress) (int64, error) {
 	localFile, err := os.Open(localPath)
 	if err != nil {
