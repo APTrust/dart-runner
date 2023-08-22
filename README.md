@@ -67,6 +67,11 @@ dart-runner can also help replicate bags between digital repositories using the 
 
 `ruby ./scripts/test.rb`
 
+Note that in addition to having a recent version of Go (1.20+), running tests requires the following dependencies:
+
+* A recent version of Ruby (3.0+)
+* A recent version of Docker (24+)
+
 ### Post-Build Test
 
 ```
