@@ -8,11 +8,14 @@ class TestRunner
   def initialize
     @start_time = Time.now
     @minio_pid = 0
+    @docker_sftp_id = ''
+    @sftp_started = false
   end
 
   def run
     make_test_dirs
     start_minio
+    start_sftp
     `go clean -testcache`
     cmd = "go test -race -p 1 ./... -coverprofile c.out"
     pid = Process.spawn(ENV, cmd, chdir: project_root)
@@ -25,6 +28,7 @@ class TestRunner
       puts "😡 FAILED 😡"
     end
     stop_minio
+    stop_sftp
     exit(exit_code)
   end
 
@@ -63,6 +67,51 @@ class TestRunner
         puts "of that process is lingering from a previous test run."
         end
     end    
+  end
+
+  # This command starts a docker container that runs an SFTP service.
+  # We use this to test SFTP uploads. 
+  #
+  # The first -v option sets #{sftp_dir}/sftp_user_key.pub as the public
+  # key for user "key_user" inside the docker container. We set this so
+  # we can test connections the use an SSH key.
+  #
+  # The second -v option tells the container to create accounts for the
+  # users listed in #{sftp_dir}/users.conf. There are two. key_user has
+  # no password and will connect with an SSH key. pw_user will connect 
+  # with the password "password".
+  #
+  # We forward local port 2222 to the container's port 22, which means we
+  # can get to the SFTP server via locahost:2222 or 127.0.0.1:2222.
+  def start_sftp
+    sftp_dir = File.join(project_root, "testdata", "sftp")
+    puts "Using SFTP config options from #{sftp_dir}" 
+    @docker_sftp_id = `docker run \
+    -v #{sftp_dir}/sftp_user_key.pub:/home/key_user/.ssh/keys/sftp_user_key.pub:ro \
+    -v #{sftp_dir}/users.conf:/etc/sftp/users.conf:ro \
+    -p 2222:22 -d atmoz/sftp`
+    if $?.exitstatus == 0 
+      puts "Started SFTP server with id #{@docker_sftp_id}"
+      @sftp_started = true   
+    else
+      puts "Error starting SFTP docker container. Is one already running?"
+      puts @docker_sftp_id
+    end
+  end
+
+  def stop_sftp 
+    if @sftp_started
+      result = `docker stop #{@docker_sftp_id}`
+      if $?.exitstatus == 0
+        puts "Stopped docker SFTP service"
+      else
+        puts "Failed to stop docker SFTP service with id #{@docker_sftp_id}"
+        puts "See if you can kill it."
+        puts "Hint: run `docker ps` and look for the image named 'atmoz/sftp'"
+      end
+    else
+      puts "Not killing SFTP service because it failed to start"
+    end
   end
 
   def project_root
@@ -117,4 +166,5 @@ end
 if __FILE__ == $0
   test_runner = TestRunner.new
   test_runner.run
+  #test_runner.start_sftp
 end

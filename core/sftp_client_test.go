@@ -19,6 +19,8 @@ const (
 	sftpPort     = 2222
 )
 
+// Note: SFTP tests require the SFTP server to be running.
+// scripts/test.rb will start up the server in a docker container.
 func TestSftpUpload(t *testing.T) {
 	ss := getSftpStorageService()
 
