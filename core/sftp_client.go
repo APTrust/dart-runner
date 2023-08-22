@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -69,10 +70,17 @@ func SFTPUpload(ss *StorageService, localPath string, uploadProgress *S3UploadPr
 	if err != nil {
 		return 0, err
 	}
+
 	remoteFileName := path.Join(ss.Bucket, path.Base(localPath))
+
+	err = client.MkdirAll(ss.Bucket)
+	if err != nil {
+		return 0, fmt.Errorf("cannot create parent directories for '%s': %v", ss.Bucket, err)
+	}
+
 	remoteFile, err := client.Create(remoteFileName)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("cannot create remote file '%s': %v", remoteFileName, err)
 	}
 	defer remoteFile.Close()
 
