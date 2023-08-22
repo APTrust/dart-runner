@@ -10,6 +10,7 @@ import (
 	"github.com/machinebox/progress"
 	"github.com/melbahja/goph"
 	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 // SSHConnect returns an ssh connection or an error. If the StorageService
@@ -27,7 +28,16 @@ func SSHConnect(ss *StorageService) (*goph.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return goph.New(ss.Login, ss.HostAndPort(), auth)
+	config := &goph.Config{
+		Auth:     auth,
+		User:     ss.Login,
+		Addr:     ss.Host,
+		Port:     uint(ss.Port),
+		Timeout:  5 * time.Second,
+		Callback: ssh.InsecureIgnoreHostKey(), // Change this for production
+	}
+	return goph.NewConn(config)
+	//return goph.New(ss.Login, ss.HostAndPort(), auth)
 }
 
 // SFTPConnect returns an sftp connection or an error. If the StorageService
