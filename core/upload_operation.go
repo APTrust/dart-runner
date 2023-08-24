@@ -80,13 +80,14 @@ func (u *UploadOperation) CalculatePayloadSize() error {
 	return nil
 }
 
+// TODO: Refactor. We need a new progress object for each file.
 func (u *UploadOperation) DoUploadWithProgress(progress *S3UploadProgress) bool {
 	ok := false
 	switch u.StorageService.Protocol {
 	case constants.ProtocolS3:
 		ok = u.sendToS3(progress)
 	case constants.ProtocolSFTP:
-		ok = u.sendToSFTP() // progress not yet supported for sftp
+		ok = u.sendToSFTP(progress)
 	default:
 		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
 	}
@@ -100,7 +101,7 @@ func (u *UploadOperation) DoUpload() bool {
 	case constants.ProtocolS3:
 		ok = u.sendToS3(nil)
 	case constants.ProtocolSFTP:
-		ok = u.sendToSFTP()
+		ok = u.sendToSFTP(nil)
 	default:
 		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
 	}
@@ -121,10 +122,20 @@ func (u *UploadOperation) sendToS3(progress *S3UploadProgress) bool {
 	}
 	allSucceeded := true
 	for _, sourceFile := range u.SourceFiles {
+		statInfo, err := os.Stat(sourceFile)
+		if err != nil {
+			allSucceeded = false
+			u.Errors["S3Upload"] += err.Error() + " "
+			continue
+		}
+
 		s3Key := path.Base(sourceFile)
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
 		putOptions := minio.PutObjectOptions{}
 		if progress != nil {
+			progress.Current = 0
+			progress.Percent = 0
+			progress.Total = statInfo.Size()
 			putOptions = minio.PutObjectOptions{
 				Progress: progress,
 			}
@@ -153,7 +164,20 @@ func (u *UploadOperation) useSSL() bool {
 	return !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
 }
 
-func (u *UploadOperation) sendToSFTP() bool {
-	u.Errors["SFTPUpload"] = "SFTP upload is not yet supported."
-	return false
+func (u *UploadOperation) sendToSFTP(progress *S3UploadProgress) bool {
+	allSucceeded := true
+	for _, file := range u.SourceFiles {
+		statInfo, err := os.Stat(file)
+		if err != nil {
+			allSucceeded = false
+			u.Errors["SFTPUpload"] += err.Error() + " "
+			continue
+		}
+		progress.Current = 0
+		progress.Percent = 0
+		progress.Total = statInfo.Size()
+		SFTPUpload(u.StorageService, file, progress)
+	}
+	//u.Errors["SFTPUpload"] = "SFTP upload is not yet supported."
+	return allSucceeded
 }

@@ -14,6 +14,8 @@ type S3UploadProgress struct {
 	MessageChannel chan *EventMessage
 }
 
+// TODO: Refactor this. Message channel should be private.
+// Name should change to StreamProgress.
 func NewS3UploadProgress(bytesToSend int64, messageChannel chan *EventMessage) *S3UploadProgress {
 	return &S3UploadProgress{
 		Total:          bytesToSend,

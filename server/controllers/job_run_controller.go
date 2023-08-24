@@ -47,6 +47,9 @@ func JobRunExecute(c *gin.Context) {
 
 	messageChannel := make(chan *core.EventMessage)
 	go func() {
+
+		// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
+
 		defer close(messageChannel)
 		_ = core.RunJobWithMessageChannel(job, false, messageChannel)
 		//c.SSEvent("message", fmt.Sprintf("Exit code = %d", returnCode))

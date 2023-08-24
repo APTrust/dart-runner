@@ -88,7 +88,6 @@ func testSSNewWithMisingParams(t *testing.T) {
 		"StorageService requires a name",
 		"StorageService requires a protocol",
 		"StorageService requires a hostname or IP address",
-		"StorageService requires a bucket or folder name",
 		"StorageService requires a login name or access key id",
 		"StorageService requires a password or secret access key",
 	}
@@ -101,6 +100,18 @@ func testSSNewWithMisingParams(t *testing.T) {
 	html := w.Body.String()
 	ok, notFound := AssertContainsAllStrings(html, expectedContent)
 	assert.True(t, ok, "Missing from page: %v", notFound)
+
+	// For S3 protocol, make sure we tell the user that
+	// we require a bucket name.
+	expectedContent = []string{"StorageService requires a bucket name when the protocol is S3."}
+	req, err = NewPostRequest("/storage_services/new", url.Values{"Protocol": []string{"s3"}})
+	require.Nil(t, err)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	html = w.Body.String()
+	ok, notFound = AssertContainsAllStrings(html, expectedContent)
+	assert.True(t, ok, "Missing from page: %v", notFound)
+
 }
 
 func testSSNewSaveEditDeleteWithGoodParams(t *testing.T) {

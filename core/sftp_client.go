@@ -90,6 +90,10 @@ func SFTPUpload(ss *StorageService, localPath string, uploadProgress *S3UploadPr
 		go func() {
 			progressChan := progress.NewTicker(context.Background(), progressWriter, uploadProgress.Total, 1*time.Second)
 			for p := range progressChan {
+				// TODO: This causes a panic by tryint to write to a
+				// closed channel. The JobRunController closes the channel
+				// when the upload is complete, but the progressChan runs
+				// on a ticker that has no idea the messageChannel is closed.
 				uploadProgress.SetTotalBytesCompleted(p.N())
 			}
 		}()

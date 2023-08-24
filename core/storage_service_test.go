@@ -16,14 +16,23 @@ import (
 func TestStorageService(t *testing.T) {
 	ss := &core.StorageService{}
 	assert.False(t, ss.Validate())
-	assert.Equal(t, 7, len(ss.Errors))
+	assert.Equal(t, 6, len(ss.Errors))
 	assert.Equal(t, "StorageService requires a valid ID.", ss.Errors["ID"])
 	assert.Equal(t, "StorageService requires a name.", ss.Errors["Name"])
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", ss.Errors["Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", ss.Errors["Host"])
-	assert.Equal(t, "StorageService requires a bucket or folder name.", ss.Errors["Bucket"])
 	assert.Equal(t, "StorageService requires a login name or access key id.", ss.Errors["Login"])
 	assert.Equal(t, "StorageService requires a password or secret access key.", ss.Errors["Password"])
+
+	// Bucket name is not required for SFTP
+	ss.Protocol = constants.ProtocolSFTP
+	ss.Validate()
+	assert.Empty(t, ss.Errors["Bucket"])
+
+	// But it is for S3
+	ss.Protocol = constants.ProtocolS3
+	ss.Validate()
+	assert.Equal(t, "StorageService requires a bucket name when the protocol is S3.", ss.Errors["Bucket"])
 
 	ss = &core.StorageService{
 		ID:       uuid.NewString(),

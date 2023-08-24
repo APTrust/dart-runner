@@ -66,8 +66,8 @@ func (ss *StorageService) Validate() bool {
 	if strings.TrimSpace(ss.Host) == "" {
 		ss.Errors["Host"] = "StorageService requires a hostname or IP address."
 	}
-	if strings.TrimSpace(ss.Bucket) == "" {
-		ss.Errors["Bucket"] = "StorageService requires a bucket or folder name."
+	if ss.Protocol == constants.ProtocolS3 && strings.TrimSpace(ss.Bucket) == "" {
+		ss.Errors["Bucket"] = "StorageService requires a bucket name when the protocol is S3."
 	}
 	if strings.TrimSpace(ss.Login) == "" {
 		ss.Errors["Login"] = "StorageService requires a login name or access key id."
@@ -200,7 +200,7 @@ func (ss *StorageService) TestConnection() error {
 	if proto == "" {
 		proto = "undefined"
 	}
-	return fmt.Errorf("Protocol '%s' is not supported", proto)
+	return fmt.Errorf("protocol '%s' is not supported", proto)
 }
 
 func (ss *StorageService) testS3Connection() error {
@@ -229,7 +229,8 @@ func (ss *StorageService) testS3Connection() error {
 }
 
 func (ss *StorageService) testSFTPConnection() error {
-	return fmt.Errorf("SFTP protocol is not yet supported.")
+	_, err := SFTPConnect(ss)
+	return err
 }
 
 // GetLocalMinioTestService returns a StorageService that can connect
