@@ -19,6 +19,7 @@ const (
 	sftpPassword = "password"
 	sftpHost     = "127.0.0.1"
 	sftpPort     = 2222
+	tarFileSize  = int64(23552)
 )
 
 // Note: SFTP tests require the SFTP server to be running.
@@ -60,7 +61,7 @@ func testUploadWithoutProgress(t *testing.T, sftpClient *sftp.Client, ss *core.S
 	fileToUpload := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
 	bytesCopied, err := core.SFTPUpload(ss, fileToUpload, nil)
 	require.Nil(t, err)
-	assert.Equal(t, int64(23552), bytesCopied)
+	assert.Equal(t, tarFileSize, bytesCopied)
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader
@@ -93,7 +94,7 @@ func testUploadWithProgress(t *testing.T, sftpClient *sftp.Client, ss *core.Stor
 	// The go routine will do nothing until later, after we call
 	// core.SFTPUpload below, because until then, there will be no
 	// traffic on the message channel.
-	progress := core.NewStreamProgress(int64(23552), messageChannel)
+	progress := core.NewStreamProgress(tarFileSize, messageChannel)
 	go func() {
 		if msg, ok := <-messageChannel; ok {
 			assert.Equal(t, "Sent 23.0 kB of 23.0 kB (100%)", msg.Message)
@@ -115,7 +116,7 @@ func testUploadWithProgress(t *testing.T, sftpClient *sftp.Client, ss *core.Stor
 	fileToUpload := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
 	bytesCopied, err := core.SFTPUpload(ss, fileToUpload, progress)
 	require.Nil(t, err)
-	assert.Equal(t, int64(23552), bytesCopied)
+	assert.Equal(t, tarFileSize, bytesCopied)
 	wg.Wait()
 }
 
