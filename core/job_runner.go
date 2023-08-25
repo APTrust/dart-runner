@@ -215,13 +215,7 @@ func (r *Runner) RunUploadOps() bool {
 			continue
 		}
 		op.Result.Start()
-		ok := false
-		if r.MessageChannel != nil {
-			progress := NewS3UploadProgress(op.PayloadSize, r.MessageChannel)
-			ok = op.DoUploadWithProgress(progress)
-		} else {
-			ok = op.DoUpload()
-		}
+		ok := op.DoUpload(r.MessageChannel)
 		if op.SourceFiles != nil && len(op.SourceFiles) > 0 {
 			r.setResultFileInfo(op.Result, op.SourceFiles[0], op.Errors)
 		}

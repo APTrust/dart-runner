@@ -80,35 +80,23 @@ func (u *UploadOperation) CalculatePayloadSize() error {
 	return nil
 }
 
-// TODO: Refactor. We need a new progress object for each file.
-func (u *UploadOperation) DoUploadWithProgress(progress *S3UploadProgress) bool {
+func (u *UploadOperation) DoUpload(messageChannel chan *EventMessage) bool {
 	ok := false
 	switch u.StorageService.Protocol {
 	case constants.ProtocolS3:
-		ok = u.sendToS3(progress)
+		ok = u.sendToS3(messageChannel)
 	case constants.ProtocolSFTP:
-		ok = u.sendToSFTP(progress)
+		ok = u.sendToSFTP(messageChannel)
 	default:
 		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
 	}
 	return ok
 }
 
-// TODO: Deprecate??
-func (u *UploadOperation) DoUpload() bool {
-	ok := false
-	switch u.StorageService.Protocol {
-	case constants.ProtocolS3:
-		ok = u.sendToS3(nil)
-	case constants.ProtocolSFTP:
-		ok = u.sendToSFTP(nil)
-	default:
-		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
-	}
-	return ok
-}
-
-func (u *UploadOperation) sendToS3(progress *S3UploadProgress) bool {
+// upload an item to s3 bucket. If messageChannel is not nil,
+// the uploader will send progress updates through it. Otherwise,
+// no progress updates.
+func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 	accessKeyId := u.StorageService.GetLogin()
 	secretKey := u.StorageService.GetPassword()
 	options := &minio.Options{
@@ -122,20 +110,11 @@ func (u *UploadOperation) sendToS3(progress *S3UploadProgress) bool {
 	}
 	allSucceeded := true
 	for _, sourceFile := range u.SourceFiles {
-		statInfo, err := os.Stat(sourceFile)
-		if err != nil {
-			allSucceeded = false
-			u.Errors["S3Upload"] += err.Error() + " "
-			continue
-		}
-
 		s3Key := path.Base(sourceFile)
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
 		putOptions := minio.PutObjectOptions{}
-		if progress != nil {
-			progress.Current = 0
-			progress.Percent = 0
-			progress.Total = statInfo.Size()
+		if messageChannel != nil {
+			progress := NewS3UploadProgress(u.PayloadSize, messageChannel)
 			putOptions = minio.PutObjectOptions{
 				Progress: progress,
 			}
@@ -157,27 +136,24 @@ func (u *UploadOperation) sendToS3(progress *S3UploadProgress) bool {
 	return allSucceeded
 }
 
+// upload an item to SFTP server. If messageChannel is not nil,
+// the uploader will send progress updates through it. Otherwise,
+// no progress updates.
+func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
+	allSucceeded := true
+	for _, file := range u.SourceFiles {
+		var progress *S3UploadProgress
+		if messageChannel != nil {
+			progress = NewS3UploadProgress(u.PayloadSize, messageChannel)
+		}
+		SFTPUpload(u.StorageService, file, progress)
+	}
+	return allSucceeded
+}
+
 // useSSL returns a boolean describing whether we should use secure
 // connections for S3 uploads. This returns true unless we're talking
 // to localhost (which we do in unit tests).
 func (u *UploadOperation) useSSL() bool {
 	return !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
-}
-
-func (u *UploadOperation) sendToSFTP(progress *S3UploadProgress) bool {
-	allSucceeded := true
-	for _, file := range u.SourceFiles {
-		statInfo, err := os.Stat(file)
-		if err != nil {
-			allSucceeded = false
-			u.Errors["SFTPUpload"] += err.Error() + " "
-			continue
-		}
-		progress.Current = 0
-		progress.Percent = 0
-		progress.Total = statInfo.Size()
-		SFTPUpload(u.StorageService, file, progress)
-	}
-	//u.Errors["SFTPUpload"] = "SFTP upload is not yet supported."
-	return allSucceeded
 }
