@@ -114,7 +114,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
 		putOptions := minio.PutObjectOptions{}
 		if messageChannel != nil {
-			progress := NewS3UploadProgress(u.PayloadSize, messageChannel)
+			progress := NewStreamProgress(u.PayloadSize, messageChannel)
 			putOptions = minio.PutObjectOptions{
 				Progress: progress,
 			}
@@ -142,9 +142,9 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 	allSucceeded := true
 	for _, file := range u.SourceFiles {
-		var progress *S3UploadProgress
+		var progress *StreamProgress
 		if messageChannel != nil {
-			progress = NewS3UploadProgress(u.PayloadSize, messageChannel)
+			progress = NewStreamProgress(u.PayloadSize, messageChannel)
 		}
 		SFTPUpload(u.StorageService, file, progress)
 	}

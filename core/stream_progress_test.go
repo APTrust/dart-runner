@@ -12,7 +12,7 @@ func TestS3UploadProgress(t *testing.T) {
 	messageChannel := make(chan *core.EventMessage)
 	defer close(messageChannel)
 
-	up := core.NewS3UploadProgress(200, messageChannel)
+	up := core.NewStreamProgress(200, messageChannel)
 	go func() {
 		up.Read([]byte("ten bytes!"))
 	}()

@@ -61,7 +61,7 @@ func SFTPConnect(ss *StorageService) (*sftp.Client, error) {
 // pass progress info back to the front end. Be sure to set
 // uploadProgress.Total to the size of the file and make sure
 // the MessageChannel is initialized.
-func SFTPUpload(ss *StorageService, localPath string, uploadProgress *S3UploadProgress) (int64, error) {
+func SFTPUpload(ss *StorageService, localPath string, uploadProgress *StreamProgress) (int64, error) {
 	localFile, err := os.Open(localPath)
 	if err != nil {
 		return 0, err

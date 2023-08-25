@@ -93,7 +93,7 @@ func testUploadWithProgress(t *testing.T, sftpClient *sftp.Client, ss *core.Stor
 	// The go routine will do nothing until later, after we call
 	// core.SFTPUpload below, because until then, there will be no
 	// traffic on the message channel.
-	progress := core.NewS3UploadProgress(int64(23552), messageChannel)
+	progress := core.NewStreamProgress(int64(23552), messageChannel)
 	go func() {
 		if msg, ok := <-messageChannel; ok {
 			assert.Equal(t, "Sent 23.0 kB of 23.0 kB (100%)", msg.Message)

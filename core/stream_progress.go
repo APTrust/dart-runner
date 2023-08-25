@@ -1,0 +1,55 @@
+package core
+
+import (
+	"fmt"
+
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
+)
+
+// StreamProgress sends info from an upload/download stream into
+// a message channel so we can report upload/download progress to
+// the user. When running in GUI mode, the S3 and SFTP clients send
+// EventMessages to the front-end via server-side events, and the
+// front end updates a progress bar.
+type StreamProgress struct {
+	Total          int64
+	Current        int64
+	Percent        int
+	MessageChannel chan *EventMessage
+}
+
+// NewStreamProgress returns a new StreamProgress object. Param byteCount
+// is the number of bytes we need to send or receive to complete
+// the upload/download/copy operation.
+func NewStreamProgress(byteCount int64, messageChannel chan *EventMessage) *StreamProgress {
+	return &StreamProgress{
+		Total:          byteCount,
+		MessageChannel: messageChannel,
+	}
+}
+
+// Read satisfies the progress interface for the Minio client,
+// which passes each chunk of bytes through this function as it
+// uploads.
+func (p *StreamProgress) Read(b []byte) (int, error) {
+	bytesTransferredInThisChunk := int64(len(b))
+	return p.SetTotalBytesCompleted(p.Current + bytesTransferredInThisChunk)
+}
+
+// SetTotalBytesCompleted satisfies the progress interface for SFTP
+// uploads, where the progress meter periodically tells us the number
+// of total bytes uploaded thus far.
+func (p *StreamProgress) SetTotalBytesCompleted(byteCount int64) (int, error) {
+	p.Current += byteCount
+	p.Percent = int(float64(p.Current) * 100 / float64(p.Total))
+	total := util.ToHumanSize(p.Total, 1024)
+	sent := util.ToHumanSize(p.Current, 1024)
+	message := fmt.Sprintf("Sent %s of %s (%d%%)", sent, total, p.Percent)
+	eventMessage := InfoEvent(constants.StageUpload, message)
+	eventMessage.Total = p.Total
+	eventMessage.Current = p.Current
+	eventMessage.Percent = p.Percent
+	p.MessageChannel <- eventMessage
+	return int(byteCount), nil
+}
