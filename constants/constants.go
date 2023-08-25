@@ -32,6 +32,7 @@ const (
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30
 	PackageFormatBagIt       = "BagIt"
+	PackageFormatNone        = "None" // Used when a job or workflow has no package operation.
 	PluginIdAPTrustClient    = "c5a6b7db-5a5f-4ca5-a8f8-31b2e60c84bd"
 	ProtocolS3               = "s3"
 	ProtocolSFTP             = "sftp"

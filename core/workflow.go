@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -25,6 +26,37 @@ func WorkflowFromJson(pathToFile string) (*Workflow, error) {
 	}
 	err = json.Unmarshal(data, workflow)
 	return workflow, err
+}
+
+// WorkflowFromJob creates a new workflow based on param job. It does
+// not save the workflow. That's up to the caller.
+//
+// When a user defines a job that does what they want, they will often
+// convert it to a workflow, so they can run the same packaging and
+// upload operations on a large of set of materials.
+func WorkFlowFromJob(job *Job) (*Workflow, error) {
+	workflow := &Workflow{
+		Name:            "",
+		Description:     "",
+		PackageFormat:   constants.PackageFormatNone,
+		StorageServices: make([]*StorageService, len(job.UploadOps)),
+	}
+	if job.PackageOp != nil {
+		workflow.PackageFormat = job.PackageOp.PackageFormat
+	}
+	// Load a fresh copy of the BagIt profile, because the copy in the
+	// job may have custom tag values assigned.
+	if job.BagItProfile != nil {
+		result := ObjFind(job.BagItProfile.ID)
+		if result.Error != nil {
+			return nil, fmt.Errorf("Can't find BagIt Profile for this workflow: %s", result.Error.Error())
+		}
+		workflow.BagItProfile = result.BagItProfile()
+	}
+	for i, uploadOp := range job.UploadOps {
+		workflow.StorageServices[i] = uploadOp.StorageService
+	}
+	return workflow, nil
 }
 
 func (w *Workflow) Validate() bool {

@@ -160,7 +160,7 @@
         initProgressBar(jobId, 'uploadInfo')
       }
       if (data.eventType == "finish") {
-        console.log(data)
+        // console.log(data)
         if (data.status == "success") {
           if (divName == "") {
             completedUploads.push(data.message)

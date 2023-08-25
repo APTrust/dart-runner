@@ -41,6 +41,37 @@ func TestWorkflowFromJson(t *testing.T) {
 	assert.Equal(t, "minioadmin", workflow.StorageServices[0].Password)
 }
 
+func TestWorkflowFromJob(t *testing.T) {
+	defer core.ClearDartTable()
+
+	job := getTestJob(t)
+	require.NotNil(t, job.BagItProfile)
+	require.NotNil(t, job.PackageOp)
+	require.NotEmpty(t, job.UploadOps)
+
+	// Should get error here because BagItProfile is not in database
+	workflow, err := core.WorkFlowFromJob(job)
+	require.NotNil(t, err)
+	require.Nil(t, workflow)
+
+	// Save the profile, and then there should be no error.
+	require.Nil(t, core.ObjSave(job.BagItProfile))
+
+	workflow, err = core.WorkFlowFromJob(job)
+	require.Nil(t, err)
+	require.NotNil(t, workflow)
+
+	require.NotNil(t, workflow.BagItProfile)
+	assert.Equal(t, job.BagItProfile.ID, workflow.BagItProfile.ID)
+	assert.Equal(t, job.PackageOp.PackageFormat, workflow.PackageFormat)
+
+	assert.NotEmpty(t, workflow.StorageServices)
+	assert.Equal(t, len(job.UploadOps), len(workflow.StorageServices))
+	for i, op := range job.UploadOps {
+		assert.Equal(t, op.StorageService.ID, workflow.StorageServices[i].ID)
+	}
+}
+
 func TestWorkflowValidate(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
 	assert.True(t, workflow.Validate())
