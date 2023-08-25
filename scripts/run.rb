@@ -28,7 +28,6 @@ class Runner
     else
       puts "😡 FAILED 😡"
     end
-    stop_all_services
     exit(exit_code)
   end
 
@@ -45,7 +44,6 @@ class Runner
       Process.wait @dart_pid
     rescue SystemExit, Interrupt
       puts "\nEt tu, Brute! Then fall, Caesar."
-      stop_all_services
     end
   end
 
@@ -210,7 +208,7 @@ end
 
 if __FILE__ == $0
   runner = Runner.new
-  #at_exit { runner.stop_all_services }
+  at_exit { runner.stop_all_services }
   action = ARGV[0]
   if action == "tests"
     runner.run_tests
