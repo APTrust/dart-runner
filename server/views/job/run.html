@@ -153,6 +153,12 @@
     function renderInfo(data, jobId) {
       let divName = data.stage + "Info"
       let [detailDiv, progressBar] = getDivs(jobId, divName);
+      // A job can include multiple uploads. For each new
+      // upload, we want to set the progress bar back to 
+      // zero and render it in blue.
+      if (data.eventType == "start") {
+        initProgressBar(jobId, 'uploadInfo')
+      }
       if (data.eventType == "finish") {
         console.log(data)
         if (data.status == "success") {
@@ -187,6 +193,8 @@
                     progressBar.addClass(cssClass);
                 }
             }
+            data = { percent: 0 }
+            setProgressBar(progressBar, data)
         }
     }
 

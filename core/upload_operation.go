@@ -118,6 +118,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 			putOptions = minio.PutObjectOptions{
 				Progress: progress,
 			}
+			messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
 		}
 		uploadInfo, err := client.FPutObject(
 			context.Background(),
@@ -145,6 +146,7 @@ func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 		var progress *StreamProgress
 		if messageChannel != nil {
 			progress = NewStreamProgress(u.PayloadSize, messageChannel)
+			messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
 		}
 		SFTPUpload(u.StorageService, file, progress)
 	}

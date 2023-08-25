@@ -12,6 +12,7 @@ const (
 	EmptyProfileID           = "73d1b307-4d6b-494b-b0c9-a8595222ae5a"
 	EmptyUUID                = "00000000-0000-0000-0000-000000000000"
 	EventTypeInfo            = "info"
+	EventTypeStart           = "start"
 	EventTypeWarning         = "warning"
 	EventTypeError           = "error"
 	EventTypeFinish          = "finish"

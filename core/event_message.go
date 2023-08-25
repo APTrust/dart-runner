@@ -26,7 +26,18 @@ type EventMessage struct {
 	JobResult *JobResult `json:"jobResult,omitempty"`
 }
 
-// InfoMessage creates a new EventMessage with EventType info.
+// StartEvent creates a new EventMessage with EventType start.
+// This event has no JobResult.
+func StartEvent(stage, message string) *EventMessage {
+	return &EventMessage{
+		Stage:     stage,
+		EventType: constants.EventTypeStart,
+		Message:   message,
+		Status:    constants.StatusRunning,
+	}
+}
+
+// InfoEvent creates a new EventMessage with EventType info.
 // This event has no JobResult.
 func InfoEvent(stage, message string) *EventMessage {
 	return &EventMessage{
@@ -37,7 +48,7 @@ func InfoEvent(stage, message string) *EventMessage {
 	}
 }
 
-// WarningMessage creates a new EventMessage with EventType warning.
+// WarningEvent creates a new EventMessage with EventType warning.
 // This event has no JobResult.
 func WarningEvent(stage, message string) *EventMessage {
 	return &EventMessage{
@@ -48,7 +59,7 @@ func WarningEvent(stage, message string) *EventMessage {
 	}
 }
 
-// ErrorMessage creates a new EventMessage with EventType error.
+// ErrorEvent creates a new EventMessage with EventType error.
 // This event has no JobResult.
 func ErrorEvent(stage, message string) *EventMessage {
 	return &EventMessage{

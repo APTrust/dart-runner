@@ -9,13 +9,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInfoEvent(t *testing.T) {
+func TestStartEvent(t *testing.T) {
 	message := "Hey diddly ho, Homer!"
+	e := core.StartEvent(constants.StageUpload, message)
+	assert.Equal(t, constants.StageUpload, e.Stage)
+	assert.Equal(t, constants.EventTypeStart, e.EventType)
+	assert.Equal(t, message, e.Message)
+	assert.Equal(t, `{"eventType":"start","stage":"upload","status":"running","message":"Hey diddly ho, Homer!","total":0,"current":0,"percent":0}`, e.ToJson())
+}
+
+func TestInfoEvent(t *testing.T) {
+	message := "Maybe, just once, someone will call me 'Sir' without adding, 'You're making a scene.'"
 	e := core.InfoEvent(constants.StagePackage, message)
 	assert.Equal(t, constants.StagePackage, e.Stage)
 	assert.Equal(t, constants.EventTypeInfo, e.EventType)
 	assert.Equal(t, message, e.Message)
-	assert.Equal(t, `{"eventType":"info","stage":"package","status":"running","message":"Hey diddly ho, Homer!","total":0,"current":0,"percent":0}`, e.ToJson())
+	assert.Equal(t, `{"eventType":"info","stage":"package","status":"running","message":"Maybe, just once, someone will call me 'Sir' without adding, 'You're making a scene.'","total":0,"current":0,"percent":0}`, e.ToJson())
 }
 
 func TestWarningEvent(t *testing.T) {
