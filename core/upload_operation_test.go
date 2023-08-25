@@ -31,7 +31,7 @@ func TestUploadOperation(t *testing.T) {
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", op.Errors["StorageService.Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", op.Errors["StorageService.Host"])
 	assert.Equal(t, "StorageService requires a login name or access key id.", op.Errors["StorageService.Login"])
-	assert.Equal(t, "StorageService requires a password or secret access key.", op.Errors["StorageService.Password"])
+	assert.Equal(t, "StorageService requires a password or secret access key, or the path to your SSH private key in the Login Extra field.", op.Errors["StorageService.Password"])
 	assert.Equal(t, "UploadOperation source files are missing: file-does-not-exist", op.Errors["UploadOperation.SourceFiles"])
 
 	ss = &core.StorageService{

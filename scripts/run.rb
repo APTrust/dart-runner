@@ -3,16 +3,17 @@
 
 require 'fileutils'
 
-class TestRunner
+class Runner
 
   def initialize
     @start_time = Time.now
     @minio_pid = 0
+    @dart_pid = 0
     @docker_sftp_id = ''
     @sftp_started = false
   end
 
-  def run
+  def run_tests
     make_test_dirs
     start_minio
     start_sftp
@@ -27,9 +28,25 @@ class TestRunner
     else
       puts "😡 FAILED 😡"
     end
-    stop_minio
-    stop_sftp
+    stop_all_services
     exit(exit_code)
+  end
+
+  def run_dart
+    begin
+      @dart_pid = Process.spawn(ENV, "go run dart/main.go", chdir: project_root)
+      sleep(1)
+      puts "\n\n\n"
+      puts "DART is running at http://localhost:8080"
+      start_minio
+      start_sftp
+      puts "\n"
+      puts "Control-C will stop DART, SFTP and Minio\n\n"
+      Process.wait @dart_pid
+    rescue SystemExit, Interrupt
+      puts "\nEt tu, Brute! Then fall, Caesar."
+      stop_all_services
+    end
   end
 
   def start_minio
@@ -42,9 +59,22 @@ class TestRunner
     puts "Minio PID is #{@minio_pid} logging to #{log_file}"
   end
 
+  def stop_dart
+    if !@dart_pid
+        puts "Pid for DART is zero. Can't kill that..."
+        return
+    end
+    puts "Stopping DART service (pid #{@dart_pid})"
+    begin
+      Process.kill('TERM', @dart_pid)
+    rescue
+      puts "Could not kill DART. :("
+    end
+  end
+
   def stop_minio
     if !@minio_pid
-        puts "Pid for minio is zero. Can't kill that..."
+        puts "Pid for Minio is zero. Can't kill that..."
         return
     end
 
@@ -114,6 +144,14 @@ class TestRunner
     end
   end
 
+  def stop_all_services
+    if @dart_pid > 0 
+      stop_dart
+    end
+    stop_minio
+    stop_sftp
+  end
+
   def project_root
     File.expand_path(File.join(File.dirname(__FILE__), ".."))
   end
@@ -160,11 +198,25 @@ class TestRunner
       FileUtils.mkdir_p full_bucket
     end
   end
+
+  def show_help
+    puts "To run unit and integration tests:"
+    puts "    run.rb tests\n"
+    puts "To run SFTP and Minio for interactive testing:"
+    puts "    run.rb services\n"
+  end
 end
 
 
 if __FILE__ == $0
-  test_runner = TestRunner.new
-  test_runner.run
-  #test_runner.start_sftp
+  runner = Runner.new
+  #at_exit { runner.stop_all_services }
+  action = ARGV[0]
+  if action == "tests"
+    runner.run_tests
+  elsif action == "dart"
+    runner.run_dart
+  else
+    runner.show_help
+  end
 end

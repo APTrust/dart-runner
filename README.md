@@ -63,9 +63,76 @@ dart-runner can also help replicate bags between digital repositories using the 
 
 `./scripts/build.sh` or `bash ./scripts/build.sh`
 
+## Running
+
+To run DART interactively:
+
+`ruby ./scripts/run.rb dart`
+
+This will start DART on http://localhost:8080. It will also start a local Minio server to handle S3 uploads, and a local SFTP server for SFTP uploads. You can upload to these services using the following settings:
+
+### Local Minio Service
+
+```json
+{
+	"id": "d9ba0629-6870-48a3-9dd7-89e21410453b",
+	"allowsDownload": true,
+	"allowsUpload": true,
+	"bucket": "test",
+	"description": "Local Minio s3 service",
+	"host": "127.0.0.1",
+	"login": "minioadmin",
+	"loginExtra": "",
+	"name": "Local Minio",
+	"password": "minioadmin",
+	"port": 9899,
+	"protocol": "s3"
+}
+```
+
+### Local SFTP Service
+
+You can connect to this with a password or an SSH key. You should keep both these entries in your local dev/test environment so you can do interactive testing with them. This one uses a key:
+
+```json
+{
+	"id": "2b0439bc-66d2-4d01-a73d-19d3eb9edf73",
+	"allowsDownload": false,
+	"allowsUpload": true,
+	"bucket": "uploads",
+	"description": "Local SFTP server using SSH key for authentication",
+	"host": "127.0.0.1",
+	"login": "key_user",
+	"loginExtra": "/home/diamond/aptrust/dart-runner/testdata/sftp/sftp_user_key",
+	"name": "Local SFTP (key)",
+	"password": "",
+	"port": 2222,
+	"protocol": "sftp"
+}
+```
+
+And this uses a password:
+
+```json
+{
+	"id": "d250eda9-d761-4c03-ab5b-266bacc40f3f",
+	"allowsDownload": false,
+	"allowsUpload": true,
+	"bucket": "uploads",
+	"description": "Local SFTP service using password authentication",
+	"host": "127.0.0.1",
+	"login": "pw_user",
+	"loginExtra": "",
+	"name": "Local SFTP (password)",
+	"password": "password",
+	"port": 2222,
+	"protocol": "sftp"
+}
+```
+
 ## Testing
 
-`ruby ./scripts/test.rb`
+`ruby ./scripts/run.rb tests`
 
 Note that in addition to having a recent version of Go (1.20+), running tests requires the following dependencies:
 

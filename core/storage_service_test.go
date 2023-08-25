@@ -22,7 +22,7 @@ func TestStorageService(t *testing.T) {
 	assert.Equal(t, "StorageService requires a protocol (s3, sftp, etc).", ss.Errors["Protocol"])
 	assert.Equal(t, "StorageService requires a hostname or IP address.", ss.Errors["Host"])
 	assert.Equal(t, "StorageService requires a login name or access key id.", ss.Errors["Login"])
-	assert.Equal(t, "StorageService requires a password or secret access key.", ss.Errors["Password"])
+	assert.Equal(t, "StorageService requires a password or secret access key, or the path to your SSH private key in the Login Extra field.", ss.Errors["Password"])
 
 	// Bucket name is not required for SFTP
 	ss.Protocol = constants.ProtocolSFTP
