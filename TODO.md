@@ -14,4 +14,4 @@
 - [ ] Move Minio to Docker (requires substantial changes to post-build tests)
 - [ ] Context-sensitive help
 - [ ] Dashboard
-
+- [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
