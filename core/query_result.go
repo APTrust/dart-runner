@@ -18,6 +18,7 @@ type QueryResult struct {
 	RemoteRepositories []*RemoteRepository
 	ResultType         string
 	StorageServices    []*StorageService
+	Workflows          []*Workflow
 }
 
 func NewQueryResult(resultType string) *QueryResult {
@@ -69,6 +70,13 @@ func (qr *QueryResult) StorageService() *StorageService {
 	return nil
 }
 
+func (qr *QueryResult) Workflow() *Workflow {
+	if len(qr.Workflows) > 0 {
+		return qr.Workflows[0]
+	}
+	return nil
+}
+
 func (qr *QueryResult) GetForm() (*Form, error) {
 	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount < 1 {
 		return nil, constants.ErrWrongTypeForForm
@@ -82,10 +90,12 @@ func (qr *QueryResult) GetForm() (*Form, error) {
 		form = qr.BagItProfile().ToForm()
 	case constants.TypeInternalSetting:
 		form = qr.InternalSetting().ToForm()
-	case constants.TypeStorageService:
-		form = qr.StorageService().ToForm()
 	case constants.TypeRemoteRepository:
 		form = qr.RemoteRepository().ToForm()
+	case constants.TypeStorageService:
+		form = qr.StorageService().ToForm()
+	case constants.TypeWorkflow:
+		form = qr.Workflow().ToForm()
 	default:
 		err = constants.ErrUnknownType
 	}

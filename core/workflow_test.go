@@ -1,11 +1,14 @@
 package core_test
 
 import (
+	"fmt"
 	"path"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -83,4 +86,39 @@ func TestWorkflowValidate(t *testing.T) {
 	assert.Equal(t, 2, len(workflow.Errors))
 	assert.Equal(t, "StorageService requires a hostname or IP address.", workflow.Errors["Local Test Receiving Bucket.StorageService.Host"])
 	assert.Equal(t, "Profile must allow at least one manifest algorithm.", workflow.Errors["BagItProfile.ManifestsAllowed"])
+}
+
+func TestWorkflowLoadSaveDelete(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadJsonWorkflow(t)
+	assert.True(t, workflow.Validate())
+	assert.Empty(t, workflow.Errors)
+
+	idFor := make(map[string]string)
+
+	// Create and save five workflows.
+	for i := 1; i < 6; i++ {
+		w := workflow.Copy()
+		w.ID = uuid.NewString()
+		w.Name = fmt.Sprintf("Workflow %d", i)
+		require.NoError(t, core.ObjSave(w))
+		idFor[w.Name] = w.ID
+	}
+
+	// List all
+	result := core.ObjList(constants.TypeWorkflow, "obj_name", 20, 0)
+	require.Nil(t, result.Error)
+	assert.Equal(t, 5, len(result.Workflows))
+	assert.Equal(t, "Workflow 1", result.Workflows[0].Name)
+	assert.Equal(t, "Workflow 5", result.Workflows[4].Name)
+
+	// Find one
+	result = core.ObjFind(idFor["Workflow 2"])
+	require.Nil(t, result.Error)
+	assert.NotNil(t, result.Workflow())
+	assert.Equal(t, "Workflow 2", result.Workflow().Name)
+
+	// Delete one
+	w := result.Workflow()
+	require.NoError(t, core.ObjDelete(w))
 }

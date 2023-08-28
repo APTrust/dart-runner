@@ -66,6 +66,7 @@ const (
 	TypeRemoteRepository     = "RemoteRepository"
 	TypeStorageService       = "StorageService"
 	TypeTagDefinition        = "TagDefinition"
+	TypeWorkflow             = "Workflow"
 )
 
 var AcceptBagItVersion = []string{

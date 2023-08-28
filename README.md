@@ -59,6 +59,19 @@ For more dynamic workflows where you want to bag and ship only new and updated i
 
 dart-runner can also help replicate bags between digital repositories using the [Beyond the Repository BagIt format](https://github.com/dpscollaborative/btr_bagit_profile).
 
+
+## Developer Setup
+
+* Download the code using `git clone https://github.com/APTrust/dart-runner`.
+* You will need to install [Docker](https://docs.docker.com/get-docker/) to run SFTP tests.
+
+## VS Code Setup
+
+If you're using Visual Studio Code, you should install the following:
+
+* VS Code Go language support. VS Code will prompt you to install the recommended components. Simply follow the recommendations to install Go, the Go language server and a few other standard components.
+* [vscode-gotemplate](https://github.com/casualjim/vscode-gotemplate). This plugin properly handles Go HTML templates. It's not strictly necessary, but without it, VS Code will flag many Go template tags as invalid HTML and your project will be littered with unnecessary "problem" messages.
+
 ## Building
 
 `./scripts/build.sh` or `bash ./scripts/build.sh`

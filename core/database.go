@@ -109,14 +109,18 @@ func ObjFind(uuid string) *QueryResult {
 		item := &Job{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.Jobs = append(qr.Jobs, item)
-	case constants.TypeStorageService:
-		item := &StorageService{}
-		qr.Error = json.Unmarshal([]byte(objJson), item)
-		qr.StorageServices = append(qr.StorageServices, item)
 	case constants.TypeRemoteRepository:
 		item := &RemoteRepository{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.RemoteRepositories = append(qr.RemoteRepositories, item)
+	case constants.TypeStorageService:
+		item := &StorageService{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.StorageServices = append(qr.StorageServices, item)
+	case constants.TypeWorkflow:
+		item := &Workflow{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.Workflows = append(qr.Workflows, item)
 	default:
 		qr.Error = constants.ErrUnknownType
 	}
@@ -155,6 +159,8 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 		remoteRepositoryList(rows, qr)
 	case constants.TypeStorageService:
 		storageServiceList(rows, qr)
+	case constants.TypeWorkflow:
+		workflowList(rows, qr)
 	default:
 		qr.Error = constants.ErrUnknownType
 	}
@@ -284,6 +290,22 @@ func storageServiceList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.StorageServices = append(qr.StorageServices, item)
+	}
+}
+
+func workflowList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &Workflow{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.Workflows = append(qr.Workflows, item)
 	}
 }
 

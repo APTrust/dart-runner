@@ -96,3 +96,40 @@ func (w *Workflow) Copy() *Workflow {
 	}
 
 }
+
+func (w *Workflow) ToForm() *Form {
+
+	// TODO: Implement this!
+
+	// Name, Description, PackageFormat, BagItProfileID, StorageServices
+
+	return nil
+}
+
+// ObjID returns this w's object id (uuid).
+func (w *Workflow) ObjID() string {
+	return w.ID
+}
+
+// ObjName returns this object's name, so names will be
+// searchable and sortable in the DB.
+func (w *Workflow) ObjName() string {
+	return w.Name
+}
+
+// ObjType returns this object's type name.
+func (w *Workflow) ObjType() string {
+	return constants.TypeWorkflow
+}
+
+func (w *Workflow) String() string {
+	return fmt.Sprintf("Workflow '%s'", w.Name)
+}
+
+func (w *Workflow) GetErrors() map[string]string {
+	return w.Errors
+}
+
+func (w *Workflow) IsDeletable() bool {
+	return true
+}

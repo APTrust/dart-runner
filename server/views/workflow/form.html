@@ -1,0 +1,35 @@
+{{ define "workflow/form.html" }}
+
+{{ template "partials/page_header.html" .}}
+
+<h2>Workflow</h2>
+
+<div class="clearfix">
+  <div class="pull-right">
+    <a class="btn btn-primary mb-3" href="/workflows/export/{{ .workflow.ID }}" role="button">Export</a>
+  </div>
+</div>
+
+<form method="post" action="/workflows/edit/{{ .workflow.ID }}" id="{{ .workflow.ID }}">
+
+    {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
+
+    {{ template "partials/input_text.html" dict "field" .form.Fields.Description }}
+
+    {{ template "partials/input_select.html" dict "field" .form.Fields.PackageFormat }}
+
+  <div id="jobProfileContainer" style='display: {{ if eq .form.Fields.PackageFormat.Value "BagIt"}} block {{else}} none {{ end }};'>
+    {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
+  </div>
+
+  <p>Upload To</p>
+
+  {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.StorageServiceIDs }}
+
+  {{ template "partials/form_buttons.html" . }}
+
+</form>
+
+{{ template "partials/page_footer.html" .}}
+
+{{ end }}
