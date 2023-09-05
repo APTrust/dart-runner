@@ -94,11 +94,11 @@ class Runner
         puts "Check system processes to see if a version "
         puts "of that process is lingering from a previous test run."
         end
-    end    
+    end
   end
 
   # This command starts a docker container that runs an SFTP service.
-  # We use this to test SFTP uploads. 
+  # We use this to test SFTP uploads.
   #
   # The first -v option sets #{sftp_dir}/sftp_user_key.pub as the public
   # key for user "key_user" inside the docker container. We set this so
@@ -106,28 +106,28 @@ class Runner
   #
   # The second -v option tells the container to create accounts for the
   # users listed in #{sftp_dir}/users.conf. There are two. key_user has
-  # no password and will connect with an SSH key. pw_user will connect 
+  # no password and will connect with an SSH key. pw_user will connect
   # with the password "password".
   #
   # We forward local port 2222 to the container's port 22, which means we
   # can get to the SFTP server via locahost:2222 or 127.0.0.1:2222.
   def start_sftp
     sftp_dir = File.join(project_root, "testdata", "sftp")
-    puts "Using SFTP config options from #{sftp_dir}" 
+    puts "Using SFTP config options from #{sftp_dir}"
     @docker_sftp_id = `docker run \
     -v #{sftp_dir}/sftp_user_key.pub:/home/key_user/.ssh/keys/sftp_user_key.pub:ro \
     -v #{sftp_dir}/users.conf:/etc/sftp/users.conf:ro \
     -p 2222:22 -d atmoz/sftp`
-    if $?.exitstatus == 0 
+    if $?.exitstatus == 0
       puts "Started SFTP server with id #{@docker_sftp_id}"
-      @sftp_started = true   
+      @sftp_started = true
     else
       puts "Error starting SFTP docker container. Is one already running?"
       puts @docker_sftp_id
     end
   end
 
-  def stop_sftp 
+  def stop_sftp
     if @sftp_started
       result = `docker stop #{@docker_sftp_id}`
       if $?.exitstatus == 0
@@ -143,7 +143,7 @@ class Runner
   end
 
   def stop_all_services
-    if @dart_pid > 0 
+    if @dart_pid > 0
       stop_dart
     end
     stop_minio
@@ -200,8 +200,8 @@ class Runner
   def show_help
     puts "To run unit and integration tests:"
     puts "    run.rb tests\n"
-    puts "To run SFTP and Minio for interactive testing:"
-    puts "    run.rb services\n"
+    puts "To run DART, SFTP and Minio for interactive testing:"
+    puts "    run.rb dart\n"
   end
 end
 
