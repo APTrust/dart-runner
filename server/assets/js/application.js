@@ -146,7 +146,7 @@ function confirmForegroundDeletion(question, url, data) {
     }
 }
 
-function postDataInBackground(url, data) {
+function postDataInBackground(url, data = {}) {
     $.ajax({
         url: url,
         type: "post",

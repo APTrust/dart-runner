@@ -6,6 +6,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 type Workflow struct {
@@ -36,7 +37,8 @@ func WorkflowFromJson(pathToFile string) (*Workflow, error) {
 // upload operations on a large of set of materials.
 func WorkFlowFromJob(job *Job) (*Workflow, error) {
 	workflow := &Workflow{
-		Name:            "",
+		ID:              uuid.NewString(),
+		Name:            "New Workflow",
 		Description:     "",
 		PackageFormat:   constants.PackageFormatNone,
 		StorageServices: make([]*StorageService, len(job.UploadOps)),
@@ -98,12 +100,33 @@ func (w *Workflow) Copy() *Workflow {
 }
 
 func (w *Workflow) ToForm() *Form {
+	form := NewForm(constants.TypeWorkflow, w.ID, w.Errors)
+	form.UserCanDelete = true
 
-	// TODO: Implement this!
+	form.AddField("ID", "ID", w.ID, true)
+	form.AddField("Name", "Name", w.Name, true)
+	form.AddField("Description", "Description", w.Description, false)
 
-	// Name, Description, PackageFormat, BagItProfileID, StorageServices
+	// NOTE: For now, we're working only with BagIt format. That may change
+	// in future if we support OCFL.
+	packageFormatField := form.AddField("PackageFormat", "Package Format", w.PackageFormat, true)
+	packageFormatField.Choices = MakeChoiceList(constants.PackageFormats, w.PackageFormat)
 
-	return nil
+	selectedProfileIds := make([]string, 0)
+	if w.BagItProfile != nil {
+		selectedProfileIds = []string{w.BagItProfile.ID}
+	}
+
+	bagItProfileField := form.AddField("BagItProfileID", "BagIt Profile", w.BagItProfile.ID, false)
+	bagItProfileField.Choices = ObjChoiceList(constants.TypeBagItProfile, selectedProfileIds)
+
+	selectedIds := make([]string, len(w.StorageServices))
+	for i, ss := range w.StorageServices {
+		selectedIds[i] = ss.ID
+	}
+	storageServicesField := form.AddMultiValueField("StorageServiceIDs", "Storage Services", selectedIds, false)
+	storageServicesField.Choices = ObjChoiceList(constants.TypeStorageService, selectedIds)
+	return form
 }
 
 // ObjID returns this w's object id (uuid).

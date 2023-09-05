@@ -16,7 +16,7 @@
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
-    <tr class="clickable-row" data-url="/workflows/edit/{{ $item.ID }}">
+    <tr class="clickable-row" onclick="location.href='/workflows/edit/{{ $item.ID }}'">
       <td>{{ $item.Name }}</td>
       <td>{{ $item.Description }}</td>
     </tr>

@@ -6,6 +6,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -134,4 +135,53 @@ func TestFindConflictingUUID(t *testing.T) {
 	appSetting.ID = uuid.NewString()
 	err := core.ObjSave(appSetting)
 	assert.Equal(t, constants.ErrUniqueConstraint, err)
+}
+
+func createAppSettings(t *testing.T, count int) []string {
+	objIds := make([]string, count)
+	for i := 0; i < count; i++ {
+		setting := core.NewAppSetting(fmt.Sprintf("Setting #%d", i), fmt.Sprintf("Value %d", i))
+		assert.Nil(t, core.ObjSave(setting))
+		objIds[i] = setting.ID
+	}
+	return objIds
+}
+
+func TestObjNameIDAndChoiceList(t *testing.T) {
+	defer core.ClearDartTable()
+	ids := createAppSettings(t, 10)
+
+	nameIdList := core.ObjNameIdList(constants.TypeAppSetting)
+	assert.Equal(t, 10, len(nameIdList))
+	for i, id := range ids {
+		name := fmt.Sprintf("Setting #%d", i)
+		assert.Equal(t, id, nameIdList[i].ID)
+		assert.Equal(t, name, nameIdList[i].Name)
+	}
+
+	// This should return nothing
+	nameIdList = core.ObjNameIdList(constants.TypeRemoteRepository)
+	assert.Empty(t, nameIdList)
+
+	// Choice list should contain the same data as name-id list,
+	// in the same order. The following two choices should be marked
+	// as selected.
+	selected := []string{
+		ids[2],
+		ids[3],
+	}
+	choiceList := core.ObjChoiceList(constants.TypeAppSetting, selected)
+	for i, id := range ids {
+		name := fmt.Sprintf("Setting #%d", i)
+		assert.Equal(t, id, choiceList[i].Value)
+		assert.Equal(t, name, choiceList[i].Label)
+		assert.Equal(t, util.StringListContains(selected, id), choiceList[i].Selected)
+	}
+
+	// These should return nothing
+	nameIdList = core.ObjNameIdList(constants.TypeRemoteRepository)
+	assert.Empty(t, nameIdList)
+	choiceList = core.ObjChoiceList(constants.TypeRemoteRepository, selected)
+	assert.Empty(t, choiceList)
+
 }

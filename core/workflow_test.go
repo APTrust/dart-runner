@@ -64,6 +64,8 @@ func TestWorkflowFromJob(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, workflow)
 
+	assert.True(t, util.LooksLikeUUID(workflow.ID))
+
 	require.NotNil(t, workflow.BagItProfile)
 	assert.Equal(t, job.BagItProfile.ID, workflow.BagItProfile.ID)
 	assert.Equal(t, job.PackageOp.PackageFormat, workflow.PackageFormat)

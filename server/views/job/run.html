@@ -71,7 +71,7 @@
 
   <div class="pull-right" id="btnNextDiv">
     {{ if not .job.WorkflowID }}
-    <a class="btn btn-info mr-5" href="/workflows/from_job/{{ .job.ID }}" role="button">Create Workflow</a>
+    <button class="btn btn-info mr-5" onclick="postDataInBackground('/workflows/from_job/{{ .job.ID }}')" role="button">Create Workflow</button>
     {{  end }}
 
     <!-- Though it acts like a link, this has to be a button so we can disable it after click. -->

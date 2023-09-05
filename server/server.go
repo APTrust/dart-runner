@@ -175,15 +175,15 @@ func initRoutes(router *gin.Engine) {
 
 	// Workflows
 	router.GET("/workflows", controllers.WorkflowIndex)
-	router.GET("/workflows/new", controllers.WorkflowNew)
-	router.POST("/workflows/new", controllers.WorkflowCreate)
+	router.GET("/workflows/new", controllers.WorkflowNew)     // Remove? Is there a use case for this?
+	router.POST("/workflows/new", controllers.WorkflowCreate) // Remove? Is there a use case for this?
+	router.POST("/workflows/from_job/:jobId", controllers.WorkflowCreateFromJob)
 	router.GET("/workflows/edit/:id", controllers.WorkflowEdit)
-	router.PUT("/workflows/edit/:id", controllers.WorkflowUpdate)
-	router.POST("/workflows/edit/:id", controllers.WorkflowUpdate)
+	router.PUT("/workflows/edit/:id", controllers.WorkflowSave)
+	router.POST("/workflows/edit/:id", controllers.WorkflowSave)
 	router.PUT("/workflows/delete/:id", controllers.WorkflowDelete)
 	router.POST("/workflows/delete/:id", controllers.WorkflowDelete)
 	router.POST("/workflows/run/:id", controllers.WorkflowRun)
 	router.POST("/workflows/runbatch/:id", controllers.WorkflowRunBatch)
-	router.GET("/workflows/:id", controllers.WorkflowShow)
 
 }

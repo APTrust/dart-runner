@@ -19,6 +19,11 @@ type Artifact struct {
 	UpdatedAt time.Time
 }
 
+type NameIDPair struct {
+	Name string
+	ID   string
+}
+
 func InitSchema() error {
 	schema := `create table if not exists dart (
 		uuid text primary key not null,
@@ -177,6 +182,48 @@ func ObjExists(objId string) (bool, error) {
 	count := 0
 	err := Dart.DB.QueryRow("select count(*) from dart where uuid = ?", objId).Scan(&count)
 	return count == 1, err
+}
+
+// ObjNameIdList returns a list of all items of type objType in the
+// database. The return value is a slice of NameIDPair objects containing
+// the name and id (uuid) of each object. The slice is in alpha order
+// by name.
+func ObjNameIdList(objType string) []NameIDPair {
+	nameIdPairs := make([]NameIDPair, 0)
+	var rows *sql.Rows
+	rows, err := Dart.DB.Query("select uuid, obj_name from dart where obj_type = ? order by obj_name", objType)
+	defer rows.Close()
+	if err == nil {
+		for rows.Next() {
+			// xxxxxxxxxxxxxxxx
+			uuid := ""
+			name := ""
+			err = rows.Scan(&uuid, &name)
+			if err == nil {
+				nameIdPairs = append(nameIdPairs, NameIDPair{Name: name, ID: uuid})
+			}
+		}
+	}
+	return nameIdPairs
+}
+
+// ObjNameIdList returns a list of all items of type objType in the
+// database. The return value is a slice of Choice objects in which
+// the Label is the object name and the Value is the id (uuid) of each
+// object. The slice is in alpha order by name. Choices whose values
+// match a value in selectedIds will have their Selected attribute
+// set to true.
+func ObjChoiceList(objType string, selectedIds []string) []Choice {
+	nameIdPairs := ObjNameIdList(objType)
+	choices := make([]Choice, len(nameIdPairs))
+	for i, pair := range nameIdPairs {
+		choices[i] = Choice{
+			Label:    pair.Name,
+			Value:    pair.ID,
+			Selected: util.StringListContains(selectedIds, pair.ID),
+		}
+	}
+	return choices
 }
 
 // FindConflictingUUID returns the UUID of the object having the same name and type
