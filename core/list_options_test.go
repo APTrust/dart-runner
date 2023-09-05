@@ -58,32 +58,3 @@ func TestMakeMultiChoiceList(t *testing.T) {
 		}
 	}
 }
-
-func TestBagItProfileChoiceList(t *testing.T) {
-	defer core.ClearDartTable()
-
-	profilesToLoad := []string{
-		"aptrust-v2.2.json",
-		"btr-v1.0.json",
-		"empty_profile.json",
-	}
-	for _, name := range profilesToLoad {
-		profile := loadProfile(t, name)
-		require.Nil(t, core.ObjSave(profile))
-	}
-
-	choices := core.BagItProfileChoiceList(constants.ProfileIDAPTrust)
-	assert.Equal(t, 4, len(choices))
-
-	assert.Empty(t, choices[0].Value)
-	assert.False(t, choices[0].Selected)
-
-	assert.Equal(t, constants.ProfileIDAPTrust, choices[1].Value)
-	assert.True(t, choices[1].Selected)
-
-	assert.Equal(t, constants.ProfileIDBTR, choices[2].Value)
-	assert.False(t, choices[2].Selected)
-
-	assert.Equal(t, constants.ProfileIDEmpty, choices[3].Value)
-	assert.False(t, choices[3].Selected)
-}

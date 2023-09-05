@@ -550,18 +550,7 @@ func (p *BagItProfile) ToForm() *Form {
 // which to base the new profile.
 func NewBagItProfileCreationForm() (*Form, error) {
 	form := NewForm(constants.TypeBagItProfile, constants.EmptyUUID, nil)
-	result := ObjList(constants.TypeBagItProfile, "obj_name", 10000, 0)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	choices := make([]Choice, len(result.BagItProfiles))
-	for i, profile := range result.BagItProfiles {
-		choices[i] = Choice{
-			Label:    profile.Name,
-			Value:    profile.ID,
-			Selected: false,
-		}
-	}
+	choices := ObjChoiceList(constants.TypeBagItProfile, nil)
 	baseProfileID := form.AddField("BaseProfileID", "Base this profile on...", "", true)
 	baseProfileID.Choices = choices
 	return form, nil

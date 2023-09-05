@@ -329,7 +329,7 @@ func (job *Job) ToForm() *Form {
 		// TODO: Include serializations allowed in profile, if DART supports them.
 	}
 	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile ID", bagitProfileID, false)
-	bagItProfile.Choices = BagItProfileChoiceList(bagitProfileID)
+	bagItProfile.Choices = ObjChoiceList(constants.TypeBagItProfile, []string{bagitProfileID})
 	bagItProfile.Help = "Choose the BagIt profile to which your bag should conform."
 
 	// PackageOp
