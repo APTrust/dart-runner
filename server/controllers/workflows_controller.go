@@ -103,6 +103,12 @@ func WorkflowSave(c *gin.Context) {
 
 }
 
+// GET /workflows/export/:id
+func WorkflowExport(c *gin.Context) {
+	// Export for runner. Use full storage service def & bagit profile.
+	// This will display in modal with a copy button.
+}
+
 // POST /workflows/run/:id
 func WorkflowRun(c *gin.Context) {
 
