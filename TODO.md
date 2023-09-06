@@ -15,3 +15,4 @@
 - [ ] Context-sensitive help
 - [ ] Dashboard
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
+- [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
