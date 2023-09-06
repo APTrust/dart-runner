@@ -1,5 +1,8 @@
 # TO DO
 
+- [ ] Fix auto generation of output file path on job packaging screen
+- [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
+- [ ] Fix invalid JSON "EOF" being returned to job run page
 - [ ] Save artifacts from jobs (manifests, tag files)
 - [ ] Move job run JS to shared location so jobs, workflows, and batches can use it
 - [ ] Settings export

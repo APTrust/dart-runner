@@ -9,13 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// WorkflowCreate creates a new Workflow.
-// Handles submission of new Workflow form.
-// POST /workflows/new
-func WorkflowCreate(c *gin.Context) {
-
-}
-
 // WorkflowCreateFromJob creates a new Workflow.
 // Handles submission of new Workflow form.
 // POST /workflows/from_job/:jobId
@@ -43,10 +36,20 @@ func WorkflowCreateFromJob(c *gin.Context) {
 	c.JSON(http.StatusCreated, data)
 }
 
-// GET /workflows/delete/:id
+// PUT /workflows/delete/:id
 // POST /workflows/delete/:id
 func WorkflowDelete(c *gin.Context) {
-
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	err := core.ObjDelete(result.Workflow())
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	c.Redirect(http.StatusFound, "/workflows")
 }
 
 // GET /workflows/edit/:id
@@ -68,11 +71,6 @@ func WorkflowIndex(c *gin.Context) {
 	}
 	request.TemplateData["items"] = request.QueryResult.Workflows
 	c.HTML(http.StatusOK, "workflow/list.html", request.TemplateData)
-}
-
-// GET /workflows/new
-func WorkflowNew(c *gin.Context) {
-
 }
 
 // PUT /workflows/edit/:id

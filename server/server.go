@@ -175,8 +175,6 @@ func initRoutes(router *gin.Engine) {
 
 	// Workflows
 	router.GET("/workflows", controllers.WorkflowIndex)
-	router.GET("/workflows/new", controllers.WorkflowNew)     // Remove? Is there a use case for this?
-	router.POST("/workflows/new", controllers.WorkflowCreate) // Remove? Is there a use case for this?
 	router.POST("/workflows/from_job/:jobId", controllers.WorkflowCreateFromJob)
 	router.GET("/workflows/edit/:id", controllers.WorkflowEdit)
 	router.PUT("/workflows/edit/:id", controllers.WorkflowSave)

@@ -10,7 +10,8 @@
   </div>
 </div>
 
-<form method="post" action="/workflows/edit/{{ .form.ObjectID }}" id="{{ .form.ObjectID }}">
+<!-- This is the form to edit a workflow -->
+<form method="post" action="/workflows/edit/{{ .form.ObjectID }}">
 
     {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
 
@@ -30,6 +31,11 @@
 
   {{ template "partials/form_buttons.html" . }}
 
+</form>
+
+<!-- This is the form to delete a workflow -->
+<form method="post" action="/workflows/delete/{{ .form.ObjectID }}" id="WorkflowDelete">
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 </form>
 
 {{ template "partials/page_footer.html" .}}

@@ -3,20 +3,21 @@
 <div class="bottom-buttons mt-3 mb-5">
     {{ if and .form.UserCanDelete .objectExistsInDB }}
     <div class="pull-left">
-      <a class="btn btn-danger" href="javascript:confirmDeletion('{{ .form.ObjType }}', '{{ .form.ObjectID }}')" role="button">Delete</a>
+      <button type="button" class="btn btn-danger" onclick="confirmDeletion('{{ .form.ObjType }}', '{{ .form.ObjectID }}')" role="button">Delete</button>
     </div>
     {{ end }}
     <div class="pull-right">
       <button class="btn btn-primary" type="submit" role="button">Save</a>
     </div>
     <div class="pull-right mr-5">
-      <button class="btn btn-secondary" role="button" onclick="javascript:history.back()">Cancel</a>
+      <button class="btn btn-secondary" type="button" role="button" onclick="history.back()">Cancel</a>
     </div>
   </div>
 
 <script>
   function confirmDeletion(objType, objId) {
-    var form = document.forms[objId] || document.forms[objType]
+    //var form = document.forms[objId] || document.forms[objType]
+    var form = document.forms[objType + "Delete"]
     if (!form) {
       alert("Deletion form is missing.")
       return
