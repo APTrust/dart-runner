@@ -220,7 +220,7 @@ func ValidateTagValue(tagDef *core.TagDefinition) string {
 	if !tagDef.IsLegalValue(tagValue) {
 		return fmt.Sprintf("Tag has illegal value '%s'. Allowed values are: %s", tagValue, strings.Join(tagDef.Values, ","))
 	}
-	if tagDef.Required && !tagDef.EmptyOK && util.IsEmpty(tagValue) {
+	if tagDef.Required && !tagDef.EmptyOK && util.IsEmpty(tagValue) && !tagDef.SystemMustSet() {
 		return "This tag requires a value."
 	}
 	return ""
