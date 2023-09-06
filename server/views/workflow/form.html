@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<form method="post" action="/workflows/edit/{{ .workflow.ID }}" id="{{ .workflow.ID }}">
+<form method="post" action="/workflows/edit/{{ .form.ObjectID }}" id="{{ .form.ObjectID }}">
 
     {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
 
@@ -25,6 +25,8 @@
   <p>Upload To</p>
 
   {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.StorageServiceIDs }}
+
+  {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
   {{ template "partials/form_buttons.html" . }}
 

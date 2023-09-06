@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -77,6 +78,30 @@ func WorkflowNew(c *gin.Context) {
 // PUT /workflows/edit/:id
 // POST /workflows/edit/:id
 func WorkflowSave(c *gin.Context) {
+	workflow := &core.Workflow{}
+	err := c.Bind(workflow)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
+		return
+	}
+	profileID := c.PostForm("BagItProfileID")
+	if util.LooksLikeUUID(profileID) {
+		result := core.ObjFind(profileID)
+		if result.Error == nil && result.BagItProfile() != nil {
+			workflow.BagItProfile = result.BagItProfile()
+		}
+	}
+	err = core.ObjSave(workflow)
+	if err != nil {
+		objectExistsInDB, _ := core.ObjExists(workflow.ID)
+		data := gin.H{
+			"form":             workflow.ToForm(),
+			"objectExistsInDB": objectExistsInDB,
+		}
+		c.HTML(http.StatusBadRequest, "workflow/form.html", data)
+		return
+	}
+	c.Redirect(http.StatusFound, "/workflows")
 
 }
 
