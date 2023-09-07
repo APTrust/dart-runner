@@ -226,6 +226,19 @@ func ObjChoiceList(objType string, selectedIds []string) []Choice {
 	return choices
 }
 
+// GetAppSetting returns the value of the AppSetting with the given name.
+func GetAppSetting(name string) (string, error) {
+	jsonData := make([]byte, 0)
+	query := "select obj_json from dart where obj_type=? and obj_name=?"
+	err := Dart.DB.QueryRow(query, constants.TypeAppSetting, name).Scan(&jsonData)
+	if err == sql.ErrNoRows {
+		return "", err
+	}
+	setting := &AppSetting{}
+	err = json.Unmarshal(jsonData, setting)
+	return setting.Value, err
+}
+
 // FindConflictingUUID returns the UUID of the object having the same name and type
 // as obj. The dart table has a unique constraint on obj_type + obj_name. That should
 // prevent inserts that conflict with the constraint, but it doesn't. The modernc sqlite

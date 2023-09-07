@@ -362,6 +362,17 @@ func (job *Job) ToForm() *Form {
 	packageName := form.AddField("PackageName", "Package Name", job.PackageOp.PackageName, true)
 	packageName.Help = "The name of the folder or file to create. E.g. 'photos', 'photos.tar', etc."
 
+	// Try to construct default output path if it doesn't already exist.
+	// This happens especially with new jobs created from workflows.
+	if job.PackageOp.OutputPath == "" {
+		jobName := job.Name()
+		if strings.HasPrefix(jobName, "Job of ") {
+			jobName = ""
+		}
+		baggingDir, _ := GetAppSetting("Bagging Directory")
+		job.PackageOp.OutputPath = path.Join(baggingDir, jobName)
+	}
+
 	outputPath := form.AddField("OutputPath", "Output Path", job.PackageOp.OutputPath, true)
 	outputPath.Help = "This is where DART will create the bag. This field updates automatically when you update the package name."
 

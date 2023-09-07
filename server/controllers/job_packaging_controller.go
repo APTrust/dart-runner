@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -18,8 +19,9 @@ func JobShowPackaging(c *gin.Context) {
 	}
 	job := result.Job()
 	data := gin.H{
-		"job":  job,
-		"form": job.ToForm(),
+		"job":           job,
+		"form":          job.ToForm(),
+		"pathSeparator": string(os.PathSeparator),
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }
@@ -70,11 +72,12 @@ func JobSavePackaging(c *gin.Context) {
 			fieldName := strings.Replace(key, "PackageOperation.", "", 1)
 			errors[fieldName] = value
 		}
+		job.Errors = errors
 		form := job.ToForm()
-		form.Errors = errors
 		data := gin.H{
-			"job":  job,
-			"form": form,
+			"job":           job,
+			"form":          form,
+			"pathSeparator": string(os.PathSeparator),
 		}
 		c.HTML(http.StatusBadRequest, "job/packaging.html", data)
 		return

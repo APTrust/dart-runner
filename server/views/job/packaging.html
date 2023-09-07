@@ -4,11 +4,13 @@
 
 <h2>Packaging</h2>
 
+<!--
 <p>
     Note: Although this page displays a number of serialization formats,
     DART currently supports only the "None" and ".tar" formats. Additional
     formats will be coming soon.
 </p>
+-->
 
 <!-- { {> bannerAlert message = alertMessage } } -->
 
@@ -27,10 +29,7 @@
 
   {{ template "partials/input_text.html" dict "field" .form.Fields.PackageName }}
 
-
-  <div style="display: {{ if .job.WorkflowID}} none {{ else }} block {{ end }};">
-    {{ template "partials/input_text.html" dict "field" .form.Fields.OutputPath }}
-  </div>
+  {{ template "partials/input_text.html" dict "field" .form.Fields.OutputPath }}
 
   {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
@@ -47,6 +46,24 @@
   
 
 </form>
+
+<script>
+function setOutputPath() {
+  var packageName = $('#Job_PackageName').val()
+  var outputPath = $('#Job_OutputPath').val()
+  var separator = "{{ .pathSeparator }}"
+  var newOutputPath = ""
+  if (outputPath.endsWith(separator)) {
+    newOutputPath = outputPath + packageName
+  } else {
+    var pathComponents = outputPath.split(separator)
+    pathComponents[pathComponents.length - 1] = packageName
+    newOutputPath = pathComponents.join(separator)
+  }
+  $('#Job_OutputPath').val(newOutputPath)
+}
+$('#Job_PackageName').on('keyup', setOutputPath)
+</script>
 
 {{ template "partials/page_footer.html" .}}
 

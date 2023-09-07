@@ -137,6 +137,16 @@ func TestFindConflictingUUID(t *testing.T) {
 	assert.Equal(t, constants.ErrUniqueConstraint, err)
 }
 
+func TestConflictingObjectName(t *testing.T) {
+	defer core.ClearDartTable()
+	appSetting := core.NewAppSetting("Name1", "Value1")
+	require.Nil(t, core.ObjSave(appSetting))
+
+	appSetting2 := core.NewAppSetting("Name1", "Value2")
+	err := core.ObjSave(appSetting2)
+	assert.Equal(t, constants.ErrUniqueConstraint, err)
+}
+
 func createAppSettings(t *testing.T, count int) []string {
 	objIds := make([]string, count)
 	for i := 0; i < count; i++ {
@@ -183,5 +193,20 @@ func TestObjNameIDAndChoiceList(t *testing.T) {
 	assert.Empty(t, nameIdList)
 	choiceList = core.ObjChoiceList(constants.TypeRemoteRepository, selected)
 	assert.Empty(t, choiceList)
+
+}
+
+func TestGetAppSetting(t *testing.T) {
+	defer core.ClearDartTable()
+	value, err := core.GetAppSetting("Setting does not exist")
+	assert.Error(t, err)
+	assert.Empty(t, value)
+
+	setting := core.NewAppSetting("Test Setting", "Test Value")
+	require.NoError(t, core.ObjSave(setting))
+
+	value, err = core.GetAppSetting("Test Setting")
+	assert.NoError(t, err)
+	assert.Equal(t, "Test Value", value)
 
 }
