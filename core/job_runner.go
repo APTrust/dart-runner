@@ -15,6 +15,11 @@ type Runner struct {
 	MessageChannel chan *EventMessage
 }
 
+// RunJobWithMessageChannel runs a job and pumps progress details
+// into the messageChannel. That channel passes messages back to
+// the front end UI. This returns the job's exit code, where zero
+// means success and non-zero is failure. See the exit codes defined
+// in constants for more info.
 func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel chan *EventMessage) int {
 	runner := &Runner{
 		Job:            job,

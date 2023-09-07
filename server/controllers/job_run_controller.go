@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -51,9 +52,18 @@ func JobRunExecute(c *gin.Context) {
 		// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
 
 		//defer close(messageChannel)
-		_ = core.RunJobWithMessageChannel(job, false, messageChannel)
+		exitCode := core.RunJobWithMessageChannel(job, false, messageChannel)
 		//c.SSEvent("message", fmt.Sprintf("Exit code = %d", returnCode))
-		c.SSEvent("message", "EOF")
+		status := constants.StatusFailed
+		if exitCode == constants.ExitOK {
+			status = constants.StatusSuccess
+		}
+		eventMessage := &core.EventMessage{
+			EventType: constants.EventTypeDisconnect,
+			Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
+			Status:    status,
+		}
+		c.SSEvent("message", eventMessage)
 	}()
 
 	streamer := func(w io.Writer) bool {

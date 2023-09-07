@@ -96,10 +96,6 @@
       let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
           // console.log(event)
-          if (event.data == "EOF") {
-            eventSrc.close()
-            return
-          }
           if (!event.data) {
             console.log("Malformed message")
             console.log(event)
@@ -114,7 +110,13 @@
             return
           }
 
-          renderInfo(data, jobId)
+          if (data.eventType == "disconnect") {
+            console.log("Received disconnect from server")
+            console.log(data.message)
+            eventSrc.close()
+          } else {
+            renderInfo(data, jobId)
+          }
         }
         eventSrc.onerror = (event) => {
           console.error(event)
