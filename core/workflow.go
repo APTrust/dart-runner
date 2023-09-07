@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -220,4 +221,25 @@ func (w *Workflow) resolveStorageServices() {
 			}
 		}
 	}
+}
+
+// ExportJson returns formatted JSON describing this workflow,
+// including full StorageService records. Use this to export
+// a workflow to be run on an external DART Runner server.
+func (w *Workflow) ExportJson() ([]byte, error) {
+	w.resolveStorageServices()
+	return json.MarshalIndent(w, "", "  ")
+}
+
+// HasPlaintextPasswords returns true if any of the storage services
+// in this workflow contain plaintext passwords. The front end will
+// warn the user about plain text passwords when they export a workflow.
+func (w *Workflow) HasPlaintextPasswords() bool {
+	w.resolveStorageServices()
+	for _, ss := range w.StorageServices {
+		if ss.Password != "" && !strings.HasPrefix(ss.Password, "env:") {
+			return true
+		}
+	}
+	return false
 }

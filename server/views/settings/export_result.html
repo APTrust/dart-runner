@@ -1,0 +1,31 @@
+{{ define "settings/export_result.html" }}
+
+<div class="form-group">
+  <textarea id="txtJson" name="txtJson" class="form-control" rows="20">{{- .json -}}</textarea>
+</div>
+
+<div class="mt-1 mb-1 mr-5 ml-5 p-2 alert-light" style="display:{{ .displayPasswordWarning }}">
+    <p>Warning: One or more storage service records in this workflow contains a plaintext password. 
+    This workflow will still run, but for safety, you should use environment variables such as 
+    "env:AWS_SECRET_API_KEY".</p> 
+
+    <p>For more info see
+    <a target="_blank" href="https://aptrust.github.io/dart-docs/users/settings/storage_services/#password">
+    https://aptrust.github.io/dart-docs/users/settings/storage_services/#password</a></p>
+</div>
+
+
+<div class="mt-1 mb-1">
+  <div id="copied" class="text-success" style="display:none">
+    Data has been copied to the clipboard.
+  </div>
+</div>
+
+<div class="bottom-buttons">
+  <div class="pull-right mr-5">
+    <button type="button" class="btn btn-primary" id="btnCopyToClipboard" onclick="copyToClipboard('#txtJson', '#copied')">Copy to Clipboard</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+  </div>
+</div>
+
+{{ end }}

@@ -6,7 +6,7 @@
 
 <div class="clearfix">
   <div class="pull-right">
-    <a class="btn btn-primary mb-3" href="/workflows/export/{{ .workflow.ID }}" role="button">Export</a>
+    <button class="btn btn-primary mb-3" onclick="loadIntoModal('get', '{{ .form.Fields.Name.Value }}', '/workflows/export/{{ .form.Fields.ID.Value }}')" role="button">Export</button>
   </div>
 </div>
 

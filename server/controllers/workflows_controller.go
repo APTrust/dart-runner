@@ -105,8 +105,26 @@ func WorkflowSave(c *gin.Context) {
 
 // GET /workflows/export/:id
 func WorkflowExport(c *gin.Context) {
-	// Export for runner. Use full storage service def & bagit profile.
-	// This will display in modal with a copy button.
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	workflow := result.Workflow()
+	workflowJson, err := workflow.ExportJson()
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	passwordWarningDisplay := "none"
+	if workflow.HasPlaintextPasswords() {
+		passwordWarningDisplay = "block"
+	}
+	data := gin.H{
+		"json":                   string(workflowJson),
+		"passwordWarningDisplay": passwordWarningDisplay,
+	}
+	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
 
 // POST /workflows/run/:id
