@@ -124,3 +124,48 @@ func TestWorkflowLoadSaveDelete(t *testing.T) {
 	w := result.Workflow()
 	require.NoError(t, core.ObjDelete(w))
 }
+
+func TestWorkflowExportJson(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadJsonWorkflow(t)
+	assert.True(t, workflow.Validate())
+	assert.Empty(t, workflow.Errors)
+
+	jsonBytes, err := workflow.ExportJson()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, jsonBytes)
+	assert.Equal(t, 10036, len(jsonBytes))
+}
+
+func TestWorkflowHasPlaintextPasswords(t *testing.T) {
+	workflow := loadJsonWorkflow(t)
+	assert.True(t, workflow.Validate())
+	assert.Empty(t, workflow.Errors)
+
+	// env passwords come from the environment,
+	// so they're not embedded as plain text in
+	// the JSON export.
+	for i := range workflow.StorageServices {
+		ss := workflow.StorageServices[i]
+		ss.Password = "env:AWS_SECRET_KEY_ID"
+	}
+	assert.False(t, workflow.HasPlaintextPasswords())
+
+	// Empty passwords are safe to put in the export
+	// JSON. We assume a server admin will fill them
+	// in when setting up the DART Runner workflow
+	// on the server.
+	for i := range workflow.StorageServices {
+		ss := workflow.StorageServices[i]
+		ss.Password = ""
+	}
+	assert.False(t, workflow.HasPlaintextPasswords())
+
+	// Now this here is a no-no. Plain text password
+	// will be exported in the JSON for all to see.
+	for i := range workflow.StorageServices {
+		ss := workflow.StorageServices[i]
+		ss.Password = "secret"
+	}
+	assert.True(t, workflow.HasPlaintextPasswords())
+}
