@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"io"
 
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/server/controllers"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
@@ -40,6 +42,11 @@ func InitAppEngine(discardStdOut bool) *gin.Engine {
 // initTemplates loads templates and sets up template helper functions.
 func initTemplates(router *gin.Engine) {
 
+	// Note: We can't put workflowList in util with the
+	// other template helpers because it creates a cyclical
+	// import cycle between core and util. So we define the
+	// body of that helper here inline.
+
 	router.SetFuncMap(template.FuncMap{
 		"dateISO":        util.DateISO,
 		"dateTimeISO":    util.DateTimeISO,
@@ -57,6 +64,7 @@ func initTemplates(router *gin.Engine) {
 		"truncateMiddle": util.TruncateMiddle,
 		"truncateStart":  util.TruncateStart,
 		"unixToISO":      util.UnixToISO,
+		"workflowList":   func() []core.NameIDPair { return core.ObjNameIdList(constants.TypeWorkflow) },
 		"yesNo":          util.YesNo,
 	})
 

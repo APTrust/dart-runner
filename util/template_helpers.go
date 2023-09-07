@@ -156,6 +156,9 @@ func TruncateStart(str string, maxLen int) string {
 	return "..." + str[end:]
 }
 
+// DirStats returns stats about a directory. This is used in the
+// job files display to show things like total file count,
+// total number of bytes, etc.
 func DirStats(dir string) *DirectoryStats {
 	return GetDirectoryStats(dir)
 }

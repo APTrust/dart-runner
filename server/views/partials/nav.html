@@ -37,10 +37,10 @@
           <div class="dropdown-menu" aria-labelledby="navbarJobsDropdownLink">
             <a class="dropdown-item" href="/workflows">List</a>
             <a class="dropdown-item" href="/workflows/new">New</a>
-            <a class="dropdown-item" href="#WorkflowBatch/new">Run Batch</a>
+            <a class="dropdown-item" href="/workflows/run_batch">Run Batch</a>
             <div class="dropdown-divider"></div>
-            {{ range $index, $workflow := .workflows }}
-            <a class="dropdown-item" href="#Workflow/createJob?workflowId={{ $workflow.ID }}">Run {{ $workflow.Name }}</a>
+            {{ range $index, $workflow := workflowList }}
+            <a class="dropdown-item" href="/workflows/run/{{ $workflow.ID }}">Run {{ $workflow.Name }}</a>
             {{ end }}
           </div>
         </li>
@@ -58,7 +58,7 @@
     </div>
     <div class="float-right">
       <span id="runningJobsBadge" class="badge badge-pill badge-info">
-        <a href="#Dashboard/show" class="text-white"></a>
+        <a href="/" class="text-white"></a>
       </span>
     </div>
   </nav>
