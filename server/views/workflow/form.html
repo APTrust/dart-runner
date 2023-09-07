@@ -38,6 +38,20 @@
   {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 </form>
 
+<script>
+function toggleBagItProfile() {
+  var profileControl = $('#jobProfileContainer')
+  var format = $('#Workflow_PackageFormat').val()
+  if (format == "BagIt") {
+    profileControl.show()
+  } else {
+    profileControl.hide()
+  }
+}
+$('#Workflow_PackageFormat').on('change', toggleBagItProfile)
+</script>
+
+
 {{ template "partials/page_footer.html" .}}
 
 {{ end }}

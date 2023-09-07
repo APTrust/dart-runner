@@ -69,6 +69,9 @@ func WorkFlowFromJob(job *Job) (*Workflow, error) {
 
 func (w *Workflow) Validate() bool {
 	w.Errors = make(map[string]string)
+	if strings.TrimSpace(w.Name) == "" {
+		w.Errors["Name"] = "Workflow requires a name."
+	}
 	if w.PackageFormat == "" {
 		w.Errors["PackageFormat"] = "Workflow requires a pacakage format."
 	}
@@ -130,7 +133,7 @@ func (w *Workflow) ToForm() *Form {
 		selectedProfileIds = []string{w.BagItProfile.ID}
 	}
 
-	bagItProfileField := form.AddField("BagItProfileID", "BagIt Profile", w.BagItProfile.ID, false)
+	bagItProfileField := form.AddField("BagItProfileID", "BagIt Profile", "", false)
 	bagItProfileField.Choices = ObjChoiceList(constants.TypeBagItProfile, selectedProfileIds)
 
 	storageServicesField := form.AddMultiValueField("StorageServiceIDs", "Storage Services", w.StorageServiceIDs, false)

@@ -4,10 +4,31 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
+
+// GET /workflow/new
+func WorkflowNew(c *gin.Context) {
+	workflow := &core.Workflow{
+		ID:            uuid.NewString(),
+		Name:          "New Workflow",
+		PackageFormat: constants.PackageFormatBagIt,
+	}
+	err := core.ObjSaveWithoutValidation(workflow)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	data := gin.H{
+		"form":                 workflow.ToForm(),
+		"suppressDeleteButton": false,
+	}
+	c.HTML(http.StatusOK, "workflow/form.html", data)
+}
 
 // WorkflowCreateFromJob creates a new Workflow.
 // Handles submission of new Workflow form.
