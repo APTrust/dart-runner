@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -335,6 +336,24 @@ func (job *Job) String() string {
 
 func (job *Job) GetErrors() map[string]string {
 	return job.Errors
+}
+
+func (job *Job) UpdatePayloadStats() {
+	job.ByteCount = 0
+	job.DirCount = 0
+	job.PayloadFileCount = 0
+	for _, filepath := range job.PackageOp.SourceFiles {
+		stat, err := os.Stat(filepath)
+		if err == nil && !stat.IsDir() {
+			job.PayloadFileCount += 1
+			job.ByteCount += stat.Size()
+			continue
+		}
+		dirStats := util.GetDirectoryStats(filepath)
+		job.ByteCount += dirStats.TotalBytes
+		job.DirCount += int64(dirStats.DirCount)
+		job.PayloadFileCount += int64(dirStats.FileCount)
+	}
 }
 
 func (job *Job) ToForm() *Form {

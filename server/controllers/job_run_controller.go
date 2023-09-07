@@ -9,6 +9,8 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // GET /jobs/run/:id
@@ -19,8 +21,14 @@ func JobRunShow(c *gin.Context) {
 		return
 	}
 	job := result.Job()
+	job.UpdatePayloadStats()
+
+	p := message.NewPrinter(language.English)
+	byteCount := p.Sprintf("%d", job.ByteCount)
+
 	data := gin.H{
-		"job": job,
+		"job":       job,
+		"byteCount": byteCount,
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
