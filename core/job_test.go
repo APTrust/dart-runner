@@ -128,3 +128,21 @@ func TestJobPersistence(t *testing.T) {
 	assert.Equal(t, sql.ErrNoRows, result.Error)
 	assert.Nil(t, result.Job())
 }
+
+func TestJobFromWorkflow(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadJsonWorkflow(t)
+	assert.True(t, workflow.Validate())
+	assert.Empty(t, workflow.Errors)
+	assert.NotNil(t, workflow.BagItProfile)
+
+	job := core.JobFromWorkflow(workflow)
+	require.NotNil(t, job)
+	assert.True(t, util.LooksLikeUUID(job.ID))
+	assert.Equal(t, workflow.ID, job.WorkflowID)
+	assert.NotNil(t, job.PackageOp)
+	assert.NotNil(t, job.ValidationOp)
+	assert.NotNil(t, job.BagItProfile)
+	assert.Equal(t, workflow.BagItProfile.ID, job.BagItProfile.ID)
+	assert.Equal(t, len(workflow.StorageServices), len(job.UploadOps))
+}

@@ -38,6 +38,7 @@ type Job struct {
 	WorkflowID       string               `json:"workflowId"`
 }
 
+// NewJob creates a new Job with a unique ID.
 func NewJob() *Job {
 	return &Job{
 		ID:           uuid.NewString(),
@@ -48,6 +49,8 @@ func NewJob() *Job {
 	}
 }
 
+// JobFromJson converts the JSON data in file pathToFile
+// into a Job object.
 func JobFromJson(pathToFile string) (*Job, error) {
 	job := &Job{}
 	data, err := util.ReadFile(pathToFile)
@@ -56,6 +59,22 @@ func JobFromJson(pathToFile string) (*Job, error) {
 	}
 	err = json.Unmarshal(data, job)
 	return job, err
+}
+
+// JobFromWorkflow creates a new job based on the specified
+// workflow. Note that the new job will have no name or
+// source files.
+func JobFromWorkflow(workflow *Workflow) *Job {
+	workflow.resolveStorageServices()
+	job := NewJob()
+	job.WorkflowID = workflow.ID
+	job.BagItProfile = workflow.BagItProfile
+	for _, ss := range workflow.StorageServices {
+		files := make([]string, 0)
+		uploadOp := NewUploadOperation(ss, files)
+		job.UploadOps = append(job.UploadOps, uploadOp)
+	}
+	return job
 }
 
 // Name returns a name for this job, which is usually the file name of

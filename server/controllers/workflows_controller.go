@@ -150,7 +150,22 @@ func WorkflowExport(c *gin.Context) {
 
 // POST /workflows/run/:id
 func WorkflowRun(c *gin.Context) {
-
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	job := core.JobFromWorkflow(result.Workflow())
+	err := core.ObjSaveWithoutValidation(job)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/jobs/files/%s", job.ID),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // POST /workflows/runbatch/:id
