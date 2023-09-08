@@ -147,3 +147,63 @@ func TestJobFromWorkflow(t *testing.T) {
 	assert.Equal(t, len(workflow.StorageServices), len(job.UploadOps))
 	assert.Equal(t, workflow.PackageFormat, job.PackageOp.PackageFormat)
 }
+
+func TestJobToForm(t *testing.T) {
+	defer core.ClearDartTable()
+	job := getTestJob(t)
+	form := job.ToForm()
+	assert.NotNil(t, form)
+
+	assert.Equal(t, constants.TypeJob, form.ObjType)
+	assert.Equal(t, job.ID, form.ObjectID)
+	assert.True(t, form.UserCanDelete)
+
+	assert.Equal(t, 6, len(form.Fields))
+	assert.Equal(t, job.ID, form.Fields["ID"].Value)
+	assert.Equal(t, job.BagItProfile.ID, form.Fields["BagItProfileID"].Value)
+	assert.Equal(t, constants.PackageFormatBagIt, form.Fields["PackageFormat"].Value)
+	assert.Equal(t, ".tar", form.Fields["BagItSerialization"].Value)
+	assert.Equal(t, "job_unit_test.tar", form.Fields["PackageName"].Value)
+	assert.Equal(t, "/tmp.tar", form.Fields["OutputPath"].Value)
+
+	// Test some specifics of OutputPath
+	baggingDir := "/home/someone/dart"
+	setting := core.NewAppSetting("Bagging Directory", baggingDir)
+	assert.NoError(t, core.ObjSave(setting))
+
+	// If no output path is specified, and we have a package name,
+	// the form should automatically set the output path to
+	// bagging dir + package name.
+	job.PackageOp.OutputPath = ""
+	form = job.ToForm()
+	assert.Equal(t, "/home/someone/dart/job_unit_test.tar", form.Fields["OutputPath"].Value)
+
+	// This following emulates a common case in which the user
+	// runs a job as an instance of a workflow. When we convert
+	// the workflow to a job, it has no package name, path to bag,
+	// or source files. In this case, we want to be sure that the
+	// output path on the form includes a trailing slash (or backslash
+	// on Windows), which vastly eases some path parsing and logic
+	// on the front end, where a JavaScript function tries to sync
+	// the bag name and output path.
+	//
+	// First, strip out any information that Job may use to find
+	// the bag name and output path.
+	job.PackageOp.PackageName = ""
+	job.PackageOp.OutputPath = ""
+	job.ValidationOp.PathToBag = ""
+	for i, _ := range job.UploadOps {
+		op := job.UploadOps[i]
+		op.SourceFiles = make([]string, 0)
+	}
+	for i, _ := range job.BagItProfile.Tags {
+		tagDef := job.BagItProfile.Tags[i]
+		tagDef.DefaultValue = ""
+		tagDef.UserValue = ""
+	}
+
+	// Now rebuild the form and test our output path.
+	// It should have the trailing slash.
+	form = job.ToForm()
+	assert.Equal(t, "/home/someone/dart/", form.Fields["OutputPath"].Value)
+}

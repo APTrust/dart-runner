@@ -361,6 +361,7 @@ func (job *Job) UpdatePayloadStats() {
 
 func (job *Job) ToForm() *Form {
 	form := NewForm(constants.TypeJob, job.ID, job.Errors)
+	form.UserCanDelete = true
 	form.AddField("ID", "ID", job.ID, true)
 
 	bagitProfileID := ""
@@ -386,13 +387,20 @@ func (job *Job) ToForm() *Form {
 
 	// Try to construct default output path if it doesn't already exist.
 	// This happens especially with new jobs created from workflows.
+	baggingDir, _ := GetAppSetting("Bagging Directory")
 	if job.PackageOp.OutputPath == "" {
 		jobName := job.Name()
 		if strings.HasPrefix(jobName, "Job of ") {
 			jobName = ""
 		}
-		baggingDir, _ := GetAppSetting("Bagging Directory")
 		job.PackageOp.OutputPath = path.Join(baggingDir, jobName)
+	}
+	// Force a trailing slash (or backslash) onto the end of
+	// the bagging directory. This is for the benefit of the
+	// front-end JavaScript that will try to parse and automatically
+	// update the bag's output path.
+	if job.PackageOp.OutputPath == baggingDir && len(baggingDir) > 1 && !strings.HasSuffix(baggingDir, string(os.PathSeparator)) {
+		job.PackageOp.OutputPath += string(os.PathSeparator)
 	}
 
 	outputPath := form.AddField("OutputPath", "Output Path", job.PackageOp.OutputPath, true)
