@@ -173,7 +173,7 @@
           // Finish with error. Note that detail div here is the outcome
           // div, not the div for the current stage, because job has finished.
           detailDiv = $(`#${jobId} div.outcome div.detail div.message`);
-          markFailed(detailDiv, progressBar, data.message)
+          markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
         } else { // info message
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
@@ -246,6 +246,41 @@
             progressBar.addClass("bg-danger");
         }
     }
+
+    function getErrorsAsHTML(data) {
+      var result = data.jobResult
+      if (!result) {
+        return "<p>Cannot get error details from job result.</p>"
+      }
+      var html = ""
+      if (result.packageResult && result.packageResult.errors && Object.values(result.packageResult.errors).length > 0) {
+        html += "<h3>Packaging Errors</h3><ol>"
+        Object.values(result.packageResult.errors).forEach(function(errMessage) {
+          html += `<li>${errMessage}</li>`
+        })
+        html += "</ol>"
+      }
+      if (result.validationResult && result.validationResult.errors && Object.values(result.validationResult.errors).length > 0) {
+        html += "<h3>Validation Errors</h3><ol>"
+        Object.values(result.validationResult.errors).forEach(function(errMessage) {
+          html += `<li>${errMessage}</li>`
+        })
+        html += "</ol>"
+      }
+      if (result.uploadResults) {
+        result.uploadResults.forEach(function(uploadResult) {
+          if (uploadResult.errors && Object.values(uploadResult.errors).length > 0) {
+            html += `<h3>Upload Errors (${uploadResult.remoteURL})</h3><ol>`
+            Object.values(uploadResult.errors).forEach(function(errMessage) {
+              html += `<li>${errMessage}</li>`
+            })
+            html += "</ol>"
+          }
+        })
+      }
+      return html
+    }
+
 </script>
 
 {{ template "partials/page_footer.html" .}}
