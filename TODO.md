@@ -1,8 +1,8 @@
 # TO DO
 
-- [ ] Fix auto generation of output file path on job packaging screen
+- [x] Fix auto generation of output file path on job packaging screen
 - [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
-- [ ] Fix invalid JSON "EOF" being returned to job run page
+- [x] Fix invalid JSON "EOF" being returned to job run page
 - [ ] Save artifacts from jobs (manifests, tag files)
 - [ ] Move job run JS to shared location so jobs, workflows, and batches can use it
 - [ ] Settings export
@@ -19,3 +19,5 @@
 - [ ] Dashboard
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
+- [ ] In job files list, sort directories and files in case-insensitive alphar order, showing directories first, then files.
+- [ ] In job files list, add option to show/hide hidden files.

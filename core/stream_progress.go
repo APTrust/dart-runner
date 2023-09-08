@@ -30,11 +30,14 @@ func NewStreamProgress(byteCount int64, messageChannel chan *EventMessage) *Stre
 }
 
 // Read satisfies the progress interface for the Minio client,
-// which passes each chunk of bytes through this function as it
-// uploads.
+// which passes progress information as it uploads. Each time
+// Minio calls Read(), the length of b equals the total number
+// of bytes read thus far.
+//
+// See https://github.com/search?q=repo%3Aminio%2Fminio-go%20progress&type=code
 func (p *StreamProgress) Read(b []byte) (int, error) {
-	bytesTransferredInThisChunk := int64(len(b))
-	return p.SetTotalBytesCompleted(p.Current + bytesTransferredInThisChunk)
+	bytesTransferredSoFar := int64(len(b))
+	return p.SetTotalBytesCompleted(bytesTransferredSoFar)
 }
 
 // SetTotalBytesCompleted satisfies the progress interface for SFTP
