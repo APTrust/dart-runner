@@ -50,6 +50,13 @@
 <script>
 function setOutputPath() {
   var packageName = $('#Job_PackageName').val()
+  var extension = $('#Job_BagItSerialization').val();
+  if (packageName && !packageName.endsWith(extension)) {
+    packageName += extension;
+  }
+  if (extension == '') {
+    packageName = packageName.replace(/\.\w+$/, '')
+  }
   var outputPath = $('#Job_OutputPath').val()
   var separator = "{{ .pathSeparator }}"
   var newOutputPath = ""

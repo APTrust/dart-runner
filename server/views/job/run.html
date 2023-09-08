@@ -57,7 +57,6 @@
 </div>
 {{ end }}
 
-
 <div class="row" id="jobIdContainer" style="display:none;">
   {{ template "partials/dart_process.html" .job }}
 </div>
@@ -95,7 +94,7 @@
       showDivs(jobId)
       let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
-          // console.log(event)
+          console.log(event)
           if (!event.data) {
             console.log("Malformed message")
             console.log(event)
@@ -154,7 +153,7 @@
 
     function renderInfo(data, jobId) {
       let divName = data.stage + "Info"
-      let [detailDiv, progressBar] = getDivs(jobId, divName);
+      var [detailDiv, progressBar] = getDivs(jobId, divName);
       // A job can include multiple uploads. For each new
       // upload, we want to set the progress bar back to 
       // zero and render it in blue.
@@ -170,6 +169,11 @@
           } else {
             markSuccess(detailDiv, progressBar, data.message)
           }
+        } else if (data.status == "failed") { 
+          // Finish with error. Note that detail div here is the outcome
+          // div, not the div for the current stage, because job has finished.
+          detailDiv = $(`#${jobId} div.outcome div.detail div.message`);
+          markFailed(detailDiv, progressBar, data.message)
         } else { // info message
           detailDiv.text(data.message)
           setProgressBar(progressBar, data);
@@ -242,8 +246,6 @@
             progressBar.addClass("bg-danger");
         }
     }
-
-
 </script>
 
 {{ template "partials/page_footer.html" .}}

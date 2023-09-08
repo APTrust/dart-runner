@@ -31,18 +31,28 @@ func NewJobResult(job *Job) *JobResult {
 	}
 	if job.PackageOp != nil && job.PackageOp.Result != nil {
 		jobResult.PackageResult = job.PackageOp.Result
+		if !job.PackageOp.Result.Succeeded() {
+			jobResult.Succeeded = false
+		}
 	}
 	if job.ValidationOp != nil && job.ValidationOp.Result != nil {
 		jobResult.ValidationResult = job.ValidationOp.Result
+		if !job.ValidationOp.Result.Succeeded() {
+			jobResult.Succeeded = false
+		}
 	}
 	if job.UploadOps != nil {
 		for _, op := range job.UploadOps {
 			jobResult.UploadResults = append(jobResult.UploadResults, op.Result)
+			if !op.Result.Succeeded() {
+				jobResult.Succeeded = false
+			}
 		}
 	}
-	if len(job.Errors) > 0 && !job.PackageAttempted() && !job.ValidationAttempted() && !job.UploadAttempted() {
-		jobResult.ValidationErrors = job.Errors
-	}
+	// Do we want this if statement here or not?
+	//if len(job.Errors) > 0 && !job.PackageAttempted() && !job.ValidationAttempted() && !job.UploadAttempted() {
+	jobResult.ValidationErrors = job.Errors
+	//}
 	return jobResult
 }
 

@@ -10,10 +10,16 @@ import (
 func getJobForJobResult() *core.Job {
 	job := core.NewJob()
 	job.PackageOp = core.NewPackageOperation("my_bag.tar", "bags", []string{})
+	job.PackageOp.Result.Start()
+	job.PackageOp.Result.Finish(nil)
 	job.ValidationOp = core.NewValidationOperation("bags/my_bag.tar")
+	job.ValidationOp.Result.Start()
+	job.ValidationOp.Result.Finish(nil)
 	job.UploadOps = make([]*core.UploadOperation, 3)
 	for i := 0; i < 3; i++ {
 		job.UploadOps[i] = core.NewUploadOperation(core.NewStorageService(), []string{})
+		job.UploadOps[i].Result.Start()
+		job.UploadOps[i].Result.Finish(nil)
 	}
 	job.ByteCount = 12345
 	job.PayloadFileCount = 16

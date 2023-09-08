@@ -149,6 +149,7 @@ func (r *Runner) RunPackageOp() bool {
 			errors := map[string]string{
 				"SourceFiles": err.Error(),
 			}
+			op.Result.Info = "Packaging failed."
 			op.Result.Finish(errors)
 			return false
 		}
