@@ -21,7 +21,7 @@ var digestAlgs = []string{
 }
 
 func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
-	files, err := util.RecursiveFileList(util.PathToTestData())
+	files, err := util.RecursiveFileList(util.PathToTestData(), false)
 	require.Nil(t, err)
 	return files
 }

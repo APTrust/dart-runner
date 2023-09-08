@@ -94,7 +94,7 @@ func TestHasValidExtensionForMimeType(t *testing.T) {
 
 func TestRecursiveFileList(t *testing.T) {
 	testdir := util.PathToTestData()
-	files, err := util.RecursiveFileList(testdir)
+	files, err := util.RecursiveFileList(testdir, false)
 	require.Nil(t, err)
 	sample := []string{
 		"test.edu.btr-wasabi-or.tar",

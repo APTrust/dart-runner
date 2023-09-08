@@ -144,7 +144,7 @@ func (r *Runner) RunPackageOp() bool {
 	op.Result.Start()
 	sourceFiles := make([]*util.ExtendedFileInfo, 0)
 	for _, filepath := range op.SourceFiles {
-		files, err := util.RecursiveFileList(filepath)
+		files, err := util.RecursiveFileList(filepath, false)
 		if err != nil {
 			errors := map[string]string{
 				"SourceFiles": err.Error(),

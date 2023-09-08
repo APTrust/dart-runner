@@ -110,11 +110,18 @@ func HasValidExtensionForMimeType(filename, mimeType string) (bool, error) {
 	return valid, err
 }
 
-// RecursiveFileList a list of all files and directories inside of dir.
-func RecursiveFileList(dir string) ([]*ExtendedFileInfo, error) {
+// RecursiveFileList a list of all items inside of dir.
+// If includeIrregulars is false, this will NOT return links, pipes,
+// devices, or anything else besides regular files and directories.
+//
+// We generally do want to omit items like symlinks, pipes, etc.
+// when bagging because we cannot bag them.
+func RecursiveFileList(dir string, includeIrregulars bool) ([]*ExtendedFileInfo, error) {
 	files := make([]*ExtendedFileInfo, 0)
 	err := filepath.Walk(dir, func(filePath string, f os.FileInfo, err error) error {
-		files = append(files, NewExtendedFileInfo(filePath, f))
+		if f.Mode().IsRegular() || f.Mode().IsDir() || includeIrregulars {
+			files = append(files, NewExtendedFileInfo(filePath, f))
+		}
 		return nil
 	})
 	return files, err
@@ -133,7 +140,7 @@ func GetDirectoryStats(dir string) *DirectoryStats {
 		return dirStats
 	}
 	dirStats.RootIsFile = !rootStat.IsDir()
-	items, err := RecursiveFileList(dir)
+	items, err := RecursiveFileList(dir, false)
 	if err != nil {
 		dirStats.Error = err.Error()
 		return dirStats

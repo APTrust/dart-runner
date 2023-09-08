@@ -34,7 +34,7 @@ func TestBaggerRun_BTR(t *testing.T) {
 }
 
 func testBaggerRun(t *testing.T, bagName, profileName string) {
-	files, err := util.RecursiveFileList(util.PathToTestData())
+	files, err := util.RecursiveFileList(util.PathToTestData(), false)
 	require.Nil(t, err)
 	bagger := getBagger(t, bagName, profileName, files)
 	defer os.Remove(bagger.OutputPath)
@@ -63,7 +63,7 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 
 	// In addition to being valid, make sure the payload
 	// has everything we expect.
-	xFileInfoList, err := util.RecursiveFileList(util.PathToTestData())
+	xFileInfoList, err := util.RecursiveFileList(util.PathToTestData(), false)
 	require.Nil(t, err)
 	assertAllPayloadFilesPresent(t, xFileInfoList, validator.PayloadFiles.Files)
 
