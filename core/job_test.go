@@ -145,4 +145,5 @@ func TestJobFromWorkflow(t *testing.T) {
 	assert.NotNil(t, job.BagItProfile)
 	assert.Equal(t, workflow.BagItProfile.ID, job.BagItProfile.ID)
 	assert.Equal(t, len(workflow.StorageServices), len(job.UploadOps))
+	assert.Equal(t, workflow.PackageFormat, job.PackageOp.PackageFormat)
 }

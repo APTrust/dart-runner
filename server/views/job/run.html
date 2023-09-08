@@ -94,7 +94,7 @@
       showDivs(jobId)
       let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
-          // console.log(event)
+          //console.log(event)
           if (!event.data) {
             console.log("Malformed message")
             console.log(event)
@@ -152,8 +152,8 @@
     }
 
     function renderInfo(data, jobId) {
-      let divName = data.stage + "Info"
-      var [detailDiv, progressBar] = getDivs(jobId, divName);
+      let section = data.stage + "Info"
+      var [detailDiv, progressBar] = getDivs(jobId, section);
       // A job can include multiple uploads. For each new
       // upload, we want to set the progress bar back to 
       // zero and render it in blue.
@@ -163,21 +163,22 @@
       if (data.eventType == "finish") {
         // console.log(data)
         if (data.status == "success") {
-          if (divName == "") {
+          if (section == "") {
             completedUploads.push(data.message)
             markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"))
           } else {
             markSuccess(detailDiv, progressBar, data.message)
           }
+          activateOutputPathLink()
         } else if (data.status == "failed") { 
           // Finish with error. Note that detail div here is the outcome
           // div, not the div for the current stage, because job has finished.
           detailDiv = $(`#${jobId} div.outcome div.detail div.message`);
           markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
-        } else { // info message
-          detailDiv.text(data.message)
-          setProgressBar(progressBar, data);
         }
+      } else { // info message
+        detailDiv.text(data.message)
+        setProgressBar(progressBar, data);
       }
     }
 
@@ -281,6 +282,15 @@
       return html
     }
 
+    function activateOutputPathLink() {
+      var separator = '{{ .pathSeparator }}'
+      var div = $('#output-path-link')
+      var url = div.data('url')
+      var dir = url.split(separator).slice(0, -1).join(separator)
+      console.log(dir)
+      var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`
+      div.html(html)
+    }
 </script>
 
 {{ template "partials/page_footer.html" .}}

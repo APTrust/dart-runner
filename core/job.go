@@ -69,7 +69,10 @@ func JobFromWorkflow(workflow *Workflow) *Job {
 	workflow.resolveStorageServices()
 	job := NewJob()
 	job.WorkflowID = workflow.ID
-	job.BagItProfile = workflow.BagItProfile
+	if workflow.BagItProfile != nil {
+		job.BagItProfile = workflow.BagItProfile
+		job.PackageOp.PackageFormat = workflow.PackageFormat
+	}
 	for _, ss := range workflow.StorageServices {
 		files := make([]string, 0)
 		uploadOp := NewUploadOperation(ss, files)

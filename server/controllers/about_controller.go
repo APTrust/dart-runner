@@ -42,6 +42,8 @@ func OpenExternalUrl(c *gin.Context) {
 	command := "open"
 	if runtime.GOOS == "windows" {
 		command = "start"
+	} else if runtime.GOOS == "linux" {
+		command = "xdg-open"
 	}
 	cmd := exec.Command(command, externalUrl)
 	runCommand(c, cmd)

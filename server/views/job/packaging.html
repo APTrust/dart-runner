@@ -54,9 +54,9 @@ function setOutputPath() {
   if (packageName && !packageName.endsWith(extension)) {
     packageName += extension;
   }
-  if (extension == '') {
-    packageName = packageName.replace(/\.\w+$/, '')
-  }
+  //if (extension == '') {
+  //  packageName = packageName.replace(/\.\w+$/, '')
+  //}
   var outputPath = $('#Job_OutputPath').val()
   var separator = "{{ .pathSeparator }}"
   var newOutputPath = ""

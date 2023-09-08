@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -27,8 +28,9 @@ func JobRunShow(c *gin.Context) {
 	byteCount := p.Sprintf("%d", job.ByteCount)
 
 	data := gin.H{
-		"job":       job,
-		"byteCount": byteCount,
+		"job":           job,
+		"byteCount":     byteCount,
+		"pathSeparator": string(os.PathSeparator),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
