@@ -18,11 +18,13 @@ func JobShowFiles(c *gin.Context) {
 	directory := c.Query("directory")
 	job, items, err := GetJobAndDirList(c.Param("id"), directory)
 	if err != nil {
-		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
 	}
 	defaultPaths, err := core.Dart.Paths.DefaultPaths()
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
 	}
 	parentDir, parentDirShortName := GetParentDir(directory)
 	showParentDirLink := directory != "" && directory != parentDir
