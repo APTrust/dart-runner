@@ -14,7 +14,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-// GET /jobs/run/:id
+// GET /jobs/summary/:id
 func JobRunShow(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {

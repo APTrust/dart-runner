@@ -20,6 +20,26 @@ func init() {
 	dartServer = server.InitAppEngine(true)
 }
 
+type TestResponseRecorder struct {
+	*httptest.ResponseRecorder
+	closeChannel chan bool
+}
+
+func (r *TestResponseRecorder) CloseNotify() <-chan bool {
+	return r.closeChannel
+}
+
+func (r *TestResponseRecorder) CloseClient() {
+	r.closeChannel <- true
+}
+
+func CreateTestResponseRecorder() *TestResponseRecorder {
+	return &TestResponseRecorder{
+		httptest.NewRecorder(),
+		make(chan bool, 1),
+	}
+}
+
 type PostTestSettings struct {
 	EndpointUrl              string
 	Params                   url.Values
@@ -71,7 +91,7 @@ func PostUrl(t *testing.T, settings PostTestSettings) string {
 
 func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
 	html := GetUrl(t, endpointUrl)
-	// fmt.Println(html)
+	//fmt.Println(html)
 	ok, notFound := AssertContainsAllStrings(html, expected)
 	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
 }
