@@ -47,10 +47,13 @@ func JobSavePackaging(c *gin.Context) {
 	job.PackageOp.PackageName = c.PostForm("PackageName")
 
 	bagItProfileID := c.PostForm("BagItProfileID")
-	if job.BagItProfile == nil || job.BagItProfile.ID != bagItProfileID {
+	if bagItProfileID == "" {
+		job.BagItProfile = nil
+	} else if job.BagItProfile == nil || job.BagItProfile.ID != bagItProfileID {
 		profileResult := core.ObjFind(bagItProfileID)
 		if profileResult.Error != nil {
-			AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+			err := fmt.Errorf("BagIt Profile: %s", result.Error.Error())
+			AbortWithErrorHTML(c, http.StatusNotFound, err)
 			return
 		}
 		job.BagItProfile = profileResult.BagItProfile()

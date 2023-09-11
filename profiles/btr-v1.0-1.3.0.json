@@ -24,6 +24,38 @@
 	"tagManifestsAllowed": ["md5", "sha1", "sha256", "sha512"],
 	"tagManifestsRequired": [],
 	"tags": [{
+		"id": "b6013d2d-2e71-4db0-b555-62e3f410ae3b",
+		"tagFile": "bagit.txt",
+		"tagName": "BagIt-Version",
+		"required": true,
+		"values": [
+			"0.97",
+			"1.0"
+		],
+		"defaultValue": "0.97",
+		"userValue": "",
+		"help": "Which version of the BagIt specification describes this bag's format?",
+		"isBuiltIn": false,
+		"isUserAddedFile": false,
+		"isUserAddedTag": false,
+		"wasAddedForJob": false,
+		"errors": {}
+	},
+	{
+		"id": "8414729a-d9ee-44df-bf60-2a166f0bda5b",
+		"tagFile": "bagit.txt",
+		"tagName": "Tag-File-Character-Encoding",
+		"required": true,
+		"values": [],
+		"defaultValue": "UTF-8",
+		"userValue": "",
+		"help": "How are this bag's plain-text tag files encoded? (Hint: usually UTF-8)",
+		"isBuiltIn": false,
+		"isUserAddedFile": false,
+		"isUserAddedTag": false,
+		"wasAddedForJob": false,
+		"errors": {}
+	},{
 		"defaultValue": "",
 		"emptyOK": true,
 		"help": "",

@@ -370,7 +370,7 @@ func (job *Job) ToForm() *Form {
 		bagitProfileID = job.BagItProfile.ID
 		// TODO: Include serializations allowed in profile, if DART supports them.
 	}
-	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile ID", bagitProfileID, false)
+	bagItProfile := form.AddField("BagItProfileID", "BagIt Profile", bagitProfileID, false)
 	bagItProfile.Choices = ObjChoiceList(constants.TypeBagItProfile, []string{bagitProfileID})
 	bagItProfile.Help = "Choose the BagIt profile to which your bag should conform."
 
@@ -378,7 +378,7 @@ func (job *Job) ToForm() *Form {
 	packageFormat := form.AddField("PackageFormat", "Package Format", job.PackageOp.PackageFormat, true)
 	packageFormat.Choices = MakeChoiceList(constants.PackageFormats, job.PackageOp.PackageFormat)
 
-	serialization := form.AddField("BagItSerialization", "BagItSerialization", job.PackageOp.BagItSerialization, true)
+	serialization := form.AddField("BagItSerialization", "BagIt Serialization", job.PackageOp.BagItSerialization, true)
 	serialization.Choices = MakeChoiceList(serializationOptions, job.PackageOp.BagItSerialization)
 	serialization.Help = "How should this bag be serialized or compressed?"
 

@@ -71,6 +71,7 @@ func PostUrl(t *testing.T, settings PostTestSettings) string {
 
 func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
 	html := GetUrl(t, endpointUrl)
+	// fmt.Println(html)
 	ok, notFound := AssertContainsAllStrings(html, expected)
 	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
 }
