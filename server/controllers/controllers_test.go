@@ -1,42 +1,79 @@
 package controllers_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/server"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+// dartServer is an instance of our server used for testing.
+// All of our HTTP GET and POST tests will run against this.
 var dartServer *gin.Engine
 
 func init() {
 	dartServer = server.InitAppEngine(true)
 }
 
-type TestResponseRecorder struct {
+// StreamRecorder is a special instance of
+// httptest.ResponseRecorder that supports CloseNotify
+// so we can test endpoints that generate server-sent
+// events.
+type StreamRecorder struct {
 	*httptest.ResponseRecorder
 	closeChannel chan bool
+	EventCount   int
+	ResultEvent  *core.EventMessage
+	LastEvent    *core.EventMessage
+	mutex        sync.RWMutex
 }
 
-func (r *TestResponseRecorder) CloseNotify() <-chan bool {
+func (r *StreamRecorder) CloseNotify() <-chan bool {
 	return r.closeChannel
 }
 
-func (r *TestResponseRecorder) CloseClient() {
+func (r *StreamRecorder) Write(data []byte) (int, error) {
+	r.mutex.Lock()
+	r.EventCount += 1
+	eventMessage := &core.EventMessage{}
+	err := json.Unmarshal(data, eventMessage)
+	if err == nil {
+		if eventMessage.JobResult != nil {
+			r.ResultEvent = eventMessage
+		}
+		if eventMessage.EventType == constants.EventTypeDisconnect {
+			r.LastEvent = eventMessage
+			r.close()
+			r.Flushed = true
+		}
+	}
+	r.mutex.Unlock()
+	return r.ResponseRecorder.Write(data)
+}
+
+func (r *StreamRecorder) close() {
 	r.closeChannel <- true
 }
 
-func CreateTestResponseRecorder() *TestResponseRecorder {
-	return &TestResponseRecorder{
+func NewStreamRecorder() *StreamRecorder {
+	return &StreamRecorder{
 		httptest.NewRecorder(),
 		make(chan bool, 1),
+		0,
+		nil,
+		nil,
+		sync.RWMutex{},
 	}
 }
 

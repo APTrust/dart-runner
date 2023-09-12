@@ -49,21 +49,35 @@ func JobRunExecute(c *gin.Context) {
 	}
 	job := result.Job()
 
-	// TODO: Emit specific message types, such as
+	// The subcomponents of core.RunJob handle packaging,
+	// validation and uploading. These compenents will push
+	// event messages into the message channel, and the call
+	// to c.SSEvent below pushes them out to the client as
+	// server-sent events.
 	//
-	// - package/validate/upload started & completed
-	// - package - file added
-	// - validate - file checksum verified
-	// - upload - bytes written
-
+	// A JavaScript listener on the client displays the messages
+	// as the come in, and it adjusts the progress bars on
+	// the "job run" page.
 	messageChannel := make(chan *core.EventMessage)
 	go func() {
 
 		// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
 
 		//defer close(messageChannel)
+
+		// core.RunJobWithMessageChannel will run the entire job,
+		// pumping messages through the message channel as it goes.
+		// It will not return until it's done. An exit code of zero
+		// indicates success. See constants.go for the meanings of
+		// other exit codes.
 		exitCode := core.RunJobWithMessageChannel(job, false, messageChannel)
-		//c.SSEvent("message", fmt.Sprintf("Exit code = %d", returnCode))
+
+		// At this point, the job has completed, and we need to create
+		// the final disconnect event to tell the front end to stop
+		// listening for server-sent events. This is the last message
+		// we'll send. When the front end gets this, it terminates
+		// the server-sent event connection. The call to c.Stream() below
+		// will return when the connection is terminated.
 		status := constants.StatusFailed
 		if exitCode == constants.ExitOK {
 			status = constants.StatusSuccess
@@ -76,6 +90,11 @@ func JobRunExecute(c *gin.Context) {
 		c.SSEvent("message", eventMessage)
 	}()
 
+	// While the job runner is pumping events into one end of
+	// our message channel, we need a listener on the other end
+	// to do something with those events. The streamer merely
+	// receives events from the job runner and passes them out
+	// to the client as server-sent events.
 	streamer := func(w io.Writer) bool {
 		if msg, ok := <-messageChannel; ok {
 			c.SSEvent("message", msg)
@@ -93,9 +112,21 @@ func JobRunExecute(c *gin.Context) {
 	// Just give the front-end time to attach its event handler.
 	time.Sleep(200 * time.Millisecond)
 
-	clientDisconnected := c.Stream(streamer)
-	if clientDisconnected {
-		// core.Dart.Log.Error("While running job, client disconnected in middle of stream.")
-		fmt.Println("While running job, client disconnected in middle of stream.")
-	}
+	// At this point, we have a job running in a separate go routine,
+	// and a streamer set up to pass job events along to the client.
+	//
+	// The last thing we need to do is attach the streamer to gin's
+	// io.Writer, which is the pipe through which messages are written
+	// to the client. The c.Stream() function keeps writing until the
+	// remote client disconnects. Note that c.Stream() blocks until
+	// the client disconnects.
+	//
+	// When that happens, we flush out whatever remains in the write
+	// buffer and tell gin's output writer that it's OK to close.
+	// If we don't call CloseNotify(), the connection will hang
+	// indefinitely
+	c.Stream(streamer)
+	c.Writer.Flush()
+	<-c.Writer.CloseNotify()
+	fmt.Println("Job Execute: client disconnected.")
 }

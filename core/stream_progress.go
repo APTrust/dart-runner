@@ -10,7 +10,7 @@ import (
 // StreamProgress sends info from an upload/download stream into
 // a message channel so we can report upload/download progress to
 // the user. When running in GUI mode, the S3 and SFTP clients send
-// EventMessages to the front-end via server-side events, and the
+// EventMessages to the front-end via server-sent events, and the
 // front end updates a progress bar.
 type StreamProgress struct {
 	Total          int64

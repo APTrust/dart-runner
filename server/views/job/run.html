@@ -94,7 +94,7 @@
       showDivs(jobId)
       let eventSrc = new EventSource("/jobs/run/" + jobId)
         eventSrc.onmessage = (event) => {
-          //console.log(event)
+          console.log(event)
           if (!event.data) {
             console.log("Malformed message")
             console.log(event)
@@ -161,7 +161,7 @@
         initProgressBar(jobId, 'uploadInfo')
       }
       if (data.eventType == "finish") {
-        // console.log(data)
+        //console.log(data)
         if (data.status == "success") {
           if (section == "") {
             completedUploads.push(data.message)
