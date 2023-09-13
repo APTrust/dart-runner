@@ -87,7 +87,7 @@ func JobRunExecute(c *gin.Context) {
 			Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
 			Status:    status,
 		}
-		c.SSEvent("message", eventMessage)
+		messageChannel <- eventMessage
 	}()
 
 	// While the job runner is pumping events into one end of
@@ -98,7 +98,13 @@ func JobRunExecute(c *gin.Context) {
 	streamer := func(w io.Writer) bool {
 		if msg, ok := <-messageChannel; ok {
 			c.SSEvent("message", msg)
-			return true
+			if msg.EventType != constants.EventTypeDisconnect {
+				return true
+			}
+		}
+		err := core.ObjSave(job)
+		if err != nil {
+			core.Dart.Log.Error("Error saving job %s after run: %v", job.ID, err)
 		}
 		return false
 	}
@@ -121,12 +127,8 @@ func JobRunExecute(c *gin.Context) {
 	// remote client disconnects. Note that c.Stream() blocks until
 	// the client disconnects.
 	//
-	// When that happens, we flush out whatever remains in the write
-	// buffer and tell gin's output writer that it's OK to close.
-	// If we don't call CloseNotify(), the connection will hang
-	// indefinitely
+	// The client should disconnect when we send it the disconnect event.
 	c.Stream(streamer)
 	c.Writer.Flush()
-	<-c.Writer.CloseNotify()
 	fmt.Println("Job Execute: client disconnected.")
 }

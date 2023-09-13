@@ -62,6 +62,10 @@ func (r *StreamRecorder) Write(data []byte) (int, error) {
 	return r.ResponseRecorder.Write(data)
 }
 
+func (r *StreamRecorder) WriteString(data []byte) (int, error) {
+	return r.Write([]byte(data))
+}
+
 func (r *StreamRecorder) close() {
 	r.closeChannel <- true
 }
