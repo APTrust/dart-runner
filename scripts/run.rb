@@ -33,7 +33,7 @@ class Runner
 
   def run_dart
     begin
-      @dart_pid = Process.spawn(ENV, "go run dart/main.go", chdir: project_root)
+      @dart_pid = Process.spawn(ENV, "go run -race dart/main.go", chdir: project_root)
       sleep(1)
       puts "\n\n\n"
       puts "DART is running at http://localhost:8080"

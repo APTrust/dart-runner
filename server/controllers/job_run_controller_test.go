@@ -41,6 +41,10 @@ func TestJobRunShow(t *testing.T) {
 	DoSimpleGetTest(t, pageUrl, expectedContent)
 }
 
+// See:
+// https://github.com/r3labs/sse or using a
+// https://blog.lucaskatayama.com/posts/go/2020/08/sse-with-gin/.
+
 func TestJobRunExecute(t *testing.T) {
 	// This requires use of StreamRecorder to capture server-sent events.
 	// This also requires a local running Minio server to receive the
