@@ -2,9 +2,14 @@ package controllers_test
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/server/controllers"
+	"github.com/APTrust/dart-runner/util"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,15 +28,97 @@ func TestJobShowUpload(t *testing.T) {
 }
 
 func TestJobSaveUpload(t *testing.T) {
+	defer core.ClearDartTable()
+	info := GetJobUploadTestInfo(t)
+	job := info.Job
+
+	params := url.Values{}
+	params.Set("direction", "next")
+	for i := 0; i < 3; i++ {
+		params.Add("UploadTargets", info.ServiceIds[i])
+	}
+
+	// Submit the New App Setting form with valid params.
+	settings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/jobs/upload/%s", job.ID),
+		Params:                   params,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: fmt.Sprintf("/jobs/summary/%s", job.ID),
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure settings were saved.
+	job = core.ObjFind(job.ID).Job()
+	require.NotNil(t, job)
+	assert.Equal(t, 3, len(job.UploadOps))
+	for i, op := range job.UploadOps {
+		assert.Equal(t, info.ServiceIds[i], op.StorageService.ID)
+	}
+
+	// If direction == previous, make sure we get the right redirect.
+	params.Set("direction", "previous")
+	settings = PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/jobs/upload/%s", job.ID),
+		Params:                   params,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: fmt.Sprintf("/jobs/metadata/%s", job.ID),
+	}
+	DoSimplePostTest(t, settings)
 
 }
 
 func TestGetUploadTargetsForm(t *testing.T) {
+	defer core.ClearDartTable()
+	info := GetJobUploadTestInfo(t)
+	job := info.Job
+	for i := 0; i < 3; i++ {
+		op := core.NewUploadOperation(info.Services[i], []string{"file1.txt"})
+		job.UploadOps = append(job.UploadOps, op)
+	}
+	form, err := controllers.GetUploadTargetsForm(job)
+	assert.Nil(t, err)
+	require.NotEmpty(t, form.Fields["UploadTargets"])
 
+	// The form should show one choice for every storage service
+	// in the DB, and only the services used in this job should
+	// be selected.
+	choices := form.Fields["UploadTargets"].Choices
+	assert.Equal(t, len(info.ServiceIds), len(choices))
+	servicesUsed := make([]string, len(job.UploadOps))
+	for i, op := range job.UploadOps {
+		servicesUsed[i] = op.StorageService.ID
+	}
+	for _, choice := range choices {
+		if util.StringListContains(servicesUsed, choice.Value) {
+			assert.True(t, choice.Selected)
+		} else {
+			assert.False(t, choice.Selected)
+		}
+	}
 }
 
 func TestAlreadySelectedTargets(t *testing.T) {
+	defer core.ClearDartTable()
 
+	// Job starts with one upload op. Make sure we know
+	// it's selected.
+	info := GetJobUploadTestInfo(t)
+	serviceIds := controllers.AlreadySelectedTargets(info.Job)
+	assert.Equal(t, len(info.Job.UploadOps), len(serviceIds))
+	for i, op := range info.Job.UploadOps {
+		assert.Equal(t, op.StorageService.ID, serviceIds[i])
+	}
+
+	// Add some more upload ops and make sure they're selected.
+	for i := 0; i < 3; i++ {
+		op := core.NewUploadOperation(info.Services[i], []string{"file.txt"})
+		info.Job.UploadOps = append(info.Job.UploadOps, op)
+	}
+	serviceIds = controllers.AlreadySelectedTargets(info.Job)
+	assert.Equal(t, len(info.Job.UploadOps), len(serviceIds))
+	for i, op := range info.Job.UploadOps {
+		assert.Equal(t, op.StorageService.ID, serviceIds[i])
+	}
 }
 
 func GetJobUploadTestInfo(t *testing.T) JobUploadTestInfo {
