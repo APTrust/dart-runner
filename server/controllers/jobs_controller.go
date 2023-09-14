@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /jobs/delete/:id
+// PUT /jobs/delete/:id
 // POST /jobs/delete/:id
 func JobDelete(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))
