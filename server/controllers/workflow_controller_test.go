@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path"
 	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -162,19 +164,69 @@ func testWorkflowEdit(t *testing.T, workflow *core.Workflow) {
 }
 
 func testWorkflowDelete(t *testing.T, workflow *core.Workflow) {
+	// Make sure workflow exists in DB before test.
+	workflowBefore := core.ObjFind(workflow.ID).Workflow()
+	require.NotNil(t, workflowBefore)
 
+	settings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/workflows/delete/%s", workflow.ID),
+		Params:                   url.Values{},
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: "/workflows",
+	}
+	DoSimplePostTest(t, settings)
+
+	// Make sure it was deleted
+	// Make sure workflow exists in DB before test.
+	workflowAfter := core.ObjFind(workflow.ID).Workflow()
+	require.Nil(t, workflowAfter)
 }
 
 func TestWorkflowIndex(t *testing.T) {
 	defer core.ClearDartTable()
-}
 
-func TestWorkflowSave(t *testing.T) {
-	defer core.ClearDartTable()
+	// Create five workflows
+	job := loadTestJob(t)
+	require.NoError(t, core.ObjSave(job.BagItProfile))
+	for _, op := range job.UploadOps {
+		require.NoError(t, core.ObjSave(op.StorageService))
+	}
+	workflows := make([]*core.Workflow, 5)
+	for i := 0; i < 5; i++ {
+		w, err := core.WorkFlowFromJob(job)
+		require.Nil(t, err)
+		w.Name = fmt.Sprintf("Workflow for list test %d", i+1)
+		w.Description = fmt.Sprintf("Workflow description %d", i+1)
+		require.NoError(t, core.ObjSave(w))
+		workflows[i] = w
+	}
+
+	// Now make sure the list page shows them all
+	expected := make([]string, 0)
+	for _, w := range workflows {
+		expected = append(expected, w.ID, w.Name, w.Description)
+	}
+	DoSimpleGetTest(t, "/workflows", expected)
 }
 
 func TestWorkflowExport(t *testing.T) {
 	defer core.ClearDartTable()
+	filepath := path.Join(util.ProjectRoot(), "testdata", "files", "postbuild_test_workflow.json")
+	workflow, err := core.WorkflowFromJson(filepath)
+	require.Nil(t, err)
+	require.NotNil(t, workflow)
+	require.NoError(t, core.ObjSave(workflow))
+
+	expected := []string{
+		workflow.ID,
+		workflow.Name,
+		workflow.Description,
+		workflow.BagItProfile.ID,
+		workflow.BagItProfile.Description,
+		workflow.StorageServices[0].ID,
+		workflow.StorageServices[0].Name,
+	}
+	DoSimpleGetTest(t, fmt.Sprintf("/workflows/export/%s", workflow.ID), expected)
 }
 
 func TestWorkflowRun(t *testing.T) {
