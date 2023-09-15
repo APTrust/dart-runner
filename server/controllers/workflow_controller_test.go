@@ -211,11 +211,7 @@ func TestWorkflowIndex(t *testing.T) {
 
 func TestWorkflowExport(t *testing.T) {
 	defer core.ClearDartTable()
-	filepath := path.Join(util.ProjectRoot(), "testdata", "files", "postbuild_test_workflow.json")
-	workflow, err := core.WorkflowFromJson(filepath)
-	require.Nil(t, err)
-	require.NotNil(t, workflow)
-	require.NoError(t, core.ObjSave(workflow))
+	workflow := loadTestWorkflow(t)
 
 	expected := []string{
 		workflow.ID,
@@ -231,8 +227,43 @@ func TestWorkflowExport(t *testing.T) {
 
 func TestWorkflowRun(t *testing.T) {
 	defer core.ClearDartTable()
+	workflow := loadTestWorkflow(t)
+
+	// This is another AJAX endpoint that returns JSON
+	// on success.
+	endpointUrl := fmt.Sprintf("/workflows/run/%s", workflow.ID)
+	params := url.Values{}
+	w := httptest.NewRecorder()
+	req, err := NewPostRequest(endpointUrl, params)
+	require.Nil(t, err)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	responseData := make(map[string]string)
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &responseData))
+	assert.True(t, strings.HasPrefix(responseData["location"], "/jobs/files/"))
+
+	// Make sure the system created a job from this workflow.
+	parts := strings.Split(responseData["location"], "/")
+	uuid := parts[len(parts)-1]
+	job := core.ObjFind(uuid).Job()
+	require.NotNil(t, job)
+	assert.Equal(t, workflow.ID, job.WorkflowID)
 }
 
 func TestWorkflowRunBatch(t *testing.T) {
 	// TODO: Implement "run batch" first
+}
+
+func loadTestWorkflow(t *testing.T) *core.Workflow {
+	filepath := path.Join(util.ProjectRoot(), "testdata", "files", "postbuild_test_workflow.json")
+	workflow, err := core.WorkflowFromJson(filepath)
+	require.Nil(t, err)
+	require.NotNil(t, workflow)
+	require.NoError(t, core.ObjSave(workflow))
+	require.NoError(t, core.ObjSave(workflow.BagItProfile))
+	for _, ss := range workflow.StorageServices {
+		require.NoError(t, core.ObjSave(ss))
+	}
+	return workflow
 }
