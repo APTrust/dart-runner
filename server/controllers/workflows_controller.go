@@ -103,6 +103,7 @@ func WorkflowSave(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusBadRequest, err)
 		return
 	}
+	workflow.ID = c.Param("id")
 	profileID := c.PostForm("BagItProfileID")
 	if util.LooksLikeUUID(profileID) {
 		result := core.ObjFind(profileID)
