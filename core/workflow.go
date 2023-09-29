@@ -246,3 +246,14 @@ func (w *Workflow) HasPlaintextPasswords() bool {
 	}
 	return false
 }
+
+// NewWorkflowBatchForm returns a form that allows a user to
+// specify which workflow they want to run, and which CSV file
+// to run through that workflow.
+func NewWorkflowBatchForm(workflowID, pathToCSVFile string) *Form {
+	form := NewForm("WorkflowBatch", "ID not applicable to this type", nil)
+	form.AddField("PathToCSVFile", "CSV Batch File", pathToCSVFile, true)
+	idField := form.AddField("WorkflowID", "Choose a Workflow", workflowID, true)
+	idField.Choices = ObjChoiceList(constants.TypeWorkflow, []string{workflowID})
+	return form
+}

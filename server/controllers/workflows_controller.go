@@ -169,7 +169,33 @@ func WorkflowRun(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
+// GET /workflows/batch
+func WorkflowShowBatchForm(c *gin.Context) {
+
+}
+
 // POST /workflows/runbatch/:id
 func WorkflowRunBatch(c *gin.Context) {
-
+	//
+	// Set up SSE emitter.
+	//
+	// reset display
+	// load workflow & batch file
+	// validate workflow
+	// validate batch file
+	// if errors, send through SSE, send disconnect & stop.
+	//
+	// If no errors, send SSE message to clear display,
+	// then run batch:
+	//
+	// runner := NewWorkflowRunnerWithMessageChannel()
+	// runner.Run()
+	//
+	// Each new job in batch should send message to clear/reset display
+	// at start, and should send success/failure at end, so we can set
+	// the green check or red X. It would also be nice to send details
+	// to the front end about what failed and why in each job.
+	//
+	// Also, front end should warn on window close or navigation change
+	// if jobs are running.
 }

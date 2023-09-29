@@ -41,12 +41,38 @@ type WorkflowRunner struct {
 // shouldn't set concurrency too high because bagging and other forms of
 // packaging do a lot of disk reading and writing. Concurrency significantly
 // above 2 will probably lead to disk thrashing.
+//
+// Note that this constructor is for running a workflow without a GUI.
+// See NewWorkflowRunnerWithMessageChannel() to run a workflow that sends
+// a running stream of status events back to the GUI.
+//
+// Param workflowFile is the path to a file containing a JSON representation of
+// the workflow you want to run.
+//
+// csvFile is the path to the csv file containing info about what items
+// to bag and what tag values to apply to each bag. See
+// https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/
+// for a description of the csv file and an example of what it looks like.
+// This should be an absolute path.
+//
+// outputDir is the path the output directory where DART will write
+// the bags it creates. This should be an absolute path.
+//
+// cleanup describes whether or not DART should delete the bags it
+// creates after successful upload.
+//
+// concurrency describes how many jobs you want to run at once. In some
+// environments, you can set this to 2 or more to get better throughput.
+// (E.g. if you're reading from and writing to network attached storage
+// on a high-performance file server). But in most cases where you're
+// reading from and writing to a single local disk, you'll want to set
+// this to 1.
 func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup bool, concurrency int) (*WorkflowRunner, error) {
 	if concurrency < 1 {
-		return nil, fmt.Errorf("Concurrency must be >= 1.")
+		return nil, fmt.Errorf("concurrency must be >= 1")
 	}
 	if !util.FileExists(outputDir) {
-		return nil, fmt.Errorf("Output directory '%s' does not exist. You must create it first.", outputDir)
+		return nil, fmt.Errorf("output directory '%s' does not exist; you must create it first", outputDir)
 	}
 	workflowCSVFile, err := NewWorkflowCSVFile(csvFile)
 	if err != nil {
@@ -74,8 +100,59 @@ func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup bool, co
 	}
 	// Create one or more workers to run jobs.
 	for i := 0; i < concurrency; i++ {
-		go runner.runAsync()
+		go runner.listenForJobs(nil)
 	}
+	return runner, nil
+}
+
+// NewWorkflowRunnerWithMessageChannel creates a new workflow runner
+// that sends status events back to the GUI. These events tell the user
+// which files are being packaged and validated, and they update the
+// packaging, validation, and upload progress bars.
+//
+// This constructor force concurrency to 1 because at the moment,
+// the UI is capable of reporting on only one process at a time.
+//
+// Param workflowID is the id of the workflow you want to run.
+//
+// csvFile is the path to the csv file containing info about what items
+// to bag and what tag values to apply to each bag. See
+// https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/
+// for a description of the csv file and an example of what it looks like.
+// This should be an absolute path.
+//
+// outputDir is the path the output directory where DART will write
+// the bags it creates. This should be an absolute path.
+//
+// cleanup describes whether or not DART should delete the bags it
+// creates after successful upload.
+//
+// messageChannel is a channel to send status/progress messages back
+// to the front end, so the user can see what's happening.
+func NewWorkflowRunnerWithMessageChannel(workflowID, csvFile, outputDir string, cleanup bool, messageChannel chan *EventMessage) (*WorkflowRunner, error) {
+	if !util.FileExists(outputDir) {
+		return nil, fmt.Errorf("output directory '%s' does not exist; you must create it first", outputDir)
+	}
+	workflowCSVFile, err := NewWorkflowCSVFile(csvFile)
+	if err != nil {
+		return nil, err
+	}
+	result := ObjFind(workflowID)
+	if result.Error != nil {
+		return nil, fmt.Errorf("could not load the specified workflow: %v", result.Error)
+	}
+	workflow := result.Workflow()
+
+	// See note in NewWorkflowRunner above about creating workflow runner.
+	runner := &WorkflowRunner{
+		Workflow:    workflow,
+		CSVFile:     workflowCSVFile,
+		OutputDir:   outputDir,
+		Cleanup:     cleanup,
+		Concurrency: 1,
+		jobChannel:  make(chan *Job, 1),
+	}
+	go runner.listenForJobs(messageChannel)
 	return runner, nil
 }
 
@@ -100,12 +177,17 @@ func (r *WorkflowRunner) Run() int {
 	return r.getExitCode()
 }
 
-// runAsync listens for new jobs on on a go channel and runs
-// those jobs as they appear. It should run up to concurrency jobs
-// at once.
-func (r *WorkflowRunner) runAsync() {
+// listenForJobs listens for new jobs on on a go channel and runs
+// those jobs as they appear. It should run up to
+// WorkflowRunner.Concurrency jobs at once.
+func (r *WorkflowRunner) listenForJobs(messageChannel chan *EventMessage) {
 	for job := range r.jobChannel {
-		retVal := RunJob(job, r.Cleanup, false)
+		var retVal int
+		if messageChannel != nil {
+			retVal = RunJobWithMessageChannel(job, r.Cleanup, messageChannel)
+		} else {
+			retVal = RunJob(job, r.Cleanup, false)
+		}
 		if retVal == constants.ExitOK {
 			r.sCountMutex.Lock()
 			r.SuccessCount++

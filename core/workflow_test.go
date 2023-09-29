@@ -18,14 +18,14 @@ func loadJsonWorkflow(t *testing.T) *core.Workflow {
 	workflow, err := core.WorkflowFromJson(pathToFile)
 	require.Nil(t, err)
 	require.NotNil(t, workflow)
+	require.True(t, workflow.Validate(), workflow.Errors)
+	require.Empty(t, workflow.Errors)
+	require.NotNil(t, workflow.BagItProfile)
 	return workflow
 }
 
 func TestWorkflowFromJson(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
-	require.NotNil(t, workflow.BagItProfile)
-
-	require.True(t, workflow.Validate(), workflow.Errors)
 
 	// Spot check the workflow's BagIt profile.
 	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
@@ -79,9 +79,6 @@ func TestWorkflowFromJob(t *testing.T) {
 
 func TestWorkflowValidate(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
-	assert.True(t, workflow.Validate())
-	assert.Empty(t, workflow.Errors)
-
 	workflow.BagItProfile.ManifestsAllowed = make([]string, 0)
 	workflow.StorageServices[0].Host = ""
 	assert.False(t, workflow.Validate())
@@ -93,8 +90,6 @@ func TestWorkflowValidate(t *testing.T) {
 func TestWorkflowLoadSaveDelete(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
-	assert.True(t, workflow.Validate())
-	assert.Empty(t, workflow.Errors)
 
 	idFor := make(map[string]string)
 
@@ -128,9 +123,6 @@ func TestWorkflowLoadSaveDelete(t *testing.T) {
 func TestWorkflowExportJson(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
-	assert.True(t, workflow.Validate())
-	assert.Empty(t, workflow.Errors)
-
 	jsonBytes, err := workflow.ExportJson()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, jsonBytes)
@@ -139,9 +131,6 @@ func TestWorkflowExportJson(t *testing.T) {
 
 func TestWorkflowHasPlaintextPasswords(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
-	assert.True(t, workflow.Validate())
-	assert.Empty(t, workflow.Errors)
-
 	// env passwords come from the environment,
 	// so they're not embedded as plain text in
 	// the JSON export.
@@ -168,4 +157,44 @@ func TestWorkflowHasPlaintextPasswords(t *testing.T) {
 		ss.Password = "secret"
 	}
 	assert.True(t, workflow.HasPlaintextPasswords())
+}
+
+func TestNewWorkflowBatchForm(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadJsonWorkflow(t)
+
+	// Make 5 workflows, so we'll have something to
+	// show in our select list.
+	workflows := make(map[string]string)
+	for i := 0; i < 5; i++ {
+		name := fmt.Sprintf("Workflow %d", i+1)
+		id := uuid.NewString()
+		workflow.Name = name
+		workflow.ID = id
+		require.Nil(t, core.ObjSave(workflow))
+		workflows[name] = id
+	}
+
+	form := core.NewWorkflowBatchForm(workflows["Workflow 3"], "/path/to/file.csv")
+	require.Equal(t, 2, len(form.Fields))
+
+	// Make sure path field is present and set correctly
+	assert.Equal(t, "/path/to/file.csv", form.Fields["PathToCSVFile"].Value)
+
+	// Now test the workflow choices. This should appear in alpha
+	// order, and Workflow 3 should be selected.
+	workflowChoices := form.Fields["WorkflowID"].Choices
+	require.Equal(t, 5, len(workflowChoices))
+
+	i := 0
+	for name, id := range workflows {
+		assert.Equal(t, name, workflowChoices[i].Label, i)
+		assert.Equal(t, id, workflowChoices[i].Value, i)
+		if name == "Workflow 3" {
+			assert.True(t, workflowChoices[i].Selected, i)
+		} else {
+			assert.False(t, workflowChoices[i].Selected, i)
+		}
+		i++
+	}
 }
