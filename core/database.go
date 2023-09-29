@@ -195,7 +195,6 @@ func ObjNameIdList(objType string) []NameIDPair {
 	defer rows.Close()
 	if err == nil {
 		for rows.Next() {
-			// xxxxxxxxxxxxxxxx
 			uuid := ""
 			name := ""
 			err = rows.Scan(&uuid, &name)

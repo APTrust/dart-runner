@@ -171,11 +171,19 @@ func WorkflowRun(c *gin.Context) {
 
 // GET /workflows/batch
 func WorkflowShowBatchForm(c *gin.Context) {
-
+	form := core.NewWorkflowBatchForm("", "")
+	data := gin.H{
+		"form": form,
+	}
+	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }
 
 // POST /workflows/runbatch/:id
 func WorkflowRunBatch(c *gin.Context) {
+
+	// workflowID := c.PostForm("WorkflowID")
+	// pathToCSVFile := c.PostForm("PathToCSVFile")
+
 	//
 	// Set up SSE emitter.
 	//

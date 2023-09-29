@@ -7,11 +7,13 @@
 <p>Run all of the directories listed in a spreadsheet through the same workflow. 
 For more information, see DART's 
 <a href="#Help/openExternal?url=https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/">
-batch workflow documentation.</p>
+batch workflow documentation.</a></p>
 
 <form method="post" action="#" id="{{ .Form.ID }}">
 
   {{ template "partials/input_select.html" dict "field" .form.Fields.WorkflowID }}
+
+  <!-- // TODO: The input below should be some kind of file chooser -->
 
   {{ template "partials/input_text.html" dict "field" .form.Fields.PathToCSVFile }}
   

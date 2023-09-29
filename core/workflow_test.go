@@ -165,17 +165,22 @@ func TestNewWorkflowBatchForm(t *testing.T) {
 
 	// Make 5 workflows, so we'll have something to
 	// show in our select list.
-	workflows := make(map[string]string)
+	workflowIds := make([]string, 5)
+	workflowNames := make([]string, 5)
 	for i := 0; i < 5; i++ {
 		name := fmt.Sprintf("Workflow %d", i+1)
 		id := uuid.NewString()
 		workflow.Name = name
 		workflow.ID = id
 		require.Nil(t, core.ObjSave(workflow))
-		workflows[name] = id
+		workflowIds[i] = id
+		workflowNames[i] = name
 	}
 
-	form := core.NewWorkflowBatchForm(workflows["Workflow 3"], "/path/to/file.csv")
+	// Create the form with "Workflow 3" as the selected
+	// workflow.
+	selectedId := workflowIds[2]
+	form := core.NewWorkflowBatchForm(selectedId, "/path/to/file.csv")
 	require.Equal(t, 2, len(form.Fields))
 
 	// Make sure path field is present and set correctly
@@ -186,15 +191,15 @@ func TestNewWorkflowBatchForm(t *testing.T) {
 	workflowChoices := form.Fields["WorkflowID"].Choices
 	require.Equal(t, 5, len(workflowChoices))
 
-	i := 0
-	for name, id := range workflows {
-		assert.Equal(t, name, workflowChoices[i].Label, i)
-		assert.Equal(t, id, workflowChoices[i].Value, i)
-		if name == "Workflow 3" {
+	for i := 0; i < 5; i++ {
+		expectedName := workflowNames[i]
+		expectedId := workflowIds[i]
+		assert.Equal(t, expectedName, workflowChoices[i].Label, i)
+		assert.Equal(t, expectedId, workflowChoices[i].Value, i)
+		if expectedId == selectedId {
 			assert.True(t, workflowChoices[i].Selected, i)
 		} else {
 			assert.False(t, workflowChoices[i].Selected, i)
 		}
-		i++
 	}
 }
