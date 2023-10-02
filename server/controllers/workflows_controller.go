@@ -171,7 +171,8 @@ func WorkflowRun(c *gin.Context) {
 
 // GET /workflows/runbatch
 func WorkflowShowBatchForm(c *gin.Context) {
-	form := core.NewWorkflowBatchForm("", "")
+	wb := &core.WorkflowBatch{}
+	form := wb.ToForm()
 	data := gin.H{
 		"form": form,
 	}
@@ -183,7 +184,12 @@ func WorkflowRunBatch(c *gin.Context) {
 	hasError := false
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
-	form := core.NewWorkflowBatchForm(workflowID, pathToCSVFile)
+	wb, err := core.NewWorkflowBatch(workflowID, pathToCSVFile)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	form := wb.ToForm()
 	if !util.LooksLikeUUID(workflowID) {
 		form.Fields["WorkflowID"].Error = "Please select a workflow."
 		hasError = true

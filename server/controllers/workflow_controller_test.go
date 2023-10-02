@@ -256,7 +256,7 @@ func TestWorkflowRunBatch(t *testing.T) {
 }
 
 func loadTestWorkflow(t *testing.T) *core.Workflow {
-	filepath := path.Join(util.ProjectRoot(), "testdata", "files", "postbuild_test_workflow.json")
+	filepath := path.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json")
 	workflow, err := core.WorkflowFromJson(filepath)
 	require.Nil(t, err)
 	require.NotNil(t, workflow)

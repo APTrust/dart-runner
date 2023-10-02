@@ -60,7 +60,7 @@ func loadFileAsBytes(t *testing.T, pathToFile string) []byte {
 }
 
 func loadTestProfile(t *testing.T, subDir, filename string) []byte {
-	pathToFile := path.Join(util.ProjectRoot(), "testdata", "profiles", subDir, filename)
+	pathToFile := path.Join(util.PathToTestData(), "profiles", subDir, filename)
 	return loadFileAsBytes(t, pathToFile)
 }
 
@@ -70,7 +70,7 @@ func loadDartProfile(t *testing.T, filename string) []byte {
 }
 
 func loadTestFile(t *testing.T, subDir, filename string) []byte {
-	pathToFile := path.Join(util.ProjectRoot(), "testdata", subDir, filename)
+	pathToFile := path.Join(util.PathToTestData(), subDir, filename)
 	return loadFileAsBytes(t, pathToFile)
 }
 
@@ -252,7 +252,7 @@ func TestConvertFromStandardProfile(t *testing.T) {
 }
 
 func TestConvertFromDartProfile(t *testing.T) {
-	pathToFile := path.Join(util.ProjectRoot(), "testdata", "profiles", "multi_manifest.json")
+	pathToFile := path.Join(util.PathToTestData(), "profiles", "multi_manifest.json")
 	multiManifestProfile, err := core.BagItProfileLoad(pathToFile)
 	require.Nil(t, err)
 	require.NotNil(t, multiManifestProfile)

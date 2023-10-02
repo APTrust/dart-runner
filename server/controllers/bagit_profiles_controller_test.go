@@ -203,7 +203,7 @@ func testImportFromUrl(t *testing.T) {
 
 func testImportFromJson(t *testing.T) {
 
-	pathToFile := path.Join(util.ProjectRoot(), "testdata", "profiles", "standard", "bagProfileFoo.json")
+	pathToFile := path.Join(util.PathToTestData(), "profiles", "standard", "bagProfileFoo.json")
 	jsonData, err := util.ReadFile(pathToFile)
 	require.Nil(t, err)
 

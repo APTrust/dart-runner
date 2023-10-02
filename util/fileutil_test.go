@@ -172,7 +172,7 @@ func TestParseCSV(t *testing.T) {
 		"custom-tag-file.txt/Tag-Two",
 	}
 
-	pathToCSVFile := path.Join(util.ProjectRoot(), "testdata", "files", "test_batch.csv")
+	pathToCSVFile := path.Join(util.PathToTestData(), "files", "test_batch.csv")
 	headers, records, err := util.ParseCSV(pathToCSVFile)
 	require.Nil(t, err)
 	assert.Equal(t, expectedHeaders, headers)

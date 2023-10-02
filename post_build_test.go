@@ -71,7 +71,7 @@ func envForRunner() []string {
 // dirs returns a list of directories commonly used in tests
 func dirs(t *testing.T) (filesDir, homeDir, outputDir string) {
 	var err error
-	filesDir = path.Join(util.ProjectRoot(), "testdata", "files")
+	filesDir = path.Join(util.PathToTestData(), "files")
 	homeDir, err = os.UserHomeDir()
 	require.Nil(t, err)
 
