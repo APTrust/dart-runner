@@ -37,7 +37,7 @@
           <div class="dropdown-menu" aria-labelledby="navbarJobsDropdownLink">
             <a class="dropdown-item" href="/workflows">List</a>
             <a class="dropdown-item" href="/workflows/new">New</a>
-            <a class="dropdown-item" href="/workflows/run_batch">Run Batch</a>
+            <a class="dropdown-item" href="/workflows/runbatch">Run Batch</a>
             <div class="dropdown-divider"></div>
             {{ range $index, $workflow := workflowList }}
             <a class="dropdown-item" href="javascript:postDataInBackground('/workflows/run/{{ $workflow.ID }}')">Run {{ $workflow.Name }}</a>

@@ -169,7 +169,7 @@ func WorkflowRun(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
-// GET /workflows/batch
+// GET /workflows/runbatch
 func WorkflowShowBatchForm(c *gin.Context) {
 	form := core.NewWorkflowBatchForm("", "")
 	data := gin.H{
@@ -180,9 +180,25 @@ func WorkflowShowBatchForm(c *gin.Context) {
 
 // POST /workflows/runbatch/:id
 func WorkflowRunBatch(c *gin.Context) {
-
-	// workflowID := c.PostForm("WorkflowID")
-	// pathToCSVFile := c.PostForm("PathToCSVFile")
+	hasError := false
+	workflowID := c.PostForm("WorkflowID")
+	pathToCSVFile := c.PostForm("PathToCSVFile")
+	form := core.NewWorkflowBatchForm(workflowID, pathToCSVFile)
+	if !util.LooksLikeUUID(workflowID) {
+		form.Fields["WorkflowID"].Error = "Please select a workflow."
+		hasError = true
+	}
+	if pathToCSVFile == "" {
+		form.Fields["PathToCSVFile"].Error = "Please choose a file."
+		hasError = true
+	}
+	if hasError {
+		data := gin.H{
+			"form": form,
+		}
+		c.HTML(http.StatusOK, "workflow/batch.html", data)
+		return
+	}
 
 	//
 	// Set up SSE emitter.

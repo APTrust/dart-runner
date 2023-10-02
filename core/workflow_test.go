@@ -188,18 +188,21 @@ func TestNewWorkflowBatchForm(t *testing.T) {
 
 	// Now test the workflow choices. This should appear in alpha
 	// order, and Workflow 3 should be selected.
+	//
+	// We have 6 choices: 5 workflows, plus an empty first option.
 	workflowChoices := form.Fields["WorkflowID"].Choices
-	require.Equal(t, 5, len(workflowChoices))
+	require.Equal(t, 6, len(workflowChoices))
 
 	for i := 0; i < 5; i++ {
 		expectedName := workflowNames[i]
 		expectedId := workflowIds[i]
-		assert.Equal(t, expectedName, workflowChoices[i].Label, i)
-		assert.Equal(t, expectedId, workflowChoices[i].Value, i)
+		choiceIndex := i + 1
+		assert.Equal(t, expectedName, workflowChoices[choiceIndex].Label, choiceIndex)
+		assert.Equal(t, expectedId, workflowChoices[choiceIndex].Value, choiceIndex)
 		if expectedId == selectedId {
-			assert.True(t, workflowChoices[i].Selected, i)
+			assert.True(t, workflowChoices[choiceIndex].Selected, choiceIndex)
 		} else {
-			assert.False(t, workflowChoices[i].Selected, i)
+			assert.False(t, workflowChoices[choiceIndex].Selected, choiceIndex)
 		}
 	}
 }

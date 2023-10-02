@@ -9,7 +9,7 @@ For more information, see DART's
 <a href="#Help/openExternal?url=https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/">
 batch workflow documentation.</a></p>
 
-<form method="post" action="#" id="{{ .Form.ID }}">
+<form method="post" action="/workflows/runbatch" id="{{ .Form.ID }}">
 
   {{ template "partials/input_select.html" dict "field" .form.Fields.WorkflowID }}
 
@@ -19,7 +19,7 @@ batch workflow documentation.</a></p>
   
   <div class="bottom-buttons">
     <div class="pull-right">
-      <a class="btn btn-primary" href="/workflows/runbatch" role="button">Run</a>
+      <button class="btn btn-primary" type="submit" role="button">Run</button>
     </div>
   </div>
 
