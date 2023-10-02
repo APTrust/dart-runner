@@ -42,6 +42,12 @@ func (wb *WorkflowBatch) Validate() bool {
 }
 
 func (wb *WorkflowBatch) validateCSVFile() bool {
+
+	// TODO: Parse the CSV file, make sure
+	// that all of the source directories exist,
+	// that all required tags are present, and
+	// that all tags have legal values.
+
 	// headers, records, err := util.ParseCSV(wb.PathToCSVFile)
 	// if err != nil {
 	// 	wb.Errors["CSVFile"] = err.Error()
@@ -51,11 +57,6 @@ func (wb *WorkflowBatch) validateCSVFile() bool {
 	// 	lineNumber := i + 1
 	// 	if (!util.FileExists(record[""]))
 	// }
-	return true
-}
-
-func (wb *WorkflowBatch) checkPaths(jobParams []*JobParams) bool {
-
 	return true
 }
 

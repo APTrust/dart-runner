@@ -47,5 +47,12 @@ func (p *CSVBatchParser) ParseAll() ([]*JobParams, error) {
 }
 
 func (p *CSVBatchParser) parseTags() []*Tag {
+
+	// TODO: Convert tags in map[string]string
+	// to a slice tag objects that we can add to
+	// jobParams. Do this for each record.
+	//
+	// See DART's csv_batch_parser.js for reference.
+
 	return nil
 }
