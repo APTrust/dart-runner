@@ -158,3 +158,35 @@ func TestGetWindowsDrives(t *testing.T) {
 		assert.Empty(t, drives)
 	}
 }
+
+func TestParseCSV(t *testing.T) {
+	expectedHeaders := []string{
+		"Bag-Name",
+		"Root-Directory",
+		"aptrust-info.txt/Title",
+		"aptrust-info.txt/Description",
+		"aptrust-info.txt/Access",
+		"bag-info.txt/Source-Organization",
+		"bag-info.txt/Custom-Tag",
+		"custom-tag-file.txt/Tag-One",
+		"custom-tag-file.txt/Tag-Two",
+	}
+
+	pathToCSVFile := path.Join(util.ProjectRoot(), "testdata", "files", "test_batch.csv")
+	headers, records, err := util.ParseCSV(pathToCSVFile)
+	require.Nil(t, err)
+	assert.Equal(t, expectedHeaders, headers)
+	assert.Equal(t, 3, len(records))
+
+	// Make sure there are no empty values.
+	for lineNumber, record := range records {
+		for _, field := range headers {
+			assert.NotEmpty(t, record[field], lineNumber, field)
+		}
+	}
+
+	// Spot check the first and last values of the last record
+	lastRecord := records[2]
+	assert.Equal(t, "RunnerTestUtil", lastRecord["Bag-Name"])
+	assert.Equal(t, "Camembert", lastRecord["custom-tag-file.txt/Tag-Two"])
+}

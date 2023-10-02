@@ -538,3 +538,9 @@ func TestYesOrNo(t *testing.T) {
 	assert.Equal(t, "Yes", util.YesOrNo(true))
 	assert.Equal(t, "No", util.YesOrNo(false))
 }
+
+func TestStripNonPrintable(t *testing.T) {
+	str := "\ufeffBag-Name"
+	clean := util.StripNonPrintable(str)
+	assert.Equal(t, "Bag-Name", clean)
+}

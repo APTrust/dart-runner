@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
@@ -193,4 +194,60 @@ func GetWindowsDrives() []string {
 		}
 	}
 	return drives
+}
+
+// ParseCSV parses the CSV file at pathToCSVFile and returns the following:
+//
+// 1. A slice of strings containing the entries in the first line of the
+// file. These are assumed to be headers / field names.
+//
+// 2. A slice of maps in which each map has the form field name = value.
+//
+// 3. An error, which will typically be one of: "file does not exist",
+// "file can't be read (permissions)" or "csv parse error".
+//
+// This will not parse correctly if the first line of the file does not
+// contain headers.
+func ParseCSV(pathToCSVFile string) ([]string, []map[string]string, error) {
+	f, err := os.Open(pathToCSVFile)
+	if err != nil {
+		return nil, nil, err
+	}
+	reader := csv.NewReader(f)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(records) < 2 {
+		return nil, nil, fmt.Errorf("csv file contains no records")
+	}
+
+	// listOfMaps will hold one record for each line
+	// in the CSV file (minus the first line, which contains headers)
+	listOfMaps := make([]map[string]string, 0)
+
+	// First line contains headers. It may also contain a
+	// byte order marker (BOM) if the CSV file was saved
+	// from Excel. We need to remove the BOM and other
+	// non-printables from the field names, so we call
+	// StripNonPrintable().
+	fieldNames := records[0]
+	for i, _ := range fieldNames {
+		fieldNames[i] = StripNonPrintable(fieldNames[i])
+	}
+
+	// Now make one map[string]string for every record
+	// in the file.
+	for i := 1; i < len(records); i++ {
+		currentRecord := records[i]
+		hashMap := make(map[string]string)
+		lastField := Min(len(fieldNames), len(currentRecord))
+		for j := 0; j < lastField; j++ {
+			fieldName := fieldNames[j]
+			value := currentRecord[j]
+			hashMap[fieldName] = value
+		}
+		listOfMaps = append(listOfMaps, hashMap)
+	}
+	return fieldNames, listOfMaps, nil
 }

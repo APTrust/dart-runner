@@ -185,6 +185,18 @@ func ContainsEscapedControl(str string) bool {
 	return reControl.MatchString(str)
 }
 
+// StripNonPrintable returns a copy of str with non-printable
+// characters removed.
+func StripNonPrintable(str string) string {
+	str = strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+		return -1
+	}, str)
+	return str
+}
+
 // UCFirst returns string str with the first letter capitalized
 // and all others lower case.
 func UCFirst(str string) string {
