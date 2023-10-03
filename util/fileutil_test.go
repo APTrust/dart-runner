@@ -180,13 +180,19 @@ func TestParseCSV(t *testing.T) {
 
 	// Make sure there are no empty values.
 	for lineNumber, record := range records {
-		for _, field := range headers {
-			assert.NotEmpty(t, record[field], lineNumber, field)
+		for _, nameValuePair := range record.Items {
+			assert.NotEmpty(t, nameValuePair.Value, lineNumber, nameValuePair.Name)
 		}
 	}
 
 	// Spot check the first and last values of the last record
 	lastRecord := records[2]
-	assert.Equal(t, "RunnerTestUtil", lastRecord["Bag-Name"])
-	assert.Equal(t, "Camembert", lastRecord["custom-tag-file.txt/Tag-Two"])
+
+	bagName, found := lastRecord.FirstMatching("Bag-Name")
+	assert.True(t, found, "Bag-Name")
+	assert.Equal(t, "RunnerTestUtil", bagName.Value)
+
+	tagTwo, found := lastRecord.FirstMatching("custom-tag-file.txt/Tag-Two")
+	assert.True(t, found)
+	assert.Equal(t, "Camembert", tagTwo.Value)
 }

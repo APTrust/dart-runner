@@ -2,6 +2,7 @@ package core
 
 import (
 	"path"
+	"strings"
 
 	"github.com/APTrust/dart-runner/util"
 )
@@ -11,6 +12,10 @@ type CSVBatchParser struct {
 	Workflow      *Workflow
 }
 
+// NewCSVBatchParser creates a new parser to convert records
+// in a CSV batch file to a slice of JobParams. Param pathToCSVFile
+// is the path the CSV file you want to parse. Param workfow is the
+// workflow that you want to apply to all items in that CSV file.
 func NewCSVBatchParser(pathToCSVFile string, workflow *Workflow) *CSVBatchParser {
 	return &CSVBatchParser{
 		PathToCSVFile: pathToCSVFile,
@@ -18,41 +23,61 @@ func NewCSVBatchParser(pathToCSVFile string, workflow *Workflow) *CSVBatchParser
 	}
 }
 
-func (p *CSVBatchParser) ParseAll() ([]*JobParams, error) {
-
-	// TODO: Any way to avoid this coupling?
-	outputDir, err := GetAppSetting("Bagging Directory")
-
-	if err != nil {
-		return nil, err
-	}
+// ParseAll converts the records in a CSV batch file to a slice of
+// JobParams objects. Param outputDir will be passed through to each
+// JobParams object, describing the directory in which to create bags.
+// Unless you have some special reason, outputDir should be set to
+// the value of the built-in app setting called "Bagging Directory".
+// You can get that with a call to core.GetAppSetting("Bagging Directory").
+func (p *CSVBatchParser) ParseAll(outputDir string) ([]*JobParams, error) {
 	jobParamsList := make([]*JobParams, 0)
 	_, records, err := util.ParseCSV(p.PathToCSVFile)
 	if err != nil {
 		return nil, err
 	}
-	for _, record := range records {
-		packageName := record["Bag-Name"]
+	for _, nvpList := range records {
+		packageNamePair, _ := nvpList.FirstMatching("Bag-Name")
+		packageName := packageNamePair.Value
+
+		filesToBagPair, _ := nvpList.FirstMatching("Root-Directory")
+		filesToBag := []string{filesToBagPair.Value}
+
 		outputFile := path.Join(outputDir, packageName)
-		filesToBag := []string{record["Root-Directory"]}
-		tags := p.parseTags()
-
-		// TODO: Figure out if bag must be tarred, zipped, etc.
-		// if p.Workflow.PackageFormat
-
+		tags := p.parseTags(nvpList)
 		jobParams := NewJobParams(p.Workflow, packageName, outputFile, filesToBag, tags)
 		jobParamsList = append(jobParamsList, jobParams)
 	}
 	return jobParamsList, nil
 }
 
-func (p *CSVBatchParser) parseTags() []*Tag {
-
-	// TODO: Convert tags in map[string]string
-	// to a slice tag objects that we can add to
-	// jobParams. Do this for each record.
-	//
-	// See DART's csv_batch_parser.js for reference.
-
-	return nil
+// parseTags converts a single csv record to BagIt tag objects.
+// The record is a map that typically looks like this:
+//
+//	{
+//	   "BagIt-Version": "1.0",
+//	   "custom-tag-file.txt/User-Name": "Spongebob",
+//	   "custom-tag-file.txt/Copyright-Expires": "2067",
+//	}
+func (p *CSVBatchParser) parseTags(record *util.NameValuePairList) []*Tag {
+	tags := make([]*Tag, 0)
+	for _, nvp := range record.Items {
+		var tagName string
+		var tagFile string
+		// Field name is in format file-name.txt/Tag-Name.
+		// We need to split this into file name and tag name.
+		parts := strings.SplitN(nvp.Name, "/", 2)
+		if len(parts) == 0 {
+			continue // bad entry?
+		}
+		if len(parts) == 1 {
+			// No tag file specified. Assume bag-info.txt.
+			tagName = parts[0]
+			tagFile = "bag-info.txt"
+		} else {
+			tagFile = parts[0]
+			tagName = parts[1]
+		}
+		tags = append(tags, NewTag(tagFile, tagName, nvp.Value))
+	}
+	return tags
 }

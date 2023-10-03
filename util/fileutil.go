@@ -201,14 +201,18 @@ func GetWindowsDrives() []string {
 // 1. A slice of strings containing the entries in the first line of the
 // file. These are assumed to be headers / field names.
 //
-// 2. A slice of maps in which each map has the form field name = value.
+// 2. A slice of url.Values objects in which names are column headers
+// and values are the values parsed from one line of the file. We use
+// url.Values because, unlike a map, it preserves the order of the fields
+// and allows us to have multiple values per key. This is essential as
+// the BagIt spec allows a tag value to be specified multiple times.
 //
 // 3. An error, which will typically be one of: "file does not exist",
 // "file can't be read (permissions)" or "csv parse error".
 //
 // This will not parse correctly if the first line of the file does not
 // contain headers.
-func ParseCSV(pathToCSVFile string) ([]string, []map[string]string, error) {
+func ParseCSV(pathToCSVFile string) ([]string, []*NameValuePairList, error) {
 	f, err := os.Open(pathToCSVFile)
 	if err != nil {
 		return nil, nil, err
@@ -222,9 +226,9 @@ func ParseCSV(pathToCSVFile string) ([]string, []map[string]string, error) {
 		return nil, nil, fmt.Errorf("csv file contains no records")
 	}
 
-	// listOfMaps will hold one record for each line
+	// allRecords will hold one record for each line
 	// in the CSV file (minus the first line, which contains headers)
-	listOfMaps := make([]map[string]string, 0)
+	allRecords := make([]*NameValuePairList, 0)
 
 	// First line contains headers. It may also contain a
 	// byte order marker (BOM) if the CSV file was saved
@@ -236,18 +240,18 @@ func ParseCSV(pathToCSVFile string) ([]string, []map[string]string, error) {
 		fieldNames[i] = StripNonPrintable(fieldNames[i])
 	}
 
-	// Now make one map[string]string for every record
+	// Now make one []NameValuePair list for every record
 	// in the file.
 	for i := 1; i < len(records); i++ {
 		currentRecord := records[i]
-		hashMap := make(map[string]string)
+		record := NewNameValuePairList()
 		lastField := Min(len(fieldNames), len(currentRecord))
 		for j := 0; j < lastField; j++ {
-			fieldName := fieldNames[j]
+			name := fieldNames[j]
 			value := currentRecord[j]
-			hashMap[fieldName] = value
+			record.Add(name, value)
 		}
-		listOfMaps = append(listOfMaps, hashMap)
+		allRecords = append(allRecords, record)
 	}
-	return fieldNames, listOfMaps, nil
+	return fieldNames, allRecords, nil
 }

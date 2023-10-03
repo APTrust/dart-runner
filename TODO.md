@@ -21,3 +21,5 @@
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
 - [ ] In job files list, sort directories and files in case-insensitive alphar order, showing directories first, then files.
 - [ ] In job files list, add option to show/hide hidden files.
+- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
+- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
