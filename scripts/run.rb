@@ -169,6 +169,8 @@ class Runner
       os = "osx"
     elsif RUBY_PLATFORM =~ /linux/
       os = "linux"
+    elsif RUBY_PLATFORM =~ /win32/ || RUBY_PLATFORM =~ /mingw/
+      os = "windows"
     else
       abort("Unsupported platform: #{RUBY_PLATFORM}")
     end
