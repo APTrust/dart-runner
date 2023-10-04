@@ -64,6 +64,7 @@ dart-runner can also help replicate bags between digital repositories using the 
 
 * Download the code using `git clone https://github.com/APTrust/dart-runner`.
 * You will need to install [Docker](https://docs.docker.com/get-docker/) to run SFTP tests.
+* You'll need GCC for testing. See the Testing section below.
 
 ## VS Code Setup
 
@@ -151,6 +152,9 @@ Note that in addition to having a recent version of Go (1.20+), running tests re
 
 * A recent version of Ruby (3.0+)
 * A recent version of Docker (24+)
+* GCC, the GNU Compiler Collection, to enable race detection during tests. We do test with the `-race` flag. 
+  On Windows, follow [these instructions](https://code.visualstudio.com/docs/cpp/config-mingw) to install GCC,
+  and be sure to add the MINGW bin to your path, so GCC is always accessible.
 
 ### Post-Build Test
 
