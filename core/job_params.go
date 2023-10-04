@@ -1,6 +1,7 @@
 package core
 
 import (
+	"os"
 	"path"
 	"strings"
 
@@ -160,7 +161,7 @@ func (p *JobParams) setSerialization(job *Job) {
 		util.StringListContains(formats, "application/x-tar")
 	if serializationOK && supportsTar {
 		job.PackageOp.BagItSerialization = ".tar"
-		if !strings.HasSuffix(job.PackageOp.OutputPath, ".tar") {
+		if !strings.HasSuffix(job.PackageOp.OutputPath, ".tar") && !strings.HasSuffix(job.PackageOp.OutputPath, string(os.PathSeparator)) {
 			job.PackageOp.OutputPath += ".tar"
 		}
 	}

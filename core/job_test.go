@@ -164,7 +164,9 @@ func TestJobToForm(t *testing.T) {
 	assert.Equal(t, constants.PackageFormatBagIt, form.Fields["PackageFormat"].Value)
 	assert.Equal(t, ".tar", form.Fields["BagItSerialization"].Value)
 	assert.Equal(t, "job_unit_test.tar", form.Fields["PackageName"].Value)
-	assert.Equal(t, "/tmp.tar", form.Fields["OutputPath"].Value)
+
+	expectedOutputPath := path.Join(os.TempDir(), job.PackageOp.PackageName)
+	assert.Equal(t, expectedOutputPath, form.Fields["OutputPath"].Value)
 
 	// Test some specifics of OutputPath
 	baggingDir := "/home/someone/dart"
