@@ -117,7 +117,7 @@ class Runner
     @docker_sftp_id = `docker run \
     -v #{sftp_dir}/sftp_user_key.pub:/home/key_user/.ssh/keys/sftp_user_key.pub:ro \
     -v #{sftp_dir}/users.conf:/etc/sftp/users.conf:ro \
-    -p 2222:22 -d atmoz/sftp`
+    -p 2222:22 -d #{sftp_image_name}`
     if $?.exitstatus == 0
       puts "Started SFTP server with id #{@docker_sftp_id}"
       @sftp_started = true
@@ -140,6 +140,15 @@ class Runner
     else
       puts "Not killing SFTP service because it failed to start"
     end
+  end
+
+  # In general, we want the atmoz/sftp package, which runs on Intel
+  # architecture. For Apple M and other ARM chips, we want to arm64 fork.
+  def sftp_image_name
+    if RUBY_PLATFORM =~ /arm64/
+      return 'jmcombs/sftp'
+    end
+    return 'atmoz/sftp'
   end
 
   def stop_all_services
