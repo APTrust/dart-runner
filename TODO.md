@@ -13,13 +13,18 @@
 - [ ] PID file (or db entry) for running process
 - [ ] Ping script from front-end
 - [ ] Auto-open browser on start
-- [ ] UI testing
+- [ ] UI testing (Selenium)
 - [ ] Move Minio to Docker (requires substantial changes to post-build tests)
 - [ ] Context-sensitive help
 - [ ] Dashboard
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
-- [ ] In job files list, sort directories and files in case-insensitive alphar order, showing directories first, then files.
+- [ ] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
 - [ ] In job files list, add option to show/hide hidden files.
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
+- [ ] Code refactor (de-dupe: Code Climate)
+- [ ] Fix Windows paths
+- [ ] Windows code signing
+- [ ] Mac code signing
+- [ ] User acceptance tests
