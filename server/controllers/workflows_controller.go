@@ -181,6 +181,11 @@ func WorkflowShowBatchForm(c *gin.Context) {
 
 // POST /workflows/runbatch
 func WorkflowRunBatch(c *gin.Context) {
+
+	// Should be an ajax call?
+	// Or two separate calls?
+	// If AJAX, return JSON always, including for form errors?
+
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
@@ -188,7 +193,8 @@ func WorkflowRunBatch(c *gin.Context) {
 	if !wb.Validate() {
 		form := wb.ToForm()
 		data := gin.H{
-			"form": form,
+			"form":    form,
+			"errors:": wb.Errors,
 		}
 		c.HTML(http.StatusBadRequest, "workflow/batch.html", data)
 		return
