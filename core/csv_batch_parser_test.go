@@ -104,6 +104,11 @@ func getExpectedTagLists() [][]*core.Tag {
 			Value:   "Consortia",
 		},
 		{
+			TagFile: "aptrust-info.txt",
+			TagName: "Storage-Option",
+			Value:   "Standard",
+		},
+		{
 			TagFile: "bag-info.txt",
 			TagName: "Source-Organization",
 			Value:   "Test University",
@@ -162,6 +167,11 @@ func getExpectedTagLists() [][]*core.Tag {
 			Value:   "Institution",
 		},
 		{
+			TagFile: "aptrust-info.txt",
+			TagName: "Storage-Option",
+			Value:   "Standard",
+		},
+		{
 			TagFile: "bag-info.txt",
 			TagName: "Source-Organization",
 			Value:   "Staging University",
@@ -218,6 +228,11 @@ func getExpectedTagLists() [][]*core.Tag {
 			TagFile: "aptrust-info.txt",
 			TagName: "Access",
 			Value:   "Restricted",
+		},
+		{
+			TagFile: "aptrust-info.txt",
+			TagName: "Storage-Option",
+			Value:   "Standard",
 		},
 		{
 			TagFile: "bag-info.txt",

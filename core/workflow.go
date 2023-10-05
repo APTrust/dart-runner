@@ -73,7 +73,7 @@ func (w *Workflow) Validate() bool {
 		w.Errors["Name"] = "Workflow requires a name."
 	}
 	if w.PackageFormat == "" {
-		w.Errors["PackageFormat"] = "Workflow requires a pacakage format."
+		w.Errors["PackageFormat"] = "Workflow requires a package format."
 	}
 	if w.PackageFormat == constants.PackageFormatBagIt && w.BagItProfile == nil {
 		w.Errors["BagItProfile"] = "Workflow requires a BagIt profile."

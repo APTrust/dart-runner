@@ -1,6 +1,9 @@
 package core
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
@@ -31,37 +34,76 @@ func (wb *WorkflowBatch) Validate() bool {
 		}
 	}
 
-	// Validate CSV file
+	// Make sure user selected a CSV file and that the file exists.
 	if wb.PathToCSVFile == "" {
 		wb.Errors["PathToCSVFile"] = "Please chose a CSV file."
 	} else if !util.FileExists(wb.PathToCSVFile) {
 		wb.Errors["PathToCSVFile"] = "CSV file does not exist."
 	}
 
-	return len(wb.Errors) == 0
+	if len(wb.Errors) > 0 {
+		return false
+	}
+
+	// Now validate the contents of the file.
+	return wb.validateCSVFile()
 }
 
 func (wb *WorkflowBatch) validateCSVFile() bool {
+	// First, make the CSV file parses without errors.
+	_, records, err := util.ParseCSV(wb.PathToCSVFile)
+	if err != nil {
+		wb.Errors["CSVFile"] = fmt.Sprintf("%s. Be sure this is a valid CSV file.", err.Error())
+		return false
+	}
 
-	// TODO: Parse the CSV file, make sure
-	// that all of the source directories exist,
-	// that all required tags are present, and
-	// that all tags have legal values.
-
-	// headers, records, err := util.ParseCSV(wb.PathToCSVFile)
-	// if err != nil {
-	// 	wb.Errors["CSVFile"] = err.Error()
-	// 	return false
-	// }
-	// for i, record := range records {
-	// 	lineNumber := i + 1
-	// 	if (!util.FileExists(record[""]))
-	// }
-	return true
+	// Now validate the records, line by line...
+	for i, record := range records {
+		lineNumber := i + 1
+		// Make sure we know which file or directory to bag for this line,
+		// and make sure that file/dir actually exists.
+		dirToBag, found := record.FirstMatching("Root-Directory")
+		if found {
+			if !util.FileExists(dirToBag.Value) {
+				wb.Errors[dirToBag.Value] = fmt.Sprintf("Line %d: file or directory does not exist: '%s'.", lineNumber, dirToBag.Value)
+			}
+		} else {
+			key := fmt.Sprintf("Line %d", lineNumber)
+			wb.Errors[key] = fmt.Sprintf("Line %d: This entry is missing the 'Root-Directory' value, so DART does not know what to bag.", lineNumber)
+		}
+		// Lastly, make sure this line of the CSV file contains
+		// valid values for all of the workflow's required tags.
+		wb.checkRequiredTags(record, lineNumber)
+	}
+	return len(wb.Errors) == 0
 }
 
-func (wb *WorkflowBatch) checkRequiredTags(jobParams []*JobParams) bool {
+func (wb *WorkflowBatch) checkRequiredTags(record *util.NameValuePairList, lineNumber int) bool {
+	bagName, _ := record.FirstMatching("Bag-Name")
+	if strings.TrimSpace(bagName.Value) == "" {
+		errKey := fmt.Sprintf("%d-Bag-Name", lineNumber)
+		wb.Errors[errKey] = fmt.Sprintf("Bag-Name is missing from line %d", lineNumber)
+	}
+	for _, tagDef := range wb.Workflow.BagItProfile.Tags {
+		// We don't need to validate workflow tags in bagit.txt
+		// because DART fills these in automatically.
+		if tagDef.TagFile == "bagit.txt" {
+			continue
+		}
+		// TODO: Do bag-info.txt tags ever not have a 'tagfile/' prefix?
+		fullTagName := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
+		errKey := fmt.Sprintf("%d-%s", lineNumber, fullTagName)
+		tag, _ := record.FirstMatching(fullTagName)
 
+		// 1. Make sure required tags have values.
+		// 2. If tagDef has a non-empty .Values list, make sure the value
+		//    we got from the CSV file is actually in that list.
+		if strings.TrimSpace(tag.Value) == "" && tagDef.Required {
+			wb.Errors[errKey] = fmt.Sprintf("Required tag %s on line %d is missing or empty.", fullTagName, lineNumber)
+		} else if len(tagDef.Values) > 0 && !util.StringListContains(tagDef.Values, tag.Value) {
+			wb.Errors[errKey] = fmt.Sprintf("Value %s for tag %s on line %d is not in the list of allowed values.", tag.Value, fullTagName, lineNumber)
+		}
+	}
 	return true
 }
 
