@@ -245,6 +245,18 @@ func WorkflowRunBatch(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
-	//wb := result.WorkflowBatch()
+	// wb := result.WorkflowBatch()
+	// messageChannel := make(chan *core.EventMessage)
 
+	// TODO:
+	//
+	// Parse CSV file
+	// Convert each line to jobParams
+	// Convert each jobParams to job
+	// In event emitter go routine, execute each job
+	// Save job outcome?
+	// Save job artifacts?
+	// Be sure the disconnect event is not emitted until all jobs are complete
+	//
+	// See job_run_controller.go for details on the emitter.
 }

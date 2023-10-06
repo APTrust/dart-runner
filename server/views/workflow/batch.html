@@ -63,7 +63,7 @@ job details and progress.
 $( document ).ready(function() {
   var batchIsValid = {{ .batchIsValid }}
   if (batchIsValid) {
-    runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')")
+    runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')
   }
 });
 </script>
