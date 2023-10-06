@@ -191,4 +191,14 @@ func TestWBPersistentObjectInterface(t *testing.T) {
 	assert.True(t, strings.HasPrefix(batches[0].ObjName(), "Runner Test Workflow"))
 	assert.True(t, strings.HasPrefix(batches[1].ObjName(), "Second test workflow"))
 	assert.True(t, strings.HasPrefix(batches[2].ObjName(), "Third test workflow"))
+
+	// Make sure we can get these by type and name
+	result = core.ObjByNameAndType(wb.ObjName(), wb.ObjType())
+	require.NoError(t, result.Error)
+	assert.Equal(t, wb.ID, result.WorkflowBatch().ID)
+
+	result = core.ObjByNameAndType(wb2.ObjName(), wb2.ObjType())
+	require.NoError(t, result.Error)
+	assert.Equal(t, wb2.ID, result.WorkflowBatch().ID)
+
 }

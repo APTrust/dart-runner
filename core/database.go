@@ -86,11 +86,23 @@ func objSave(obj PersistentObject, validate bool) error {
 }
 
 func ObjFind(uuid string) *QueryResult {
+	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where uuid=?", uuid)
+	return findOne(row)
+}
+
+// ObjByNameAndType returns the object of the specified type with the matching
+// name. Note that the DB has a unique constraint on obj_type + obj_name, so this
+// should return at most one row.
+func ObjByNameAndType(objName, objType string) *QueryResult {
+	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where obj_name=? and obj_type=?", objName, objType)
+	return findOne(row)
+}
+
+func findOne(row *sql.Row) *QueryResult {
 	var objType string
 	var objJson string
 	qr := NewQueryResult(constants.ResultTypeSingle)
 	qr.ResultType = constants.ResultTypeSingle
-	row := Dart.DB.QueryRow("select obj_type, obj_json from dart where uuid=?", uuid)
 	qr.Error = row.Scan(&objType, &objJson)
 	if qr.Error != nil {
 		return qr
@@ -133,7 +145,6 @@ func ObjFind(uuid string) *QueryResult {
 	default:
 		qr.Error = constants.ErrUnknownType
 	}
-
 	return qr
 }
 

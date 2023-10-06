@@ -184,7 +184,17 @@ func WorkflowInitBatch(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
-	wb := core.NewWorkflowBatch(workflow, pathToCSVFile)
+
+	// User may have attempted to run an earlier version of this same
+	// workflow, in which case it will be saved. Update the saved
+	// version instead of creating a new object.
+	wbName := fmt.Sprintf("%s => %s", workflow.Name, pathToCSVFile)
+	result := core.ObjByNameAndType(wbName, constants.TypeWorkflowBatch)
+	wb := result.WorkflowBatch()
+	if result.Error != nil {
+		// Not found. Create a new one.
+		wb = core.NewWorkflowBatch(workflow, pathToCSVFile)
+	}
 	if !wb.Validate() {
 		form := wb.ToForm()
 		data := gin.H{
@@ -195,16 +205,35 @@ func WorkflowInitBatch(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "workflow/batch.html", data)
 		return
 	}
+
 	err := core.ObjSave(wb)
-	if err != nil {
+	if err != nil && err != constants.ErrUniqueConstraint {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+
+	// Create a dummy dummyJob here, so the divs display on the
+	// front end. If the worklflow has a packaging step, dummy dummyJob
+	// should have a PacakageOp. Ditto for the workflow's upload ops.
+	dummyJob := core.NewJob()
+	if wb.Workflow.PackageFormat == "" {
+		dummyJob.PackageOp = nil
+	} else {
+		dummyJob.PackageOp.PackageFormat = wb.Workflow.PackageFormat
+	}
+	if len(wb.Workflow.StorageServiceIDs) > 0 {
+		dummyUploadOp := &core.UploadOperation{
+			StorageService: core.NewStorageService(),
+		}
+		dummyJob.UploadOps = []*core.UploadOperation{dummyUploadOp}
+	}
+
 	form := wb.ToForm()
 	data := gin.H{
 		"form":            form,
 		"batchIsValid":    true,
 		"workflowBatchId": wb.ID,
+		"job":             dummyJob,
 	}
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }
