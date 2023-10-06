@@ -83,10 +83,9 @@ in both the "job run" UI and the "run workflow batch" UI.
 
     var runningJobId = '{{ .job.ID }}'
     var completedUploads = []
-    var completedUploads = []
     var hasPackageOp = {{ .job.HasPackageOp }}
     var hasUploadOp = {{ .job.HasUploadOps }}
-    var separator = '{{ .pathSeparator }}'
+    var pathSeparator = '{{ .pathSeparator }}'
     var eventSourceUrl = "/jobs/run/"
 
     {{ if .job.HasPackageOp }}
@@ -288,7 +287,7 @@ in both the "job run" UI and the "run workflow batch" UI.
     function activateOutputPathLink() {
       var div = $('#output-path-link')
       var url = div.data('url')
-      var dir = url.split(separator).slice(0, -1).join(separator)
+      var dir = url.split(pathSeparator).slice(0, -1).join(pathSeparator)
       console.log(dir)
       var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`
       div.html(html)

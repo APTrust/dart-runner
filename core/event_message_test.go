@@ -2,12 +2,31 @@ package core_test
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestInitEvent(t *testing.T) {
+	settings := &core.JobInitSettings{
+		RunningJobId:   constants.EmptyUUID,
+		HasPackageOp:   true,
+		HasUploadOp:    true,
+		PathSeparator:  string(os.PathSeparator),
+		PackageFormat:  constants.PackageFormatBagIt,
+		EventSourceUrl: fmt.Sprintf("/jobs/run/%s", constants.EmptyUUID),
+	}
+	initEvent := core.InitEvent(settings)
+	assert.Equal(t, constants.EventTypeInit, initEvent.EventType)
+	assert.Equal(t, constants.StagePreRun, initEvent.Stage)
+	assert.Equal(t, fmt.Sprintf("Starting job %s", constants.EmptyUUID), initEvent.Message)
+	assert.Equal(t, constants.StatusStarting, initEvent.Status)
+	assert.Equal(t, settings, initEvent.JobInitSettings)
+}
 
 func TestStartEvent(t *testing.T) {
 	message := "Hey diddly ho, Homer!"
