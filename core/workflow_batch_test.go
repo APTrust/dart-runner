@@ -147,6 +147,9 @@ func TestWBPersistentObjectInterface(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
 	pathToBatchFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+
+	// We need valid paths in our batch file, or we won't be
+	// able to save this due to validation errors.
 	tempFile := makeTempCSVFileWithValidPaths(t, pathToBatchFile)
 	defer func() { os.Remove(tempFile) }()
 

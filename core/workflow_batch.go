@@ -93,6 +93,13 @@ func (wb *WorkflowBatch) checkRequiredTags(record *util.NameValuePairList, lineN
 		if tagDef.TagFile == "bagit.txt" {
 			continue
 		}
+		// System-set tags like Bag-Date or Payload-Oxum may
+		// be required by the profile, but we can't expect the
+		// user to supply these values. The bagger calculates
+		// them at runtime.
+		if tagDef.SystemMustSet() {
+			continue
+		}
 		// TODO: Do bag-info.txt tags ever not have a 'tagfile/' prefix?
 		fullTagName := fmt.Sprintf("%s/%s", tagDef.TagFile, tagDef.TagName)
 		errKey := fmt.Sprintf("%d-%s", lineNumber, fullTagName)

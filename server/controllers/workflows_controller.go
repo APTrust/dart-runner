@@ -202,15 +202,20 @@ func WorkflowInitBatch(c *gin.Context) {
 	}
 	form := wb.ToForm()
 	data := gin.H{
-		"form":         form,
-		"batchIsValid": true,
-		"runBatchNow":  true,
+		"form":            form,
+		"batchIsValid":    true,
+		"workflowBatchId": wb.ID,
 	}
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }
 
 // GET /workflows/batch/run/:id
 func WorkflowRunBatch(c *gin.Context) {
-	//result := core.ObjFind(c.Param("id"))
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	//wb := result.WorkflowBatch()
 
 }
