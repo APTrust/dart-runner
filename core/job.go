@@ -311,6 +311,17 @@ func (job *Job) HasUploadOps() bool {
 	return len(job.UploadOps) > 0 && job.UploadOps[0] != nil
 }
 
+// PackageFormat returns the name of the format in which this job
+// will package its files. Usually, this will be constants.PackageFormatBagIt,
+// but if the job has no package operation (i.e. an upload-only or validation-only
+// job), it will be constants.PackageFormatNone.
+func (job *Job) PackageFormat() string {
+	if job.PackageOp != nil && job.PackageOp.PackageFormat != "" {
+		return job.PackageOp.PackageFormat
+	}
+	return constants.PackageFormatNone
+}
+
 // PersistentObject interface
 
 // ObjID returns this job's object id (uuid).

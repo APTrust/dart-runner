@@ -73,11 +73,6 @@ type JobInitSettings struct {
 	// PackageFormat will be either BagIt or none, depending
 	// on if/how this job packages files.
 	PackageFormat string `json:"packageFormat"`
-	// EventSourceUrl is the URL that the front end should
-	// attach to to receive server-sent events. For individual
-	// jobs on the run-job page, this will "/jobs/run/:id". For
-	// workflow batches, it will be "/workflows/runbatch"
-	EventSourceUrl string `json:"eventSourceUrl"`
 }
 
 // InitEvent creates a new initialization event message. This message

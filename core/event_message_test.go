@@ -13,12 +13,11 @@ import (
 
 func TestInitEvent(t *testing.T) {
 	settings := &core.JobInitSettings{
-		RunningJobId:   constants.EmptyUUID,
-		HasPackageOp:   true,
-		HasUploadOp:    true,
-		PathSeparator:  string(os.PathSeparator),
-		PackageFormat:  constants.PackageFormatBagIt,
-		EventSourceUrl: fmt.Sprintf("/jobs/run/%s", constants.EmptyUUID),
+		RunningJobId:  constants.EmptyUUID,
+		HasPackageOp:  true,
+		HasUploadOp:   true,
+		PathSeparator: string(os.PathSeparator),
+		PackageFormat: constants.PackageFormatBagIt,
 	}
 	initEvent := core.InitEvent(settings)
 	assert.Equal(t, constants.EventTypeInit, initEvent.EventType)

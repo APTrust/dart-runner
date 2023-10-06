@@ -65,6 +65,18 @@ func JobRunExecute(c *gin.Context) {
 
 		//defer close(messageChannel)
 
+		// First things first. Send initialization data to the
+		// front end, so it knows what to display.
+		jobInitSettings := &core.JobInitSettings{
+			RunningJobId:  job.ID,
+			HasPackageOp:  job.HasPackageOp(),
+			HasUploadOp:   job.HasUploadOps(),
+			PathSeparator: string(os.PathSeparator),
+			PackageFormat: job.PackageFormat(),
+		}
+		initEvent := core.InitEvent(jobInitSettings)
+		messageChannel <- initEvent
+
 		// core.RunJobWithMessageChannel will run the entire job,
 		// pumping messages through the message channel as it goes.
 		// It will not return until it's done. An exit code of zero

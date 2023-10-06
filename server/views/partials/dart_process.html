@@ -1,6 +1,6 @@
 {{ define "partials/dart_process.html" }}
 
-<div class="container mb-3" id="{{ .ID }}">
+<div class="container mb-3" data-job-id="{{ .ID }}" id="runningJobDisplay">
   <div class="row">
     <div class="col-3">Job</div>
     <div class="col-9">{{ .Name }}</div>

@@ -80,23 +80,17 @@ in both the "job run" UI and the "run workflow batch" UI.
     // and call runJob(jobId). We also need a way to 
     // display workflow validation errors and workflow
     // results (red x or green check next to each item).
-
-    var runningJobId = '{{ .job.ID }}'
     var completedUploads = []
-    var hasPackageOp = {{ .job.HasPackageOp }}
-    var hasUploadOp = {{ .job.HasUploadOps }}
-    var pathSeparator = '{{ .pathSeparator }}'
-    var eventSourceUrl = "/jobs/run/"
+    var settingsInitialized = false
+    var settings = {
+        runningJobId: "",
+        hasPackageOp: false,
+        hasUploadOp: false,
+        pathSeparator: "",
+        packageFormat: ""
+    }
 
-    {{ if .job.HasPackageOp }}
-    var packageFormat = "{{ .job.PackageOp.PackageFormat }}"
-    {{ else }}
-    var packageFormat = "none"
-    {{ end }}
-
-
-
-    function runJob(jobId) {
+    function runJob(eventSourceUrl, jobId) {
 
       // TODO: Handle more specific messages when back end emits them.
       //
@@ -104,7 +98,6 @@ in both the "job run" UI and the "run workflow batch" UI.
       //
       // sse.addEventListener("eventName", (e) => { code... });
       // 
-      showDivs(jobId)
       let eventSrc = new EventSource(eventSourceUrl + jobId)
         eventSrc.onmessage = (event) => {
           console.log(event)
@@ -122,7 +115,11 @@ in both the "job run" UI and the "run workflow batch" UI.
             return
           }
 
-          if (data.eventType == "disconnect") {
+          if (data.eventType == "init") {
+            settings = data.jobInitSettings
+            settingsInitialized = true
+            showDivs(data.jobInitSettings.runningJobId)
+          } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")
             console.log(data.message)
             eventSrc.close()
@@ -137,15 +134,15 @@ in both the "job run" UI and the "run workflow batch" UI.
 
     function showDivs(jobId) {
         let processDiv = $('#jobIdContainer');
-        if (hasPackageOp) {
+        if (settings.hasPackageOp) {
             initProgressBar(jobId, 'packageInfo');
             $(`#${jobId} div.packageInfo`).show();
-            if (packageFormat == 'BagIt') {
+            if (settings.packageFormat == 'BagIt') {
                 initProgressBar(jobId, 'validationInfo');
                 $(`#${jobId} div.validationInfo`).show();
             }
         }
-        if (hasUploadOp) {
+        if (settings.hasUploadOp) {
             initProgressBar(jobId, 'uploadInfo');
             $(`#${jobId} div.uploadInfo`).show();
         }
@@ -287,7 +284,7 @@ in both the "job run" UI and the "run workflow batch" UI.
     function activateOutputPathLink() {
       var div = $('#output-path-link')
       var url = div.data('url')
-      var dir = url.split(pathSeparator).slice(0, -1).join(pathSeparator)
+      var dir = url.split(settings.pathSeparator).slice(0, -1).join(settings.pathSeparator)
       console.log(dir)
       var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`
       div.html(html)

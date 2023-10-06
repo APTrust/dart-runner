@@ -209,3 +209,21 @@ func TestJobToForm(t *testing.T) {
 	form = job.ToForm()
 	assert.Equal(t, "/home/someone/dart/", form.Fields["OutputPath"].Value)
 }
+
+func TestJobPackageFormat(t *testing.T) {
+	job := core.NewJob()
+	job.PackageOp = nil
+
+	// No package operation = format none
+	assert.Equal(t, constants.PackageFormatNone, job.PackageFormat())
+
+	// If pacakage op doesn't specify format, format = none
+	job.PackageOp = &core.PackageOperation{}
+	assert.Empty(t, job.PackageOp.PackageFormat)
+	assert.Equal(t, constants.PackageFormatNone, job.PackageFormat())
+
+	// If job has a package op with an explicitly defined format,
+	// we should get that from job.PackageFormat()
+	job.PackageOp.PackageFormat = constants.PackageFormatBagIt
+	assert.Equal(t, constants.PackageFormatBagIt, job.PackageFormat())
+}
