@@ -81,7 +81,8 @@ in both the "job run" UI and the "run workflow batch" UI.
     // display workflow validation errors and workflow
     // results (red x or green check next to each item).
     var completedUploads = []
-    var settingsInitialized = false
+    var weAreRunningAWorkflowBatch = false 
+    //var settingsInitialized = false
     var settings = {
         runningJobId: "",
         hasPackageOp: false,
@@ -98,9 +99,15 @@ in both the "job run" UI and the "run workflow batch" UI.
       //
       // sse.addEventListener("eventName", (e) => { code... });
       // 
+      if (jobId && !eventSourceUrl.endsWith("/")) {
+        eventSourceUrl += "/"
+      }
+      if (eventSourceUrl.includes("/workflows")) {
+        weAreRunningAWorkflowBatch = true
+      }
       let eventSrc = new EventSource(eventSourceUrl + jobId)
         eventSrc.onmessage = (event) => {
-          console.log(event)
+          //console.log(event)
           if (!event.data) {
             console.log("Malformed message")
             console.log(event)
@@ -116,15 +123,16 @@ in both the "job run" UI and the "run workflow batch" UI.
           }
 
           if (data.eventType == "init") {
+            console.log(`Got init event for job ${data.jobInitSettings.runningJobId}`)
             settings = data.jobInitSettings
-            settingsInitialized = true
-            showDivs(data.jobInitSettings.runningJobId)
+            //settingsInitialized = true
+            showDivs()
           } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")
             console.log(data.message)
             eventSrc.close()
           } else {
-            renderInfo(data, jobId)
+            renderInfo(data)
           }
         }
         eventSrc.onerror = (event) => {
@@ -132,35 +140,35 @@ in both the "job run" UI and the "run workflow batch" UI.
         }
     }
 
-    function showDivs(jobId) {
+    function showDivs() {
         let processDiv = $('#jobIdContainer');
         if (settings.hasPackageOp) {
-            initProgressBar(jobId, 'packageInfo');
-            $(`#${jobId} div.packageInfo`).show();
+            initProgressBar('packageInfo');
+            $(`#runningJobDisplay div.packageInfo`).show();
             if (settings.packageFormat == 'BagIt') {
-                initProgressBar(jobId, 'validationInfo');
-                $(`#${jobId} div.validationInfo`).show();
+                initProgressBar('validationInfo');
+                $(`#runningJobDisplay div.validationInfo`).show();
             }
         }
         if (settings.hasUploadOp) {
-            initProgressBar(jobId, 'uploadInfo');
-            $(`#${jobId} div.uploadInfo`).show();
+            initProgressBar('uploadInfo');
+            $(`#runningJobDisplay div.uploadInfo`).show();
         }
-        $(`#${jobId}-start-time`).text(new Date().toLocaleString());
+        $(`#job-start-time`).text(new Date().toLocaleString());
         processDiv.show();
     }
 
-    function renderInfo(data, jobId) {
+    function renderInfo(data) {
       let section = data.stage + "Info"
-      var [detailDiv, progressBar] = getDivs(jobId, section);
+      var [detailDiv, progressBar] = getDivs(section);
       // A job can include multiple uploads. For each new
       // upload, we want to set the progress bar back to 
       // zero and render it in blue.
       if (data.eventType == "start") {
-        initProgressBar(jobId, 'uploadInfo')
+        initProgressBar('uploadInfo')
       }
       if (data.eventType == "finish") {
-        //console.log(data)
+        console.log(data)
         if (data.status == "success") {
           if (section == "") {
             completedUploads.push(data.message)
@@ -172,24 +180,29 @@ in both the "job run" UI and the "run workflow batch" UI.
         } else if (data.status == "failed") { 
           // Finish with error. Note that detail div here is the outcome
           // div, not the div for the current stage, because job has finished.
-          detailDiv = $(`#${jobId} div.outcome div.detail div.message`);
+          detailDiv = $(`#runningJobDisplay div.outcome div.detail div.message`);
           markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
         }
       } else { // info message
         detailDiv.text(data.message)
         setProgressBar(progressBar, data);
       }
+      // If we're running a workflow batch, we need to reset
+      // this for the next job.
+      if (weAreRunningAWorkflowBatch) {
+          completedUploads = []
+      }
     }
 
-    function getDivs(jobId, section) {
-        let selectorPrefix = `#${jobId} div.${section} div.detail`;
+    function getDivs(section) {
+        let selectorPrefix = `#runningJobDisplay div.${section} div.detail`;
         let detailDiv = $(`${selectorPrefix} div.message`);
         let progressBar = $(`${selectorPrefix} div.progress-bar`);
         return [detailDiv, progressBar];
     }
 
-    function initProgressBar(jobId, section) {
-        let [_, progressBar] = getDivs(jobId, section);
+    function initProgressBar(section) {
+        let [_, progressBar] = getDivs(section);
         if (progressBar) {
             progressBar.removeClass("bg-success");
             progressBar.removeClass("bg-danger");
