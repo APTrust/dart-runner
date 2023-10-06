@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
@@ -140,4 +141,17 @@ func makeTempCSVFileWithValidPaths(t *testing.T, pathToCSVFile string) string {
 	csvWithAbsPaths := strings.ReplaceAll(string(csvContents), "./", absPrefix)
 	require.NoError(t, os.WriteFile(tempFilePath, []byte(csvWithAbsPaths), 0666))
 	return tempFilePath
+}
+
+func TestWBPersistentObjectInterface(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadJsonWorkflow(t)
+	pathToBatchFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	wb := core.NewWorkflowBatch(workflow, pathToBatchFile)
+	assert.True(t, util.LooksLikeUUID(wb.ID))
+	assert.Equal(t, wb.ID, wb.ObjID())
+	assert.Equal(t, fmt.Sprintf("WorkflowBatch: Runner Test Workflow => %s", pathToBatchFile), wb.String())
+	assert.Equal(t, constants.TypeWorkflowBatch, wb.ObjType())
+	assert.Equal(t, fmt.Sprintf("Runner Test Workflow => %s", pathToBatchFile), wb.ObjName())
+	assert.True(t, wb.IsDeletable())
 }

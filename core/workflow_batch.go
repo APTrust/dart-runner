@@ -6,9 +6,11 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 type WorkflowBatch struct {
+	ID            string
 	Workflow      *Workflow
 	PathToCSVFile string
 	Errors        map[string]string
@@ -16,6 +18,7 @@ type WorkflowBatch struct {
 
 func NewWorkflowBatch(workflow *Workflow, pathToCSVFile string) *WorkflowBatch {
 	return &WorkflowBatch{
+		ID:            uuid.NewString(),
 		Workflow:      workflow,
 		PathToCSVFile: pathToCSVFile,
 		Errors:        make(map[string]string),
@@ -117,4 +120,35 @@ func (wb *WorkflowBatch) ToForm() *Form {
 	workflowField := form.AddField("WorkflowID", "Choose a Workflow", workflowID, true)
 	workflowField.Choices = ObjChoiceList(constants.TypeWorkflow, []string{workflowID})
 	return form
+}
+
+// ---- PersistentObject Interface ----
+
+// ObjID returns this items's object id (uuid).
+func (wb *WorkflowBatch) ObjID() string {
+	return wb.ID
+}
+
+// ObjName returns this object's name, so names will be
+// searchable and sortable in the DB.
+func (wb *WorkflowBatch) ObjName() string {
+	return fmt.Sprintf("%s => %s", wb.Workflow.Name, wb.PathToCSVFile)
+
+}
+
+// ObjType returns this object's type name.
+func (wb *WorkflowBatch) ObjType() string {
+	return constants.TypeWorkflowBatch
+}
+
+func (wb *WorkflowBatch) String() string {
+	return fmt.Sprintf("WorkflowBatch: %s => %s", wb.Workflow.Name, wb.PathToCSVFile)
+}
+
+func (wb *WorkflowBatch) GetErrors() map[string]string {
+	return wb.Errors
+}
+
+func (wb *WorkflowBatch) IsDeletable() bool {
+	return true
 }

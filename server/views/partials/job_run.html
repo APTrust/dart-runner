@@ -82,7 +82,6 @@ in both the "job run" UI and the "run workflow batch" UI.
     // results (red x or green check next to each item).
     var completedUploads = []
     var weAreRunningAWorkflowBatch = false 
-    //var settingsInitialized = false
     var settings = {
         runningJobId: "",
         hasPackageOp: false,
@@ -125,7 +124,6 @@ in both the "job run" UI and the "run workflow batch" UI.
           if (data.eventType == "init") {
             console.log(`Got init event for job ${data.jobInitSettings.runningJobId}`)
             settings = data.jobInitSettings
-            //settingsInitialized = true
             showDivs()
           } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")

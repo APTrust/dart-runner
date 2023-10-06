@@ -169,7 +169,7 @@ func WorkflowRun(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
-// GET /workflows/runbatch
+// GET /workflows/batch/choose
 func WorkflowShowBatchForm(c *gin.Context) {
 	wb := &core.WorkflowBatch{}
 	form := wb.ToForm()
@@ -179,13 +179,8 @@ func WorkflowShowBatchForm(c *gin.Context) {
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }
 
-// POST /workflows/runbatch
-func WorkflowRunBatch(c *gin.Context) {
-
-	// Should be an ajax call?
-	// Or two separate calls?
-	// If AJAX, return JSON always, including for form errors?
-
+// POST /workflows/batch/choose
+func WorkflowInitBatch(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
@@ -199,6 +194,20 @@ func WorkflowRunBatch(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "workflow/batch.html", data)
 		return
 	}
+	form := wb.ToForm()
+	data := gin.H{
+		"form": form,
+	}
+	c.HTML(http.StatusOK, "workflow/batch.html", data)
+	return
+}
+
+// GET /workflows/batch/run
+func WorkflowRunBatch(c *gin.Context) {
+
+	// Should be an ajax call?
+	// Or two separate calls?
+	// If AJAX, return JSON always, including for form errors?
 
 	//
 	// Set up SSE emitter.

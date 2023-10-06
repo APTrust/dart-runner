@@ -70,6 +70,7 @@ const (
 	TypeStorageService       = "StorageService"
 	TypeTagDefinition        = "TagDefinition"
 	TypeWorkflow             = "Workflow"
+	TypeWorkflowBatch        = "WorkflowBatch"
 )
 
 var AcceptBagItVersion = []string{

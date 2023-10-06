@@ -192,6 +192,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/workflows/delete/:id", controllers.WorkflowDelete)
 	router.POST("/workflows/from_job/:jobId", controllers.WorkflowCreateFromJob)
 	router.POST("/workflows/run/:id", controllers.WorkflowRun)
-	router.GET("/workflows/runbatch", controllers.WorkflowShowBatchForm)
-	router.POST("/workflows/runbatch", controllers.WorkflowRunBatch)
+	router.GET("/workflows/batch/choose", controllers.WorkflowShowBatchForm)
+	router.POST("/workflows/batch/choose", controllers.WorkflowInitBatch)
+	router.GET("/workflows/batch/run", controllers.WorkflowRunBatch)
 }
