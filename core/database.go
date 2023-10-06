@@ -126,6 +126,10 @@ func ObjFind(uuid string) *QueryResult {
 		item := &Workflow{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.Workflows = append(qr.Workflows, item)
+	case constants.TypeWorkflowBatch:
+		item := &WorkflowBatch{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.WorkflowBatches = append(qr.WorkflowBatches, item)
 	default:
 		qr.Error = constants.ErrUnknownType
 	}
@@ -166,6 +170,8 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 		storageServiceList(rows, qr)
 	case constants.TypeWorkflow:
 		workflowList(rows, qr)
+	case constants.TypeWorkflowBatch:
+		workflowBatchList(rows, qr)
 	default:
 		qr.Error = constants.ErrUnknownType
 	}
@@ -365,6 +371,22 @@ func workflowList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.Workflows = append(qr.Workflows, item)
+	}
+}
+
+func workflowBatchList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &WorkflowBatch{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.WorkflowBatches = append(qr.WorkflowBatches, item)
 	}
 }
 

@@ -147,11 +147,45 @@ func TestWBPersistentObjectInterface(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
 	pathToBatchFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
-	wb := core.NewWorkflowBatch(workflow, pathToBatchFile)
+	tempFile := makeTempCSVFileWithValidPaths(t, pathToBatchFile)
+	defer func() { os.Remove(tempFile) }()
+
+	wb := core.NewWorkflowBatch(workflow, tempFile)
 	assert.True(t, util.LooksLikeUUID(wb.ID))
 	assert.Equal(t, wb.ID, wb.ObjID())
-	assert.Equal(t, fmt.Sprintf("WorkflowBatch: Runner Test Workflow => %s", pathToBatchFile), wb.String())
+	assert.Equal(t, fmt.Sprintf("WorkflowBatch: Runner Test Workflow => %s", tempFile), wb.String())
 	assert.Equal(t, constants.TypeWorkflowBatch, wb.ObjType())
-	assert.Equal(t, fmt.Sprintf("Runner Test Workflow => %s", pathToBatchFile), wb.ObjName())
+	assert.Equal(t, fmt.Sprintf("Runner Test Workflow => %s", tempFile), wb.ObjName())
 	assert.True(t, wb.IsDeletable())
+
+	// We have to reload the workflow for these new batches
+	// because it's a pointer, so changing the name on one
+	// changes the name on all.
+	wb2 := core.NewWorkflowBatch(loadJsonWorkflow(t), tempFile)
+	wb2.Workflow.Name = "Second test workflow"
+	wb3 := core.NewWorkflowBatch(loadJsonWorkflow(t), tempFile)
+	wb3.Workflow.Name = "Third test workflow"
+
+	// Make sure we can save these objects
+	assert.NoError(t, core.ObjSave(wb))
+	assert.NoError(t, core.ObjSave(wb2))
+	assert.NoError(t, core.ObjSave(wb3))
+
+	// Make sure we can retrieve them
+	result := core.ObjFind(wb.ID)
+	assert.NoError(t, result.Error)
+	assert.NotEmpty(t, result.WorkflowBatch())
+
+	result = core.ObjFind(wb3.ID)
+	assert.NoError(t, result.Error)
+	assert.NotEmpty(t, result.WorkflowBatch())
+
+	// Make sure we can list them in order
+	result = core.ObjList(constants.TypeWorkflowBatch, "obj_name", 10, 0)
+	assert.NoError(t, result.Error)
+	batches := result.WorkflowBatches
+	require.Equal(t, 3, len(batches))
+	assert.True(t, strings.HasPrefix(batches[0].ObjName(), "Runner Test Workflow"))
+	assert.True(t, strings.HasPrefix(batches[1].ObjName(), "Second test workflow"))
+	assert.True(t, strings.HasPrefix(batches[2].ObjName(), "Third test workflow"))
 }

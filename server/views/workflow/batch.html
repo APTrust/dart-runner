@@ -53,6 +53,24 @@ batch workflow documentation.</a></p>
   <h3>Results</h3>
 </div>
 
+<!-- 
+This template contains the HTML and JavaScript to display
+job details and progress.
+-->
+{{ template "partials/job_run.html" . }}
+
+<script>
+$( document ).ready(function() {
+  var batchIsValid = {{ .batchIsValid }}
+  var runBatchNow = {{ .runBatchNow }}
+  if (batchIsValid && runBatchNow) {
+    runJob('/jobs/run/', '{{ .job.ID }}')")
+  }
+});
+</script>
+
+
+
 {{ template "partials/page_footer.html" .}}
 
 {{ end }}

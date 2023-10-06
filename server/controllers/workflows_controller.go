@@ -188,47 +188,29 @@ func WorkflowInitBatch(c *gin.Context) {
 	if !wb.Validate() {
 		form := wb.ToForm()
 		data := gin.H{
-			"form":    form,
-			"errors:": wb.Errors,
+			"form":         form,
+			"batchIsValid": false,
+			"batchErrors":  wb.Errors,
 		}
 		c.HTML(http.StatusBadRequest, "workflow/batch.html", data)
 		return
 	}
+	err := core.ObjSave(wb)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
 	form := wb.ToForm()
 	data := gin.H{
-		"form": form,
+		"form":         form,
+		"batchIsValid": true,
+		"runBatchNow":  true,
 	}
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
-	return
 }
 
-// GET /workflows/batch/run
+// GET /workflows/batch/run/:id
 func WorkflowRunBatch(c *gin.Context) {
+	//result := core.ObjFind(c.Param("id"))
 
-	// Should be an ajax call?
-	// Or two separate calls?
-	// If AJAX, return JSON always, including for form errors?
-
-	//
-	// Set up SSE emitter.
-	//
-	// reset display
-	// load workflow & batch file
-	// validate workflow
-	// validate batch file
-	// if errors, send through SSE, send disconnect & stop.
-	//
-	// If no errors, send SSE message to clear display,
-	// then run batch:
-	//
-	// runner := NewWorkflowRunnerWithMessageChannel()
-	// runner.Run()
-	//
-	// Each new job in batch should send message to clear/reset display
-	// at start, and should send success/failure at end, so we can set
-	// the green check or red X. It would also be nice to send details
-	// to the front end about what failed and why in each job.
-	//
-	// Also, front end should warn on window close or navigation change
-	// if jobs are running.
 }

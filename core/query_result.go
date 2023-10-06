@@ -19,6 +19,7 @@ type QueryResult struct {
 	ResultType         string
 	StorageServices    []*StorageService
 	Workflows          []*Workflow
+	WorkflowBatches    []*WorkflowBatch
 }
 
 func NewQueryResult(resultType string) *QueryResult {
@@ -77,6 +78,13 @@ func (qr *QueryResult) Workflow() *Workflow {
 	return nil
 }
 
+func (qr *QueryResult) WorkflowBatch() *WorkflowBatch {
+	if len(qr.WorkflowBatches) > 0 {
+		return qr.WorkflowBatches[0]
+	}
+	return nil
+}
+
 func (qr *QueryResult) GetForm() (*Form, error) {
 	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount < 1 {
 		return nil, constants.ErrWrongTypeForForm
@@ -96,6 +104,8 @@ func (qr *QueryResult) GetForm() (*Form, error) {
 		form = qr.StorageService().ToForm()
 	case constants.TypeWorkflow:
 		form = qr.Workflow().ToForm()
+	case constants.TypeWorkflowBatch:
+		form = qr.WorkflowBatch().ToForm()
 	default:
 		err = constants.ErrUnknownType
 	}
