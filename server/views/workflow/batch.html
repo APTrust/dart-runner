@@ -60,10 +60,10 @@ $(function() {
     clearErrors()
     let formId = '#workflowBatchForm'
     let onSuccess = function(response) {
-      let url = '/workflows/batch/run?' + $(formId).serialize()
-      //runJob(url, '')
-      console.log(response)
+      let url = '/workflows/batch/run?' + $(formId).serialize()      
+      //console.log(response)
       console.log(url)
+      runJob(url, '')
     }
     let onFail = function(xhr, status, err) {
       // display form validation errors below form controls

@@ -194,5 +194,5 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/workflows/run/:id", controllers.WorkflowRun)
 	router.GET("/workflows/batch/choose", controllers.WorkflowShowBatchForm)
 	router.POST("/workflows/batch/validate", controllers.WorkflowBatchValidate)
-	router.POST("/workflows/batch/run", controllers.WorkflowRunBatch)
+	router.GET("/workflows/batch/run", controllers.WorkflowRunBatch)
 }

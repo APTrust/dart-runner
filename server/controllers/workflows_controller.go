@@ -197,17 +197,7 @@ func WorkflowBatchValidate(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
-
-	// User may have attempted to run an earlier version of this same
-	// workflow, in which case it will be saved. Update the saved
-	// version instead of creating a new object.
-	wbName := fmt.Sprintf("%s => %s", workflow.Name, pathToCSVFile)
-	result := core.ObjByNameAndType(wbName, constants.TypeWorkflowBatch)
-	wb := result.WorkflowBatch()
-	if result.Error != nil {
-		// Not found. Create a new one.
-		wb = core.NewWorkflowBatch(workflow, pathToCSVFile)
-	}
+	wb := core.NewWorkflowBatch(workflow, pathToCSVFile)
 	status := http.StatusOK
 	data := gin.H{}
 	if !wb.Validate() {
@@ -218,14 +208,12 @@ func WorkflowBatchValidate(c *gin.Context) {
 	c.JSON(status, data)
 }
 
-// POST /workflows/batch/run
+// GET /workflows/batch/run
 func WorkflowRunBatch(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
-		return
-	}
-	wb := result.WorkflowBatch()
+	workflowID := c.Query("WorkflowID")
+	pathToCSVFile := c.Query("PathToCSVFile")
+	workflow := core.ObjFind(workflowID).Workflow()
+	wb := core.NewWorkflowBatch(workflow, pathToCSVFile)
 	if !wb.Validate() {
 		errMsg := ""
 		for _, message := range wb.Errors {
@@ -234,12 +222,10 @@ func WorkflowRunBatch(c *gin.Context) {
 		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("workflow has validation errors: %s", errMsg))
 		return
 	}
-
 	parser := core.NewCSVBatchParser(wb.PathToCSVFile, wb.Workflow)
-
-	outputDir, err := core.GetAppSetting("Output Directory")
+	outputDir, err := core.GetAppSetting("Bagging Directory")
 	if err != nil {
-		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("Cannot find application setting for 'Output Directory'"))
+		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("Cannot find application setting for 'Bagging Directory'"))
 		return
 	}
 
