@@ -50,7 +50,7 @@ func JobRunExecute(c *gin.Context) {
 	job := result.Job()
 
 	// The subcomponents of core.RunJob handle packaging,
-	// validation and uploading. These compenents will push
+	// validation and uploading. These components will push
 	// event messages into the message channel, and the call
 	// to c.SSEvent below pushes them out to the client as
 	// server-sent events.

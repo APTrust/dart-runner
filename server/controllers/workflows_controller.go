@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -173,14 +176,24 @@ func WorkflowRun(c *gin.Context) {
 func WorkflowShowBatchForm(c *gin.Context) {
 	wb := &core.WorkflowBatch{}
 	form := wb.ToForm()
+
+	// Create a dummy dummyJob here, so the divs display on the
+	// front end. If the worklflow has a packaging step, dummy dummyJob
+	// should have a PacakageOp. Ditto for the workflow's upload ops.
+	dummyJob := core.NewJob()
+	dummyUploadOp := &core.UploadOperation{StorageService: core.NewStorageService()}
+	dummyJob.UploadOps = []*core.UploadOperation{dummyUploadOp}
+	dummyJob.PackageOp.PackageFormat = constants.PackageFormatBagIt
+
 	data := gin.H{
 		"form": form,
+		"job":  dummyJob,
 	}
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }
 
-// POST /workflows/batch/choose
-func WorkflowInitBatch(c *gin.Context) {
+// POST /workflows/batch/validate
+func WorkflowBatchValidate(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
 	pathToCSVFile := c.PostForm("PathToCSVFile")
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
@@ -195,58 +208,136 @@ func WorkflowInitBatch(c *gin.Context) {
 		// Not found. Create a new one.
 		wb = core.NewWorkflowBatch(workflow, pathToCSVFile)
 	}
+	status := http.StatusOK
+	data := gin.H{}
 	if !wb.Validate() {
-		form := wb.ToForm()
-		data := gin.H{
-			"form":         form,
-			"batchIsValid": false,
-			"batchErrors":  wb.Errors,
-		}
-		c.HTML(http.StatusBadRequest, "workflow/batch.html", data)
-		return
+		status = http.StatusBadRequest
+		data["errors"] = wb.Errors
 	}
-
-	err := core.ObjSave(wb)
-	if err != nil && err != constants.ErrUniqueConstraint {
-		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
-		return
-	}
-
-	// Create a dummy dummyJob here, so the divs display on the
-	// front end. If the worklflow has a packaging step, dummy dummyJob
-	// should have a PacakageOp. Ditto for the workflow's upload ops.
-	dummyJob := core.NewJob()
-	if wb.Workflow.PackageFormat == "" {
-		dummyJob.PackageOp = nil
-	} else {
-		dummyJob.PackageOp.PackageFormat = wb.Workflow.PackageFormat
-	}
-	if len(wb.Workflow.StorageServiceIDs) > 0 {
-		dummyUploadOp := &core.UploadOperation{
-			StorageService: core.NewStorageService(),
-		}
-		dummyJob.UploadOps = []*core.UploadOperation{dummyUploadOp}
-	}
-
-	form := wb.ToForm()
-	data := gin.H{
-		"form":            form,
-		"batchIsValid":    true,
-		"workflowBatchId": wb.ID,
-		"job":             dummyJob,
-	}
-	c.HTML(http.StatusOK, "workflow/batch.html", data)
+	data["status"] = status
+	c.JSON(status, data)
 }
 
-// GET /workflows/batch/run/:id
+// POST /workflows/batch/run
 func WorkflowRunBatch(c *gin.Context) {
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
 	}
-	// wb := result.WorkflowBatch()
-	// messageChannel := make(chan *core.EventMessage)
+	wb := result.WorkflowBatch()
+	if !wb.Validate() {
+		errMsg := ""
+		for _, message := range wb.Errors {
+			errMsg += message + "; "
+		}
+		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("workflow has validation errors: %s", errMsg))
+		return
+	}
+
+	parser := core.NewCSVBatchParser(wb.PathToCSVFile, wb.Workflow)
+
+	outputDir, err := core.GetAppSetting("Output Directory")
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("Cannot find application setting for 'Output Directory'"))
+		return
+	}
+
+	jobParamsArray, err := parser.ParseAll(outputDir)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("Error parsing CSV batch file: %s", err.Error()))
+		return
+	}
+
+	messageChannel := make(chan *core.EventMessage)
+
+	go func() {
+
+		for _, jobParams := range jobParamsArray {
+			// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
+			//defer close(messageChannel)
+
+			job := jobParams.ToJob()
+
+			// First things first. Send initialization data to the
+			// front end, so it knows what to display.
+			jobInitSettings := &core.JobInitSettings{
+				RunningJobId:  job.ID,
+				HasPackageOp:  job.HasPackageOp(),
+				HasUploadOp:   job.HasUploadOps(),
+				PathSeparator: string(os.PathSeparator),
+				PackageFormat: job.PackageFormat(),
+			}
+			initEvent := core.InitEvent(jobInitSettings)
+			messageChannel <- initEvent
+
+			// core.RunJobWithMessageChannel will run the entire job,
+			// pumping messages through the message channel as it goes.
+			// It will not return until it's done. An exit code of zero
+			// indicates success. See constants.go for the meanings of
+			// other exit codes.
+			exitCode := core.RunJobWithMessageChannel(job, false, messageChannel)
+
+			// At this point, the job has completed, and we need to create
+			// the final disconnect event to tell the front end to stop
+			// listening for server-sent events. This is the last message
+			// we'll send. When the front end gets this, it terminates
+			// the server-sent event connection. The call to c.Stream() below
+			// will return when the connection is terminated.
+			status := constants.StatusFailed
+			if exitCode == constants.ExitOK {
+				status = constants.StatusSuccess
+			}
+			eventMessage := &core.EventMessage{
+				EventType: constants.EventTypeDisconnect,
+				Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
+				Status:    status,
+			}
+			messageChannel <- eventMessage
+		}
+	}()
+
+	// While the job runner is pumping events into one end of
+	// our message channel, we need a listener on the other end
+	// to do something with those events. The streamer merely
+	// receives events from the job runner and passes them out
+	// to the client as server-sent events.
+	streamer := func(w io.Writer) bool {
+		if msg, ok := <-messageChannel; ok {
+			c.SSEvent("message", msg)
+			if msg.EventType != constants.EventTypeDisconnect {
+				return true
+			}
+		}
+		// err := core.ObjSave(job)
+		// if err != nil {
+		// 	core.Dart.Log.Error("Error saving job %s after run: %v", job.ID, err)
+		// }
+		return false
+	}
+
+	// Building a small bag can take just milliseconds. In testing,
+	// the front-end client (JavaScript EventSource) starts receiving data
+	// in the millisecond window between connecting and defining event
+	// handlers. That causes the front end to miss the first event.
+	// We could handle this with Last-Event-ID, but that gets tricky
+	// if we have to cache and re-request data. This is much simpler.
+	// Just give the front-end time to attach its event handler.
+	time.Sleep(200 * time.Millisecond)
+
+	// At this point, we have a job running in a separate go routine,
+	// and a streamer set up to pass job events along to the client.
+	//
+	// The last thing we need to do is attach the streamer to gin's
+	// io.Writer, which is the pipe through which messages are written
+	// to the client. The c.Stream() function keeps writing until the
+	// remote client disconnects. Note that c.Stream() blocks until
+	// the client disconnects.
+	//
+	// The client should disconnect when we send it the disconnect event.
+	c.Stream(streamer)
+	c.Writer.Flush()
+	fmt.Println("Job Execute: client disconnected.")
 
 	// TODO:
 	//

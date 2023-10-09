@@ -9,7 +9,7 @@ For more information, see DART's
 <a href="#Help/openExternal?url=https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/">
 batch workflow documentation.</a></p>
 
-<form method="post" action="/workflows/batch/choose" id="{{ .Form.ID }}">
+<form method="post" action="/workflows/batch/validate" id="workflowBatchForm">
 
   {{ template "partials/input_select.html" dict "field" .form.Fields.WorkflowID }}
 
@@ -19,22 +19,17 @@ batch workflow documentation.</a></p>
   
   <div class="bottom-buttons">
     <div class="pull-right">
-      <button class="btn btn-primary" type="submit" role="button">Run</button>
+      <button id="runWorkflowBatch" class="btn btn-primary" type="button" role="button">Run</button>
     </div>
   </div>
 
 </form>
 
-{{ if .batchErrors }}
-<div id="batchValidation">
+<div id="batchValidation" style="display:none">
   <h3>Errors</h3>
-  <ul>
-    {{ range $index, $error := .batchErrors }}
-    <li>{{ $error }}</li>
-    {{ end }}
+  <ul id="batchValidationErrorList">
   </ul>
 </div>
-{{ end }}
 
 
 <div class="row" id="dartProcessContainer">
@@ -60,12 +55,63 @@ job details and progress.
 {{ template "partials/job_run.html" . }}
 
 <script>
-$( document ).ready(function() {
-  var batchIsValid = {{ .batchIsValid }}
-  if (batchIsValid) {
-    runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')
+$(function() {
+  function validateAndRunBatch() {
+    clearErrors()
+    let formId = '#workflowBatchForm'
+    let onSuccess = function(response) {
+      let url = '/workflows/batch/run?' + $(formId).serialize()
+      //runJob(url, '')
+      console.log(response)
+      console.log(url)
+    }
+    let onFail = function(xhr, status, err) {
+      // display form validation errors below form controls
+      // display other validation errors in list below form
+      let data = JSON.parse(xhr.responseText)
+      console.log(data)
+      if (data.errors["PathToCSVFile"]) {
+        $('#PathToCSVFileError').html(data.errors["PathToCSVFile"])
+      }
+      if (data.errors["WorkflowID"]) {
+        $('#WorkflowBatch_WorkflowIDError').html(data.errors["WorkflowID"])
+      }
+      displayValidationErrors(data.errors)
+    }
+    submitFormInBackground(formId, onSuccess, onFail)
   }
+
+  function clearErrors() {
+    $('#PathToCSVFileError').html("")
+    $('#WorkflowBatch_WorkflowIDError').html('')
+    $('#batchValidation').hide()
+    $('#batchValidationErrorList').empty()
+  }
+
+  function displayValidationErrors(errors) {
+    for(var key of Object.keys(errors).sort()){
+      let errMsg = errors[key]
+      // First two case: invalid or missing parameter to set up the batch job.
+      if (key == "PathToCSVFile") {
+        $('#PathToCSVFileError').html(errMsg)
+        continue
+      }
+      if (key == "WorkflowID") {
+        $('#WorkflowBatch_WorkflowIDError').html(errMsg)
+        continue
+      }
+      // All other cases are errors found while parsing the CSV file.
+      // These are usually missing/invalid tag values, missing bag
+      // name, missing/invalid root directory.
+      $('#batchValidation').show()
+      $('#batchValidationErrorList').append(`<li>${key} - ${errMsg}</li>`)
+    }    
+  }
+
+  $('#runWorkflowBatch').on('click', validateAndRunBatch)
 });
+
+// runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')
 </script>
 
 
