@@ -65,6 +65,8 @@ func JobRunExecute(c *gin.Context) {
 
 		//defer close(messageChannel)
 
+		// TODO: Replace with JobSummaryInfo
+
 		// First things first. Send initialization data to the
 		// front end, so it knows what to display.
 		jobInitSettings := &core.JobInitSettings{

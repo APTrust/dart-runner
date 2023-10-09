@@ -50,6 +50,7 @@ type EventMessage struct {
 	JobInitSettings *JobInitSettings `json:"jobInitSettings,omitempty"`
 }
 
+// TODO: Replace with JobSummaryInfo
 // JobInitSettings contains information for the front-end
 // HTML/JavaScript page to help display the status of a
 // running job.

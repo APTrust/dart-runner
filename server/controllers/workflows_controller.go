@@ -238,12 +238,14 @@ func WorkflowRunBatch(c *gin.Context) {
 	messageChannel := make(chan *core.EventMessage)
 
 	go func() {
-
+		allJobsSucceeded := true
 		for _, jobParams := range jobParamsArray {
 			// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
 			//defer close(messageChannel)
 
 			job := jobParams.ToJob()
+
+			// TODO: Replace with JobSummaryInfo
 
 			// First things first. Send initialization data to the
 			// front end, so it knows what to display.
@@ -275,12 +277,35 @@ func WorkflowRunBatch(c *gin.Context) {
 				status = constants.StatusSuccess
 			}
 			eventMessage := &core.EventMessage{
-				EventType: constants.EventTypeDisconnect,
+				EventType: constants.EventTypeFinish,
 				Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
 				Status:    status,
 			}
 			messageChannel <- eventMessage
+			if status == constants.StatusFailed {
+				allJobsSucceeded = false
+			}
 		}
+		status := constants.StatusSuccess
+		if !allJobsSucceeded {
+			status = constants.StatusFailed
+		}
+
+		// Send finish message to indicate batch completed.
+		eventMessage := &core.EventMessage{
+			EventType: constants.EventTypeFinish,
+			Message:   "Batch completed",
+			Status:    status,
+		}
+		messageChannel <- eventMessage
+
+		// Send disconnect telling front end to hang up.
+		eventMessage = &core.EventMessage{
+			EventType: constants.EventTypeDisconnect,
+			Message:   "Batch completed",
+			Status:    status,
+		}
+		messageChannel <- eventMessage
 	}()
 
 	// While the job runner is pumping events into one end of
