@@ -76,25 +76,11 @@ an idea of what goes into them.
     // results (red x or green check next to each item).
     var completedUploads = []
     var weAreRunningAWorkflowBatch = false 
-    var settings = {
-      id: "",
-      hasPackageOp: false,
-      hasUploadOps: false,
-      hasBagItProfile: false,
-      packageFormat: "none",
-      packageName: "",
-      bagItProfileName: "",
-      bagItProfileDescription: "",
-      directoryCount: 0,
-      payloadFileCount: 0,
-      byteCount: 0,
-      byteCountFormatted: "",
-      byteCountHuman: "",
-      sourceFiles: [],
-      outputPath: "",
-      uploadTargets: [],
-      pathSeparator: ""
-    }
+    var settings = {}
+
+    {{ if .jobSummaryJson }}
+    settings = JSON.parse({{ .jobSummaryJson }});
+    {{ end }}
 
     function runJob(eventSourceUrl, jobId) {
 
@@ -146,7 +132,40 @@ an idea of what goes into them.
     }
 
     function showJobDetails() {
+      clearAndHidePackagingInfo()
       if (settings.hasPackageOp) {
+        showPackagingInfo()
+      } 
+      if (settings.hasUploadOps) {
+        $('#uploadOpsDiv').show()
+        for (let item of settings.uploadTargets) {
+          $('#uploadTargets').append(`<li>${item}</li>`)
+        }
+      } else {
+        $('#uploadOpsDiv').hide()
+        $('#uploadTargets').empty()
+      }
+    }
+
+    function clearAndHidePackagingInfo() {
+        $('#packageOpDiv').hide()
+        $('#bagItProfileDiv').hide()
+        $('#payloadSummaryDiv').hide()
+        $('#sourceFilesDiv').hide()
+        $('#outputPathDiv').hide()
+
+        $('#packageName').empty()
+        $('#bagItProfileName').empty()
+        $('#bagItProfileDescription').empty()
+        $('#directoryCount').empty()
+        $('#fileCount').empty()
+        $('#byteCountHuman').empty()
+        $('#byteCountFormatted').empty()
+        $('#outputPathLink').empty()
+        $('#sourceFiles').empty()
+    }
+
+    function showPackagingInfo() {
         $('#packageName').html()
         $('#bagItProfileName').html()
         $('#bagItProfileDescription').html()
@@ -165,32 +184,6 @@ an idea of what goes into them.
         $('#payloadSummaryDiv').show()
         $('#sourceFilesDiv').show()
         $('#outputPathDiv').show()
-      } else {
-        $('#packageOpDiv').hide()
-        $('#bagItProfileDiv').hide()
-        $('#payloadSummaryDiv').hide()
-        $('#sourceFilesDiv').hide()
-        $('#outputPathDiv').hide()
-
-        $('#packageName').empty()
-        $('#bagItProfileName').empty()
-        $('#bagItProfileDescription').empty()
-        $('#directoryCount').empty()
-        $('#fileCount').empty()
-        $('#byteCountHuman').empty()
-        $('#byteCountFormatted').empty()
-        $('#outputPathLink').empty()
-        $('#sourceFiles').empty()
-      }
-      if (settings.hasUploadOps) {
-        $('#uploadOpsDiv').show()
-        for (let item of settings.uploadTargets) {
-          $('#uploadTargets').append(`<li>${item}</li>`)
-        }
-      } else {
-        $('#uploadOpsDiv').hide()
-        $('#uploadTargets').empty()
-      }
     }
 
     function showProgressDivs() {
@@ -356,6 +349,12 @@ an idea of what goes into them.
       var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`
       div.html(html)
     }
+
+    $(function(){
+    {{ if .jobSummaryJson }}
+      showJobDetails()
+    {{ end }}
+    })
 </script>
 
 {{ end }}

@@ -1,17 +1,15 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 // GET /jobs/summary/:id
@@ -23,14 +21,13 @@ func JobRunShow(c *gin.Context) {
 	}
 	job := result.Job()
 	job.UpdatePayloadStats()
-
-	p := message.NewPrinter(language.English)
-	byteCount := p.Sprintf("%d", job.ByteCount)
+	jobSummary := core.NewJobSummary(job)
+	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
 
 	data := gin.H{
-		"job":           job,
-		"byteCount":     byteCount,
-		"pathSeparator": string(os.PathSeparator),
+		"job":            job,
+		"jobSummary":     jobSummary,
+		"jobSummaryJson": string(jobSummaryJson),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
