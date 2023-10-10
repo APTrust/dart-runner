@@ -17,6 +17,7 @@ import (
 // it's easy to test.
 type JobSummary struct {
 	ID                      string   `json:"id"`
+	Name                    string   `json:"name"`
 	HasPackageOp            bool     `json:"hasPackageOp"`
 	HasUploadOps            bool     `json:"hasUploadOps"`
 	HasBagItProfile         bool     `json:"hasBagItProfile"`
@@ -37,9 +38,13 @@ type JobSummary struct {
 
 // NewJobSummary creates a new JobSummaryInfo object based on
 // the given job.
+//
+// NOTE: To get accurate info about the job's payload, call
+// job.UpdatePayloadStats() before calling this constructor.
 func NewJobSummary(job *Job) *JobSummary {
 	info := &JobSummary{
 		ID:               job.ID,
+		Name:             job.Name(),
 		HasPackageOp:     job.HasPackageOp(),
 		HasUploadOps:     job.HasUploadOps(),
 		HasBagItProfile:  job.BagItProfile != nil,

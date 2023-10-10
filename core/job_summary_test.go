@@ -28,6 +28,7 @@ func TestNewJobSummary(t *testing.T) {
 	job := loadTestJob(t)
 	info := core.NewJobSummary(job)
 	assert.Equal(t, job.ID, info.ID)
+	assert.Equal(t, job.Name(), info.Name)
 	assert.Equal(t, "APTrust Profile for Wasabi VA ingest", info.BagItProfileDescription)
 	assert.Equal(t, "APTrust - Wasabi VA", info.BagItProfileName)
 	assert.Equal(t, int64(0), info.ByteCount)

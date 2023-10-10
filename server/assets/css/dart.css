@@ -231,3 +231,7 @@ svg.fa-file-pdf {
     color: var(--red);
 }
 
+.flush-no-marker {
+    list-style-type: none;
+    padding-left: 0rem;
+}

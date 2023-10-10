@@ -243,6 +243,7 @@ func WorkflowRunBatch(c *gin.Context) {
 			//defer close(messageChannel)
 
 			job := jobParams.ToJob()
+			job.UpdatePayloadStats()
 
 			// First things first. Send initialization data to the
 			// front end, so it knows what to display.

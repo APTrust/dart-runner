@@ -14,12 +14,12 @@ an idea of what goes into them.
 -->
 
 
-<div class="row" id="packageOpDiv" style="display:none">
+<div class="row mb-1" id="packageOpDiv" style="display:none">
   <div class="col text-right font-weight-bold">Package Name</div>
   <div class="col-10" id="packageName"></div>
 </div>
 
-<div class="row" id="bagItProfileDiv" style="display:none">
+<div class="row mb-1" id="bagItProfileDiv" style="display:none">
   <div class="col text-right font-weight-bold">BagIt Profile</div>
   <div class="col-10">
     <span id="bagItProfileName"></span> <br/>
@@ -27,7 +27,7 @@ an idea of what goes into them.
   </div>
 </div>
 
-<div class="row" id="payloadSummaryDiv" style="display:none">
+<div class="row mb-1" id="payloadSummaryDiv" style="display:none">
   <div class="col text-right font-weight-bold">Payload Summary</div>
   <div class="col-10">
     <span id="directoryCount"></span> Directories <br/>
@@ -36,27 +36,27 @@ an idea of what goes into them.
   </div>
 </div>
 
-<div class="row" id="sourceFilesDiv" style="display:none">
+<div class="row mb-1" id="sourceFilesDiv" style="display:none">
   <div class="col text-right font-weight-bold">Files to Package</div>
   <div class="col-10">
-    <ul id="sourceFiles"></ul>
+    <ul id="sourceFiles" class="flush-no-marker"></ul>
   </div>
 </div>
 
-<div class="row" id="outputPathDiv" style="display:none">
+<div class="row mb-1" id="outputPathDiv" style="display:none">
   <div class="col text-right font-weight-bold">Output Path</div>
   <div class="col-10"><div id="outputPathLink" data-url=""></div></div>
 </div>
 
-<div class="row" id="uploadOpsDiv" style="display:none">
+<div class="row mb-1" id="uploadOpsDiv" style="display:none">
   <div class="col text-right font-weight-bold">Upload To</div>
   <div class="col-10">
-    <ul id="uploadTargets"></ul>
+    <ul id="uploadTargets" class="flush-no-marker"></ul>
   </div>
 </div>
 
 <div class="row" id="jobIdContainer" style="display:none;">
-  {{ template "partials/dart_process.html" .job }}
+  {{ template "partials/dart_process.html" .jobSummary }}
 </div>
 
 
@@ -78,6 +78,11 @@ an idea of what goes into them.
     var weAreRunningAWorkflowBatch = false 
     var settings = {}
 
+    // This will be empty for workflow batches, but on the job_run
+    // page this lets us display the job details as soon as the
+    // page loads. If we have jobSummaryJson, we'll also make a
+    // call to showJobDetails() in the page load event at the
+    // bottom of this file. See below.
     {{ if .jobSummaryJson }}
     settings = JSON.parse({{ .jobSummaryJson }});
     {{ end }}
@@ -116,6 +121,7 @@ an idea of what goes into them.
           if (data.eventType == "init") {
             console.log(`Got init event for job ${data.jobSummary.id}`)
             settings = data.jobSummary
+            console.log(settings)
             showJobDetails()
             showProgressDivs()
           } else if (data.eventType == "disconnect") {
@@ -132,10 +138,12 @@ an idea of what goes into them.
     }
 
     function showJobDetails() {
+      $('#jobName').html(settings.Name)
       clearAndHidePackagingInfo()
       if (settings.hasPackageOp) {
         showPackagingInfo()
       } 
+      $('#uploadTargets').empty()
       if (settings.hasUploadOps) {
         $('#uploadOpsDiv').show()
         for (let item of settings.uploadTargets) {
@@ -166,14 +174,14 @@ an idea of what goes into them.
     }
 
     function showPackagingInfo() {
-        $('#packageName').html()
-        $('#bagItProfileName').html()
-        $('#bagItProfileDescription').html()
-        $('#directoryCount').html()
-        $('#fileCount').html()
-        $('#byteCountHuman').html()
-        $('#byteCountFormatted').html()
-        $('#outputPathLink').html()
+        $('#packageName').html(settings.packageName)
+        $('#bagItProfileName').html(settings.bagItProfileName)
+        $('#bagItProfileDescription').html(settings.bagItProfileDescription)
+        $('#directoryCount').html(settings.directoryCount)
+        $('#fileCount').html(settings.fileCount)
+        $('#byteCountHuman').html(settings.byteCountHuman)
+        $('#byteCountFormatted').html(settings.byteCountFormatted)
+        $('#outputPathLink').html(settings.outputPath)
 
         for (let item of settings.sourceFiles) {
           $('#sourceFiles').append(`<li>${item}</li>`)
@@ -196,7 +204,7 @@ an idea of what goes into them.
                 $(`#runningJobDisplay div.validationInfo`).show();
             }
         }
-        if (settings.hasUploadOp) {
+        if (settings.hasUploadOps) {
             initProgressBar('uploadInfo');
             $(`#runningJobDisplay div.uploadInfo`).show();
         }
