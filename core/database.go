@@ -137,6 +137,7 @@ func findOne(row *sql.Row) *QueryResult {
 	case constants.TypeWorkflow:
 		item := &Workflow{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
+		item.resolveStorageServices() // see doc comments on this
 		qr.Workflows = append(qr.Workflows, item)
 	case constants.TypeWorkflowBatch:
 		item := &WorkflowBatch{}
@@ -381,6 +382,7 @@ func workflowList(rows *sql.Rows, qr *QueryResult) {
 		if qr.Error != nil {
 			return
 		}
+		item.resolveStorageServices() // see doc comments on this
 		qr.Workflows = append(qr.Workflows, item)
 	}
 }
