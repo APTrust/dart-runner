@@ -5,61 +5,55 @@
 This template, and the script that appears below the HTML, is used 
 in both the "job run" UI and the "run workflow batch" UI.
 
+We fill in this info via the JobSummary object that the back end
+passes through in the Init Event (server-sent event). JavaScript
+on the front end parses the JobSummary and inserts data into the
+divs and spans below. See the IDs of the divs and spans to get
+an idea of what goes into them.
+
 -->
 
 
-{{ if .job.PackageOp }}
-<div class="row">
+<div class="row" id="packageOpDiv" style="display:none">
   <div class="col text-right font-weight-bold">Package Name</div>
-  <div class="col-10">{{ .job.PackageOp.PackageName }}</div>
+  <div class="col-10" id="packageName"></div>
 </div>
 
-{{ if .job.BagItProfile }}
-<div class="row">
+<div class="row" id="bagItProfileDiv" style="display:none">
   <div class="col text-right font-weight-bold">BagIt Profile</div>
   <div class="col-10">
-    {{ .job.BagItProfile.Name }} <br/>
-    {{ .job.BagItProfile.Description }}
+    <span id="bagItProfileName"></span> <br/>
+    <span id="bagItProfileDescription"></span>
   </div>
 </div>
-{{ end }}
 
-<div class="row">
+<div class="row" id="payloadSummaryDiv" style="display:none">
   <div class="col text-right font-weight-bold">Payload Summary</div>
   <div class="col-10">
-    {{ .job.DirCount }} Directories <br/>
-    {{ .job.PayloadFileCount }} Files <br/>
-    {{ humanSize .job.ByteCount }} ({{ .byteCount }} bytes)<br/>
+    <span id="directoryCount"></span> Directories <br/>
+    <span id="fileCount"></span> Files <br/>
+    <span id="byteCountHuman"></span> (<span id="byteCountFormatted"></span> bytes)<br/>
   </div>
 </div>
 
-<div class="row">
+<div class="row" id="sourceFilesDiv" style="display:none">
   <div class="col text-right font-weight-bold">Files to Package</div>
   <div class="col-10">
-    {{ range $index, $path := .job.PackageOp.SourceFiles }}
-      <!-- showPathWithTrim $path ../trimPath --> 
-      {{ $path }} <br/>
-    {{ end }}
+    <ul id="sourceFiles"></ul>
   </div>
 </div>
 
-<div class="row">
+<div class="row" id="outputPathDiv" style="display:none">
   <div class="col text-right font-weight-bold">Output Path</div>
-  <div class="col-10"><div id="output-path-link" data-url="{{ .job.PackageOp.OutputPath }}">{{ .job.PackageOp.OutputPath }}</div></div>
+  <div class="col-10"><div id="outputPathLink" data-url=""></div></div>
 </div>
 
-{{ end }} <!-- end if .job.BagItProfile  -->
-
-{{ if gt (len .job.UploadOps) 0 }}
-<div class="row">
+<div class="row" id="uploadOpsDiv" style="display:none">
   <div class="col text-right font-weight-bold">Upload To</div>
   <div class="col-10">
-    {{ range $index, $uploadOp := .job.UploadOps }}
-      {{ $uploadOp.StorageService.Name }} <br/>
-    {{ end }}
+    <ul id="uploadTargets"></ul>
   </div>
 </div>
-{{ end }}
 
 <div class="row" id="jobIdContainer" style="display:none;">
   {{ template "partials/dart_process.html" .job }}
@@ -83,11 +77,23 @@ in both the "job run" UI and the "run workflow batch" UI.
     var completedUploads = []
     var weAreRunningAWorkflowBatch = false 
     var settings = {
-        runningJobId: "",
-        hasPackageOp: false,
-        hasUploadOp: false,
-        pathSeparator: "",
-        packageFormat: ""
+      id: "",
+      hasPackageOp: false,
+      hasUploadOps: false,
+      hasBagItProfile: false,
+      packageFormat: "none",
+      packageName: "",
+      bagItProfileName: "",
+      bagItProfileDescription: "",
+      directoryCount: 0,
+      payloadFileCount: 0,
+      byteCount: 0,
+      byteCountFormatted: "",
+      byteCountHuman: "",
+      sourceFiles: [],
+      outputPath: "",
+      uploadTargets: [],
+      pathSeparator: ""
     }
 
     function runJob(eventSourceUrl, jobId) {
@@ -122,9 +128,10 @@ in both the "job run" UI and the "run workflow batch" UI.
           }
 
           if (data.eventType == "init") {
-            console.log(`Got init event for job ${data.jobInitSettings.runningJobId}`)
-            settings = data.jobInitSettings
-            showDivs()
+            console.log(`Got init event for job ${data.jobSummary.id}`)
+            settings = data.jobSummary
+            showJobDetails()
+            showProgressDivs()
           } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")
             console.log(data.message)
@@ -138,7 +145,55 @@ in both the "job run" UI and the "run workflow batch" UI.
         }
     }
 
-    function showDivs() {
+    function showJobDetails() {
+      if (settings.hasPackageOp) {
+        $('#packageName').html()
+        $('#bagItProfileName').html()
+        $('#bagItProfileDescription').html()
+        $('#directoryCount').html()
+        $('#fileCount').html()
+        $('#byteCountHuman').html()
+        $('#byteCountFormatted').html()
+        $('#outputPathLink').html()
+
+        for (let item of settings.sourceFiles) {
+          $('#sourceFiles').append(`<li>${item}</li>`)
+        }
+
+        $('#packageOpDiv').show()
+        $('#bagItProfileDiv').show()
+        $('#payloadSummaryDiv').show()
+        $('#sourceFilesDiv').show()
+        $('#outputPathDiv').show()
+      } else {
+        $('#packageOpDiv').hide()
+        $('#bagItProfileDiv').hide()
+        $('#payloadSummaryDiv').hide()
+        $('#sourceFilesDiv').hide()
+        $('#outputPathDiv').hide()
+
+        $('#packageName').empty()
+        $('#bagItProfileName').empty()
+        $('#bagItProfileDescription').empty()
+        $('#directoryCount').empty()
+        $('#fileCount').empty()
+        $('#byteCountHuman').empty()
+        $('#byteCountFormatted').empty()
+        $('#outputPathLink').empty()
+        $('#sourceFiles').empty()
+      }
+      if (settings.hasUploadOps) {
+        $('#uploadOpsDiv').show()
+        for (let item of settings.uploadTargets) {
+          $('#uploadTargets').append(`<li>${item}</li>`)
+        }
+      } else {
+        $('#uploadOpsDiv').hide()
+        $('#uploadTargets').empty()
+      }
+    }
+
+    function showProgressDivs() {
         let processDiv = $('#jobIdContainer');
         if (settings.hasPackageOp) {
             initProgressBar('packageInfo');
@@ -293,8 +348,9 @@ in both the "job run" UI and the "run workflow batch" UI.
     }
 
     function activateOutputPathLink() {
-      var div = $('#output-path-link')
-      var url = div.data('url')
+      var div = $('#outputPathLink')
+      //var url = div.data('url') // Get this from JobSummary instead
+      var url = settings.outputPath
       var dir = url.split(settings.pathSeparator).slice(0, -1).join(settings.pathSeparator)
       console.log(dir)
       var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`

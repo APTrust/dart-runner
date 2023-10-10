@@ -44,49 +44,23 @@ type EventMessage struct {
 	// This object will only be present in the finish event.
 	// For all other events, it's null.
 	JobResult *JobResult `json:"jobResult,omitempty"`
-	// JobInitSettings contains information to help the front
+	// JobSummary contains information to help the front
 	// end set up the job progress display. This object is present
 	// only in the init event. For all other events, it's null.
-	JobInitSettings *JobInitSettings `json:"jobInitSettings,omitempty"`
-}
-
-// TODO: Replace with JobSummaryInfo
-// JobInitSettings contains information for the front-end
-// HTML/JavaScript page to help display the status of a
-// running job.
-type JobInitSettings struct {
-	// RunningJobId is the ID of the currently running job.
-	// This will change on the workflow batch page as we
-	// run a series of jobs.
-	RunningJobId string `json:"runningJobId"`
-	// HasPackageOp describes whether this job includes a
-	// package operation so the front end knows whether to
-	// display the packaging status info and progress bar.
-	HasPackageOp bool `json:"hasPackageOp"`
-	// HasUploadOp describes whether this job includes any
-	// upload operations so the front end knows whether to
-	// display the upload status info and progress bars.
-	HasUploadOp bool `json:"hasUploadOp"`
-	// PathSeparator is the operating system's path separator,
-	// which is a backslash on Windows and forward slash on
-	// other operating systems.
-	PathSeparator string `json:"pathSeparator"`
-	// PackageFormat will be either BagIt or none, depending
-	// on if/how this job packages files.
-	PackageFormat string `json:"packageFormat"`
+	JobSummary *JobSummary `json:"jobSummary,omitempty"`
 }
 
 // InitEvent creates a new initialization event message. This message
 // contains info that the front end needs to set up the job progress
 // display.
-func InitEvent(jobInitSettings *JobInitSettings) *EventMessage {
-	message := fmt.Sprintf("Starting job %s", jobInitSettings.RunningJobId)
+func InitEvent(jobSummary *JobSummary) *EventMessage {
+	message := fmt.Sprintf("Starting job %s", jobSummary.ID)
 	return &EventMessage{
-		Stage:           constants.StagePreRun,
-		EventType:       constants.EventTypeInit,
-		Message:         message,
-		Status:          constants.StatusStarting,
-		JobInitSettings: jobInitSettings,
+		Stage:      constants.StagePreRun,
+		EventType:  constants.EventTypeInit,
+		Message:    message,
+		Status:     constants.StatusStarting,
+		JobSummary: jobSummary,
 	}
 }
 

@@ -3,7 +3,6 @@ package core_test
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -12,19 +11,14 @@ import (
 )
 
 func TestInitEvent(t *testing.T) {
-	settings := &core.JobInitSettings{
-		RunningJobId:  constants.EmptyUUID,
-		HasPackageOp:  true,
-		HasUploadOp:   true,
-		PathSeparator: string(os.PathSeparator),
-		PackageFormat: constants.PackageFormatBagIt,
-	}
-	initEvent := core.InitEvent(settings)
+	job := loadTestJob(t)
+	jobSummary := core.NewJobSummary(job)
+	initEvent := core.InitEvent(jobSummary)
 	assert.Equal(t, constants.EventTypeInit, initEvent.EventType)
 	assert.Equal(t, constants.StagePreRun, initEvent.Stage)
-	assert.Equal(t, fmt.Sprintf("Starting job %s", constants.EmptyUUID), initEvent.Message)
+	assert.Equal(t, fmt.Sprintf("Starting job %s", job.ID), initEvent.Message)
 	assert.Equal(t, constants.StatusStarting, initEvent.Status)
-	assert.Equal(t, settings, initEvent.JobInitSettings)
+	assert.Equal(t, jobSummary, initEvent.JobSummary)
 }
 
 func TestStartEvent(t *testing.T) {

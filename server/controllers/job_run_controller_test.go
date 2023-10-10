@@ -12,6 +12,9 @@ import (
 )
 
 func TestJobRunShow(t *testing.T) {
+	// Note: Key job-specific info now comes through server-sent events.
+	// It's no longer embedded in the page at the back-end, so we no
+	// longer test for it here.
 	defer core.ClearDartTable()
 	job := loadTestJob(t)
 	require.NoError(t, core.ObjSave(job))
@@ -22,21 +25,13 @@ func TestJobRunShow(t *testing.T) {
 		"Payload Summary",
 		"Files to Package",
 		"Upload To",
-		job.BagItProfile.Name,
-		job.Name(),
-		job.ID,
-		job.PackageOp.PackageName,
-		job.PackageOp.OutputPath,
-		"Local Minio",     // upload target
 		"Payload Summary", // file count, dir count and bytes will change as project changes
 		"Directories",
 		"Files",
-		"MB",
 		"Back",
 		"Run Job",
 		"Create Workflow",
 	}
-	expectedContent = append(expectedContent, job.PackageOp.SourceFiles...)
 	pageUrl := fmt.Sprintf("/jobs/summary/%s", job.ID)
 	DoSimpleGetTest(t, pageUrl, expectedContent)
 }

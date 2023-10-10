@@ -63,20 +63,12 @@ func JobRunExecute(c *gin.Context) {
 
 		// TODO: Close message channel only after ALL parts of job (including ALL uploads) complete.
 
-		//defer close(messageChannel)
-
-		// TODO: Replace with JobSummaryInfo
+		// defer close(messageChannel)
 
 		// First things first. Send initialization data to the
 		// front end, so it knows what to display.
-		jobInitSettings := &core.JobInitSettings{
-			RunningJobId:  job.ID,
-			HasPackageOp:  job.HasPackageOp(),
-			HasUploadOp:   job.HasUploadOps(),
-			PathSeparator: string(os.PathSeparator),
-			PackageFormat: job.PackageFormat(),
-		}
-		initEvent := core.InitEvent(jobInitSettings)
+		jobSummary := core.NewJobSummary(job)
+		initEvent := core.InitEvent(jobSummary)
 		messageChannel <- initEvent
 
 		// core.RunJobWithMessageChannel will run the entire job,

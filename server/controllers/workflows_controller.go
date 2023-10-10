@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -245,18 +244,10 @@ func WorkflowRunBatch(c *gin.Context) {
 
 			job := jobParams.ToJob()
 
-			// TODO: Replace with JobSummaryInfo
-
 			// First things first. Send initialization data to the
 			// front end, so it knows what to display.
-			jobInitSettings := &core.JobInitSettings{
-				RunningJobId:  job.ID,
-				HasPackageOp:  job.HasPackageOp(),
-				HasUploadOp:   job.HasUploadOps(),
-				PathSeparator: string(os.PathSeparator),
-				PackageFormat: job.PackageFormat(),
-			}
-			initEvent := core.InitEvent(jobInitSettings)
+			jobSummary := core.NewJobSummary(job)
+			initEvent := core.InitEvent(jobSummary)
 			messageChannel <- initEvent
 
 			// core.RunJobWithMessageChannel will run the entire job,

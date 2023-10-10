@@ -24,9 +24,10 @@ func loadTestJob(t *testing.T) *core.Job {
 	return job
 }
 
-func TestNewJobSummaryInfo(t *testing.T) {
+func TestNewJobSummary(t *testing.T) {
 	job := loadTestJob(t)
-	info := core.NewJobSummaryInfo(job)
+	info := core.NewJobSummary(job)
+	assert.Equal(t, job.ID, info.ID)
 	assert.Equal(t, "APTrust Profile for Wasabi VA ingest", info.BagItProfileDescription)
 	assert.Equal(t, "APTrust - Wasabi VA", info.BagItProfileName)
 	assert.Equal(t, int64(0), info.ByteCount)
@@ -46,7 +47,7 @@ func TestNewJobSummaryInfo(t *testing.T) {
 	job.DirCount = 33
 	job.PayloadFileCount = 1271
 
-	info = core.NewJobSummaryInfo(job)
+	info = core.NewJobSummary(job)
 	assert.Equal(t, int64(999888777666), info.ByteCount)
 	assert.Equal(t, "999,888,777,666", info.ByteCountFormatted)
 	assert.Equal(t, "931.2 GB", info.ByteCountHuman)
@@ -59,7 +60,7 @@ func TestNewJobSummaryInfo(t *testing.T) {
 	job.PackageOp = nil
 	job.UploadOps = nil
 
-	info = core.NewJobSummaryInfo(job)
+	info = core.NewJobSummary(job)
 	assert.False(t, info.HasBagItProfile)
 	assert.False(t, info.HasPackageOp)
 	assert.False(t, info.HasUploadOps)

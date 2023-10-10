@@ -8,36 +8,38 @@ import (
 	"golang.org/x/text/message"
 )
 
-// JobSummaryInfo contains info about a job to be displayed
+// JobSummary contains info about a job to be displayed
 // in the front end. All of this info appears on the job_run
 // page and the batch_run page. It may appear elsewhere as
 // well. Note that it takes some logic to extract some of this
 // information. We don't want to force that logic into HTML
 // templates and front-end JavaScript, so we do it here, where
 // it's easy to test.
-type JobSummaryInfo struct {
-	HasPackageOp            bool
-	HasUploadOps            bool
-	HasBagItProfile         bool
-	PackageFormat           string
-	PackageName             string
-	BagItProfileName        string
-	BagItProfileDescription string
-	DirectoryCount          int64
-	PayloadFileCount        int64
-	ByteCount               int64
-	ByteCountFormatted      string
-	ByteCountHuman          string
-	SourceFiles             []string
-	OutputPath              string
-	UploadTargets           []string
-	PathSeparator           string
+type JobSummary struct {
+	ID                      string   `json:"id"`
+	HasPackageOp            bool     `json:"hasPackageOp"`
+	HasUploadOps            bool     `json:"hasUploadOps"`
+	HasBagItProfile         bool     `json:"hasBagItProfile"`
+	PackageFormat           string   `json:"packageFormat"`
+	PackageName             string   `json:"packageName"`
+	BagItProfileName        string   `json:"bagItProfileName"`
+	BagItProfileDescription string   `json:"bagItProfileDescription"`
+	DirectoryCount          int64    `json:"directoryCount"`
+	PayloadFileCount        int64    `json:"payloadFileCount"`
+	ByteCount               int64    `json:"byteCount"`
+	ByteCountFormatted      string   `json:"byteCountFormatted"`
+	ByteCountHuman          string   `json:"byteCountHuman"`
+	SourceFiles             []string `json:"sourceFiles"`
+	OutputPath              string   `json:"outputPath"`
+	UploadTargets           []string `json:"uploadTargets"`
+	PathSeparator           string   `json:"pathSeparator"`
 }
 
-// NewJobSummaryInfo creates a new JobSummaryInfo object based on
+// NewJobSummary creates a new JobSummaryInfo object based on
 // the given job.
-func NewJobSummaryInfo(job *Job) *JobSummaryInfo {
-	info := &JobSummaryInfo{
+func NewJobSummary(job *Job) *JobSummary {
+	info := &JobSummary{
+		ID:               job.ID,
 		HasPackageOp:     job.HasPackageOp(),
 		HasUploadOps:     job.HasUploadOps(),
 		HasBagItProfile:  job.BagItProfile != nil,
