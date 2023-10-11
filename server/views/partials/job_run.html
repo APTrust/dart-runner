@@ -89,9 +89,7 @@ an idea of what goes into them.
 
     function runJob(eventSourceUrl, jobId) {
 
-      // TODO: Handle more specific messages when back end emits them.
-      //
-      // The general pattern for that is:
+      // The general pattern SSE listener pattern is:
       //
       // sse.addEventListener("eventName", (e) => { code... });
       // 
@@ -100,6 +98,11 @@ an idea of what goes into them.
       }
       if (eventSourceUrl.includes("/workflows")) {
         weAreRunningAWorkflowBatch = true
+        // User may be re-running batch; remove previous result messages.
+        $('#workflowResults').remove('div.batch-result')
+        $('#batchRunning').show();
+        $('#workflowResults').show();
+        $('div.batch-result').remove();
       }
       let eventSrc = new EventSource(eventSourceUrl + jobId)
         eventSrc.onmessage = (event) => {
@@ -231,11 +234,13 @@ an idea of what goes into them.
             markSuccess(detailDiv, progressBar, data.message)
           }
           activateOutputPathLink()
+          showBatchJobSucceeded(data)
         } else if (data.status == "failed") { 
           // Finish with error. Note that detail div here is the outcome
           // div, not the div for the current stage, because job has finished.
           detailDiv = $(`#runningJobDisplay div.outcome div.detail div.message`);
           markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
+          showBatchJobFailed(data)
         }
       } else { // info message
         detailDiv.text(data.message)
@@ -357,6 +362,29 @@ an idea of what goes into them.
       var html = `<a href="javascript:openExternalUrl('${dir}')">${url}</a>`
       div.html(html)
     }
+
+
+    function showBatchJobSucceeded(data) {
+        if (weAreRunningAWorkflowBatch) {
+        let html = `<div class="row batch-result" id=""><i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Line 1 - RunnerTestCore</div>`
+          $('#workflowResults').append(html)
+        }
+    }
+
+    function showBatchJobFailed(data) {
+        if (weAreRunningAWorkflowBatch) {
+          let html = `
+          <div class="row batch-result" id="[JOB ID HERE]">
+            <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> 
+              Line 1 - RunnerTestCore
+            <ul>
+              <li class="text-danger">Error list item</li>
+            </ul>
+          </div>`
+          $('#workflowResults').append(html)
+        }
+    }
+
 
     $(function(){
     {{ if .jobSummaryJson }}
