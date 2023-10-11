@@ -324,6 +324,7 @@ an idea of what goes into them.
         }
     }
 
+    // TODO: We're not getting jobResult info here.
     function getErrorsAsHTML(data) {
       var result = data.jobResult
       if (!result) {
@@ -369,6 +370,7 @@ an idea of what goes into them.
     }
 
 
+    // TODO: Why is the outcome of the last job listed twice in results div?
     function showBatchJobSucceeded(data) {
         if (weAreRunningAWorkflowBatch && data.stage == "") {
           let html = `<div class="row batch-result" id="">
@@ -380,14 +382,21 @@ an idea of what goes into them.
         }
     }
 
+
+    // TODO: Insert Job ID and error messages.
     function showBatchJobFailed(data) {
-        if (weAreRunningAWorkflowBatch && data.stage == "") {
+        if (weAreRunningAWorkflowBatch && data.stage == "" && data.jobResult) {
+          let errors = getAllErrorsFromJobResult(data.jobResult)
+          let errItems = []
+          for (const err of errors) {
+            errItems.push(`<li class="text-danger">${err}</li>`)
+          }
           let html = `
           <div class="row batch-result" id="[JOB ID HERE]">
             <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> 
               Line ${batchLineNumber} - ${settings.name}
             <ul>
-              <li class="text-danger">Error list item</li>
+              ${errItems.join("\n")}
             </ul>
           </div>`
           $('#workflowResults').append(html)
@@ -395,6 +404,28 @@ an idea of what goes into them.
         }
     }
 
+    function getAllErrorsFromJobResult(result) {
+      let errors = []
+      errors = errors.concat(getErrorsFromOperation(result.packageResult))
+      errors = errors.concat(getErrorsFromOperation(result.validationResult))
+      if (result.uploadResults) {
+        for (const uploadResult of result.uploadResults) {
+          errors = errors.concat(getErrorsFromOperation(uploadResult))
+        }
+      }
+      return errors
+    }
+
+    // TODO: be more specific about which upload failed.
+    function getErrorsFromOperation(opResult) {
+      let errors = [] 
+      if (opResult && opResult.errors) {
+        Object.keys(opResult.errors).sort().forEach(function(key, i) {
+          errors.push(`${key}: ${opResult.errors[key]}`)
+       })
+      }
+      return errors
+    }
 
     $(function(){
     {{ if .jobSummaryJson }}

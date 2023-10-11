@@ -268,10 +268,12 @@ func WorkflowRunBatch(c *gin.Context) {
 			if exitCode == constants.ExitOK {
 				status = constants.StatusSuccess
 			}
+			jobResult := core.NewJobResult(job)
 			eventMessage := &core.EventMessage{
 				EventType: constants.EventTypeFinish,
 				Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
 				Status:    status,
+				JobResult: jobResult,
 			}
 			messageChannel <- eventMessage
 			if status == constants.StatusFailed {
