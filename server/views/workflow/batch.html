@@ -36,6 +36,14 @@ batch workflow documentation.</a></p>
 
 </div>
 
+
+<!-- 
+This template contains the HTML and JavaScript to display
+job details and progress.
+-->
+{{ template "partials/job_run.html" . }}
+
+
 <div class="alert alert-warning" role="alert" id="batchRunning" style="display:none;">
   Leave DART open and stay on this page until all jobs in the batch are complete.
 </div>
@@ -47,12 +55,6 @@ batch workflow documentation.</a></p>
 <div class="container mt-2" id="workflowResults" style="display:none;">
   <h3>Results</h3>
 </div>
-
-<!-- 
-This template contains the HTML and JavaScript to display
-job details and progress.
--->
-{{ template "partials/job_run.html" . }}
 
 <script>
 $(function() {
@@ -108,7 +110,10 @@ $(function() {
     }    
   }
 
+  // Attach this handler to both the run button and the form's
+  // submit event, in case user hits the Enter key.
   $('#runWorkflowBatch').on('click', validateAndRunBatch)
+  $('#workflowBatchForm').on('submit', function() { validateAndRunBatch(); return false; })
 });
 
 // runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')

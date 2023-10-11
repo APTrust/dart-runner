@@ -74,6 +74,7 @@ an idea of what goes into them.
     // and call runJob(jobId). We also need a way to 
     // display workflow validation errors and workflow
     // results (red x or green check next to each item).
+    var batchLineNumber = 1
     var completedUploads = []
     var weAreRunningAWorkflowBatch = false 
     var settings = {}
@@ -88,7 +89,6 @@ an idea of what goes into them.
     {{ end }}
 
     function runJob(eventSourceUrl, jobId) {
-
       // The general pattern SSE listener pattern is:
       //
       // sse.addEventListener("eventName", (e) => { code... });
@@ -103,6 +103,7 @@ an idea of what goes into them.
         $('#batchRunning').show();
         $('#workflowResults').show();
         $('div.batch-result').remove();
+        batchLineNumber = 1
       }
       let eventSrc = new EventSource(eventSourceUrl + jobId)
         eventSrc.onmessage = (event) => {
@@ -181,7 +182,7 @@ an idea of what goes into them.
         $('#bagItProfileName').html(settings.bagItProfileName)
         $('#bagItProfileDescription').html(settings.bagItProfileDescription)
         $('#directoryCount').html(settings.directoryCount)
-        $('#fileCount').html(settings.fileCount)
+        $('#fileCount').html(settings.payloadFileCount)
         $('#byteCountHuman').html(settings.byteCountHuman)
         $('#byteCountFormatted').html(settings.byteCountFormatted)
         $('#outputPathLink').html(settings.outputPath)
@@ -241,6 +242,10 @@ an idea of what goes into them.
           detailDiv = $(`#runningJobDisplay div.outcome div.detail div.message`);
           markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
           showBatchJobFailed(data)
+        }
+        if (data.stage = "") {
+          // We just completed a job, not a stage.
+          batchLineNumber += 1
         }
       } else { // info message
         detailDiv.text(data.message)
@@ -365,23 +370,28 @@ an idea of what goes into them.
 
 
     function showBatchJobSucceeded(data) {
-        if (weAreRunningAWorkflowBatch) {
-        let html = `<div class="row batch-result" id=""><i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Line 1 - RunnerTestCore</div>`
+        if (weAreRunningAWorkflowBatch && data.stage == "") {
+          let html = `<div class="row batch-result" id="">
+            <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> 
+            Line ${batchLineNumber} - ${settings.name}
+            </div>`
           $('#workflowResults').append(html)
+          batchLineNumber += 1
         }
     }
 
     function showBatchJobFailed(data) {
-        if (weAreRunningAWorkflowBatch) {
+        if (weAreRunningAWorkflowBatch && data.stage == "") {
           let html = `
           <div class="row batch-result" id="[JOB ID HERE]">
             <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> 
-              Line 1 - RunnerTestCore
+              Line ${batchLineNumber} - ${settings.name}
             <ul>
               <li class="text-danger">Error list item</li>
             </ul>
           </div>`
           $('#workflowResults').append(html)
+          batchLineNumber += 1
         }
     }
 
