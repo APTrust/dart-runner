@@ -99,6 +99,7 @@ an idea of what goes into them.
       if (eventSourceUrl.includes("/workflows")) {
         weAreRunningAWorkflowBatch = true
         // User may be re-running batch; remove previous result messages.
+        $('#batchCompleted').hide();
         $('#workflowResults').remove('div.batch-result')
         $('#batchRunning').show();
         $('#workflowResults').show();
@@ -128,6 +129,9 @@ an idea of what goes into them.
             console.log(settings)
             showJobDetails()
             showProgressDivs()
+          } else if (data.eventType == "batch completed") {
+            $('#batchRunning').hide();
+            $('#batchCompleted').show();
           } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")
             console.log(data.message)
@@ -332,14 +336,14 @@ an idea of what goes into them.
       }
       var html = ""
       if (result.packageResult && result.packageResult.errors && Object.values(result.packageResult.errors).length > 0) {
-        html += "<h3>Packaging Errors</h3><ol>"
+        html += "<p class='font-weight-bold'>Packaging Errors</p><ol>"
         Object.values(result.packageResult.errors).forEach(function(errMessage) {
           html += `<li>${errMessage}</li>`
         })
         html += "</ol>"
       }
       if (result.validationResult && result.validationResult.errors && Object.values(result.validationResult.errors).length > 0) {
-        html += "<h3>Validation Errors</h3><ol>"
+        html += "<p class='font-weight-bold'>Validation Errors</p><ol>"
         Object.values(result.validationResult.errors).forEach(function(errMessage) {
           html += `<li>${errMessage}</li>`
         })
@@ -348,7 +352,7 @@ an idea of what goes into them.
       if (result.uploadResults) {
         result.uploadResults.forEach(function(uploadResult) {
           if (uploadResult.errors && Object.values(uploadResult.errors).length > 0) {
-            html += `<h3>Upload Errors (${uploadResult.remoteURL})</h3><ol>`
+            html += `<p class='font-weight-bold'>Upload Errors (${uploadResult.remoteURL})</p><ol>`
             Object.values(uploadResult.errors).forEach(function(errMessage) {
               html += `<li>${errMessage}</li>`
             })

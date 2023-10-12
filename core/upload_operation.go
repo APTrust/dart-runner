@@ -23,9 +23,13 @@ type UploadOperation struct {
 }
 
 func NewUploadOperation(ss *StorageService, files []string) *UploadOperation {
+	opResult := NewOperationResult("upload", "Uploader - "+constants.AppVersion)
+	if ss != nil {
+		opResult.RemoteTargetName = ss.Name
+	}
 	return &UploadOperation{
 		Errors:         make(map[string]string),
-		Result:         NewOperationResult("upload", "Uploader - "+constants.AppVersion),
+		Result:         opResult,
 		SourceFiles:    files,
 		StorageService: ss,
 	}

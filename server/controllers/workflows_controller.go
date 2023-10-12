@@ -287,7 +287,7 @@ func WorkflowRunBatch(c *gin.Context) {
 
 		// Send finish message to indicate batch completed.
 		eventMessage := &core.EventMessage{
-			EventType: constants.EventTypeFinish,
+			EventType: constants.EventTypeBatchCompleted,
 			Message:   "Batch completed",
 			Status:    status,
 		}
@@ -296,7 +296,7 @@ func WorkflowRunBatch(c *gin.Context) {
 		// Send disconnect telling front end to hang up.
 		eventMessage = &core.EventMessage{
 			EventType: constants.EventTypeDisconnect,
-			Message:   "Batch completed",
+			Message:   "All jobs complete. Disconnect now.",
 			Status:    status,
 		}
 		messageChannel <- eventMessage
