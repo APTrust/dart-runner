@@ -14,7 +14,7 @@ func ShowFileChooser(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.HTML(http.StatusOK, "job/files.html", templateData)
+	c.HTML(http.StatusOK, "partials/file_browser.html", templateData)
 }
 
 func InitFileChooser(c *gin.Context) (gin.H, error) {
