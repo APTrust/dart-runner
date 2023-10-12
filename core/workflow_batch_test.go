@@ -43,6 +43,7 @@ func TestNewWorkflowBatchForm(t *testing.T) {
 
 	// Make sure path field is present and set correctly
 	assert.Equal(t, "/path/to/file.csv", form.Fields["PathToCSVFile"].Value)
+	assert.Equal(t, ".csv", form.Fields["PathToCSVFile"].Attrs["accept"])
 
 	// Now test the workflow choices. This should appear in alpha
 	// order, and Workflow 3 should be selected.

@@ -9,13 +9,13 @@ For more information, see DART's
 <a href="#Help/openExternal?url=https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/">
 batch workflow documentation.</a></p>
 
-<form method="post" action="/workflows/batch/validate" id="workflowBatchForm">
+<form method="post" action="/workflows/batch/validate" id="workflowBatchForm" enctype="multipart/form-data">
 
   {{ template "partials/input_select.html" dict "field" .form.Fields.WorkflowID }}
 
   <!-- // TODO: The input below should be some kind of file chooser -->
 
-  {{ template "partials/input_text.html" dict "field" .form.Fields.PathToCSVFile }}
+  {{ template "partials/input_file.html" dict "field" .form.Fields.PathToCSVFile }}
   
   <div class="bottom-buttons">
     <div class="pull-right">
@@ -63,10 +63,10 @@ $(function() {
     clearErrors()
     let formId = '#workflowBatchForm'
     let onSuccess = function(response) {
-      let url = '/workflows/batch/run?' + $(formId).serialize()      
-      //console.log(response)
-      console.log(url)
-      runJob(url, '')
+      //let url = '/workflows/batch/run?' + $(formId).serialize()      
+      console.log(response)
+      //console.log(url)
+      runJob(response.location, '')
     }
     let onFail = function(xhr, status, err) {
       // display form validation errors below form controls
@@ -81,6 +81,7 @@ $(function() {
       }
       displayValidationErrors(data.errors)
     }
+    // TODO: Form needs to handle file submission.
     submitFormInBackground(formId, onSuccess, onFail)
   }
 
@@ -117,7 +118,6 @@ $(function() {
   $('#workflowBatchForm').on('submit', function() { validateAndRunBatch(); return false; })
 });
 
-// runJob('/workflows/batch/run/', '{{ .workflowBatchId }}')
 </script>
 
 

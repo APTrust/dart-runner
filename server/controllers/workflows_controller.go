@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
+	"path"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -194,14 +197,48 @@ func WorkflowShowBatchForm(c *gin.Context) {
 // POST /workflows/batch/validate
 func WorkflowBatchValidate(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
-	pathToCSVFile := c.PostForm("PathToCSVFile")
+
+	//pathToCSVFile := c.PostForm("PathToCSVFile")
+
+	// TODO: Rename field PathToCSVFile in form.
+	csvFileHeader, err := c.FormFile("PathToCSVFile")
+	if err != nil {
+		// TODO: Ensure proper json format
+		AbortWithErrorJSON(c, http.StatusBadRequest, err)
+		return
+	}
+
+	tempFile := path.Join(os.TempDir(), csvFileHeader.Filename)
+	err = c.SaveUploadedFile(csvFileHeader, tempFile)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	// csvFile, err := csvFileHeader.Open()
+	// if err != nil {
+	// 	AbortWithErrorHTML(c, http.StatusBadRequest, err)
+	// 	return
+	// }
+	// csvData := make([]byte, csvFileHeader.Size)
+	// _, err = csvFile.Read(csvData)
+	// if err != nil {
+	// 	AbortWithErrorHTML(c, http.StatusBadRequest, err)
+	// 	return
+	// }
+
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
-	wb := core.NewWorkflowBatch(workflow, pathToCSVFile)
+	wb := core.NewWorkflowBatch(workflow, tempFile)
 	status := http.StatusOK
 	data := gin.H{}
 	if !wb.Validate() {
 		status = http.StatusBadRequest
 		data["errors"] = wb.Errors
+	} else {
+		queryParams := url.Values{}
+		queryParams.Set("WorkflowID", workflowID)
+		queryParams.Set("PathToCSVFile", tempFile)
+		data["location"] = fmt.Sprintf("/workflows/batch/run?%s", queryParams.Encode())
 	}
 	data["status"] = status
 	c.JSON(status, data)
