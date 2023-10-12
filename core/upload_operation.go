@@ -109,7 +109,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 	}
 	client, err := minio.New(u.StorageService.HostAndPort(), options)
 	if err != nil {
-		u.Errors["S3Upload"] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
+		u.Errors[u.StorageService.Name] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
 		return false
 	}
 	allSucceeded := true
@@ -132,7 +132,8 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 			putOptions,
 		)
 		if err != nil {
-			u.Errors[s3Key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
+			key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
+			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
 			allSucceeded = false
 		} else {
 			u.Result.RemoteChecksum = uploadInfo.ETag
