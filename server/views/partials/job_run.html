@@ -377,7 +377,7 @@ an idea of what goes into them.
     // TODO: Why is the outcome of the last job listed twice in results div?
     function showBatchJobSucceeded(data) {
         if (weAreRunningAWorkflowBatch && data.stage == "") {
-          let html = `<div class="row batch-result" id="">
+          let html = `<div class="row batch-result">
             <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> 
             Line ${batchLineNumber} - ${settings.name}
             </div>`
@@ -387,7 +387,6 @@ an idea of what goes into them.
     }
 
 
-    // TODO: Insert Job ID and error messages.
     function showBatchJobFailed(data) {
         if (weAreRunningAWorkflowBatch && data.stage == "" && data.jobResult) {
           let errors = getAllErrorsFromJobResult(data.jobResult)
@@ -400,7 +399,7 @@ an idea of what goes into them.
             }
           }
           let html = `
-          <div class="row batch-result" id="[JOB ID HERE]">
+          <div class="row batch-result">
             <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> 
               Line ${batchLineNumber} - ${settings.name}
             <ul>
