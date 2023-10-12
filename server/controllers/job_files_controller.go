@@ -15,32 +15,21 @@ import (
 
 // GET /jobs/files/:id
 func JobShowFiles(c *gin.Context) {
+	templateData, err := InitFileChooser(c)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
 	directory := c.Query("directory")
 	job, items, err := GetJobAndDirList(c.Param("id"), directory)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	defaultPaths, err := core.Dart.Paths.DefaultPaths()
-	if err != nil {
-		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
-		return
-	}
-	parentDir, parentDirShortName := GetParentDir(directory)
-	showParentDirLink := directory != "" && directory != parentDir
-	showJumpMenu := directory != ""
-	data := gin.H{
-		"job":                job,
-		"items":              items,
-		"parentDir":          parentDir,
-		"parentDirShortName": parentDirShortName,
-		"showParentDirLink":  showParentDirLink,
-		"defaultPaths":       defaultPaths,
-		"showJumpMenu":       showJumpMenu,
-		"currentDir":         directory,
-		"showJobFiles":       job.PackageOp != nil && len(job.PackageOp.SourceFiles) > 0,
-	}
-	c.HTML(http.StatusOK, "job/files.html", data)
+	templateData["job"] = job
+	templateData["items"] = items
+	templateData["showJobFiles"] = job.PackageOp != nil && len(job.PackageOp.SourceFiles) > 0
+	c.HTML(http.StatusOK, "job/files.html", templateData)
 }
 
 // POST /jobs/add_file/:id

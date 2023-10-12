@@ -195,4 +195,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/workflows/batch/choose", controllers.WorkflowShowBatchForm)
 	router.POST("/workflows/batch/validate", controllers.WorkflowBatchValidate)
 	router.GET("/workflows/batch/run", controllers.WorkflowRunBatch)
+
+	// Generic, reusable file chooser
+	router.GET("/files/choose", controllers.ShowFileChooser)
 }
