@@ -1,29 +1,38 @@
 # TO DO
 
-- [x] Fix auto generation of output file path on job packaging screen
-- [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
-- [x] Fix invalid JSON "EOF" being returned to job run page
+## Priority
+
+- [ ] In job files list, add option to show/hide hidden files.
+- [ ] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
+- [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
+- [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
+- [ ] Add logging to all critical sections
+- [ ] Automated UI testing (Selenium)
 - [ ] Save artifacts from jobs (manifests, tag files)
-- [ ] Move job run JS to shared location so jobs, workflows, and batches can use it
 - [ ] Settings export
 - [ ] Settings export questions
 - [ ] Settings import
 - [ ] Settings import questions
+- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
+- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
+- [ ] Dashboard
+
+
+## Later
+
+- [x] Fix auto generation of output file path on job packaging screen
+- [ ] Fix web font load error
+- [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
+- [x] Fix invalid JSON "EOF" being returned to job run page
+- [x] Move job run JS to shared location so jobs, workflows, and batches can use it
 - [ ] Script to pre-load sample jobs and workflows for developers
 - [ ] PID file (or db entry) for running process
 - [ ] Ping script from front-end
 - [ ] Auto-open browser on start
-- [ ] UI testing (Selenium)
 - [ ] Move Minio to Docker (requires substantial changes to post-build tests)
 - [ ] Context-sensitive help
-- [ ] Dashboard
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
-- [ ] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
-- [ ] In job files list, add option to show/hide hidden files.
-- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
-- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
-- [ ] Code refactor (de-dupe: Code Climate)
 - [ ] Fix Windows paths
 - [ ] Windows code signing
 - [ ] Mac code signing
