@@ -231,7 +231,13 @@ svg.fa-file-pdf {
     color: var(--red);
 }
 
+/* For ul and ol lists to display flush left with no list item marker */
 .flush-no-marker {
     list-style-type: none;
     padding-left: 0rem;
+}
+
+/* Used to mark hidden files and directories in the file chooser  */
+.is-hidden-file {
+    display: none
 }

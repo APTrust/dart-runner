@@ -99,6 +99,12 @@ func StrEq(val1, val2 interface{}) bool {
 	return str1 == str2
 }
 
+// StrStartsWith returns true if string s starts with
+// the specified prefix.
+func StrStartsWith(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
+
 // EscapeAttr escapes an HTML attribute value.
 // This helps avoid the ZgotmplZ problem.
 func EscapeAttr(s string) template.HTMLAttr {

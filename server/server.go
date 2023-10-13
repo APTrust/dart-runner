@@ -60,6 +60,7 @@ func initTemplates(router *gin.Engine) {
 		"fileIconFor":    util.FileIconFor,
 		"humanSize":      util.HumanSize,
 		"strEq":          util.StrEq,
+		"strStartsWith":  util.StrStartsWith,
 		"truncate":       util.Truncate,
 		"truncateMiddle": util.TruncateMiddle,
 		"truncateStart":  util.TruncateStart,

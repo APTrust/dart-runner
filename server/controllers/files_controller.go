@@ -18,6 +18,7 @@ func ShowFileChooser(c *gin.Context) {
 }
 
 func InitFileChooser(c *gin.Context) (gin.H, error) {
+	showHiddenFiles := c.Query("showHiddenFiles")
 	directory := c.Query("directory")
 	defaultPaths, err := core.Dart.Paths.DefaultPaths()
 	if err != nil {
@@ -26,6 +27,7 @@ func InitFileChooser(c *gin.Context) (gin.H, error) {
 	parentDir, parentDirShortName := GetParentDir(directory)
 	showParentDirLink := directory != "" && directory != parentDir
 	showJumpMenu := directory != ""
+
 	return gin.H{
 		"parentDir":          parentDir,
 		"parentDirShortName": parentDirShortName,
@@ -33,5 +35,6 @@ func InitFileChooser(c *gin.Context) (gin.H, error) {
 		"defaultPaths":       defaultPaths,
 		"showJumpMenu":       showJumpMenu,
 		"currentDir":         directory,
+		"showHiddenFiles":    showHiddenFiles,
 	}, nil
 }

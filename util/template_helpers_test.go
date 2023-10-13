@@ -56,6 +56,11 @@ func TestStrEq(t *testing.T) {
 	assert.False(t, util.StrEq("200", 909))
 }
 
+func TestStrStartsWith(t *testing.T) {
+	assert.True(t, util.StrStartsWith("alligator", "all"))
+	assert.False(t, util.StrStartsWith("crocodile", "all"))
+}
+
 func TestEscapeAttr(t *testing.T) {
 	assert.Equal(t, template.HTMLAttr("O'Blivion's"), util.EscapeAttr("O'Blivion's"))
 }
