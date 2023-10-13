@@ -120,9 +120,10 @@ func (wb *WorkflowBatch) checkRequiredTags(record *util.NameValuePairList, lineN
 func (wb *WorkflowBatch) ToForm() *Form {
 	form := NewForm("WorkflowBatch", "ID not applicable to this type", wb.Errors)
 
-	// TODO: Rename field PathToCSVFile in form.
-	csvField := form.AddField("PathToCSVFile", "CSV Batch File", wb.PathToCSVFile, true)
-	csvField.Attrs["accept"] = ".csv"
+	// Note that the form contains an upload field for the CSV file
+	// instead of a string/text field for PathToCSVFile.
+	csvUploadField := form.AddField("CsvUpload", "CSV Batch File", "", true)
+	csvUploadField.Attrs["accept"] = ".csv"
 	workflowID := ""
 	if wb.Workflow != nil {
 		workflowID = wb.Workflow.ID

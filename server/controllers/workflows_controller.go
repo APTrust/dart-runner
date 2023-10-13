@@ -197,11 +197,7 @@ func WorkflowShowBatchForm(c *gin.Context) {
 // POST /workflows/batch/validate
 func WorkflowBatchValidate(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
-
-	//pathToCSVFile := c.PostForm("PathToCSVFile")
-
-	// TODO: Rename field PathToCSVFile in form.
-	csvFileHeader, err := c.FormFile("PathToCSVFile")
+	csvFileHeader, err := c.FormFile("CsvUpload")
 	if err != nil {
 		// TODO: Ensure proper json format
 		AbortWithErrorJSON(c, http.StatusBadRequest, err)
@@ -214,18 +210,6 @@ func WorkflowBatchValidate(c *gin.Context) {
 		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
 		return
 	}
-
-	// csvFile, err := csvFileHeader.Open()
-	// if err != nil {
-	// 	AbortWithErrorHTML(c, http.StatusBadRequest, err)
-	// 	return
-	// }
-	// csvData := make([]byte, csvFileHeader.Size)
-	// _, err = csvFile.Read(csvData)
-	// if err != nil {
-	// 	AbortWithErrorHTML(c, http.StatusBadRequest, err)
-	// 	return
-	// }
 
 	workflow := core.ObjFind(workflowID).Workflow() // may be nil if workflowID is empty
 	wb := core.NewWorkflowBatch(workflow, tempFile)
@@ -320,6 +304,14 @@ func WorkflowRunBatch(c *gin.Context) {
 		status := constants.StatusSuccess
 		if !allJobsSucceeded {
 			status = constants.StatusFailed
+		}
+
+		// Delete the temp copy of the uploaded CSV file
+		err = os.Remove(wb.PathToCSVFile)
+		if err != nil {
+			core.Dart.Log.Warn("Error deleting temp copy of CSV batch file '%s': %s", wb.PathToCSVFile, err.Error())
+		} else {
+			core.Dart.Log.Info("Deleted temp copy of CSV batch file.")
 		}
 
 		// Send finish message to indicate batch completed.

@@ -41,9 +41,9 @@ func TestNewWorkflowBatchForm(t *testing.T) {
 	form := wb.ToForm()
 	require.Equal(t, 2, len(form.Fields))
 
-	// Make sure path field is present and set correctly
-	assert.Equal(t, "/path/to/file.csv", form.Fields["PathToCSVFile"].Value)
-	assert.Equal(t, ".csv", form.Fields["PathToCSVFile"].Attrs["accept"])
+	// Make sure the uplaod field is present and has correct filter
+	assert.NotEmpty(t, form.Fields["CsvUpload"])
+	assert.Equal(t, ".csv", form.Fields["CsvUpload"].Attrs["accept"])
 
 	// Now test the workflow choices. This should appear in alpha
 	// order, and Workflow 3 should be selected.

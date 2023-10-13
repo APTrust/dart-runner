@@ -15,7 +15,7 @@ batch workflow documentation.</a></p>
 
   <!-- // TODO: The input below should be some kind of file chooser -->
 
-  {{ template "partials/input_file.html" dict "field" .form.Fields.PathToCSVFile }}
+  {{ template "partials/input_file.html" dict "field" .form.Fields.CsvUpload }}
   
   <div class="bottom-buttons">
     <div class="pull-right">
@@ -61,43 +61,57 @@ job details and progress.
 $(function() {
   function validateAndRunBatch() {
     clearErrors()
-    let formId = '#workflowBatchForm'
-    let onSuccess = function(response) {
-      //let url = '/workflows/batch/run?' + $(formId).serialize()      
+    let form = $('#workflowBatchForm')
+
+    // Post the form, including the CSV file contents.
+    // Note that form is a jQuery element, while form[0]
+    // is the native HTML element. The FormData constructor
+    // only accepts the native element.
+    $.ajax({
+        url: form.attr('action'),
+        type: 'POST',
+        data: new FormData(form[0]),
+        processData: false,
+        contentType: false,
+        cache: false
+    }).done(function (response) {
+      // On success, proceed to the "run batch" page,
+      // which will be specified, including required query
+      // params, in response.location. 
       console.log(response)
-      //console.log(url)
       runJob(response.location, '')
-    }
-    let onFail = function(xhr, status, err) {
-      // display form validation errors below form controls
-      // display other validation errors in list below form
+    }).fail(function (xhr, status, err) {
+      // If we get an error here, it means the batch job
+      // was invalid. So we do the following:
+      // 1. Display form validation errors below form controls.
+      // 2. Display other validation errors in list below form.
       let data = JSON.parse(xhr.responseText)
-      console.log(data)
-      if (data.errors["PathToCSVFile"]) {
-        $('#PathToCSVFileError').html(data.errors["PathToCSVFile"])
+      if (data.errors["CsvUpload"]) {
+        $('#CsvUploadError').html(data.errors["CsvUpload"])
       }
       if (data.errors["WorkflowID"]) {
         $('#WorkflowBatch_WorkflowIDError').html(data.errors["WorkflowID"])
       }
       displayValidationErrors(data.errors)
-    }
-    // TODO: Form needs to handle file submission.
-    submitFormInBackground(formId, onSuccess, onFail)
+    })
   }
 
+  // Clear all error messages from the display. We do this
+  // when the user is resubmitting a batch.
   function clearErrors() {
-    $('#PathToCSVFileError').html("")
+    $('#CsvUploadError').html("")
     $('#WorkflowBatch_WorkflowIDError').html('')
     $('#batchValidation').hide()
     $('#batchValidationErrorList').empty()
   }
 
+  // Display errors from the back end.
   function displayValidationErrors(errors) {
     for(var key of Object.keys(errors).sort()){
       let errMsg = errors[key]
       // First two case: invalid or missing parameter to set up the batch job.
-      if (key == "PathToCSVFile") {
-        $('#PathToCSVFileError').html(errMsg)
+      if (key == "CsvUpload") {
+        $('#CsvUploadError').html(errMsg)
         continue
       }
       if (key == "WorkflowID") {
@@ -112,10 +126,8 @@ $(function() {
     }    
   }
 
-  // Attach this handler to both the run button and the form's
-  // submit event, in case user hits the Enter key.
+  // Now add our callback to the Run button
   $('#runWorkflowBatch').on('click', validateAndRunBatch)
-  $('#workflowBatchForm').on('submit', function() { validateAndRunBatch(); return false; })
 });
 
 </script>
