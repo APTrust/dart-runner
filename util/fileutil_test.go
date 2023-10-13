@@ -149,6 +149,26 @@ func TestListDirectory(t *testing.T) {
 	assert.True(t, len(files) > 10)
 }
 
+func TestListDirectoryWithSort(t *testing.T) {
+	dir := path.Join(util.ProjectRoot())
+	entries, err := util.ListDirectoryWithSort(dir)
+	require.Nil(t, err)
+	require.NotEmpty(t, entries)
+
+	entryCount := len(entries)
+	require.True(t, entryCount > 10)
+
+	// Test that directories are first, in alpha order...
+	assert.True(t, entries[0].IsDir())
+	assert.True(t, strings.ToLower(entries[0].Name()) < strings.ToLower(entries[1].Name()))
+
+	// ...followed by files in alpha order.
+	last := entryCount - 1
+	secondToLast := entryCount - 2
+	assert.False(t, entries[last].IsDir())
+	assert.True(t, strings.ToLower(entries[secondToLast].Name()) < strings.ToLower(entries[last].Name()))
+}
+
 func TestGetWindowsDrives(t *testing.T) {
 	drives := util.GetWindowsDrives()
 	if runtime.GOOS == "windows" {

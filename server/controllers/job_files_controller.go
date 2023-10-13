@@ -98,7 +98,7 @@ func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInf
 	if dirname == "" {
 		entries, err = core.Dart.Paths.DefaultPaths()
 	} else {
-		entries, err = util.ListDirectory(dirname)
+		entries, err = util.ListDirectoryWithSort(dirname)
 	}
 	if err != nil {
 		return nil, nil, err

@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 )
 
@@ -180,6 +181,36 @@ func ListDirectory(dir string) ([]*ExtendedFileInfo, error) {
 	}
 	allEntries := append(directories, files...)
 	return allEntries, nil
+}
+
+// ListDirectoriesWithSort returns a list of all items in the specified
+// directory, showing folders first, then files. Folders and files are
+// sorted in alpha order, case insensitive.
+func ListDirectoryWithSort(dir string) ([]*ExtendedFileInfo, error) {
+	entries, err := ListDirectory(dir)
+	if err != nil {
+		return entries, err
+	}
+	directories := make([]*ExtendedFileInfo, 0)
+	files := make([]*ExtendedFileInfo, 0)
+	for _, exFileInfo := range entries {
+		if exFileInfo.IsDir() {
+			directories = append(directories, exFileInfo)
+		} else {
+			files = append(files, exFileInfo)
+		}
+	}
+	sort.Slice(directories, func(i, j int) bool {
+		this := directories[i]
+		that := directories[j]
+		return strings.ToLower(this.Name()) < strings.ToLower(that.Name())
+	})
+	sort.Slice(files, func(i, j int) bool {
+		this := files[i]
+		that := files[j]
+		return strings.ToLower(this.Name()) < strings.ToLower(that.Name())
+	})
+	return append(directories, files...), nil
 }
 
 // GetWindowsDrives returns a list of Windows drives.
