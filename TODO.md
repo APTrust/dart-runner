@@ -2,8 +2,10 @@
 
 ## Priority
 
-- [ ] In job files list, add option to show/hide hidden files.
-- [ ] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
+- [x] In job files list, add option to show/hide hidden files.
+- [x] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
+- [ ] Set up Code Climate
+- [ ] Test Workflow Batch endpoints
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Add logging to all critical sections
@@ -15,7 +17,7 @@
 - [ ] Settings import questions
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
-- [ ] Dashboard
+- [ ] Build Dashboard & APTrust client
 
 
 ## Later
