@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -25,9 +26,17 @@ func getRunnerTestJob(t *testing.T, bagName string) *core.Job {
 
 func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	job := getRunnerTestJob(t, bagName)
+	outputDir := path.Dir(job.PackageOp.OutputPath)
 	defer func() {
 		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
 			os.Remove(job.PackageOp.OutputPath)
+			os.Remove(path.Join(outputDir, "manfest-md5.txt"))
+			os.Remove(path.Join(outputDir, "manfest-sha1.txt"))
+			os.Remove(path.Join(outputDir, "manfest-sha256.txt"))
+			os.Remove(path.Join(outputDir, "manfest-sha512.txt"))
+			os.Remove(path.Join(outputDir, "bagit.txt"))
+			os.Remove(path.Join(outputDir, "bag-info.txt"))
+			os.Remove(path.Join(outputDir, "aptrust-info.txt"))
 		}
 	}()
 
@@ -47,6 +56,48 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	} else {
 		assert.Contains(t, lastUpload.Result.Info, "Bag file(s) remain")
 	}
+
+	assertArtifactsWereSaved(t, job, outputDir)
+}
+
+func assertArtifactsWereSaved(t *testing.T, job *core.Job, outputDir string) {
+	// In GUI mode, artifacts go into the SQLite DB
+	if core.Dart.RuntimeMode == constants.ModeDartGUI {
+		artifacts, err := core.ArtifactListByJobID(job.ID)
+		require.NoError(t, err)
+		for _, alg := range job.BagItProfile.ManifestsRequired {
+			manifestName := fmt.Sprintf("manifest-%s.txt", alg)
+			found := false
+			for _, artifact := range artifacts {
+				if artifact.FileName == manifestName {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found, manifestName)
+		}
+		foundBagIt := false
+		foundBagInfo := false
+		for _, artifact := range artifacts {
+			if artifact.FileName == "bagit.txt" {
+				foundBagIt = true
+			}
+			if artifact.FileName == "bag-info.txt" {
+				foundBagInfo = true
+			}
+		}
+		assert.True(t, foundBagIt, "bagit.txt")
+		assert.True(t, foundBagInfo, "bag-info.txt")
+	} else {
+		// For dart runner and apt-cmd, artifacts go into output dir.
+		for _, alg := range job.BagItProfile.ManifestsRequired {
+			manifestName := fmt.Sprintf("manifest-%s.txt", alg)
+			assert.True(t, util.FileExists(path.Join(outputDir, manifestName)))
+		}
+		assert.True(t, util.FileExists(path.Join(outputDir, "bagit.txt")))
+		assert.True(t, util.FileExists(path.Join(outputDir, "bag-info.txt")))
+	}
+
 }
 
 func TestJobRunnerWithCleanup(t *testing.T) {
