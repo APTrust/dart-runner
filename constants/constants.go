@@ -37,6 +37,9 @@ const (
 	MaxS3ObjectSize          = int64(5497558138880) // 5TB
 	MaxServerSideCopySize    = int64(5368709120)    // 5GB
 	MaxValidationErrors      = 30
+	ModeAptCmd               = "apt-cmd"
+	ModeDartGUI              = "dart-gui"
+	ModeDartRunner           = "dart-runner"
 	PackageFormatBagIt       = "BagIt"
 	PackageFormatNone        = "None" // Used when a job or workflow has no package operation.
 	PluginIdAPTrustClient    = "c5a6b7db-5a5f-4ca5-a8f8-31b2e60c84bd"

@@ -180,9 +180,7 @@ func (r *Runner) RunPackageOp() bool {
 	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
-
-	// TODO: Save artifacts here. XXXXXXXXXXXXX
-
+	r.SaveBaggingArtifacts(bagger)
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.PayloadFileCount = bagger.PayloadFileCount()
 	r.Job.TotalFileCount = bagger.GetTotalFilesBagged()
@@ -343,5 +341,15 @@ func (r *Runner) writeResult() {
 	}
 	if len(stderrMessage) > 0 {
 		fmt.Fprintln(os.Stderr, stderrMessage)
+	}
+}
+
+func (r *Runner) SaveBaggingArtifacts(bagger *Bagger) {
+	// If we're running in GUI mode, we have a DB to save artifacts.
+	// Otherwise, we'll drop artifacts into a directory.
+	if Dart.RuntimeMode == constants.ModeDartGUI {
+
+	} else {
+
 	}
 }

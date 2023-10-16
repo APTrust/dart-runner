@@ -5,6 +5,7 @@ import (
 	"log"
 	"path"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	_ "modernc.org/sqlite"
 )
@@ -12,17 +13,19 @@ import (
 var Dart *DartContext
 
 type DartContext struct {
-	DB    *sql.DB
-	Log   *util.Logger
-	Paths *util.Paths
+	DB          *sql.DB
+	Log         *util.Logger
+	Paths       *util.Paths
+	RuntimeMode string
 }
 
 func init() {
 	paths := util.NewPaths()
 	Dart = &DartContext{
-		DB:    initDB(paths),
-		Paths: paths,
-		Log:   util.GetLogger(util.LevelDebug),
+		DB:          initDB(paths),
+		Paths:       paths,
+		Log:         util.GetLogger(util.LevelDebug),
+		RuntimeMode: constants.ModeDartRunner, // this should be set on startup
 	}
 	InitSchema()
 }

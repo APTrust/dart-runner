@@ -14,6 +14,7 @@ import (
 // Run runs the Registry application. This is called from main() to start
 // the app.
 func Run() {
+	core.Dart.RuntimeMode = constants.ModeDartGUI
 	r := InitAppEngine(false)
 	r.Run()
 }

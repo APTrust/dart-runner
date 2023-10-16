@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
@@ -70,6 +71,15 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 	// GetTotalFilesBagged should return the number of payload
 	// and non-payload files bagged.
 	assert.True(t, bagger.GetTotalFilesBagged() > bagger.PayloadFileCount())
+
+	// Make sure the bagger kept artifacts for payload manifests
+	// and tag files.
+	if util.StringListContains(bagger.Profile.ManifestsRequired, constants.AlgSha256) {
+		assert.True(t, len(bagger.ManifestArtifacts["manifest-sha256.txt"]) > 200)
+	} else if util.StringListContains(bagger.Profile.ManifestsRequired, constants.AlgSha512) {
+		assert.True(t, len(bagger.ManifestArtifacts["manifest-sha512.txt"]) > 200)
+	}
+	assert.True(t, len(bagger.TagFileArtifacts["bag-info.txt"]) > 100)
 }
 
 // Set tags for bag-info.txt in the profile before we create the bag.

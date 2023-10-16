@@ -3,7 +3,6 @@ package core
 import (
 	"embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -17,32 +16,36 @@ import (
 var bagitTxt embed.FS
 
 type Bagger struct {
-	Profile          *BagItProfile
-	OutputPath       string
-	FilesToBag       []*util.ExtendedFileInfo
-	Errors           map[string]string
-	MessageChannel   chan *EventMessage
-	PayloadFiles     *FileMap
-	PayloadManifests *FileMap
-	TagFiles         *FileMap
-	TagManifests     *FileMap
-	writer           BagWriter
-	pathPrefix       string
-	bagName          string
-	currentFileNum   int64
-	totalFileCount   int64
+	Profile           *BagItProfile
+	OutputPath        string
+	FilesToBag        []*util.ExtendedFileInfo
+	Errors            map[string]string
+	MessageChannel    chan *EventMessage
+	PayloadFiles      *FileMap
+	PayloadManifests  *FileMap
+	TagFiles          *FileMap
+	TagManifests      *FileMap
+	ManifestArtifacts map[string]string
+	TagFileArtifacts  map[string]string
+	writer            BagWriter
+	pathPrefix        string
+	bagName           string
+	currentFileNum    int64
+	totalFileCount    int64
 }
 
 func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.ExtendedFileInfo) *Bagger {
 	return &Bagger{
-		Profile:          profile,
-		OutputPath:       outputPath,
-		FilesToBag:       filesToBag,
-		PayloadFiles:     NewFileMap(constants.FileTypePayload),
-		PayloadManifests: NewFileMap(constants.FileTypeManifest),
-		TagFiles:         NewFileMap(constants.FileTypeTag),
-		TagManifests:     NewFileMap(constants.FileTypeTagManifest),
-		Errors:           make(map[string]string),
+		Profile:           profile,
+		OutputPath:        outputPath,
+		FilesToBag:        filesToBag,
+		PayloadFiles:      NewFileMap(constants.FileTypePayload),
+		PayloadManifests:  NewFileMap(constants.FileTypeManifest),
+		TagFiles:          NewFileMap(constants.FileTypeTag),
+		TagManifests:      NewFileMap(constants.FileTypeTagManifest),
+		ManifestArtifacts: make(map[string]string),
+		TagFileArtifacts:  make(map[string]string),
+		Errors:            make(map[string]string),
 	}
 }
 
@@ -194,6 +197,12 @@ func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
 		b.Errors[pathInBag] = fmt.Sprintf("Error writing manifest %s (type=%s, subjectType=%s)): %s", filename, whichKind, subjectFileType, err.Error())
 		return tempFilePath, pathInBag, false
 	}
+
+	// New for DART3: keep a copy of manifest contents to save as
+	// an Artifact when job completes.
+	manifestContents, _ := os.ReadFile(tempFilePath)
+	b.ManifestArtifacts[filename] = string(manifestContents)
+
 	return tempFilePath, pathInBag, true
 }
 
@@ -206,9 +215,14 @@ func (b *Bagger) addTagFiles() bool {
 			b.Errors[tagFileName] = fmt.Sprintf("Error getting tag file contents: %s", err.Error())
 			return false
 		}
+
+		// New for DART3: keep a copy of tag file contents to save as
+		// an Artifact when job completes.
+		b.TagFileArtifacts[tagFileName] = contents
+
 		tempFilePath := path.Join(os.TempDir(), fmt.Sprintf("%s-%d", tagFileName, time.Now().UnixNano()))
 		defer os.Remove(tempFilePath)
-		err = ioutil.WriteFile(tempFilePath, []byte(contents), 0644)
+		err = os.WriteFile(tempFilePath, []byte(contents), 0644)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file contents to temp file: %s", err.Error())
 			return false
