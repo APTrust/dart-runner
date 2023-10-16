@@ -111,7 +111,7 @@ func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 
 	// Make the relative paths absolute, and the validator should be
 	// happy because this file contains a complete and valid set of tags.
-	tmpFile := makeTempCSVFileWithValidPaths(t, pathToBatchFile)
+	tmpFile := util.MakeTempCSVFileWithValidPaths(t, pathToBatchFile)
 	defer func() { os.Remove(tmpFile) }()
 	wb = core.NewWorkflowBatch(workflow, tmpFile)
 	assert.True(t, wb.Validate())
@@ -132,18 +132,6 @@ func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 	fmt.Println(wb.Errors)
 }
 
-// Paths in pastbuild_test_batch.csv file are relative.
-// Create a temp file with absolute paths.
-func makeTempCSVFileWithValidPaths(t *testing.T, pathToCSVFile string) string {
-	tempFilePath := path.Join(os.TempDir(), "temp_batch.csv")
-	csvContents, err := os.ReadFile(pathToCSVFile)
-	require.Nil(t, err)
-	absPrefix := util.ProjectRoot() + string(os.PathSeparator)
-	csvWithAbsPaths := strings.ReplaceAll(string(csvContents), "./", absPrefix)
-	require.NoError(t, os.WriteFile(tempFilePath, []byte(csvWithAbsPaths), 0666))
-	return tempFilePath
-}
-
 func TestWBPersistentObjectInterface(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
@@ -151,7 +139,7 @@ func TestWBPersistentObjectInterface(t *testing.T) {
 
 	// We need valid paths in our batch file, or we won't be
 	// able to save this due to validation errors.
-	tempFile := makeTempCSVFileWithValidPaths(t, pathToBatchFile)
+	tempFile := util.MakeTempCSVFileWithValidPaths(t, pathToBatchFile)
 	defer func() { os.Remove(tempFile) }()
 
 	wb := core.NewWorkflowBatch(workflow, tempFile)

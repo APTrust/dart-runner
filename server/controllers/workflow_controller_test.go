@@ -1,11 +1,15 @@
 package controllers_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -251,8 +255,94 @@ func TestWorkflowRun(t *testing.T) {
 	assert.Equal(t, workflow.ID, job.WorkflowID)
 }
 
+// We test WorkflowBatch.Validate() extensively elsewhere.
+// Instead of testing specific validation errors here, we
+// just want to know that we get an error if the WorkflowBatch
+// is invalid and no error if it's valid.
+//
+// In this case, the submission is missing the worklflow ID,
+// and the CSV batch file points to some Root-Directory paths
+// that don't exist.
+func TestWorkflowBatchValidate_Invalid(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadTestWorkflow(t)
+	require.NoError(t, core.ObjSave(workflow))
+
+	csvFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
+	writer.WriteField("WorkflowID", workflow.ID)
+
+	part, err := writer.CreateFormFile("CsvUpload", csvFile)
+	assert.NoError(t, err)
+	file, err := os.Open(csvFile)
+	assert.NoError(t, err)
+
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
+
+	// This submission is invalid because the CSV batch
+	// file points to paths that don't exist in the Root-Directory field.
+	req := httptest.NewRequest(http.MethodPost, "/workflows/batch/validate", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	recorder := httptest.NewRecorder()
+	dartServer.ServeHTTP(recorder, req)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+}
+
+// Valid batch should return OK, plus a URL for running the batch.
+func TestWorkflowBatchValidate_Valid(t *testing.T) {
+	defer core.ClearDartTable()
+	workflow := loadTestWorkflow(t)
+	require.NoError(t, core.ObjSave(workflow))
+
+	csvFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+
+	// Make the relative paths absolute, and the validator should be
+	// happy because this file contains a complete and valid set of tags.
+	tmpFile := util.MakeTempCSVFileWithValidPaths(t, csvFile)
+	defer func() { os.Remove(tmpFile) }()
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
+	writer.WriteField("WorkflowID", workflow.ID)
+
+	part, err := writer.CreateFormFile("CsvUpload", tmpFile)
+	assert.NoError(t, err)
+	file, err := os.Open(tmpFile)
+	assert.NoError(t, err)
+
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
+
+	// This submission is invalid because the CSV batch
+	// file points to paths that don't exist in the Root-Directory field.
+	req := httptest.NewRequest(http.MethodPost, "/workflows/batch/validate", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	recorder := httptest.NewRecorder()
+	dartServer.ServeHTTP(recorder, req)
+
+	// We should get a 200/OK response, and the JSON should point
+	// to /workflows/batch/run with the proper workflowID and
+	// csv file path. Note that dart writes the CSV batch into a temp file.
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	responseData := make(map[string]interface{})
+	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &responseData))
+
+	// Temp CSV file path will differ on Windows vs. Linux/Mac.
+	expectedTempPath := path.Join(os.TempDir(), "temp_batch.csv")
+	params := url.Values{}
+	params.Set("PathToCSVFile", expectedTempPath)
+	params.Set("WorkflowID", workflow.ID)
+	expectedLocation := fmt.Sprintf("/workflows/batch/run?%s", params.Encode())
+	assert.Equal(t, expectedLocation, responseData["location"])
+}
+
 func TestWorkflowRunBatch(t *testing.T) {
-	// TODO: Implement "run batch" first
+
 }
 
 func loadTestWorkflow(t *testing.T) *core.Workflow {
