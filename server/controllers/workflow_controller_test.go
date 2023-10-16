@@ -364,21 +364,22 @@ func testWorkflowRunBatch(t *testing.T, batchUrl string) {
 	assert.True(t, recorder.EventCount > 100)
 	assert.Equal(t, "All jobs complete. Disconnect now.", recorder.LastEvent.Message)
 
-	//jobs := core.ObjList(constants.TypeJob, "obj_name", 10, 0).Jobs
-	//require.NotEmpty(t, jobs)
+	jobs := core.ObjList(constants.TypeJob, "obj_name", 10, 0).Jobs
+	require.Equal(t, 3, len(jobs))
 
-	// // Test the job result that came through in the SSE event stream.
-	// jobResult := recorder.ResultEvent.JobResult
-	// require.NotNil(t, jobResult)
-	// testPostRunJobResult(t, jobResult, "Result from HTTP stream recorder")
-
-	// // The controller should have saved the completed job in the DB.
-	// // If it did, the job result will show that all items completed.
-	// job = core.ObjFind(job.ID).Job()
-	// require.NotNil(t, job)
-	// jobResult = core.NewJobResult(job)
-	// testPostRunJobResult(t, jobResult, "Result from database")
-
+	for _, job := range jobs {
+		jobResultArtifacts, err := core.ArtifactListByJobID(job.ID)
+		require.Nil(t, err)
+		assert.NotEmpty(t, jobResultArtifacts)
+		foundJobResult := false
+		for _, artifact := range jobResultArtifacts {
+			if artifact.ItemType == constants.ItemTypeJobResult {
+				foundJobResult = true
+				break
+			}
+		}
+		assert.True(t, foundJobResult)
+	}
 }
 
 func loadTestWorkflow(t *testing.T) *core.Workflow {

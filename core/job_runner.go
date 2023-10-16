@@ -28,26 +28,26 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 		MessageChannel: messageChannel,
 	}
 	if !runner.ValidateJob() {
-		runner.writeExitMessages()
+		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunPackageOp() {
 		runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, false)
-		runner.writeExitMessages()
+		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
 	}
 	runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, true)
 
 	if !runner.RunValidationOp() {
 		runner.writeStageOutcome(constants.StageValidation, runner.Job.ValidationOp.Result.Info, false)
-		runner.writeExitMessages()
+		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
 	}
 	runner.writeStageOutcome(constants.StageValidation, runner.Job.ValidationOp.Result.Info, true)
 
 	if !runner.RunUploadOps() {
 		runner.writeStageOutcome(constants.StageUpload, "One or more uploads failed", false)
-		runner.writeExitMessages()
+		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
 	}
 	if deleteOnSuccess {
@@ -57,12 +57,14 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 	}
 	runner.writeStageOutcome(constants.StageUpload, "All uploads completed", true)
 
-	runner.writeExitMessages()
+	runner.writeExitMessagesAndSaveResults()
 
 	return constants.ExitOK
 }
 
-func (r *Runner) writeExitMessages() {
+// This writes exit messages to the message channel, and saves the job and
+// job result records to the DB.
+func (r *Runner) writeExitMessagesAndSaveResults() {
 	if r.MessageChannel == nil {
 		panic("JobRunner.MessageChannel is nil")
 	}
@@ -144,6 +146,12 @@ func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
 	return constants.ExitOK
 }
 
+// printExitMessages prints info about a job's exit status to
+// stdout and/or stderr. This does not save job results to the
+// database because DART Runner is intended to run on servers
+// where there may be no database. If the user wants to save
+// job results, they can capture the output from stdin/stderr
+// and store it as they please.
 func (r *Runner) printExitMessages() {
 	stdOutMsg, stdErrMsg := r.Job.GetResultMessages()
 	if len(stdOutMsg) > 0 {
