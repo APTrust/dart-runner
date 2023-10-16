@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/google/uuid"
 )
 
 type Runner struct {
@@ -73,24 +71,11 @@ func (r *Runner) writeExitMessagesAndSaveResults() {
 		Dart.Log.Warn("Error saving Job '%s' after running: %s", r.Job.Name, err.Error())
 	}
 	result := NewJobResult(r.Job)
-	resultJson, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		Dart.Log.Warn("Error converting result artifact for job '%s' to json after running: %s", r.Job.Name, err.Error())
-	}
 	bagName := ""
 	if r.Job.PackageOp != nil {
 		bagName = r.Job.PackageOp.PackageName
 	}
-	artifact := &Artifact{
-		ID:        uuid.NewString(),
-		JobID:     r.Job.ID,
-		BagName:   bagName,
-		ItemType:  constants.ItemTypeJobResult,
-		FileName:  fmt.Sprintf("Job Result %s", r.Job.ID),
-		FileType:  constants.FileTypeJsonData,
-		RawData:   string(resultJson),
-		UpdatedAt: time.Now(),
-	}
+	artifact := NewJobResultArtifact(bagName, result)
 	err = ArtifactSave(artifact)
 	if err != nil {
 		Dart.Log.Warn("Error saving result artifact for job '%s' after running: %s", r.Job.Name, err.Error())
@@ -195,6 +180,9 @@ func (r *Runner) RunPackageOp() bool {
 	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
+
+	// TODO: Save artifacts here. XXXXXXXXXXXXX
+
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.PayloadFileCount = bagger.PayloadFileCount()
 	r.Job.TotalFileCount = bagger.GetTotalFilesBagged()

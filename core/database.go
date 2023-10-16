@@ -9,17 +9,6 @@ import (
 	"github.com/APTrust/dart-runner/util"
 )
 
-type Artifact struct {
-	ID        string
-	JobID     string
-	BagName   string
-	ItemType  string // File or WorkResult
-	FileName  string // name of manifest or tag file
-	FileType  string // manifest or tag file
-	RawData   string // file content or work result json
-	UpdatedAt time.Time
-}
-
 type NameIDPair struct {
 	Name string
 	ID   string
@@ -46,6 +35,7 @@ func InitSchema() error {
 		updated_at datetime not null
 	);
 	create index if not exists ix_artifact_bag_name on artifacts(bag_name);
+	create index if not exists ix_artifact_job_id on artifacts(job_id);
 	`
 	_, err := Dart.DB.Exec(schema)
 	return err
