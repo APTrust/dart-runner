@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 )
 
 type Runner struct {
@@ -64,7 +66,33 @@ func (r *Runner) writeExitMessages() {
 	if r.MessageChannel == nil {
 		panic("JobRunner.MessageChannel is nil")
 	}
+	err := ObjSave(r.Job)
+	if err != nil {
+		Dart.Log.Warn("Error saving Job '%s' after running: %s", r.Job.Name, err.Error())
+	}
 	result := NewJobResult(r.Job)
+	resultJson, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		Dart.Log.Warn("Error converting result artifact for job '%s' to json after running: %s", r.Job.Name, err.Error())
+	}
+	bagName := ""
+	if r.Job.PackageOp != nil {
+		bagName = r.Job.PackageOp.PackageName
+	}
+	artifact := &Artifact{
+		ID:        uuid.NewString(),
+		JobID:     r.Job.ID,
+		BagName:   bagName,
+		ItemType:  constants.ItemTypeJobResult,
+		FileName:  fmt.Sprintf("Job Result %s", r.Job.ID),
+		FileType:  constants.FileTypeJsonData,
+		RawData:   string(resultJson),
+		UpdatedAt: time.Now(),
+	}
+	err = ArtifactSave(artifact)
+	if err != nil {
+		Dart.Log.Warn("Error saving result artifact for job '%s' after running: %s", r.Job.Name, err.Error())
+	}
 	r.MessageChannel <- FinishEvent(result)
 }
 
