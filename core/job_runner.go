@@ -377,6 +377,8 @@ func (r *Runner) saveArtifactsToDatabase(bagger *Bagger) {
 	}
 }
 
+// TODO: If bag is directory, artifacts will go into the directory,
+// and we don't want that.
 func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
 	var outputDir string
 	if util.IsDirectory(bagger.OutputPath) {

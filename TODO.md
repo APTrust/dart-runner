@@ -4,13 +4,14 @@
 
 - [x] In job files list, add option to show/hide hidden files.
 - [x] In job files list, sort directories and files in case-insensitive alpha order, showing directories first, then files.
-- [ ] Set up Code Climate
-- [ ] Test Workflow Batch endpoints
+- [x] Set up Code Climate
+- [x] Test Workflow Batch endpoints
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Add logging to all critical sections
 - [ ] Automated UI testing (Selenium)
-- [ ] Save artifacts from jobs (manifests, tag files)
+- [x] Save artifacts from jobs (manifests, tag files)
+- [ ] Expose artifacts in UI
 - [ ] Settings export
 - [ ] Settings export questions
 - [ ] Settings import
