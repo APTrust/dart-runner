@@ -3,7 +3,16 @@
 {{ template "partials/page_header.html" . }}
 
 <div class="row" id="jobFilesTitle">
-    <div class="col-12"><h2>Files</h2></div>
+    <div class="col-12">
+        <h2>Files        
+        <span style="font-size: 1rem;"
+            data-toggle="popover" 
+            data-trigger="hover" 
+            title="Choosing Files" 
+            data-content="Click the name of a folder to open it. Drag any file or folder icon to the right to include it in this job.">
+            <i class="fas fa-question-circle text-primary"></i></span>
+        </h2>
+    </div>
 </div>
 
 <div class="row" id="jobFilesContainer">
@@ -18,7 +27,7 @@
         <div id="dropZone" class="drop-zone">
 
             <div class="text-center upload-icon-div" id="uploadIcon">
-                <p>Drag and drop the items you want to package.</p>
+                <p>Drag and drop the items from the left that you want to package.</p>
                 <img src="/assets/img/upload.png" alt="Drop files here">
             </div>
 
