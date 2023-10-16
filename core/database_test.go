@@ -15,6 +15,7 @@ import (
 func sampleArtifact() *core.Artifact {
 	return &core.Artifact{
 		ID:       uuid.NewString(),
+		JobID:    constants.EmptyUUID,
 		BagName:  "Tote Bag",
 		ItemType: constants.ItemTypeFile,
 		FileName: "manifest-md5.txt",
@@ -98,19 +99,29 @@ func TestArtifactPersistenceOperations(t *testing.T) {
 		ids[i] = artifact.ID
 	}
 
-	// Test ArtifactList()
-	artifacts, err := core.ArtifactList("Bag 1")
+	// Test ArtifactListByJobName()
+	artifacts, err := core.ArtifactListByJobName("Bag 1")
 	require.Nil(t, err)
 	assert.Equal(t, 3, len(artifacts))
 	assert.Equal(t, "File 0", artifacts[0].FileName)
 	assert.Equal(t, "File 2", artifacts[1].FileName)
 	assert.Equal(t, "File 4", artifacts[2].FileName)
 
-	artifacts, err = core.ArtifactList("Bag 2")
+	artifacts, err = core.ArtifactListByJobName("Bag 2")
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(artifacts))
 	assert.Equal(t, "File 1", artifacts[0].FileName)
 	assert.Equal(t, "File 3", artifacts[1].FileName)
+
+	// Test ArtifactListByJobId()
+	artifacts, err = core.ArtifactListByJobID(constants.EmptyUUID)
+	require.Nil(t, err)
+	assert.Equal(t, 5, len(artifacts))
+	assert.Equal(t, "File 0", artifacts[0].FileName)
+	assert.Equal(t, "File 1", artifacts[1].FileName)
+	assert.Equal(t, "File 2", artifacts[2].FileName)
+	assert.Equal(t, "File 3", artifacts[3].FileName)
+	assert.Equal(t, "File 4", artifacts[4].FileName)
 
 	// Test ArtifactFind()
 	for _, id := range ids {

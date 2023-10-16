@@ -7,6 +7,7 @@ import (
 // JobResult collects the results of an attempted job for
 // reporting purposes.
 type JobResult struct {
+	JobID            string             `json:"jobId"`
 	JobName          string             `json:"jobName"`
 	PayloadByteCount int64              `json:"payloadByteCount"`
 	PayloadFileCount int64              `json:"payloadFileCount"`
@@ -23,6 +24,7 @@ type JobResult struct {
 // termination of each job.
 func NewJobResult(job *Job) *JobResult {
 	jobResult := &JobResult{
+		JobID:            job.ID,
 		JobName:          job.Name(),
 		PayloadByteCount: job.ByteCount,
 		PayloadFileCount: job.PayloadFileCount,

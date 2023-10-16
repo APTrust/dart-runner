@@ -13,6 +13,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -338,10 +339,45 @@ func TestWorkflowBatchValidate_Valid(t *testing.T) {
 	params.Set("PathToCSVFile", expectedTempPath)
 	params.Set("WorkflowID", workflow.ID)
 	expectedLocation := fmt.Sprintf("/workflows/batch/run?%s", params.Encode())
-	assert.Equal(t, expectedLocation, responseData["location"])
+	actualLocation := responseData["location"].(string)
+	assert.Equal(t, expectedLocation, actualLocation)
+
+	testWorkflowRunBatch(t, actualLocation)
 }
 
-func TestWorkflowRunBatch(t *testing.T) {
+func testWorkflowRunBatch(t *testing.T, batchUrl string) {
+	// Need to set this for things to work
+	setting := core.NewAppSetting("Bagging Directory", os.TempDir())
+	require.NoError(t, core.ObjSave(setting))
+
+	recorder := NewStreamRecorder()
+	req, _ := http.NewRequest(http.MethodGet, batchUrl, nil)
+	dartServer.ServeHTTP(recorder, req)
+
+	for !recorder.Flushed {
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	html := recorder.Body.String()
+	assert.NotEmpty(t, html)
+	assert.True(t, recorder.EventCount > 100)
+	assert.Equal(t, "All jobs complete. Disconnect now.", recorder.LastEvent.Message)
+
+	//jobs := core.ObjList(constants.TypeJob, "obj_name", 10, 0).Jobs
+	//require.NotEmpty(t, jobs)
+
+	// // Test the job result that came through in the SSE event stream.
+	// jobResult := recorder.ResultEvent.JobResult
+	// require.NotNil(t, jobResult)
+	// testPostRunJobResult(t, jobResult, "Result from HTTP stream recorder")
+
+	// // The controller should have saved the completed job in the DB.
+	// // If it did, the job result will show that all items completed.
+	// job = core.ObjFind(job.ID).Job()
+	// require.NotNil(t, job)
+	// jobResult = core.NewJobResult(job)
+	// testPostRunJobResult(t, jobResult, "Result from database")
 
 }
 

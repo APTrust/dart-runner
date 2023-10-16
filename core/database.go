@@ -11,6 +11,7 @@ import (
 
 type Artifact struct {
 	ID        string
+	JobID     string
 	BagName   string
 	ItemType  string // File or WorkResult
 	FileName  string // name of manifest or tag file
@@ -36,6 +37,7 @@ func InitSchema() error {
 	create unique index if not exists ix_unique_object_name on dart(obj_type, obj_name);
 	create table if not exists artifacts (
 		uuid text primary key not null,
+		job_id text not null,
 		bag_name text not null,
 		item_type text not null,
 		file_name text,
@@ -412,11 +414,11 @@ func ObjDelete(obj PersistentObject) error {
 }
 
 func ArtifactSave(a *Artifact) error {
-	stmt := `insert into artifacts (uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at) values (?,?,?,?,?,?,?)
+	stmt := `insert into artifacts (uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at) values (?,?,?,?,?,?,?,?)
 	on conflict do update set bag_name=excluded.bag_name, item_type=excluded.item_type, 
 	file_name=excluded.file_name, file_type=excluded.file_type, raw_data=excluded.raw_data, 
 	updated_at=excluded.updated_at where uuid=excluded.uuid`
-	_, err := Dart.DB.Exec(stmt, a.ID, a.BagName, a.ItemType, a.FileName, a.FileType, a.RawData, time.Now().UTC())
+	_, err := Dart.DB.Exec(stmt, a.ID, a.JobID, a.BagName, a.ItemType, a.FileName, a.FileType, a.RawData, time.Now().UTC())
 	return err
 }
 
@@ -435,8 +437,18 @@ func ArtifactFind(uuid string) (*Artifact, error) {
 	return &artifact, err
 }
 
-func ArtifactList(bagName string) ([]*Artifact, error) {
-	rows, err := Dart.DB.Query("select uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by file_name", bagName)
+func ArtifactListByJobID(jobID string) ([]*Artifact, error) {
+	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where job_id=? order by file_name"
+	return artifactList(query, jobID)
+}
+
+func ArtifactListByJobName(bagName string) ([]*Artifact, error) {
+	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by file_name"
+	return artifactList(query, bagName)
+}
+
+func artifactList(query string, params ...interface{}) ([]*Artifact, error) {
+	rows, err := Dart.DB.Query(query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -445,6 +457,7 @@ func ArtifactList(bagName string) ([]*Artifact, error) {
 		artifact := Artifact{}
 		err = rows.Scan(
 			&artifact.ID,
+			&artifact.JobID,
 			&artifact.BagName,
 			&artifact.ItemType,
 			&artifact.FileName,
@@ -458,7 +471,6 @@ func ArtifactList(bagName string) ([]*Artifact, error) {
 		artifacts = append(artifacts, &artifact)
 	}
 	return artifacts, err
-
 }
 
 func ArtifactDelete(uuid string) error {
