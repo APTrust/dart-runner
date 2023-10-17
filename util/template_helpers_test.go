@@ -126,3 +126,7 @@ func TestDisplayDate(t *testing.T) {
 	assert.Equal(t, "16 Aug 23 08:16 UTC", util.DisplayDate(timestamp))
 	assert.Empty(t, util.DisplayDate(time.Time{}))
 }
+
+func TestAdd(t *testing.T) {
+	assert.Equal(t, 5, util.Add(3, 2))
+}

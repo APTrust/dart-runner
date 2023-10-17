@@ -168,3 +168,9 @@ func TruncateStart(str string, maxLen int) string {
 func DirStats(dir string) *DirectoryStats {
 	return GetDirectoryStats(dir)
 }
+
+// Add adds a to b and returns the result. This is for
+// use in templates.
+func Add(a, b int) int {
+	return a + b
+}

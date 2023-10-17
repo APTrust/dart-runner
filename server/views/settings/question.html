@@ -1,0 +1,27 @@
+{{ define "settings/question.html" }}
+
+  <div class="card mb-3" data-question-number="{{ .questionNumber }}">
+      <div class="card-header">Question {{ .questionNumber }}
+          <div class="pull-right">
+              <button type="button" class="btn btn-danger" data-question-number="{{ .questionNumber }}" data-action-type="delete-question">Delete</button>
+          </div>
+      </div>
+      <div class="card-body">
+        {{ template "partials/input_textarea.html" dict "field" .form.Fields.Prompt }}
+        <p>Copy the user's answer to this question to:</p>
+
+        <div class="row">
+            <div class="col">
+                {{ template "partials/input_select.html" dict "field" .form.Fields.ObjType }}
+            </div>
+            <div class="col">
+                {{ template "partials/input_select.html" dict "field" .form.Fields.ObjID }}
+            </div>
+            <div class="col">
+                {{ template "partials/input_select.html" dict "field" .form.Fields.Field }}
+            </div>
+        </div>
+      </div>
+  </div>
+
+{{ end }}

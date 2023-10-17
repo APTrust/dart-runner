@@ -49,6 +49,7 @@ func initTemplates(router *gin.Engine) {
 	// body of that helper here inline.
 
 	router.SetFuncMap(template.FuncMap{
+		"add":            util.Add,
 		"dateISO":        util.DateISO,
 		"dateTimeISO":    util.DateTimeISO,
 		"dateTimeUS":     util.DateTimeUS,
@@ -171,6 +172,16 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/remote_repositories/edit/:id", controllers.RemoteRepositorySave)
 	router.PUT("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
 	router.POST("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
+
+	// Settings import/export
+	router.GET("/settings/export", controllers.SettingsExport)
+	router.GET("/settings/export/result", controllers.SettingsExportResult)
+	router.GET("/settings/export/questions", controllers.SettingsExportShowQuestions)
+	router.POST("/settings/export/questions/:id", controllers.SettingsExportSaveQuestion)
+	router.POST("/settings/export/questions/delete/:id", controllers.SettingsExportDeleteQuestion)
+	router.GET("/settings/import", controllers.SettingsImport)
+	router.POST("/settings/import/url", controllers.SettingsImportFromUrl)
+	router.POST("/settings/import/json", controllers.SettingsImportFromJson)
 
 	// Strorage Services
 	router.GET("/storage_services", controllers.StorageServiceIndex)
