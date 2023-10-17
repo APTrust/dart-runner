@@ -1,0 +1,57 @@
+{{ define "settings/export.html" }}
+
+<h2>Export Settings</h2>
+
+<form>
+
+  <div class="card mb-3">
+    <div class="card-header">App Settings</div>
+    <div class="card-body">
+        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.AppSettings }}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">BagIt Profiles</div>
+    <div class="card-body">
+        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.BagItProfiles }}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Remote Repositories</div>
+    <div class="card-body">
+        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.RemoteRepositories }}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Storage Services</div>
+    <div class="card-body">
+        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.StorageServices }}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Add Setup Questions?</div>
+    <div class="card-body">
+        {{ template "partials/checkbox.html" dict "field" .form.Fields.AddQuestions }}
+    </div>
+  </div>
+
+</form>
+
+
+<div class="bottom-buttons">
+  <div class="pull-left">
+    <button type="button" class="btn btn-secondary" id="btnReset">Reset</button>
+  </div>
+  <div class="pull-right">
+    <a role="button" class="btn btn-primary" id="btnNext" href="#Settings/showExportJson?fromPage=export">Export</a>
+  </div>
+  <div class="pull-right mr-3">
+    <a role="button" class="btn btn-secondary" href="#Dashboard/show">Cancel</a>
+  </div>
+</div>
+
+{{ end }}
