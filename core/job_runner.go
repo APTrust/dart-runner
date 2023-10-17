@@ -377,15 +377,23 @@ func (r *Runner) saveArtifactsToDatabase(bagger *Bagger) {
 	}
 }
 
-// TODO: If bag is directory, artifacts will go into the directory,
-// and we don't want that.
 func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
 	var outputDir string
+	// If bag is directory, artifacts will go into the directory,
+	// and we don't want that. Put artifacts in their own directory,
+	// outside the bag.
 	if util.IsDirectory(bagger.OutputPath) {
-		outputDir = bagger.OutputPath
+		outputDir = bagger.OutputPath + "_artifacts"
 	} else {
 		outputDir = path.Dir(bagger.OutputPath)
+		outputDir = path.Join(outputDir, fmt.Sprintf("%s_artifacts", bagger.bagName))
 	}
+	err := os.Mkdir(outputDir, 0755)
+	if err != nil {
+		Dart.Log.Warn("Cannot create artifacts directory '%s': %s", outputDir, err.Error())
+	}
+	// Even if mkdir above failed, the dir might already exist.
+	// We'll only bail on this operation if the dir isn't there.
 	if !util.FileExists(outputDir) {
 		Dart.Log.Warn("Will not write artifacts for bag %s because outputDir %s does not exist", r.Job.Name(), outputDir)
 		return

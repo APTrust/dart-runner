@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -28,15 +29,11 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	job := getRunnerTestJob(t, bagName)
 	outputDir := path.Dir(job.PackageOp.OutputPath)
 	defer func() {
-		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 3) {
+		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 2) {
 			os.Remove(job.PackageOp.OutputPath)
-			os.Remove(path.Join(outputDir, "manfest-md5.txt"))
-			os.Remove(path.Join(outputDir, "manfest-sha1.txt"))
-			os.Remove(path.Join(outputDir, "manfest-sha256.txt"))
-			os.Remove(path.Join(outputDir, "manfest-sha512.txt"))
-			os.Remove(path.Join(outputDir, "bagit.txt"))
-			os.Remove(path.Join(outputDir, "bag-info.txt"))
-			os.Remove(path.Join(outputDir, "aptrust-info.txt"))
+			fileName := strings.TrimSuffix(path.Base(job.PackageOp.OutputPath), path.Ext(job.PackageOp.OutputPath))
+			artifactsDir := path.Join(path.Dir(job.PackageOp.OutputPath), fileName+"_artifacts")
+			os.RemoveAll(artifactsDir)
 		}
 	}()
 
