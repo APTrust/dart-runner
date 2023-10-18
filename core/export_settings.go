@@ -104,7 +104,8 @@ func (settings *ExportSettings) ToForm() *Form {
 	form.UserCanDelete = settings.IsDeletable()
 
 	form.AddField("ID", "ID", settings.ID, true)
-	form.AddField("Name", "Name", settings.Name, true)
+	nameField := form.AddField("Name", "Name", settings.Name, true)
+	nameField.Help = "Names allow you to differentiate your export settings. For example, 'External Donor Settings' and 'Internal Team Settings.'"
 
 	appSettingIds, _ := settings.ObjectIds(constants.TypeAppSetting)
 	appSettingsField := form.AddMultiValueField("AppSettings", "Application Settings", appSettingIds, false)

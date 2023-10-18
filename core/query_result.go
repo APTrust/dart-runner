@@ -8,6 +8,7 @@ type QueryResult struct {
 	AppSettings        []*AppSetting
 	BagItProfiles      []*BagItProfile
 	Error              error
+	ExportSettings     []*ExportSettings
 	InternalSettings   []*InternalSetting
 	Jobs               []*Job
 	Limit              int
@@ -32,6 +33,13 @@ func NewQueryResult(resultType string) *QueryResult {
 func (qr *QueryResult) AppSetting() *AppSetting {
 	if len(qr.AppSettings) > 0 {
 		return qr.AppSettings[0]
+	}
+	return nil
+}
+
+func (qr *QueryResult) ExportSetting() *ExportSettings {
+	if len(qr.ExportSettings) > 0 {
+		return qr.ExportSettings[0]
 	}
 	return nil
 }
@@ -94,6 +102,8 @@ func (qr *QueryResult) GetForm() (*Form, error) {
 	switch qr.ObjType {
 	case constants.TypeAppSetting:
 		form = qr.AppSetting().ToForm()
+	case constants.TypeExportSettings:
+		form = qr.ExportSetting().ToForm()
 	case constants.TypeBagItProfile:
 		form = qr.BagItProfile().ToForm()
 	case constants.TypeInternalSetting:

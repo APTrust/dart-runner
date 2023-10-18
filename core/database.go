@@ -106,6 +106,10 @@ func findOne(row *sql.Row) *QueryResult {
 		item := &AppSetting{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.AppSettings = append(qr.AppSettings, item)
+	case constants.TypeExportSettings:
+		item := &ExportSettings{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.ExportSettings = append(qr.ExportSettings, item)
 	case constants.TypeBagItProfile:
 		item := &BagItProfile{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
@@ -162,6 +166,8 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 	switch objType {
 	case constants.TypeAppSetting:
 		appSettingList(rows, qr)
+	case constants.TypeExportSettings:
+		exportSettingList(rows, qr)
 	case constants.TypeBagItProfile:
 		bagItProfileList(rows, qr)
 	case constants.TypeInternalSetting:
@@ -279,6 +285,22 @@ func appSettingList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.AppSettings = append(qr.AppSettings, item)
+	}
+}
+
+func exportSettingList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &ExportSettings{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.ExportSettings = append(qr.ExportSettings, item)
 	}
 }
 
