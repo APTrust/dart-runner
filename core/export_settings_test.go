@@ -58,11 +58,15 @@ func TestExportSettingsPersistentObjectInterface(t *testing.T) {
 	assert.Equal(t, "Settings 2", items[2].Name)
 }
 
-func TestExportSettingsToForm(t *testing.T) {
-
+type ExportSettingsTestData struct {
+	ExportSettings    *core.ExportSettings
+	AppSettingIds     []string
+	ProfileIds        []string
+	RepoIds           []string
+	StorageServiceIds []string
 }
 
-func TestExportSettingsObjectIds(t *testing.T) {
+func getExportSettingsTestData() ExportSettingsTestData {
 	s := core.NewExportSettings()
 	appSettingIds := make([]string, 3)
 	profileIds := make([]string, 3)
@@ -74,35 +78,151 @@ func TestExportSettingsObjectIds(t *testing.T) {
 		s.AppSettings = append(s.AppSettings, appSetting)
 
 		profile := core.NewBagItProfile()
+		profile.Name = fmt.Sprintf("Profile %d", i)
 		profileIds[i] = profile.ID
 		s.BagItProfiles = append(s.BagItProfiles, profile)
 
 		repo := core.NewRemoteRepository()
+		repo.Name = fmt.Sprintf("Repo %d", i)
 		repoIds[i] = repo.ID
 		s.RemoteRepositories = append(s.RemoteRepositories, repo)
 
 		ss := core.NewStorageService()
+		ss.Name = fmt.Sprintf("Storage Service %d", i)
 		ssIds[i] = ss.ID
 		s.StorageServices = append(s.StorageServices, ss)
 	}
+	return ExportSettingsTestData{
+		ExportSettings:    s,
+		AppSettingIds:     appSettingIds,
+		ProfileIds:        profileIds,
+		RepoIds:           repoIds,
+		StorageServiceIds: ssIds,
+	}
+}
 
-	ids, err := s.ObjectIds(constants.TypeAppSetting)
+func TestExportSettingsToForm(t *testing.T) {
+	defer core.ClearDartTable()
+	testData := getExportSettingsTestData()
+	settings := testData.ExportSettings
+	// Save the attached objects because they need to be in the DB
+	// before we can build the form.
+	for i := 0; i < 3; i++ {
+		require.NoError(t, core.ObjSaveWithoutValidation(settings.AppSettings[i]))
+		require.NoError(t, core.ObjSaveWithoutValidation(settings.BagItProfiles[i]))
+		require.NoError(t, core.ObjSaveWithoutValidation(settings.RemoteRepositories[i]))
+		require.NoError(t, core.ObjSaveWithoutValidation(settings.StorageServices[i]))
+	}
+	// Add some new objects that aren't part of the ExportSettings.
+	// These should appear in the checkbox lists but not be selected.
+	for i := 10; i < 13; i++ {
+		appSetting := core.NewAppSetting(fmt.Sprintf("Name %d", i), fmt.Sprintf("Value %d", i))
+		require.NoError(t, core.ObjSaveWithoutValidation(appSetting))
+
+		profile := core.NewBagItProfile()
+		profile.Name = fmt.Sprintf("Profile %d", i)
+		require.NoError(t, core.ObjSaveWithoutValidation(profile))
+
+		repo := core.NewRemoteRepository()
+		repo.Name = fmt.Sprintf("Repo %d", i)
+		require.NoError(t, core.ObjSaveWithoutValidation(repo))
+
+		ss := core.NewStorageService()
+		ss.Name = fmt.Sprintf("Storage Service %d", i)
+		require.NoError(t, core.ObjSaveWithoutValidation(ss))
+	}
+
+	form := testData.ExportSettings.ToForm()
+	require.NotNil(t, form)
+
+	assert.Equal(t, settings.ID, form.Fields["ID"].Value)
+	assert.Equal(t, settings.Name, form.Fields["Name"].Value)
+	assert.Equal(t, 6, len(form.Fields["AppSettings"].Choices))
+	assert.Equal(t, 6, len(form.Fields["BagItProfiles"].Choices))
+	assert.Equal(t, 6, len(form.Fields["RemoteRepositories"].Choices))
+	assert.Equal(t, 6, len(form.Fields["StorageServices"].Choices))
+
+	// AppSettings
+	selectedCount := 0
+	notSelected := 0
+	for _, choice := range form.Fields["AppSettings"].Choices {
+		if util.StringListContains(testData.AppSettingIds, choice.Value) {
+			assert.True(t, choice.Selected)
+			selectedCount++
+		} else {
+			assert.False(t, choice.Selected)
+			notSelected++
+		}
+	}
+	assert.Equal(t, 3, selectedCount)
+	assert.Equal(t, 3, notSelected)
+
+	// BagIt Profiles
+	selectedCount = 0
+	notSelected = 0
+	for _, choice := range form.Fields["BagItProfiles"].Choices {
+		if util.StringListContains(testData.ProfileIds, choice.Value) {
+			assert.True(t, choice.Selected)
+			selectedCount++
+		} else {
+			assert.False(t, choice.Selected)
+			notSelected++
+		}
+	}
+	assert.Equal(t, 3, selectedCount)
+	assert.Equal(t, 3, notSelected)
+
+	// Remote Repos
+	selectedCount = 0
+	notSelected = 0
+	for _, choice := range form.Fields["RemoteRepositories"].Choices {
+		if util.StringListContains(testData.RepoIds, choice.Value) {
+			assert.True(t, choice.Selected)
+			selectedCount++
+		} else {
+			assert.False(t, choice.Selected)
+			notSelected++
+		}
+	}
+	assert.Equal(t, 3, selectedCount)
+	assert.Equal(t, 3, notSelected)
+
+	// Storage Services
+	selectedCount = 0
+	notSelected = 0
+	for _, choice := range form.Fields["StorageServices"].Choices {
+		if util.StringListContains(testData.StorageServiceIds, choice.Value) {
+			assert.True(t, choice.Selected)
+			selectedCount++
+		} else {
+			assert.False(t, choice.Selected)
+			notSelected++
+		}
+	}
+	assert.Equal(t, 3, selectedCount)
+	assert.Equal(t, 3, notSelected)
+}
+
+func TestExportSettingsObjectIds(t *testing.T) {
+	testData := getExportSettingsTestData()
+
+	ids, err := testData.ExportSettings.ObjectIds(constants.TypeAppSetting)
 	require.NoError(t, err)
-	assert.EqualValues(t, appSettingIds, ids)
+	assert.EqualValues(t, testData.AppSettingIds, ids)
 
-	ids, err = s.ObjectIds(constants.TypeBagItProfile)
+	ids, err = testData.ExportSettings.ObjectIds(constants.TypeBagItProfile)
 	require.NoError(t, err)
-	assert.EqualValues(t, profileIds, ids)
+	assert.EqualValues(t, testData.ProfileIds, ids)
 
-	ids, err = s.ObjectIds(constants.TypeRemoteRepository)
+	ids, err = testData.ExportSettings.ObjectIds(constants.TypeRemoteRepository)
 	require.NoError(t, err)
-	assert.EqualValues(t, repoIds, ids)
+	assert.EqualValues(t, testData.RepoIds, ids)
 
-	ids, err = s.ObjectIds(constants.TypeStorageService)
+	ids, err = testData.ExportSettings.ObjectIds(constants.TypeStorageService)
 	require.NoError(t, err)
-	assert.EqualValues(t, ssIds, ids)
+	assert.EqualValues(t, testData.StorageServiceIds, ids)
 
-	ids, err = s.ObjectIds("type does not exist")
+	ids, err = testData.ExportSettings.ObjectIds("type does not exist")
 	assert.Equal(t, constants.ErrUnknownType, err)
 	assert.Empty(t, ids)
 }
