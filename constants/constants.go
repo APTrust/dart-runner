@@ -71,6 +71,7 @@ const (
 	TypeAppSetting           = "AppSetting"
 	TypeBagItProfile         = "BagItProfile"
 	TypeBagItProfileImport   = "BagItProfileImport"
+	TypeExportSettings       = "ExportSettings"
 	TypeInternalSetting      = "InternalSetting"
 	TypeJob                  = "Job"
 	TypeRemoteRepository     = "RemoteRepository"
