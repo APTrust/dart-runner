@@ -1,5 +1,7 @@
 {{ define "settings/import.html" }}
 
+{{ template "partials/page_header.html" .}}
+
 <h2>Import Settings</h2>
 
 <div class="form-group" id="importSourceContainer">
@@ -48,5 +50,48 @@
     <a role="button" class="btn btn-secondary" href="#Dashboard/show">Cancel</a>
   </div>
 </div>
+
+<script>
+$(function() {
+
+  function showSuccess(message) {
+    $('#result').hide();
+    $('#result').removeClass('text-danger');
+    $('#result').addClass('text-success');
+    $('#result').text(message);
+    $('#result').show();
+  }
+
+  function showError(message) {
+    $('#result').hide();
+    $('#result').addClass('text-danger');
+    $('#result').removeClass('text-success');
+    $('#result').text(message);
+    $('#result').show();
+  }
+
+  function clearMessage() {
+    $('#result').hide();
+    $('#result').text('');
+  } 
+
+  $('#importSourceUrl').on('click', function() {
+      clearMessage()
+      $('#txtJsonContainer').hide()
+      $('#txtUrlContainer').show()
+  });
+  $('#importSourceTextArea').on('click', function()  {
+      clearMessage()
+      $('#txtUrlContainer').hide()
+      $('#txtJsonContainer').show()
+  });
+  $('#btnImport').on('click', function() {
+      clearMessage()
+      importSettings()
+  });
+})
+</script>
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}

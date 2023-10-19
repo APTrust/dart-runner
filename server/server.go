@@ -174,10 +174,13 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
 
 	// Settings import/export
-	router.GET("/settings/export", controllers.SettingsExport)
-	router.GET("/settings/export/result", controllers.SettingsExportResult)
-	router.GET("/settings/export/questions", controllers.SettingsExportShowQuestions)
-	router.POST("/settings/export/questions/:id", controllers.SettingsExportSaveQuestion)
+	router.GET("/settings/export", controllers.SettingsExportIndex)
+	router.GET("/settings/export/new", controllers.SettingsExportNew)
+	router.GET("/settings/export/edit/:id", controllers.SettingsExportEdit)
+	router.POST("/settings/export/save/:id", controllers.SettingsExportSave)
+	router.GET("/settings/export/show_json/:id", controllers.SettingsExportShowJson)
+	router.GET("/settings/export/questions/:id", controllers.SettingsExportShowQuestions)
+	router.POST("/settings/export/questions/:id", controllers.SettingsExportSaveQuestions)
 	router.POST("/settings/export/questions/delete/:id", controllers.SettingsExportDeleteQuestion)
 	router.GET("/settings/import", controllers.SettingsImport)
 	router.POST("/settings/import/url", controllers.SettingsImportFromUrl)
