@@ -93,26 +93,3 @@ func (q *ExportQuestion) getStorageService() (*StorageService, error) {
 
 	return nil, nil
 }
-
-// TODO: The fuctions below should probably go into the util package
-// and be public, so we can test and re-use them.
-
-func (q *ExportQuestion) setStringValue(obj interface{}, fieldName, value string) error {
-
-	return nil
-}
-
-func (q *ExportQuestion) setIntValue(obj interface{}, fieldName string, value int) error {
-
-	return nil
-}
-
-func (q *ExportQuestion) setFloatValue(obj interface{}, fieldName string, value float64) error {
-
-	return nil
-}
-
-func (q *ExportQuestion) setBoolValue(obj interface{}, fieldName string, value bool) error {
-
-	return nil
-}
