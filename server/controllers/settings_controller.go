@@ -39,6 +39,7 @@ func SettingsExportEdit(c *gin.Context) {
 	data := gin.H{
 		"settings": exportSettings,
 		"form":     exportSettings.ToForm(),
+		"flash":    GetFlashCookie(c),
 	}
 	c.HTML(http.StatusOK, "settings/export.html", data)
 }
@@ -47,7 +48,35 @@ func SettingsExportEdit(c *gin.Context) {
 //
 // POST /settings/export/save
 func SettingsExportSave(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		if result.Error != nil {
+			AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+			return
+		}
+	}
+	exportSettings := result.ExportSetting()
+	exportSettings.Name = c.PostForm("Name")
 
+	// Include collections of settings that the user
+	// specified on the HTML form.
+	// Note that we're not dealing with questions here.
+	// We'll deal with those in the questions endpoints.
+
+	err := setExportSettingsCollections(c, exportSettings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+
+	err = core.ObjSave(exportSettings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	SetFlashCookie(c, "Settings have been saved.")
+	c.Redirect(http.StatusFound, fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID))
 }
 
 // SettingsExportNew creates a new ExportSettings object
@@ -136,4 +165,48 @@ func SettingsImportFromUrl(c *gin.Context) {
 // POST /settings/import/json
 func SettingsImportFromJson(c *gin.Context) {
 
+}
+
+// setExportSettingsCollections sets AppSettings, BagItProfiles,
+// RemoteRepositories, and StorageServices on the exportSettings
+// object based on values the user submitted in the HTML form.
+func setExportSettingsCollections(c *gin.Context, exportSettings *core.ExportSettings) error {
+
+	exportSettings.AppSettings = make([]*core.AppSetting, 0)
+	for _, uuid := range c.PostFormArray("AppSettings") {
+		result := core.ObjFind(uuid)
+		if result.Error != nil {
+			return result.Error
+		}
+		exportSettings.AppSettings = append(exportSettings.AppSettings, result.AppSetting())
+	}
+
+	exportSettings.BagItProfiles = make([]*core.BagItProfile, 0)
+	for _, uuid := range c.PostFormArray("BagItProfiles") {
+		result := core.ObjFind(uuid)
+		if result.Error != nil {
+			return result.Error
+		}
+		exportSettings.BagItProfiles = append(exportSettings.BagItProfiles, result.BagItProfile())
+	}
+
+	exportSettings.RemoteRepositories = make([]*core.RemoteRepository, 0)
+	for _, uuid := range c.PostFormArray("RemoteRepositories") {
+		result := core.ObjFind(uuid)
+		if result.Error != nil {
+			return result.Error
+		}
+		exportSettings.RemoteRepositories = append(exportSettings.RemoteRepositories, result.RemoteRepository())
+	}
+
+	exportSettings.StorageServices = make([]*core.StorageService, 0)
+	for _, uuid := range c.PostFormArray("StorageServices") {
+		result := core.ObjFind(uuid)
+		if result.Error != nil {
+			return result.Error
+		}
+		exportSettings.StorageServices = append(exportSettings.StorageServices, result.StorageService())
+	}
+
+	return nil
 }

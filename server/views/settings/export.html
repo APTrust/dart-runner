@@ -5,7 +5,7 @@
 
 <h2>Export Settings</h2>
 
-<form name="exportSettingsForm" action="/settings/export/{{ .form.ObjectID }}" method="post">
+<form name="exportSettingsForm" action="/settings/export/save/{{ .form.ObjectID }}" method="post">
 
  {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
 

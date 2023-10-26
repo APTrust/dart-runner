@@ -28,6 +28,7 @@ const (
 	FileTypeTag              = "tag file"
 	FileTypeTagManifest      = "tag manifest"
 	FileTypeJsonData         = "json data"
+	FlashCookieName          = "dart-flash-message"
 	ImportSourceUrl          = "url"
 	ImportSourceJson         = "json"
 	ItemTypeFile             = "file"

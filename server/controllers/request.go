@@ -39,6 +39,7 @@ func NewRequest(c *gin.Context) *Request {
 		TemplateData: gin.H{
 			"currentUrl":  c.Request.URL.Path,
 			"showAsModal": c.Query("modal") == "true",
+			"flash":       GetFlashCookie(c),
 		},
 	}
 	request.initFromHandlerName()
