@@ -16,6 +16,7 @@
 - [ ] Settings export questions
 - [ ] Settings import
 - [ ] Settings import questions
+- [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Build Dashboard & APTrust client

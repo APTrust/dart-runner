@@ -10,14 +10,12 @@
   <thead class="thead-inverse">
     <tr>
       <th>Name</th>
-      <th>Last Updated</th>
     </tr>
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
     <tr class="clickable-row" onclick="location.href='/settings/export/edit/{{ $item.ID }}'">
-      <td>{{ $item.Name }}</td>
-      <td>{{ $item.UpdatedAt }}</td>
+      <td><a href="/settings/export/edit/{{ $item.ID }}">{{ $item.Name }}</a></td>
     </tr>
     {{ end }}
   </tbody>

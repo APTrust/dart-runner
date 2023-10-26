@@ -178,6 +178,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/settings/export/new", controllers.SettingsExportNew)
 	router.GET("/settings/export/edit/:id", controllers.SettingsExportEdit)
 	router.POST("/settings/export/save/:id", controllers.SettingsExportSave)
+	router.POST("/settings/export/delete/:id", controllers.SettingsExportDelete)
 	router.GET("/settings/export/show_json/:id", controllers.SettingsExportShowJson)
 	router.GET("/settings/export/questions/:id", controllers.SettingsExportShowQuestions)
 	router.POST("/settings/export/questions/:id", controllers.SettingsExportSaveQuestions)

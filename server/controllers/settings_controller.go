@@ -14,7 +14,7 @@ import (
 //
 // GET /settings/export
 func SettingsExportIndex(c *gin.Context) {
-	result := core.ObjList(constants.TypeExportSettings, "obj_name", 0, 100)
+	result := core.ObjList(constants.TypeExportSettings, "obj_name", 100, 0)
 	if result.Error != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, result.Error)
 		return
@@ -62,6 +62,24 @@ func SettingsExportNew(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID))
+}
+
+// SettingsExportDelete deletes the ExportSettings record with the specified ID.
+//
+// POST /settings/export/delete/:id
+func SettingsExportDelete(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	exportSettings := result.ExportSetting()
+	err := core.ObjDelete(exportSettings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, "/settings/export/")
 }
 
 // SettingsExportShowJson shows the JSON representation of
