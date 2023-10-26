@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ type ExportSettings struct {
 func NewExportSettings() *ExportSettings {
 	return &ExportSettings{
 		ID:                 uuid.NewString(),
-		Name:               "Export Settings",
+		Name:               fmt.Sprintf("Export Settings - %s", time.Now().Format(time.RFC822)),
 		AppSettings:        make([]*AppSetting, 0),
 		BagItProfiles:      make([]*BagItProfile, 0),
 		Questions:          make([]*ExportQuestion, 0),

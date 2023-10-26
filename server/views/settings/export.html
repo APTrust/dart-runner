@@ -1,41 +1,49 @@
 {{ define "settings/export.html" }}
 
+{{ template "partials/page_header.html" .}}
+
+
 <h2>Export Settings</h2>
 
-<form>
+<form name="exportSettingsForm" action="/settings/export/{{ .form.ObjectID }}" method="post">
 
   <div class="card mb-3">
     <div class="card-header">App Settings</div>
     <div class="card-body">
-        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.AppSettings }}
+        {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.AppSettings }}
     </div>
   </div>
 
   <div class="card mb-3">
     <div class="card-header">BagIt Profiles</div>
     <div class="card-body">
-        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.BagItProfiles }}
+        {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.BagItProfiles }}
     </div>
   </div>
 
   <div class="card mb-3">
     <div class="card-header">Remote Repositories</div>
     <div class="card-body">
-        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.RemoteRepositories }}
+        {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.RemoteRepositories }}
     </div>
   </div>
 
   <div class="card mb-3">
     <div class="card-header">Storage Services</div>
     <div class="card-body">
-        {{ template "partials/checkbox_group.html" dict "field" .form.Fields.StorageServices }}
+        {{ template "partials/input_checkbox_group.html" dict "field" .form.Fields.StorageServices }}
     </div>
   </div>
 
   <div class="card mb-3">
     <div class="card-header">Add Setup Questions?</div>
     <div class="card-body">
-        {{ template "partials/checkbox.html" dict "field" .form.Fields.AddQuestions }}
+      <div class="form-check">
+        <label class="form-check-label">
+          <input class="form-check-input" type="checkbox" name="AddQuestions" id="AddQuestions" value="">
+          Add questions to help users import these settings.
+        </label>
+      </div>
     </div>
   </div>
 
@@ -53,5 +61,29 @@
     <a role="button" class="btn btn-secondary" href="#Dashboard/show">Cancel</a>
   </div>
 </div>
+
+
+<script>
+$(function(){
+        $(`input[name="AddQuestions"]`).on('click', function() {
+            if ($(`input[name="AddQuestions"]`).is(':checked')) {
+                $("#btnNext").text("Add Questions");
+                $("#btnNext").attr("href", "#");
+            } else {
+                $("#btnNext").text("Export");
+                $("#btnNext").attr("href", "#");
+            }
+        })
+        $('#btnReset').on('click', function() {
+            if(confirm(Context.y18n.__("Do you want to clear this form and remove questions related to these settings?"))){
+                document.forms['exportSettingsForm'].reset()
+            }
+        })
+})
+</script>
+
+
+{{ template "partials/page_footer.html" .}}
+
 
 {{ end }}

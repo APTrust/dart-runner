@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -29,7 +30,17 @@ func SettingsExportIndex(c *gin.Context) {
 //
 // GET /settings/export/edit/:id
 func SettingsExportEdit(c *gin.Context) {
-
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	exportSettings := result.ExportSetting()
+	data := gin.H{
+		"settings": exportSettings,
+		"form":     exportSettings.ToForm(),
+	}
+	c.HTML(http.StatusOK, "settings/export.html", data)
 }
 
 // SettingsExportSave saves ExportSettings.
@@ -44,7 +55,13 @@ func SettingsExportSave(c *gin.Context) {
 //
 // GET /settings/export/new
 func SettingsExportNew(c *gin.Context) {
-
+	exportSettings := core.NewExportSettings()
+	err := core.ObjSave(exportSettings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID))
 }
 
 // SettingsExportShowJson shows the JSON representation of
