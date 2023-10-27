@@ -1,6 +1,9 @@
 package core
 
-import "github.com/google/uuid"
+import (
+	"github.com/APTrust/dart-runner/constants"
+	"github.com/google/uuid"
+)
 
 // ExportQuestion is a question included in export settings
 // to help a user set field values on settings objects.
@@ -45,14 +48,41 @@ type ExportQuestion struct {
 	// which we should copy this question's response.
 	// For BagIt profiles, Field will contain the UUID
 	// of the tag to which we should copy the response.
-	Field string `json:"field"`
+	Field  string            `json:"field"`
+	Errors map[string]string `json:"-"`
 }
 
 // NewExportQuestion returns a new ExportQuestion with a unique ID.
 func NewExportQuestion() *ExportQuestion {
 	return &ExportQuestion{
-		ID: uuid.NewString(),
+		ID:     uuid.NewString(),
+		Errors: make(map[string]string),
 	}
+}
+
+func (q *ExportQuestion) ToForm() *Form {
+	form := NewForm(constants.TypeExportQuestion, q.ID, q.Errors)
+	form.UserCanDelete = true
+
+	form.AddField("ID", "ID", q.ID, true)
+	promptField := form.AddField("Prompt", "Prompt", q.Prompt, true)
+	promptField.Help = "Enter the text of the question here."
+
+	objTypeField := form.AddField("ObjType", "Object Type", q.ObjType, true)
+	objTypeField.Help = "Copy the user's answer to this type of object."
+	// TODO: List object types: AppSetting, BagItProfile, RemoteRepo, StorageService
+
+	objIDField := form.AddField("ObjID", "Object Name", q.ObjType, true)
+	objIDField.Help = "Copy the user's answer to this specific object."
+	// TODO: List all objects of the specified type
+
+	fieldField := form.AddField("Field", "Field", q.Field, false)
+	fieldField.Help = "Copy the user's answer to this property or tag."
+	// TODO: List object fields or, for BagIt profiles, list tag names
+
+	// TODO: Test this.
+
+	return form
 }
 
 // GetExistingValue returns the value currently stored

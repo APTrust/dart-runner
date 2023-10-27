@@ -46,7 +46,7 @@
       <button type="button" class="btn btn-warning" id="btnReset" title="Clear the form.">Reset</button>
     </div>
     <div class="pull-left ml-3">
-      <button type="button" class="btn btn-primary" id="btnAddQuestions" title="Add questions to help other users import these settings.">Add Questions</button>
+      <a role="button" class="btn btn-primary" id="btnAddQuestions" title="Add questions to help other users import these settings." href="/settings/export/questions/{{ .settings.ID }}">Add Questions</a>
     </div>
     <div class="pull-right">
       <a role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." href="/settings/export/show_json/{{ .settings.ID }}">Export</a>
@@ -67,9 +67,6 @@
 
 <script>
 $(function(){
-    $('#btnAddQuestions').on('click', function() {
-
-    })
     $('#btnReset').on('click', function() {
         if(confirm("Do you want to clear this form and remove questions related to these settings?")){
             document.forms['exportSettingsForm'].reset()

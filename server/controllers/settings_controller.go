@@ -31,12 +31,11 @@ func SettingsExportIndex(c *gin.Context) {
 //
 // GET /settings/export/edit/:id
 func SettingsExportEdit(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	exportSettings := result.ExportSetting()
 	data := gin.H{
 		"settings": exportSettings,
 		"form":     exportSettings.ToForm(),
@@ -49,14 +48,11 @@ func SettingsExportEdit(c *gin.Context) {
 //
 // POST /settings/export/save
 func SettingsExportSave(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		if result.Error != nil {
-			AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
-			return
-		}
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
 	}
-	exportSettings := result.ExportSetting()
 	exportSettings.Name = c.PostForm("Name")
 
 	// Include collections of settings that the user
@@ -64,7 +60,7 @@ func SettingsExportSave(c *gin.Context) {
 	// Note that we're not dealing with questions here.
 	// We'll deal with those in the questions endpoints.
 
-	err := setExportSettingsCollections(c, exportSettings)
+	err = setExportSettingsCollections(c, exportSettings)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
@@ -98,13 +94,12 @@ func SettingsExportNew(c *gin.Context) {
 //
 // POST /settings/export/delete/:id
 func SettingsExportDelete(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	exportSettings := result.ExportSetting()
-	err := core.ObjDelete(exportSettings)
+	err = core.ObjDelete(exportSettings)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
@@ -118,12 +113,11 @@ func SettingsExportDelete(c *gin.Context) {
 //
 // GET /settings/export/show_json/:id
 func SettingsExportShowJson(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	exportSettings := result.ExportSetting()
 	jsonData, err := json.MarshalIndent(exportSettings, "", "  ")
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
@@ -146,7 +140,18 @@ func SettingsExportShowJson(c *gin.Context) {
 //
 // GET /settings/export/questions/:id
 func SettingsExportShowQuestions(c *gin.Context) {
-
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	if len(exportSettings.Questions) == 0 {
+		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
+	}
+	data := gin.H{
+		"settings": exportSettings,
+	}
+	c.HTML(http.StatusOK, "settings/question_form.html", data)
 }
 
 // SettingsExportSaveQuestions saves questions attached
@@ -230,4 +235,12 @@ func setExportSettingsCollections(c *gin.Context, exportSettings *core.ExportSet
 	}
 
 	return nil
+}
+
+func getExportSettings(id string) (*core.ExportSettings, error) {
+	result := core.ObjFind(id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return result.ExportSetting(), nil
 }

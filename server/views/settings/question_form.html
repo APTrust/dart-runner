@@ -1,15 +1,17 @@
 {{ define "settings/question_form.html" }}
 
+{{ template "partials/page_header.html" .}}
+
 <h2>Setup Questions</h2>
 
-<p><a href="#About/openExternal?url=https://aptrust.github.io/dart-docs/users/settings/export/#export-questions">Need help?</a></p>
+<p><a target="_blank" href="https://aptrust.github.io/dart-docs/users/settings/export/#export-questions">Need help?</a></p>
 
 <form id="settingsQuestionsForm">
 
   {{ range $index, $question := .settings.Questions }}
     {{ $questionNumber := add $index 1}}
-    {{ template "partials/question.html" dict "questionNumber" $questionNumber "question" .question }}
-  {{ end }}
+    {{ template "settings/question.html" dict "questionNumber" $questionNumber "question" $question "form" $question.ToForm }}
+  {{ end }} 
 
 </form>
 
@@ -25,5 +27,7 @@
     <a role="button" class="btn btn-secondary" href="#Settings/saveAndGoToExport">Cancel</a>
   </div>
 </div>
+
+{{ template "partials/page_footer.html" .}}
 
 {{ end }}
