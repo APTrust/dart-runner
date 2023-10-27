@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -17,6 +18,7 @@ type StreamProgress struct {
 	Current        int64
 	Percent        int
 	MessageChannel chan *EventMessage
+	mutex          sync.RWMutex
 }
 
 // NewStreamProgress returns a new StreamProgress object. Param byteCount
@@ -44,6 +46,7 @@ func (p *StreamProgress) Read(b []byte) (int, error) {
 // uploads, where the progress meter periodically tells us the number
 // of total bytes uploaded thus far.
 func (p *StreamProgress) SetTotalBytesCompleted(byteCount int64) (int, error) {
+	p.mutex.Lock()
 	p.Current += byteCount
 	p.Percent = int(float64(p.Current) * 100 / float64(p.Total))
 	total := util.ToHumanSize(p.Total, 1024)
@@ -53,6 +56,8 @@ func (p *StreamProgress) SetTotalBytesCompleted(byteCount int64) (int, error) {
 	eventMessage.Total = p.Total
 	eventMessage.Current = p.Current
 	eventMessage.Percent = p.Percent
+	p.mutex.Unlock()
+
 	p.MessageChannel <- eventMessage
 	return int(byteCount), nil
 }
