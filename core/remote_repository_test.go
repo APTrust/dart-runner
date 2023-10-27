@@ -129,3 +129,23 @@ func TestRemoteRepositoryPersistentObject(t *testing.T) {
 	assert.Equal(t, "Message 1", repo.GetErrors()["Error 1"])
 	assert.Equal(t, "Message 2", repo.GetErrors()["Error 2"])
 }
+
+func TestHasPlaintextAPIToken(t *testing.T) {
+	repo := &core.RemoteRepository{}
+
+	// False because password is empty
+	assert.False(t, repo.HasPlaintextAPIToken())
+
+	// False because password is empty
+	repo.APIToken = "    "
+	assert.False(t, repo.HasPlaintextAPIToken())
+
+	// False because password uses env variable
+	repo.APIToken = "env:REPO_TOKEN"
+	assert.False(t, repo.HasPlaintextAPIToken())
+
+	// True because password is non-empty, and
+	// not an ENV variable.
+	repo.APIToken = "this-here-is-secret"
+	assert.True(t, repo.HasPlaintextAPIToken())
+}

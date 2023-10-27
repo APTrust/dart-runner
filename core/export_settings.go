@@ -66,6 +66,28 @@ func (settings *ExportSettings) ObjectIds(objType string) ([]string, error) {
 	return ids, nil
 }
 
+// ContainsPlaintextPassword returns true if any StorageService
+// in these settings contains a plaintext password.
+func (settings *ExportSettings) ContainsPlaintextPassword() bool {
+	for _, ss := range settings.StorageServices {
+		if ss.HasPlaintextPassword() {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsPlaintextAPIToken returns true if any RemoteRepository
+// in these settings contains a plaintext API token.
+func (settings *ExportSettings) ContainsPlaintextAPIToken() bool {
+	for _, repo := range settings.RemoteRepositories {
+		if repo.HasPlaintextAPIToken() {
+			return true
+		}
+	}
+	return false
+}
+
 // GetErrors returns a map of validation errors for this object.
 func (settings *ExportSettings) GetErrors() map[string]string {
 	return settings.Errors

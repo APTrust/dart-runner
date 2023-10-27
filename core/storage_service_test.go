@@ -251,3 +251,23 @@ func TestStorageServiceConnectionS3(t *testing.T) {
 	ss := core.GetLocalMinioTestService()
 	assert.NoError(t, ss.TestConnection())
 }
+
+func TestHasPlaintextPassword(t *testing.T) {
+	ss := &core.StorageService{}
+
+	// False because password is empty
+	assert.False(t, ss.HasPlaintextPassword())
+
+	// False because password is empty
+	ss.Password = "    "
+	assert.False(t, ss.HasPlaintextPassword())
+
+	// False because password uses env variable
+	ss.Password = "env:SS_PASSWORD"
+	assert.False(t, ss.HasPlaintextPassword())
+
+	// True because password is non-empty, and
+	// not an ENV variable.
+	ss.Password = "this-here-is-secret"
+	assert.True(t, ss.HasPlaintextPassword())
+}

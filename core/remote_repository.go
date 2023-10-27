@@ -38,6 +38,13 @@ func NewRemoteRepository() *RemoteRepository {
 	}
 }
 
+// HasPlaintextAPIToken returns true if this repo's API token
+// is non-empty and does not come from an environment variable.
+func (repo *RemoteRepository) HasPlaintextAPIToken() bool {
+	token := strings.TrimSpace(repo.APIToken)
+	return token != "" && !strings.HasPrefix(repo.APIToken, "env:")
+}
+
 // ObjID returns this remote repo's UUID.
 func (repo *RemoteRepository) ObjID() string {
 	return repo.ID

@@ -226,3 +226,40 @@ func TestExportSettingsObjectIds(t *testing.T) {
 	assert.Equal(t, constants.ErrUnknownType, err)
 	assert.Empty(t, ids)
 }
+
+func TestContainsPlaintextPassword(t *testing.T) {
+	settings := core.NewExportSettings()
+	ss1 := &core.StorageService{}
+	ss2 := &core.StorageService{}
+	settings.StorageServices = append(settings.StorageServices, ss1, ss2)
+
+	// False because passwords are empty
+	assert.False(t, settings.ContainsPlaintextPassword())
+
+	// False because password comes from env
+	ss1.Password = "env:PASSWORD_FROM_ENV"
+	assert.False(t, settings.ContainsPlaintextPassword())
+
+	// True because we have a plaintext, non-env password
+	ss2.Password = "eugenekrabs"
+	assert.True(t, settings.ContainsPlaintextPassword())
+}
+
+func TestContainsPlaintextAPIToken(t *testing.T) {
+	settings := core.NewExportSettings()
+	repo1 := &core.RemoteRepository{}
+	repo2 := &core.RemoteRepository{}
+	settings.RemoteRepositories = append(settings.RemoteRepositories, repo1, repo2)
+
+	// False because tokens are empty
+	assert.False(t, settings.ContainsPlaintextAPIToken())
+
+	// False because token comes from env
+	repo1.APIToken = "env:TOKEN_FROM_ENV"
+	assert.False(t, settings.ContainsPlaintextAPIToken())
+
+	// True because we have a plaintext, non-env token
+	repo2.APIToken = "patrickstar"
+	assert.True(t, settings.ContainsPlaintextAPIToken())
+
+}

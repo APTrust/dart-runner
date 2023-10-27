@@ -109,6 +109,14 @@ func (ss *StorageService) getEnv(varname string) string {
 	return os.Getenv(parts[1])
 }
 
+// HasPlaintextPassword returns true if this StorageService
+// has a non-empty password and does not use an environment variable
+// for the password.
+func (ss *StorageService) HasPlaintextPassword() bool {
+	pwd := strings.TrimSpace(ss.Password)
+	return pwd != "" && !strings.HasPrefix(ss.Password, "env:")
+}
+
 // Copy returns a pointer to a new StorageService whose values
 // are the same as this service. The copy will have the same
 // ID as the original, so if you want to change it, you'll have

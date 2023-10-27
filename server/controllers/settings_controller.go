@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -117,7 +118,23 @@ func SettingsExportDelete(c *gin.Context) {
 //
 // GET /settings/export/show_json/:id
 func SettingsExportShowJson(c *gin.Context) {
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	exportSettings := result.ExportSetting()
+	jsonData, err := json.MarshalIndent(exportSettings, "", "  ")
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
 
+	data := gin.H{
+		"settings": exportSettings,
+		"json":     string(jsonData),
+	}
+	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
 
 // SettingsExportShowQuestions displays a page on which the
