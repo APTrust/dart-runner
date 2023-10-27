@@ -129,10 +129,14 @@ func SettingsExportShowJson(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-
+	displayPasswordWarning := exportSettings.ContainsPlaintextPassword()
+	displayTokenWarning := exportSettings.ContainsPlaintextAPIToken()
 	data := gin.H{
-		"settings": exportSettings,
-		"json":     string(jsonData),
+		"settings":                exportSettings,
+		"json":                    string(jsonData),
+		"displayPasswordWarning":  displayPasswordWarning,
+		"displayTokenWarning":     displayTokenWarning,
+		"displayPlaintextWarning": displayPasswordWarning || displayTokenWarning,
 	}
 	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
