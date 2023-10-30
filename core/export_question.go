@@ -68,11 +68,11 @@ func (q *ExportQuestion) ToForm() *Form {
 	promptField := form.AddField("Prompt", "Prompt", q.Prompt, true)
 	promptField.Help = "Enter the text of the question here."
 
-	objTypeField := form.AddField("ObjType", "Object Type", q.ObjType, true)
+	objTypeField := form.AddField("ObjType", "Setting Type", q.ObjType, true)
 	objTypeField.Help = "Copy the user's answer to this type of object."
-	// TODO: List object types: AppSetting, BagItProfile, RemoteRepo, StorageService
+	objTypeField.Choices = MakeChoiceList(constants.ExportableSettingTypes, "")
 
-	objIDField := form.AddField("ObjID", "Object Name", q.ObjType, true)
+	objIDField := form.AddField("ObjID", "Setting Name", q.ObjType, true)
 	objIDField.Help = "Copy the user's answer to this specific object."
 	// TODO: List all objects of the specified type
 

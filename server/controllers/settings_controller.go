@@ -193,6 +193,15 @@ func SettingsImportFromJson(c *gin.Context) {
 
 }
 
+// GET /settings/profile_tags
+func SettingsProfileTagList(c *gin.Context) {
+
+}
+
+func SettingsGetObjectLists() {
+
+}
+
 // setExportSettingsCollections sets AppSettings, BagItProfiles,
 // RemoteRepositories, and StorageServices on the exportSettings
 // object based on values the user submitted in the HTML form.

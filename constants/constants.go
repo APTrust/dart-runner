@@ -122,6 +122,13 @@ var SavableItemTypes = []string{
 	TypeStorageService,
 }
 
+var ExportableSettingTypes = []string{
+	TypeAppSetting,
+	TypeBagItProfile,
+	TypeRemoteRepository,
+	TypeStorageService,
+}
+
 // We have only one format at the moment, but in future we
 // may add OCFL and others.
 var PackageFormats = []string{
