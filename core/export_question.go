@@ -64,21 +64,47 @@ func (q *ExportQuestion) ToForm() *Form {
 	form := NewForm(constants.TypeExportQuestion, q.ID, q.Errors)
 	form.UserCanDelete = true
 
+	// TODO: We may have to override control id,
+	// changing it from ObjType_FieldName to ObjID_FieldName
+	// because there can be multiple questions on one form,
+	// and the controls will have duplicate IDs if we stick
+	// with the ObjType_FieldName pattern.
+
 	form.AddField("ID", "ID", q.ID, true)
 	promptField := form.AddField("Prompt", "Prompt", q.Prompt, true)
 	promptField.Help = "Enter the text of the question here."
+	promptField.Attrs["data-question-id"] = q.ID
 
 	objTypeField := form.AddField("ObjType", "Setting Type", q.ObjType, true)
 	objTypeField.Help = "Copy the user's answer to this type of object."
 	objTypeField.Choices = MakeChoiceList(constants.ExportableSettingTypes, "")
+	objTypeField.Attrs["data-question-id"] = q.ID
 
-	objIDField := form.AddField("ObjID", "Setting Name", q.ObjType, true)
+	objIDField := form.AddField("ObjID", "Setting Name", q.ObjID, true)
 	objIDField.Help = "Copy the user's answer to this specific object."
-	// TODO: List all objects of the specified type
+	objIDField.Choices = ObjChoiceList(q.ObjType, []string{q.ObjID})
+	objIDField.Attrs["data-question-id"] = q.ID
+
+	opts := NewExportOptions()
 
 	fieldField := form.AddField("Field", "Field", q.Field, false)
 	fieldField.Help = "Copy the user's answer to this property or tag."
-	// TODO: List object fields or, for BagIt profiles, list tag names
+	fieldField.Attrs["data-question-id"] = q.ID
+
+	switch q.ObjType {
+	case constants.TypeAppSetting:
+		fieldField.Choices = MakeChoiceList(opts.AppSettingFields, q.Field)
+	case constants.TypeBagItProfile:
+		pairs, err := TagsForProfile(q.ObjID)
+		if err == nil {
+			fieldField.Choices = MakeChoiceListFromPairs(pairs, q.Field)
+		}
+	case constants.TypeRemoteRepository:
+		fieldField.Choices = MakeChoiceList(opts.RemoteRepositoryFields, q.Field)
+	case constants.TypeStorageService:
+		fieldField.Choices = MakeChoiceList(opts.StorageServiceFields, q.Field)
+
+	}
 
 	// TODO: Test this.
 

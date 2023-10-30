@@ -58,3 +58,29 @@ func TestMakeMultiChoiceList(t *testing.T) {
 		}
 	}
 }
+
+func TestMakeChoiceListFromPairs(t *testing.T) {
+	pairs := []core.NameIDPair{
+		{ID: "1", Name: "One"},
+		{ID: "2", Name: "Two"},
+		{ID: "3", Name: "Three"},
+	}
+	choices := core.MakeChoiceListFromPairs(pairs, "2")
+	assert.Equal(t, 4, len(choices))
+
+	assert.Equal(t, "", choices[0].Value)
+	assert.Equal(t, "", choices[0].Label)
+	assert.False(t, choices[0].Selected)
+
+	assert.Equal(t, "1", choices[1].Value)
+	assert.Equal(t, "One", choices[1].Label)
+	assert.False(t, choices[1].Selected)
+
+	assert.Equal(t, "2", choices[2].Value)
+	assert.Equal(t, "Two", choices[2].Label)
+	assert.True(t, choices[2].Selected)
+
+	assert.Equal(t, "3", choices[3].Value)
+	assert.Equal(t, "Three", choices[3].Label)
+	assert.False(t, choices[3].Selected)
+}

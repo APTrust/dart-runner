@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -148,8 +149,15 @@ func SettingsExportShowQuestions(c *gin.Context) {
 	if len(exportSettings.Questions) == 0 {
 		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
 	}
+	opts := core.NewExportOptions()
+	optionsJson, err := json.Marshal(opts)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
 	data := gin.H{
-		"settings": exportSettings,
+		"settings":    exportSettings,
+		"optionsJson": template.JS(string(optionsJson)),
 	}
 	c.HTML(http.StatusOK, "settings/question_form.html", data)
 }
@@ -195,11 +203,13 @@ func SettingsImportFromJson(c *gin.Context) {
 
 // GET /settings/profile_tags
 func SettingsProfileTagList(c *gin.Context) {
-
-}
-
-func SettingsGetObjectLists() {
-
+	profileID := c.Query("profileID")
+	list, err := core.TagsForProfile(profileID)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, err)
+		return
+	}
+	c.JSON(http.StatusOK, list)
 }
 
 // setExportSettingsCollections sets AppSettings, BagItProfiles,

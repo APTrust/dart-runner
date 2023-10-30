@@ -222,7 +222,7 @@ func ObjNameIdList(objType string) []NameIDPair {
 	return nameIdPairs
 }
 
-// ObjNameIdList returns a list of all items of type objType in the
+// ObjChoiceList returns a list of all items of type objType in the
 // database. The return value is a slice of Choice objects in which
 // the Label is the object name and the Value is the id (uuid) of each
 // object. The slice is in alpha order by name. Choices whose values
