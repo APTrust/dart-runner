@@ -149,6 +149,10 @@ func SettingsExportShowQuestions(c *gin.Context) {
 	if len(exportSettings.Questions) == 0 {
 		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
 	}
+
+	// TODO: We should show options related to the export settings only,
+	// not all options. Showing all confuses the user because many don't
+	// apply to the settings at hand.
 	opts := core.NewExportOptions()
 	optionsJson, err := json.Marshal(opts)
 	if err != nil {
