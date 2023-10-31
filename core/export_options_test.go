@@ -2,6 +2,7 @@ package core_test
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -63,9 +64,14 @@ func TestTagsForProfile(t *testing.T) {
 func testTagsMatchPairs(t *testing.T, profile *core.BagItProfile) {
 	pairs, err := core.TagsForProfile(profile.ID)
 	require.Nil(t, err)
-	require.Equal(t, len(profile.Tags), len(pairs))
-	for i, tag := range profile.Tags {
+	sortedTags := make([]*core.TagDefinition, len(profile.Tags))
+	copy(sortedTags, profile.Tags)
+	sort.Slice(sortedTags, func(i, j int) bool {
+		return sortedTags[j].FullyQualifiedName() > sortedTags[i].FullyQualifiedName()
+	})
+	require.Equal(t, len(sortedTags), len(pairs))
+	for i, tag := range sortedTags {
 		assert.Equal(t, tag.ID, pairs[i].ID)
-		assert.Equal(t, tag.TagName, pairs[i].Name)
+		assert.Equal(t, fmt.Sprintf("%s/%s", tag.TagFile, tag.TagName), pairs[i].Name)
 	}
 }

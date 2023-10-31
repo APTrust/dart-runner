@@ -33,7 +33,6 @@ var options = {{ .optionsJson }}
 $(function() {
 
   function loadObjectList(questionId, objType) {
-    console.log(`loadObjectList: ${questionId}, ${objType}`)
     let objIdList = $(`select[data-control-name="objId"][data-question-id="${questionId}"]`)
     let listOptions = []
     switch (objType) {
@@ -57,14 +56,6 @@ $(function() {
     })
   }
 
-  function loadFieldList(questionId, profileId) {
-    console.log(`loadFieldList: ${questionId}, ${profileId}`)
-  }
-
-  function emptyFieldList() {
-    console.log('emptyFieldList')
-  }
-
   // When ObjType changes, load obj list
   $('select[data-control-name="objType"]').on('change', function() {
     let questionId = $(this).data('question-id') 
@@ -79,15 +70,41 @@ $(function() {
     let questionId = $(this).data('question-id') 
     let objectId = $(this).val()
     let objType = $(`select[data-control-name="objType"][data-question-id="${questionId}"]`).val()
-    if (objType == 'BagItProfile') {
-      loadFieldList(questionId, objType)
-    } else {
-      emptyFieldList()
+    let fieldList = $(`select[data-control-name="field"][data-question-id="${questionId}"]`)
+    let selectedField = fieldList.val()
+    let listOptions = []
+    fieldList.empty()
+    fieldList.append(new Option(""))
+    switch (objType) {
+      case "AppSetting":
+        listOptions = options.appSettingFields
+        break
+      case "BagItProfile":
+        // Get options for the SELECTED profile.
+        listOptions = options.bagItProfileFields[objectId]
+        listOptions.forEach(function(item) {
+          var opt = new Option(item.Name, item.ID)
+          if (item == selectedField) {
+            opt.selected = true
+          }
+          fieldList.append(opt)
+        })
+        return
+      case "RemoteRepository":
+        listOptions = options.remoteRepositoryFields
+        break
+      case "StorageService":
+        listOptions = options.storageServiceFields
+        break
     }
+    listOptions.forEach(function(item) {
+      var opt = new Option(item, item)
+      if (item == selectedField) {
+        opt.selected = true
+      }
+      fieldList.append(opt)
+    })
   })
-
-  // Note data-question-id attribute
-
 })
 </script>
 
