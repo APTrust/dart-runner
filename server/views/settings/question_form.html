@@ -32,8 +32,39 @@
 var options = {{ .optionsJson }}
 $(function() {
 
+  function loadObjectList(questionId, objType) {
+    console.log(`loadObjectList: ${questionId}, ${objType}`)
+  }
+
+  function loadFieldList(questionId, profileId) {
+    console.log(`loadFieldList: ${questionId}, ${profileId}`)
+  }
+
+  function emptyFieldList() {
+    console.log('emptyFieldList')
+  }
+
   // When ObjType changes, load obj list
+  $('select[data-control-name="objType"]').on('change', function() {
+    let questionId = $(this).data('question-id') 
+    let objType = $(this).val()
+    if (objType) {
+      loadObjectList(questionId, objType)
+    }
+  })
+  
   // When ObjID changes, load field list
+  $('select[data-control-name="objId"]').on('change', function() {
+    let questionId = $(this).data('question-id') 
+    let objectId = $(this).val()
+    let objType = $(`select[data-control-name="objType"][data-question-id="${questionId}"]`)
+    if (objType == 'BagItProfile') {
+      loadFieldList(questionId, objType)
+    } else {
+      emptyFieldList()
+    }
+  })
+
   // Note data-question-id attribute
 
 })

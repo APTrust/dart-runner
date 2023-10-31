@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fmt"
+
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/google/uuid"
 )
@@ -64,32 +66,49 @@ func (q *ExportQuestion) ToForm() *Form {
 	form := NewForm(constants.TypeExportQuestion, q.ID, q.Errors)
 	form.UserCanDelete = true
 
-	// TODO: We may have to override control id,
-	// changing it from ObjType_FieldName to ObjID_FieldName
-	// because there can be multiple questions on one form,
+	// Note that we override control id because there
+	// can be multiple questions on one form,
 	// and the controls will have duplicate IDs if we stick
 	// with the ObjType_FieldName pattern.
 
-	form.AddField("ID", "ID", q.ID, true)
+	// Also note that we use data-control-id so the front-end
+	// JavaScript knows which controls are logically grouped
+	// together. We use data-control-name to attach events to
+	// select lists, and to know which select lists to update.
+
+	// To understand how the front-end JS uses these attributes,
+	// see views/settings/question_form.html.
+
+	idField := form.AddField("ID", "ID", q.ID, true)
+	idField.ID = fmt.Sprintf("id-%s", q.ID)
+
 	promptField := form.AddField("Prompt", "Prompt", q.Prompt, true)
+	promptField.ID = fmt.Sprintf("prompt-%s", q.ID)
 	promptField.Help = "Enter the text of the question here."
 	promptField.Attrs["data-question-id"] = q.ID
+	promptField.Attrs["data-control-name"] = "prompt"
 
 	objTypeField := form.AddField("ObjType", "Setting Type", q.ObjType, true)
+	objTypeField.ID = fmt.Sprintf("objType-%s", q.ID)
 	objTypeField.Help = "Copy the user's answer to this type of object."
 	objTypeField.Choices = MakeChoiceList(constants.ExportableSettingTypes, "")
 	objTypeField.Attrs["data-question-id"] = q.ID
+	objTypeField.Attrs["data-control-name"] = "objType"
 
 	objIDField := form.AddField("ObjID", "Setting Name", q.ObjID, true)
+	objIDField.ID = fmt.Sprintf("objId-%s", q.ID)
 	objIDField.Help = "Copy the user's answer to this specific object."
 	objIDField.Choices = ObjChoiceList(q.ObjType, []string{q.ObjID})
 	objIDField.Attrs["data-question-id"] = q.ID
+	objIDField.Attrs["data-control-name"] = "objId"
 
 	opts := NewExportOptions()
 
 	fieldField := form.AddField("Field", "Field", q.Field, false)
+	fieldField.ID = fmt.Sprintf("field-%s", q.ID)
 	fieldField.Help = "Copy the user's answer to this property or tag."
 	fieldField.Attrs["data-question-id"] = q.ID
+	fieldField.Attrs["data-control-name"] = "field"
 
 	switch q.ObjType {
 	case constants.TypeAppSetting:
@@ -103,10 +122,7 @@ func (q *ExportQuestion) ToForm() *Form {
 		fieldField.Choices = MakeChoiceList(opts.RemoteRepositoryFields, q.Field)
 	case constants.TypeStorageService:
 		fieldField.Choices = MakeChoiceList(opts.StorageServiceFields, q.Field)
-
 	}
-
-	// TODO: Test this.
 
 	return form
 }
