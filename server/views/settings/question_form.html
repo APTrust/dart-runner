@@ -34,6 +34,27 @@ $(function() {
 
   function loadObjectList(questionId, objType) {
     console.log(`loadObjectList: ${questionId}, ${objType}`)
+    let objIdList = $(`select[data-control-name="objId"][data-question-id="${questionId}"]`)
+    let listOptions = []
+    switch (objType) {
+      case "AppSetting":
+        listOptions = options.appSettings
+        break
+      case "BagItProfile":
+        listOptions = options.bagItProfiles
+        break
+      case "RemoteRepository":
+        listOptions = options.remoteRepositories
+        break
+      case "StorageService":
+        listOptions = options.storageServices
+        break
+    }
+    objIdList.empty()
+    objIdList.append(new Option(""))
+    listOptions.forEach(function(item) {
+      objIdList.append(new Option(item.Name, item.ID))
+    })
   }
 
   function loadFieldList(questionId, profileId) {
@@ -57,7 +78,7 @@ $(function() {
   $('select[data-control-name="objId"]').on('change', function() {
     let questionId = $(this).data('question-id') 
     let objectId = $(this).val()
-    let objType = $(`select[data-control-name="objType"][data-question-id="${questionId}"]`)
+    let objType = $(`select[data-control-name="objType"][data-question-id="${questionId}"]`).val()
     if (objType == 'BagItProfile') {
       loadFieldList(questionId, objType)
     } else {
