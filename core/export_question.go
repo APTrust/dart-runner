@@ -114,7 +114,7 @@ func (q *ExportQuestion) ToForm() *Form {
 	case constants.TypeAppSetting:
 		fieldField.Choices = MakeChoiceList(opts.AppSettingFields, q.Field)
 	case constants.TypeBagItProfile:
-		pairs, err := TagsForProfile(q.ObjID)
+		pairs, err := UserSettableTagsForProfile(q.ObjID)
 		if err == nil {
 			fieldField.Choices = MakeChoiceListFromPairs(pairs, q.Field)
 		}

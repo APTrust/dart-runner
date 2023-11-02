@@ -150,10 +150,9 @@ func SettingsExportShowQuestions(c *gin.Context) {
 		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
 	}
 
-	// TODO: We should show options related to the export settings only,
-	// not all options. Showing all confuses the user because many don't
-	// apply to the settings at hand.
-	opts := core.NewExportOptions()
+	// We show options related to the export settings only, not all options.
+	// Showing all confuses the user because many don't apply to the settings at hand.
+	opts := core.NewExportOptionsFromSettings(exportSettings)
 	optionsJson, err := json.Marshal(opts)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
@@ -208,7 +207,7 @@ func SettingsImportFromJson(c *gin.Context) {
 // GET /settings/profile_tags
 func SettingsProfileTagList(c *gin.Context) {
 	profileID := c.Query("profileID")
-	list, err := core.TagsForProfile(profileID)
+	list, err := core.UserSettableTagsForProfile(profileID)
 	if err != nil {
 		AbortWithErrorJSON(c, http.StatusNotFound, err)
 		return
