@@ -1,28 +1,35 @@
 {{ define "settings/question.html" }}
 
-  <div class="card mb-3" data-question-id="{{ .form.ObjectID }}">
-      <div class="card-header">Question {{ .questionNumber }}
-          <div class="pull-right">
-              <!-- Delete question by ID via ajax. On success, remove question from page via JS. -->
-              <button type="button" class="btn btn-danger" data-delete-question-id="{{ .form.ObjectID }}" data-action-type="delete-question">Delete</button>
-          </div>
-      </div>
-      <div class="card-body" id="{{ .form.ObjectID }}">
-        {{ template "partials/input_textarea.html" dict "field" .form.Fields.Prompt }}
-        <p>Copy the user's answer to this question to:</p>
+<!-- 
+TODO: Show in modal instead of on page.
+Also show question summary on main export page,
+and let user click to summary to display the modal.
+The Delete button would be part of the summary.
+-->
 
-        <div class="row">
-            <div class="col">
-                {{ template "partials/input_select.html" dict "field" .form.Fields.ObjType }}
-            </div>
-            <div class="col">
-                {{ template "partials/input_select.html" dict "field" .form.Fields.ObjID }}
-            </div>
-            <div class="col">
-                {{ template "partials/input_select.html" dict "field" .form.Fields.Field }}
-            </div>
+<div class="card mb-3" data-question-id="{{ .form.ObjectID }}">
+    <div class="card-header">Question {{ .questionNumber }}
+        <div class="pull-right">
+            <!-- Delete question by ID via ajax. On success, remove question from page via JS. -->
+            <button type="button" class="btn btn-danger" onclick='confirmBackgroundDeletion("Delete this question?", "/settings/export/questions/delete/{{ .settings.ID }}/{{ .question.ID }}", null)'>Delete</button>
         </div>
-      </div>
-  </div>
+    </div>
+    <div class="card-body" id="{{ .form.ObjectID }}">
+    {{ template "partials/input_textarea.html" dict "field" .form.Fields.Prompt }}
+    <p>Copy the user's answer to this question to:</p>
+
+    <div class="row">
+        <div class="col">
+            {{ template "partials/input_select.html" dict "field" .form.Fields.ObjType }}
+        </div>
+        <div class="col">
+            {{ template "partials/input_select.html" dict "field" .form.Fields.ObjID }}
+        </div>
+        <div class="col">
+            {{ template "partials/input_select.html" dict "field" .form.Fields.Field }}
+        </div>
+    </div>
+    </div>
+</div>
 
 {{ end }}

@@ -132,7 +132,10 @@ function confirmBackgroundDeletion(question, url, data) {
         }).done(function (response) {
             location.href = response.location
         }).fail(function (xhr, status, err) {
-            showModalContent("Error deleting job", xhr.responseText)
+            console.log(xhr)
+            console.log(status)
+            console.log(err)
+            showModalContent("Error deleting item", xhr.responseText)
         })    
     }
 }

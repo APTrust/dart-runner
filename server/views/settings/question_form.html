@@ -2,15 +2,18 @@
 
 {{ template "partials/page_header.html" .}}
 
+<!-- TODO: Move to modal that shows one question form at a time. -->
+
 <h2>Setup Questions</h2>
 
 <p><a target="_blank" href="https://aptrust.github.io/dart-docs/users/settings/export/#export-questions">Need help?</a></p>
 
 <form id="settingsQuestionsForm">
 
+  {{ $settings := .settings }}
   {{ range $index, $question := .settings.Questions }}
     {{ $questionNumber := add $index 1}}
-    {{ template "settings/question.html" dict "questionNumber" $questionNumber "question" $question "form" $question.ToForm }}
+    {{ template "settings/question.html" dict "settings" $settings "questionNumber" $questionNumber "question" $question "form" $question.ToForm }}
   {{ end }} 
 
 </form>

@@ -177,7 +177,28 @@ func SettingsExportSaveQuestions(c *gin.Context) {
 //
 // POST /settings/export/questions/delete/:settings_id/:question_id
 func SettingsExportDeleteQuestion(c *gin.Context) {
-
+	exportSettings, err := getExportSettings(c.Param("settings_id"))
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, err)
+		return
+	}
+	questions := make([]*core.ExportQuestion, 0)
+	for _, question := range exportSettings.Questions {
+		if question.ID != c.Param("question_id") {
+			questions = append(questions, question)
+		}
+	}
+	exportSettings.Questions = questions
+	err = core.ObjSave(exportSettings)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/settings/export/questions/%s", c.Param("settings_id")),
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 // SettingsImport shows a form on which user can specify a URL
