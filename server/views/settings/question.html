@@ -1,21 +1,8 @@
 {{ define "settings/question.html" }}
 
-<!-- 
-TODO: Show in modal instead of on page.
-Also show question summary on main export page,
-and let user click to summary to display the modal.
-The Delete button would be part of the summary.
--->
-
-<div class="card mb-3" data-question-id="{{ .form.ObjectID }}">
-    <div class="card-header">Question {{ .questionNumber }}
-        <div class="pull-right">
-            <!-- Delete question by ID via ajax. On success, remove question from page via JS. -->
-            <button type="button" class="btn btn-danger" onclick='confirmBackgroundDeletion("Delete this question?", "/settings/export/questions/delete/{{ .settings.ID }}/{{ .question.ID }}", null)'>Delete</button>
-        </div>
-    </div>
-    <div class="card-body" id="{{ .form.ObjectID }}">
+<form id="{{ .form.ObjectID }}">
     {{ template "partials/input_textarea.html" dict "field" .form.Fields.Prompt }}
+    <input type="hidden" name="settingsId" value="{{ .settings.ID }}"/>
     <p>Copy the user's answer to this question to:</p>
 
     <div class="row">
@@ -29,7 +16,88 @@ The Delete button would be part of the summary.
             {{ template "partials/input_select.html" dict "field" .form.Fields.Field }}
         </div>
     </div>
-    </div>
-</div>
+</form>
+
+
+<script>
+var options = {{ .optionsJson }}
+$(function() {
+
+  function loadObjectList(questionId, objType) {
+    let objIdList = $(`select[data-control-name="objId"][data-question-id="${questionId}"]`)
+    let listOptions = []
+    switch (objType) {
+      case "AppSetting":
+        listOptions = options.appSettings
+        break
+      case "BagItProfile":
+        listOptions = options.bagItProfiles
+        break
+      case "RemoteRepository":
+        listOptions = options.remoteRepositories
+        break
+      case "StorageService":
+        listOptions = options.storageServices
+        break
+    }
+    objIdList.empty()
+    objIdList.append(new Option(""))
+    listOptions.forEach(function(item) {
+      objIdList.append(new Option(item.Name, item.ID))
+    })
+  }
+
+  // When ObjType changes, load obj list
+  $('select[data-control-name="objType"]').on('change', function() {
+    let questionId = $(this).data('question-id') 
+    let objType = $(this).val()
+    if (objType) {
+      loadObjectList(questionId, objType)
+    }
+  })
+  
+  // When ObjID changes, load field list
+  $('select[data-control-name="objId"]').on('change', function() {
+    let questionId = $(this).data('question-id') 
+    let objectId = $(this).val()
+    let objType = $(`select[data-control-name="objType"][data-question-id="${questionId}"]`).val()
+    let fieldList = $(`select[data-control-name="field"][data-question-id="${questionId}"]`)
+    let selectedField = fieldList.val()
+    let listOptions = []
+    fieldList.empty()
+    fieldList.append(new Option(""))
+    switch (objType) {
+      case "AppSetting":
+        listOptions = options.appSettingFields
+        break
+      case "BagItProfile":
+        // Get options for the SELECTED profile.
+        listOptions = options.bagItProfileFields[objectId]
+        listOptions.forEach(function(item) {
+          var opt = new Option(item.Name, item.ID)
+          if (item == selectedField) {
+            opt.selected = true
+          }
+          fieldList.append(opt)
+        })
+        return
+      case "RemoteRepository":
+        listOptions = options.remoteRepositoryFields
+        break
+      case "StorageService":
+        listOptions = options.storageServiceFields
+        break
+    }
+    listOptions.forEach(function(item) {
+      var opt = new Option(item, item)
+      if (item == selectedField) {
+        opt.selected = true
+      }
+      fieldList.append(opt)
+    })
+  })
+})
+</script>
+
 
 {{ end }}

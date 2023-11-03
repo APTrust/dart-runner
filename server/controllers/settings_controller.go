@@ -140,15 +140,39 @@ func SettingsExportShowJson(c *gin.Context) {
 // user can create, edit and delete ExportQuestions.
 //
 // GET /settings/export/questions/:id
-func SettingsExportShowQuestions(c *gin.Context) {
+// func SettingsExportShowQuestions(c *gin.Context) {
+// 	exportSettings, err := getExportSettings(c.Param("id"))
+// 	if err != nil {
+// 		AbortWithErrorHTML(c, http.StatusNotFound, err)
+// 		return
+// 	}
+// 	if len(exportSettings.Questions) == 0 {
+// 		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
+// 	}
+
+// 	// We show options related to the export settings only, not all options.
+// 	// Showing all confuses the user because many don't apply to the settings at hand.
+// 	opts := core.NewExportOptionsFromSettings(exportSettings)
+// 	optionsJson, err := json.Marshal(opts)
+// 	if err != nil {
+// 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+// 		return
+// 	}
+// 	data := gin.H{
+// 		"settings":    exportSettings,
+// 		"optionsJson": template.JS(string(optionsJson)),
+// 	}
+// 	c.HTML(http.StatusOK, "settings/question_form.html", data)
+// }
+
+// GET /settings/export/questions/new/:id
+func SettingsExportNewQuestion(c *gin.Context) {
 	exportSettings, err := getExportSettings(c.Param("id"))
 	if err != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		AbortWithErrorJSON(c, http.StatusNotFound, err)
 		return
 	}
-	if len(exportSettings.Questions) == 0 {
-		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
-	}
+	question := core.NewExportQuestion()
 
 	// We show options related to the export settings only, not all options.
 	// Showing all confuses the user because many don't apply to the settings at hand.
@@ -158,11 +182,14 @@ func SettingsExportShowQuestions(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+
 	data := gin.H{
 		"settings":    exportSettings,
+		"question":    question,
+		"form":        question.ToForm(),
 		"optionsJson": template.JS(string(optionsJson)),
 	}
-	c.HTML(http.StatusOK, "settings/question_form.html", data)
+	c.HTML(http.StatusOK, "settings/question.html", data)
 }
 
 // SettingsExportSaveQuestions saves questions attached
