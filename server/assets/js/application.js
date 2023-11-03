@@ -146,6 +146,8 @@ function confirmBackgroundDeletion(question, url, data) {
 function confirmForegroundDeletion(question, url, data) {
     if (confirm(question)) {
         postForm(url, data)
+    } else {
+        return false
     }
 }
 

@@ -2,7 +2,7 @@
 
 <form id="{{ .form.ObjectID }}">
     {{ template "partials/input_textarea.html" dict "field" .form.Fields.Prompt }}
-    <input type="hidden" name="settingsId" value="{{ .settings.ID }}"/>
+    {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
     <p>Copy the user's answer to this question to:</p>
 
     <div class="row">
@@ -17,6 +17,16 @@
         </div>
     </div>
 </form>
+
+
+<div class="bottom-buttons">
+  <div class="pull-left">
+    <button type="button" class="btn btn-secondary" id="btnCancel" data-dismiss="modal">Cancel</a>
+  </div>
+  <div class="pull-right">
+      <button type="button" class="btn btn-primary" id="btnSaveQuestion" onclick="postDataInBackground('/settings/export/questions/{{ .settings.ID }}', Object.fromEntries(new FormData(document.forms['{{ .form.ObjectID }}'])))">Save</button>
+  </div>
+</div>
 
 
 <script>
@@ -96,6 +106,7 @@ $(function() {
       fieldList.append(opt)
     })
   })
+
 })
 </script>
 

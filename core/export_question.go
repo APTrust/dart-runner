@@ -77,7 +77,7 @@ func (q *ExportQuestion) ToForm() *Form {
 	// select lists, and to know which select lists to update.
 
 	// To understand how the front-end JS uses these attributes,
-	// see views/settings/question_form.html.
+	// see views/settings/question.html.
 
 	idField := form.AddField("ID", "ID", q.ID, true)
 	idField.ID = fmt.Sprintf("id-%s", q.ID)
@@ -91,7 +91,7 @@ func (q *ExportQuestion) ToForm() *Form {
 	objTypeField := form.AddField("ObjType", "Setting Type", q.ObjType, true)
 	objTypeField.ID = fmt.Sprintf("objType-%s", q.ID)
 	objTypeField.Help = "Copy the user's answer to this type of object."
-	objTypeField.Choices = MakeChoiceList(constants.ExportableSettingTypes, "")
+	objTypeField.Choices = MakeChoiceList(constants.ExportableSettingTypes, q.ObjType)
 	objTypeField.Attrs["data-question-id"] = q.ID
 	objTypeField.Attrs["data-control-name"] = "objType"
 

@@ -136,35 +136,9 @@ func SettingsExportShowJson(c *gin.Context) {
 	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
 
-// SettingsExportShowQuestions displays a page on which the
-// user can create, edit and delete ExportQuestions.
+// SettingsExportNewQuestion show a new, empty question form.
+// The front end displays this in a modal dialog.
 //
-// GET /settings/export/questions/:id
-// func SettingsExportShowQuestions(c *gin.Context) {
-// 	exportSettings, err := getExportSettings(c.Param("id"))
-// 	if err != nil {
-// 		AbortWithErrorHTML(c, http.StatusNotFound, err)
-// 		return
-// 	}
-// 	if len(exportSettings.Questions) == 0 {
-// 		exportSettings.Questions = append(exportSettings.Questions, core.NewExportQuestion())
-// 	}
-
-// 	// We show options related to the export settings only, not all options.
-// 	// Showing all confuses the user because many don't apply to the settings at hand.
-// 	opts := core.NewExportOptionsFromSettings(exportSettings)
-// 	optionsJson, err := json.Marshal(opts)
-// 	if err != nil {
-// 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
-// 		return
-// 	}
-// 	data := gin.H{
-// 		"settings":    exportSettings,
-// 		"optionsJson": template.JS(string(optionsJson)),
-// 	}
-// 	c.HTML(http.StatusOK, "settings/question_form.html", data)
-// }
-
 // GET /settings/export/questions/new/:id
 func SettingsExportNewQuestion(c *gin.Context) {
 	exportSettings, err := getExportSettings(c.Param("id"))
@@ -182,7 +156,6 @@ func SettingsExportNewQuestion(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-
 	data := gin.H{
 		"settings":    exportSettings,
 		"question":    question,
@@ -192,12 +165,76 @@ func SettingsExportNewQuestion(c *gin.Context) {
 	c.HTML(http.StatusOK, "settings/question.html", data)
 }
 
-// SettingsExportSaveQuestions saves questions attached
+// SettingsExportSaveQuestion saves questions attached
 // to the specified ExportSettings object.
 //
 // POST /settings/export/questions/:id
-func SettingsExportSaveQuestions(c *gin.Context) {
+func SettingsExportSaveQuestion(c *gin.Context) {
+	exportSettings, err := getExportSettings(c.Param("id"))
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, err)
+		return
+	}
+	question := &core.ExportQuestion{}
+	err = c.ShouldBind(question)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusBadRequest, err)
+		return
+	}
+	found := false
+	for i := range exportSettings.Questions {
+		if exportSettings.Questions[i].ID == question.ID {
+			exportSettings.Questions[i] = question
+			found = true
+			break
+		}
+	}
+	if !found {
+		exportSettings.Questions = append(exportSettings.Questions, question)
+	}
+	err = core.ObjSave(exportSettings)
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
 
+	data := map[string]string{
+		"status":   "OK",
+		"location": fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID),
+	}
+	c.JSON(http.StatusOK, data)
+
+}
+
+// SettingsExportEditQuestion shows a form to edit a question from ExportSettings.
+//
+// GET /settings/export/questions/edit/:settings_id/:question_id
+func SettingsExportEditQuestion(c *gin.Context) {
+	exportSettings, err := getExportSettings(c.Param("settings_id"))
+	if err != nil {
+		AbortWithErrorJSON(c, http.StatusNotFound, err)
+		return
+	}
+	var question *core.ExportQuestion
+	for _, q := range exportSettings.Questions {
+		if q.ID == c.Param("question_id") {
+			question = q
+			break
+		}
+	}
+	opts := core.NewExportOptionsFromSettings(exportSettings)
+	optionsJson, err := json.Marshal(opts)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	data := gin.H{
+		"settings":    exportSettings,
+		"question":    question,
+		"form":        question.ToForm(),
+		"optionsJson": template.JS(string(optionsJson)),
+	}
+	c.HTML(http.StatusOK, "settings/question.html", data)
 }
 
 // SettingsExportDeleteQuestion deletes a question from ExportSettings.
@@ -206,7 +243,7 @@ func SettingsExportSaveQuestions(c *gin.Context) {
 func SettingsExportDeleteQuestion(c *gin.Context) {
 	exportSettings, err := getExportSettings(c.Param("settings_id"))
 	if err != nil {
-		AbortWithErrorJSON(c, http.StatusNotFound, err)
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
 	questions := make([]*core.ExportQuestion, 0)
@@ -218,14 +255,11 @@ func SettingsExportDeleteQuestion(c *gin.Context) {
 	exportSettings.Questions = questions
 	err = core.ObjSave(exportSettings)
 	if err != nil {
-		AbortWithErrorJSON(c, http.StatusInternalServerError, err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-	data := map[string]string{
-		"status":   "OK",
-		"location": fmt.Sprintf("/settings/export/questions/%s", c.Param("settings_id")),
-	}
-	c.JSON(http.StatusOK, data)
+	redirectUrl := fmt.Sprintf("/settings/export/edit/%s", c.Param("settings_id"))
+	c.Redirect(http.StatusFound, redirectUrl)
 }
 
 // SettingsImport shows a form on which user can specify a URL

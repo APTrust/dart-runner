@@ -41,23 +41,22 @@
     <div class="card-header">Setup Questions (optional)
       <span class="float-right">
         <a role="button" class="btn btn-primary btn-sm" id="btnAddQuestions" title="Add questions to help other users import these settings." href="javascript:loadIntoModal('get', 'New Export Question', '/settings/export/questions/new/{{ .settings.ID }}')">Add</a>
+        <a role="button" class="btn btn-info btn-sm" id="btnQuestionHelp" target="_blank" href="https://aptrust.github.io/dart-docs/users/settings/export/#export-questions">Help</a>
       </span>
     </div>
     <div class="card-body">
-    {{ $settings := .settings }}
-    {{ range $index, $question := .settings.Questions }}
-      {{ $questionNumber := add $index 1}}
-      {{ template "settings/question.html" dict "settings" $settings "questionNumber" $questionNumber "question" $question "form" $question.ToForm }}
-      <table class="table table-hover">
+      <table class="table table-hover" id="setupQuestionsList">
         <tbody>
-          <tr>
-            <td><a href="javascript:">{{ $question.Prompt }}</a></td>
-            <td><a href="javascript:"><i class="fas fa-times text-danger" title="Delete this question"></i></a></td>
-          </tr>
+        {{ $settings := .settings }}
+        {{ range $index, $question := .settings.Questions }}
+          {{ $questionNumber := add $index 1}}
+              <tr>
+                <td style="width:90%; border:none;"><a href="#" onclick="loadIntoModal('get', 'Edit Question', '/settings/export/questions/edit/{{ $settings.ID }}/{{ $question.ID }}')">{{ $question.Prompt }}</a></td>
+                <td style="width:10%; border:none;"><a href="#setupQuestionsList" onclick="confirmForegroundDeletion('Delete this question?', '/settings/export/questions/delete/{{ $settings.ID }}/{{ $question.ID }}', null)"><i class="fas fa-times text-danger" title="Delete this question"></i></a></td>
+              </tr>
+        {{ end }}
         </tbody>
       </table>      
-    {{ end }}
-    <a target="_blank" href="https://aptrust.github.io/dart-docs/users/settings/export/#export-questions">Need help?</a>
     </div>
   </div>
 
@@ -66,19 +65,13 @@
       <button type="button" class="btn btn-danger" id="btnDelete" title="Delete these settings.">Delete</button>
     </div>
     <div class="pull-left ml-3">
-      <button type="button" class="btn btn-warning" id="btnReset" title="Clear the form.">Reset</button>
-    </div>
-    <div class="pull-left ml-3">
-      <a role="button" class="btn btn-primary" id="btnAddQuestions" title="Add questions to help other users import these settings." href="/settings/export/questions/{{ .settings.ID }}">Add Questions</a>
+      <a role="button" class="btn btn-secondary" href="/settings/export">Cancel</a>
     </div>
     <div class="pull-right">
       <a role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." href="/settings/export/show_json/{{ .settings.ID }}">Export</a>
     </div>
     <div class="pull-right mr-3">
       <button type="submit" class="btn btn-primary" id="btnSave">Save</a>
-    </div>
-    <div class="pull-right mr-3">
-      <a role="button" class="btn btn-secondary" href="/settings/export">Cancel</a>
     </div>
   </div>
 
