@@ -154,3 +154,8 @@ func (settings *ExportSettings) ToForm() *Form {
 func (settings *ExportSettings) Validate() bool {
 	return true
 }
+
+func (settings *ExportSettings) SetValueFromResponse(question *ExportQuestion, response string) error {
+	// TODO: Implement this.
+	return nil
+}

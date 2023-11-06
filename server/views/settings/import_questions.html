@@ -6,6 +6,15 @@
 
 <form name="importQuestionsForm" id="importQuestionsForm" method="post" action="/settings/import/answers">
 
+    {{ range $index, $question := .settings.Questions }}
+    <div class="form-group" id="{{ $question.ID }}-Container" style="">
+        <label class="control-label" for="{{ $question.ID }}">{{ $question.Prompt }}</label>
+        <input type="text" id="{{ $question.ID }}-Textbox" name="{{ $question.ID }}" class="form-control">
+    </div>
+    {{ end }}
+
+    <input type="hidden" name="settingsJson" id="settingsJson" value="{{ .settingsJson }}" />
+
 </form>
 
 {{ template "partials/page_footer.html" .}}

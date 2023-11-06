@@ -313,8 +313,17 @@ func processImport(c *gin.Context, jsonBytes []byte) {
 	}
 }
 
+// Display the import questions so the user can answer them.
 func showImportQuestions(c *gin.Context, settings *core.ExportSettings) {
-	// Render each question and add jsonData as string to form.
+	settingsJson, err := json.Marshal(settings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+	}
+	data := gin.H{
+		"settings":     settings,
+		"settingsJson": string(settingsJson),
+	}
+	c.HTML(http.StatusOK, "settings/import_questions.html", data)
 }
 
 func importSettings(c *gin.Context, settings *core.ExportSettings) {
@@ -329,7 +338,18 @@ func importSettings(c *gin.Context, settings *core.ExportSettings) {
 //
 // POST /settings/import/questions
 func SettingsImportQuestions(c *gin.Context) {
+	settingsJson := c.PostForm("settingsJson")
+	settings := &core.ExportSettings{}
+	err := json.Unmarshal([]byte(settingsJson), settings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
+		return
+	}
+	// Copy answers to the right settings.
+	// for _, question := range settings.Questions {
+	// 	response := c.PostForm(question.ID)
 
+	// }
 }
 
 // GET /settings/profile_tags
