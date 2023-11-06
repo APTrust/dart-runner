@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -275,7 +276,18 @@ func SettingsImport(c *gin.Context) {
 //
 // POST /settings/import/url
 func SettingsImportFromUrl(c *gin.Context) {
-
+	jsonUrl := c.PostForm("txtUrl")
+	response, err := http.Get(jsonUrl)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
+		return
+	}
+	jsonBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
+		return
+	}
+	processImport(c, jsonBytes)
 }
 
 // SettingsImportFromJson imports JSON from a blob that the
@@ -283,6 +295,40 @@ func SettingsImportFromUrl(c *gin.Context) {
 //
 // POST /settings/import/json
 func SettingsImportFromJson(c *gin.Context) {
+	jsonStr := c.PostForm("txtJson")
+	processImport(c, []byte(jsonStr))
+}
+
+func processImport(c *gin.Context, jsonBytes []byte) {
+	settings := &core.ExportSettings{}
+	err := json.Unmarshal(jsonBytes, settings)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusBadRequest, err)
+		return
+	}
+	if len(settings.Questions) > 0 {
+		showImportQuestions(c, settings)
+	} else {
+		// import now
+	}
+}
+
+func showImportQuestions(c *gin.Context, settings *core.ExportSettings) {
+	// Render each question and add jsonData as string to form.
+}
+
+func importSettings(c *gin.Context, settings *core.ExportSettings) {
+	// Save all app settings, bagit profiles, remote repos and storage services
+	// For each successful import, show green check next to type and name.
+	// For each failure, show red X beside type and name, and error message underneath.
+}
+
+// SettingsImportQuestions receives the user's answers to
+// settings questions and applies them to the proper objects
+// and fields before saving the settings.
+//
+// POST /settings/import/questions
+func SettingsImportQuestions(c *gin.Context) {
 
 }
 

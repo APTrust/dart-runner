@@ -90,10 +90,13 @@ func SFTPUpload(ss *StorageService, localPath string, uploadProgress *StreamProg
 		go func() {
 			progressChan := progress.NewTicker(context.Background(), progressWriter, uploadProgress.Total, 1*time.Second)
 			for p := range progressChan {
-				// TODO: This causes a panic by tryint to write to a
+				// TODO: This causes a panic by trying to write to a
 				// closed channel. The JobRunController closes the channel
 				// when the upload is complete, but the progressChan runs
 				// on a ticker that has no idea the messageChannel is closed.
+				//
+				// UPDATE 2023-11-06: Is this still an issue? I haven't seen
+				// it happen in months.
 				uploadProgress.SetTotalBytesCompleted(p.N())
 			}
 		}()

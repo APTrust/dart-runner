@@ -187,6 +187,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/settings/import", controllers.SettingsImport)
 	router.POST("/settings/import/url", controllers.SettingsImportFromUrl)
 	router.POST("/settings/import/json", controllers.SettingsImportFromJson)
+	router.POST("/settings/import/questions", controllers.SettingsImportQuestions)
 	router.GET("/settings/profile_tags", controllers.SettingsProfileTagList)
 
 	// Strorage Services
