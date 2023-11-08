@@ -15,3 +15,5 @@ var ErrWrongTypeForForm = errors.New("cannot create form from result: query resu
 var ErrUniqueConstraint = errors.New("An object of this type already exists with the same name. Choose a new name.")
 
 var ErrNotAPointer = errors.New("argument is not a pointer")
+
+var ErrNoSuchField = errors.New("field does not exist")

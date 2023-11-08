@@ -6,9 +6,11 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -346,10 +348,86 @@ func SettingsImportQuestions(c *gin.Context) {
 		return
 	}
 	// Copy answers to the right settings.
-	// for _, question := range settings.Questions {
-	// 	response := c.PostForm(question.ID)
+	for _, question := range settings.Questions {
+		response := c.PostForm(question.ID)
+		var err error
+		switch question.ObjType {
+		case constants.TypeAppSetting:
+			err = setAppSettingValue(settings, question, response)
+		case constants.TypeBagItProfile:
+			err = setBagItProfileValue(settings, question, response)
+		case constants.TypeRemoteRepository:
+			err = setRemoteRepoValue(settings, question, response)
+		case constants.TypeStorageService:
+			err = setStorageServiceValue(settings, question, response)
+		}
+		if err != nil {
+			question.Errors[question.Field] = err.Error()
+		}
+	}
+}
 
-	// }
+func setAppSettingValue(settings *core.ExportSettings, question *core.ExportQuestion, value string) error {
+	err := constants.ErrNoSuchField
+	for i := range settings.AppSettings {
+		setting := settings.AppSettings[i]
+		if setting.ID == question.ObjID {
+			// All fields on AppSetting type are string
+			err = util.SetStringValue(setting, question.Field, value)
+		}
+	}
+	return err
+}
+
+func setBagItProfileValue(settings *core.ExportSettings, question *core.ExportQuestion, value string) error {
+	err := constants.ErrNoSuchField
+	for _, profile := range settings.BagItProfiles {
+		for i := range profile.Tags {
+			tag := profile.Tags[i]
+			if tag.ID == question.ObjID {
+				// Tag values are always strings
+				tag.UserValue = value
+				err = nil
+			}
+		}
+	}
+	return err
+}
+
+func setRemoteRepoValue(settings *core.ExportSettings, question *core.ExportQuestion, value string) error {
+	err := constants.ErrNoSuchField
+	for i := range settings.RemoteRepositories {
+		repo := settings.RemoteRepositories[i]
+		if repo.ID == question.ObjID {
+			// All fields on RemoteRepository type are string
+			err = util.SetStringValue(repo, question.Field, value)
+		}
+	}
+	return err
+}
+
+func setStorageServiceValue(settings *core.ExportSettings, question *core.ExportQuestion, value string) error {
+	err := constants.ErrNoSuchField
+	for i := range settings.StorageServices {
+		ss := settings.StorageServices[i]
+		if ss.ID == question.ObjID {
+			if question.Field == "AllowsUpload" || question.Field == "AllowsDownload" {
+				boolValue, err := strconv.ParseBool(value)
+				if err == nil {
+					err = util.SetBoolValue(ss, question.Field, boolValue)
+				}
+			} else if question.Field == "Port" {
+				intValue, err := strconv.Atoi(value)
+				if err != nil {
+					err = util.SetIntValue(ss, question.Field, int64(intValue))
+				}
+			} else {
+				// All other types on this object are string
+				err = util.SetStringValue(ss, question.Field, value)
+			}
+		}
+	}
+	return err
 }
 
 // GET /settings/profile_tags
