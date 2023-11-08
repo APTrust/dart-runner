@@ -4,47 +4,48 @@
 
 <p>DART imported the following settings:</p>
 
-{{ range $index, $setting := .settings.appSettings }}
-<p><i class="fas fa-check text-success mr-1"></i><b>App Setting:</b> {{ $setting.name }}</p>
-{{ end }}
-
-{{ range $index, $profile := .settings.bagItProfiles }}
-<p><i class="fas fa-check text-success mr-1"></i><b>BagIt Profile:</b> {{ $profile.name }}</p>
-{{ end }}
-
-{{ range $index, $repo := .settings.remoteRepositories }}
-<p><i class="fas fa-check text-success mr-1"></i><b>Remote Repository:</b> {{ $repo.name }}</p>
-{{ end }}
-
-{{ range $index, $ss := .settings.storageServices }}
-<p><i class="fas fa-check text-success mr-1"></i><b>Storage Service:</b> {{ $ss.name }}</p>
+{{ if .appSettingResults }}<h3>Application Settings</h3>{{ end }}
+{{ range $index, $result := .appSettingResults }}
+  {{ if $result.Succeeded }}
+  <p><i class="fas fa-check text-success mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ else }}
+  <p><i class="fas fa-times text-danger mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ end }}
 {{ end }}
 
 
-{{ if .form }}
-<h2>Questions</h2>
-<p>Please answer the following questions to finish configuring the new settings.</p>
-  <form id="settingsResponseForm">
-
-    {{ range $index, $field := .form.fields }}
-      {{ if $field.Attrs.MaskField }}
-        {{ template "partials/input_password.html" dict "field" $field }}
-      {{ else }}
-        {{ template "partials/input_text.html" dict "field" $field }}
-      {{ end }}
-    {{ end }}
-
-    <div class="pull-right">
-      <button type="button" id="btnSubmit" class="btn btn-primary">Finish</button>
-    </div>
-  </form>
-
-{{ else }}
-
-    <div class="pull-right">
-      <a role="button" class="btn btn-primary" href="#Dashboard/show">Done</a>
-    </div>
-
+{{ if .profileResults }}<h3>BagIt Profiles</h3>{{ end }}
+{{ range $index, $result := .profileResults }}
+  {{ if $result.Succeeded }}
+  <p><i class="fas fa-check text-success mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ else }}
+  <p><i class="fas fa-times text-danger mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ end }}
 {{ end }}
+
+
+{{ if .repoResults }}<h3>Remote Repositories</h3>{{ end }}
+{{ range $index, $result := .repoResults }}
+  {{ if $result.Succeeded }}
+  <p><i class="fas fa-check text-success mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ else }}
+  <p><i class="fas fa-times text-danger mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ end }}
+{{ end }}
+
+
+{{ if .ssResults }}<h3>Storage Services</h3>{{ end }}
+{{ range $index, $result := .ssResults }}
+  {{ if $result.Succeeded }}
+  <p><i class="fas fa-check text-success mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ else }}
+  <p><i class="fas fa-times text-danger mr-1"></i><b>App Setting:</b> {{ $result.name }}</p>
+  {{ end }}
+{{ end }}
+
+
+<div class="pull-right">
+  <a role="button" class="btn btn-primary" href="/dashboard">Done</a>
+</div>
 
 {{ end }}

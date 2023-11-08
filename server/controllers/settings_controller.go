@@ -332,6 +332,71 @@ func importSettings(c *gin.Context, settings *core.ExportSettings) {
 	// Save all app settings, bagit profiles, remote repos and storage services
 	// For each successful import, show green check next to type and name.
 	// For each failure, show red X beside type and name, and error message underneath.
+	type ImportResult struct {
+		Name      string
+		Succeeded bool
+		Error     string
+	}
+	hasError := false
+	appSettingResults := make([]ImportResult, 0)
+	for _, appSetting := range settings.AppSettings {
+		result := ImportResult{Name: appSetting.Name, Succeeded: true}
+		err := core.ObjSave(appSetting)
+		if err != nil {
+			hasError = true
+			result.Error = err.Error()
+			result.Succeeded = false
+		}
+		appSettingResults = append(appSettingResults, result)
+	}
+
+	profileResults := make([]ImportResult, 0)
+	for _, profile := range settings.BagItProfiles {
+		result := ImportResult{Name: profile.Name, Succeeded: true}
+		err := core.ObjSave(profile)
+		if err != nil {
+			hasError = true
+			result.Error = err.Error()
+			result.Succeeded = false
+		}
+		profileResults = append(profileResults, result)
+	}
+
+	repoResults := make([]ImportResult, 0)
+	for _, repo := range settings.RemoteRepositories {
+		result := ImportResult{Name: repo.Name, Succeeded: true}
+		err := core.ObjSave(repo)
+		if err != nil {
+			hasError = true
+			result.Error = err.Error()
+			result.Succeeded = false
+		}
+		repoResults = append(repoResults, result)
+	}
+
+	ssResults := make([]ImportResult, 0)
+	for _, ss := range settings.StorageServices {
+		result := ImportResult{Name: ss.Name, Succeeded: true}
+		err := core.ObjSave(ss)
+		if err != nil {
+			hasError = true
+			result.Error = err.Error()
+			result.Succeeded = false
+		}
+		ssResults = append(ssResults, result)
+	}
+
+	status := http.StatusOK
+	if hasError {
+		status = http.StatusBadRequest
+	}
+	data := gin.H{
+		"appSettingResults": appSettingResults,
+		"profileResults":    profileResults,
+		"repoResults":       repoResults,
+		"ssResults":         ssResults,
+	}
+	c.HTML(status, "settings/import_result.html", data)
 }
 
 // SettingsImportQuestions receives the user's answers to
@@ -350,7 +415,6 @@ func SettingsImportQuestions(c *gin.Context) {
 	// Copy answers to the right settings.
 	for _, question := range settings.Questions {
 		response := c.PostForm(question.ID)
-		var err error
 		switch question.ObjType {
 		case constants.TypeAppSetting:
 			err = setAppSettingValue(settings, question, response)
@@ -362,9 +426,15 @@ func SettingsImportQuestions(c *gin.Context) {
 			err = setStorageServiceValue(settings, question, response)
 		}
 		if err != nil {
-			question.Errors[question.Field] = err.Error()
+			AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+			return
 		}
 	}
+
+	// At this point, we should have copied user answers
+	// to the right settings / profile tags, and now we
+	// can save the settings locally.
+	importSettings(c, settings)
 }
 
 func setAppSettingValue(settings *core.ExportSettings, question *core.ExportQuestion, value string) error {
