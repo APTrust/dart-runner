@@ -61,7 +61,7 @@ func getField(obj interface{}, fieldName string, requiredType reflect.Type) (ref
 	}
 	objValue := reflect.ValueOf(obj).Elem()
 	field = objValue.FieldByName(fieldName)
-	if !field.CanSet() || field.Type() != requiredType {
+	if !field.CanSet() || !requiredType.ConvertibleTo(field.Type()) {
 		return field, constants.ErrInvalidOperation
 	}
 	return field, nil

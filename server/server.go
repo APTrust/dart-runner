@@ -184,10 +184,9 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/settings/export/questions/new/:id", controllers.SettingsExportNewQuestion)
 	router.GET("/settings/export/questions/edit/:settings_id/:question_id", controllers.SettingsExportEditQuestion)
 	router.POST("/settings/export/questions/:id", controllers.SettingsExportSaveQuestion)
-	router.GET("/settings/import", controllers.SettingsImport)
-	router.POST("/settings/import/url", controllers.SettingsImportFromUrl)
-	router.POST("/settings/import/json", controllers.SettingsImportFromJson)
-	router.POST("/settings/import/questions", controllers.SettingsImportQuestions)
+	router.GET("/settings/import", controllers.SettingsImportShow)
+	router.POST("/settings/import", controllers.SettingsImportRun)
+	router.POST("/settings/import/answers", controllers.SettingsImportAnswers)
 	router.GET("/settings/profile_tags", controllers.SettingsProfileTagList)
 
 	// Strorage Services

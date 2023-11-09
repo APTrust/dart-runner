@@ -265,19 +265,26 @@ func SettingsExportDeleteQuestion(c *gin.Context) {
 	c.Redirect(http.StatusFound, redirectUrl)
 }
 
-// SettingsImport shows a form on which user can specify a URL
+// SettingsImportShow shows a form on which user can specify a URL
 // from which to import settings, or a blob of JSON to be imported
 // directly.
 //
 // GET /settings/import
-func SettingsImport(c *gin.Context) {
+func SettingsImportShow(c *gin.Context) {
 	c.HTML(http.StatusOK, "settings/import.html", gin.H{})
 }
 
-// SettingsImportFromUrl imports settings from a URL.
-//
-// POST /settings/import/url
-func SettingsImportFromUrl(c *gin.Context) {
+func SettingsImportRun(c *gin.Context) {
+	importSource := c.PostForm("importSource")
+	if importSource == "url" {
+		settingsImportFromUrl(c)
+	} else {
+		settingsImportFromJson(c)
+	}
+}
+
+// settingsImportFromUrl imports settings from a URL.
+func settingsImportFromUrl(c *gin.Context) {
 	jsonUrl := c.PostForm("txtUrl")
 	response, err := http.Get(jsonUrl)
 	if err != nil {
@@ -292,11 +299,9 @@ func SettingsImportFromUrl(c *gin.Context) {
 	processImport(c, jsonBytes)
 }
 
-// SettingsImportFromJson imports JSON from a blob that the
+// settingsImportFromJson imports JSON from a blob that the
 // user pasted into a textarea on the settings/import page.
-//
-// POST /settings/import/json
-func SettingsImportFromJson(c *gin.Context) {
+func settingsImportFromJson(c *gin.Context) {
 	jsonStr := c.PostForm("txtJson")
 	processImport(c, []byte(jsonStr))
 }
@@ -399,12 +404,12 @@ func importSettings(c *gin.Context, settings *core.ExportSettings) {
 	c.HTML(status, "settings/import_result.html", data)
 }
 
-// SettingsImportQuestions receives the user's answers to
+// SettingsImportAnswers receives the user's answers to
 // settings questions and applies them to the proper objects
 // and fields before saving the settings.
 //
-// POST /settings/import/questions
-func SettingsImportQuestions(c *gin.Context) {
+// POST /settings/import/answers
+func SettingsImportAnswers(c *gin.Context) {
 	settingsJson := c.PostForm("settingsJson")
 	settings := &core.ExportSettings{}
 	err := json.Unmarshal([]byte(settingsJson), settings)
@@ -454,7 +459,11 @@ func setBagItProfileValue(settings *core.ExportSettings, question *core.ExportQu
 	for _, profile := range settings.BagItProfiles {
 		for i := range profile.Tags {
 			tag := profile.Tags[i]
-			if tag.ID == question.ObjID {
+			// Unlike other settings, where question.Field
+			// refers to the field name of a struct, for
+			// BagIt profiles, question.Field refers to the
+			// UUID of a tag.
+			if tag.ID == question.Field {
 				// Tag values are always strings
 				tag.UserValue = value
 				err = nil
@@ -482,13 +491,17 @@ func setStorageServiceValue(settings *core.ExportSettings, question *core.Export
 		ss := settings.StorageServices[i]
 		if ss.ID == question.ObjID {
 			if question.Field == "AllowsUpload" || question.Field == "AllowsDownload" {
-				boolValue, err := strconv.ParseBool(value)
-				if err == nil {
+				boolValue, conversionError := strconv.ParseBool(value)
+				if conversionError == nil {
+					err = conversionError
+				} else {
 					err = util.SetBoolValue(ss, question.Field, boolValue)
 				}
 			} else if question.Field == "Port" {
-				intValue, err := strconv.Atoi(value)
-				if err != nil {
+				intValue, conversionError := strconv.Atoi(value)
+				if conversionError != nil {
+					err = conversionError
+				} else {
 					err = util.SetIntValue(ss, question.Field, int64(intValue))
 				}
 			} else {
