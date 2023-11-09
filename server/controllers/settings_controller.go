@@ -316,7 +316,7 @@ func processImport(c *gin.Context, jsonBytes []byte) {
 	if len(settings.Questions) > 0 {
 		showImportQuestions(c, settings)
 	} else {
-		// import now
+		importSettings(c, settings)
 	}
 }
 
