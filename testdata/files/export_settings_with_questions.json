@@ -612,10 +612,10 @@
     },
     {
       "id": "1585ab60-91d1-42d4-a2e0-896dbd1eac9e",
-      "prompt": "Does the local SFTP service allow uploads?",
+      "prompt": "Does the local SFTP service allow downloads?",
       "objType": "StorageService",
       "objId": "00000000-d761-4c03-ab5b-266bacc40f3f",
-      "field": "AllowsUpload"
+      "field": "AllowsDownload"
     },
     {
       "id": "a4663b7f-1bba-4ed0-b821-aedcc1ed2dbd",

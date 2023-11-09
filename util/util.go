@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -461,4 +462,23 @@ func YesOrNo(value bool) string {
 		return "Yes"
 	}
 	return "No"
+}
+
+// StringToBool converts a string to its boolean value, or returns
+// an error if it can't convert the string. In addition to the values
+// supported by strconv.ParseBool, this also supports "yes", "y",
+// "no" and "n". Those strings are case-insensitive.
+func StringToBool(value string) (bool, error) {
+	boolValue, err := strconv.ParseBool(value)
+	if err != nil {
+		lcValue := strings.ToLower(value)
+		if lcValue == "yes" || lcValue == "y" {
+			boolValue = true
+			err = nil
+		} else if lcValue == "no" || lcValue == "n" {
+			boolValue = false
+			err = nil
+		}
+	}
+	return boolValue, err
 }

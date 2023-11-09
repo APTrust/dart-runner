@@ -465,7 +465,7 @@ func setBagItProfileValue(settings *core.ExportSettings, question *core.ExportQu
 			// UUID of a tag.
 			if tag.ID == question.Field {
 				// Tag values are always strings
-				tag.UserValue = value
+				tag.DefaultValue = value
 				err = nil
 			}
 		}
@@ -491,8 +491,8 @@ func setStorageServiceValue(settings *core.ExportSettings, question *core.Export
 		ss := settings.StorageServices[i]
 		if ss.ID == question.ObjID {
 			if question.Field == "AllowsUpload" || question.Field == "AllowsDownload" {
-				boolValue, conversionError := strconv.ParseBool(value)
-				if conversionError == nil {
+				boolValue, conversionError := util.StringToBool(value)
+				if conversionError != nil {
 					err = conversionError
 				} else {
 					err = util.SetBoolValue(ss, question.Field, boolValue)

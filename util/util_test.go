@@ -544,3 +544,45 @@ func TestStripNonPrintable(t *testing.T) {
 	clean := util.StripNonPrintable(str)
 	assert.Equal(t, "Bag-Name", clean)
 }
+
+func TestStringToBool(t *testing.T) {
+	trueValues := []string{
+		"true",
+		"t",
+		"1",
+		"YES",
+		"yes",
+		"Y",
+		"y",
+	}
+	falseValues := []string{
+		"false",
+		"f",
+		"0",
+		"NO",
+		"no",
+		"N",
+		"n",
+	}
+	invalidValues := []string{
+		"Hank Azaria",
+		"batman",
+		"coconuts",
+	}
+
+	for _, value := range trueValues {
+		boolValue, err := util.StringToBool(value)
+		assert.True(t, boolValue, value)
+		assert.NoError(t, err, value)
+	}
+	for _, value := range falseValues {
+		boolValue, err := util.StringToBool(value)
+		assert.False(t, boolValue, value)
+		assert.NoError(t, err, value)
+	}
+	for _, value := range invalidValues {
+		boolValue, err := util.StringToBool(value)
+		assert.False(t, boolValue, value)
+		assert.Error(t, err, value)
+	}
+}
