@@ -637,6 +637,13 @@
       "objType": "BagItProfile",
       "objId": "00000000-138b-4f3a-8823-e6fe3f24b870",
       "field": "00000000-16e6-4d55-bf78-a0e2ff000799"
+    },
+    {
+      "id": "b80561a8-2d08-4d35-9406-6f4de8de8ea4",
+      "prompt": "Enter the user id for the sample repo.",
+      "objType": "RemoteRepository",
+      "objId": "00000000-9d6a-466e-91f0-541cf9894232",
+      "field": "UserID"
     }
   ],
   "remoteRepositories": [
