@@ -37,6 +37,7 @@ type Job struct {
 	UploadOps        []*UploadOperation   `json:"uploadOps"`
 	ValidationOp     *ValidationOperation `json:"validationOp"`
 	WorkflowID       string               `json:"workflowId"`
+	ArtifactsDir     string               `json:"artifactsDir"`
 }
 
 // NewJob creates a new Job with a unique ID.

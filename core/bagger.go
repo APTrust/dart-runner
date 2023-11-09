@@ -109,6 +109,28 @@ func (b *Bagger) GetTotalFilesBagged() int64 {
 	return b.currentFileNum
 }
 
+// ArtifactsDir returns the name of the directory in which the bagger
+// will leave artifacts, including manifests and tag files. These
+// items will remain after bagging is complete.
+//
+// Note that the bagger does not create or populate this directory.
+// That happens in JobRunner.saveArtifactsToFileSystem, and it happens
+// only when DART is running in command-line mode. Otherwise, we
+// save artifacts to the DB.
+func (b *Bagger) ArtifactsDir() string {
+	// If bag is directory, artifacts will go into the directory,
+	// and we don't want that. Put artifacts in their own directory,
+	// outside the bag.
+	var artifactsDir string
+	if util.IsDirectory(b.OutputPath) {
+		artifactsDir = b.OutputPath + "_artifacts"
+	} else {
+		artifactsDir = path.Dir(b.OutputPath)
+		artifactsDir = path.Join(artifactsDir, fmt.Sprintf("%s_artifacts", b.bagName))
+	}
+	return artifactsDir
+}
+
 func (b *Bagger) reset() {
 	b.totalFileCount = int64(len(b.FilesToBag) + len(b.Profile.TagFileNames()) + len(b.Profile.ManifestsRequired))
 	b.currentFileNum = 0

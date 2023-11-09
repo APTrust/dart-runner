@@ -80,6 +80,12 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 		assert.True(t, len(bagger.ManifestArtifacts["manifest-sha512.txt"]) > 200)
 	}
 	assert.True(t, len(bagger.TagFileArtifacts["bag-info.txt"]) > 100)
+
+	if strings.Contains(bagger.OutputPath, "apt") {
+		assert.Equal(t, path.Join(os.TempDir(), "apt_bag_artifacts"), bagger.ArtifactsDir())
+	} else if strings.Contains(bagger.OutputPath, "btr") {
+		assert.Equal(t, path.Join(os.TempDir(), "btr_bag_artifacts"), bagger.ArtifactsDir())
+	}
 }
 
 // Set tags for bag-info.txt in the profile before we create the bag.

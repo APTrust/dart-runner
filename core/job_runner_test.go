@@ -89,10 +89,10 @@ func assertArtifactsWereSaved(t *testing.T, job *core.Job, outputDir string) {
 		// For dart runner and apt-cmd, artifacts go into output dir.
 		for _, alg := range job.BagItProfile.ManifestsRequired {
 			manifestName := fmt.Sprintf("manifest-%s.txt", alg)
-			assert.True(t, util.FileExists(path.Join(outputDir, manifestName)))
+			assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, manifestName)))
 		}
-		assert.True(t, util.FileExists(path.Join(outputDir, "bagit.txt")))
-		assert.True(t, util.FileExists(path.Join(outputDir, "bag-info.txt")))
+		assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, "bagit.txt")), path.Join(job.ArtifactsDir, "bagit.txt"))
+		assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, "bag-info.txt")), path.Join(job.ArtifactsDir, "bag-info.txt"))
 	}
 
 }

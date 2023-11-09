@@ -354,8 +354,10 @@ func (r *Runner) saveBaggingArtifacts(bagger *Bagger) {
 	// modes for dart-runner and apt-cmd do not, so we save
 	// artifacts to file system.
 	if Dart.RuntimeMode == constants.ModeDartGUI {
+		r.Job.ArtifactsDir = "~database~"
 		r.saveArtifactsToDatabase(bagger)
 	} else {
+		r.Job.ArtifactsDir = bagger.ArtifactsDir()
 		r.saveArtifactsToFileSystem(bagger)
 	}
 }
@@ -378,35 +380,26 @@ func (r *Runner) saveArtifactsToDatabase(bagger *Bagger) {
 }
 
 func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
-	var outputDir string
-	// If bag is directory, artifacts will go into the directory,
-	// and we don't want that. Put artifacts in their own directory,
-	// outside the bag.
-	if util.IsDirectory(bagger.OutputPath) {
-		outputDir = bagger.OutputPath + "_artifacts"
-	} else {
-		outputDir = path.Dir(bagger.OutputPath)
-		outputDir = path.Join(outputDir, fmt.Sprintf("%s_artifacts", bagger.bagName))
-	}
-	err := os.Mkdir(outputDir, 0755)
+	artifactsDir := bagger.ArtifactsDir()
+	err := os.Mkdir(artifactsDir, 0755)
 	if err != nil {
-		Dart.Log.Warn("Cannot create artifacts directory '%s': %s", outputDir, err.Error())
+		Dart.Log.Warn("Cannot create artifacts directory '%s': %s", artifactsDir, err.Error())
 	}
 	// Even if mkdir above failed, the dir might already exist.
 	// We'll only bail on this operation if the dir isn't there.
-	if !util.FileExists(outputDir) {
-		Dart.Log.Warn("Will not write artifacts for bag %s because outputDir %s does not exist", r.Job.Name(), outputDir)
+	if !util.FileExists(artifactsDir) {
+		Dart.Log.Warn("Will not write artifacts for bag %s because outputDir %s does not exist", r.Job.Name(), artifactsDir)
 		return
 	}
 	for manifestName, content := range bagger.ManifestArtifacts {
-		outputPath := path.Join(outputDir, manifestName)
+		outputPath := path.Join(artifactsDir, manifestName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
 			Dart.Log.Warn("Error saving manifest file artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
 		}
 	}
 	for tagFileName, content := range bagger.TagFileArtifacts {
-		outputPath := path.Join(outputDir, tagFileName)
+		outputPath := path.Join(artifactsDir, tagFileName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
 			Dart.Log.Warn("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())
