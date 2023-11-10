@@ -203,7 +203,7 @@ func SettingsExportSaveQuestion(c *gin.Context) {
 
 	data := map[string]string{
 		"status":   "OK",
-		"location": fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID),
+		"location": fmt.Sprintf("/settings/export/edit/%s#questions", exportSettings.ID),
 	}
 	c.JSON(http.StatusOK, data)
 
@@ -513,6 +513,8 @@ func setStorageServiceValue(settings *core.ExportSettings, question *core.Export
 	return err
 }
 
+// TODO: Delete this? I'm not sure it's used anymore.
+//
 // GET /settings/profile_tags
 func SettingsProfileTagList(c *gin.Context) {
 	profileID := c.Query("profileID")
