@@ -14,6 +14,7 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -242,19 +243,119 @@ func TestSettingsExportShowJson(t *testing.T) {
 }
 
 func TestSettingsExportNewQuestion(t *testing.T) {
+	defer core.ClearDartTable()
+	settings := loadExportSettings(t)
 
+	expected := []string{
+		// Form control labels
+		"Prompt",
+		"Setting Type",
+		"Setting Name",
+		"Field",
+		// Select list options
+		"AppSetting",
+		"BagItProfile",
+		"RemoteRepository",
+		"StorageService",
+		// JSON data in modal javascript
+		"appSettings",
+		"bagItProfiles",
+		"remoteRepositories",
+		"storageServices",
+		// Misc field names in JSON
+		"APIToken",
+		"UserID",
+		"LoginExtra",
+		"Name",
+		"Protocol",
+		"Port",
+	}
+	pageUrl := fmt.Sprintf("/settings/export/questions/new/%s", settings[0].ID)
+	DoSimpleGetTest(t, pageUrl, expected)
 }
 
 func TestSettingsExportSaveQuestion(t *testing.T) {
+	defer core.ClearDartTable()
+	settings := loadExportSettings(t)
 
+	// Note that these settings have no questions
+	// at the beginning of the test.
+	require.Empty(t, settings[0].Questions)
+
+	expected := []string{
+		"status",
+		"OK",
+		"location",
+		fmt.Sprintf("/settings/export/edit/%s", settings[0].ID),
+	}
+
+	appSettingIds := core.ObjNameIdList(constants.TypeAppSetting)
+
+	question := &core.ExportQuestion{
+		ID:      uuid.NewString(),
+		Prompt:  "How much wood would a woodchuck chuck if a woodchuck would chuck wood?",
+		ObjType: "AppSetting",
+		ObjID:   appSettingIds[1].ID,
+		Field:   "Value",
+	}
+	params := url.Values{}
+	params.Set("ID", question.ID)
+	params.Set("Prompt", question.Prompt)
+	params.Set("ObjType", question.ObjType)
+	params.Set("ObjID", question.ObjID)
+	params.Set("Field", question.Field)
+
+	postTestSettings := PostTestSettings{
+		EndpointUrl:          fmt.Sprintf("/settings/export/questions/%s", settings[0].ID),
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	PostUrl(t, postTestSettings)
+
+	// Make sure the question was saved.
+	result := core.ObjFind(settings[0].ID)
+	require.Nil(t, result.Error)
+	reloadedSettings := result.ExportSetting()
+	require.NotEmpty(t, reloadedSettings.Questions)
+	assert.Equal(t, question.ID, reloadedSettings.Questions[0].ID)
+	assert.Equal(t, question.Prompt, reloadedSettings.Questions[0].Prompt)
+	assert.Equal(t, question.ObjType, reloadedSettings.Questions[0].ObjType)
+	assert.Equal(t, question.ObjID, reloadedSettings.Questions[0].ObjID)
+	assert.Equal(t, question.Field, reloadedSettings.Questions[0].Field)
+
+	testSettingsExportEditQuestion(t, reloadedSettings, question)
+	testSettingsExportDeleteQuestion(t, reloadedSettings, question)
 }
 
-func TestSettingsExportEditQuestion(t *testing.T) {
-
+func testSettingsExportEditQuestion(t *testing.T, settings *core.ExportSettings, question *core.ExportQuestion) {
+	expected := []string{
+		question.ID,
+		question.Prompt,
+		question.ObjType,
+		question.ObjID,
+		question.Field,
+	}
+	endpointUrl := fmt.Sprintf("/settings/export/questions/edit/%s/%s", settings.ID, question.ID)
+	DoSimpleGetTest(t, endpointUrl, expected)
 }
 
-func TestSettingsExportDeleteQuestion(t *testing.T) {
+func testSettingsExportDeleteQuestion(t *testing.T, settings *core.ExportSettings, question *core.ExportQuestion) {
+	endpointUrl := fmt.Sprintf("/settings/export/questions/delete/%s/%s", settings.ID, question.ID)
+	redirectUrl := fmt.Sprintf("/settings/export/edit/%s", settings.ID)
 
+	postTestSettings := PostTestSettings{
+		EndpointUrl:              endpointUrl,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: redirectUrl,
+	}
+	PostUrl(t, postTestSettings)
+
+	// Make sure the question was actually deleted
+	result := core.ObjFind(settings.ID)
+	require.Nil(t, result.Error)
+	reloadedSettings := result.ExportSetting()
+	assert.Empty(t, reloadedSettings.Questions)
 }
 
 func TestSettingsImportShow(t *testing.T) {
