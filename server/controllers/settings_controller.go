@@ -50,7 +50,7 @@ func SettingsExportEdit(c *gin.Context) {
 
 // SettingsExportSave saves ExportSettings.
 //
-// POST /settings/export/save
+// POST /settings/export/save/:id
 func SettingsExportSave(c *gin.Context) {
 	exportSettings, err := getExportSettings(c.Param("id"))
 	if err != nil {
@@ -108,7 +108,7 @@ func SettingsExportDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.Redirect(http.StatusFound, "/settings/export/")
+	c.Redirect(http.StatusFound, "/settings/export")
 }
 
 // SettingsExportShowJson shows the JSON representation of

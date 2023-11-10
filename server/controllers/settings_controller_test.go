@@ -1,14 +1,20 @@
 package controllers_test
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -120,20 +126,119 @@ func TestSettingsExportEdit(t *testing.T) {
 	DoSimpleGetTest(t, pageUrl, expected)
 }
 
-func TestSettingsExportSave(t *testing.T) {
+func TestSettingsExportNewSaveDelete(t *testing.T) {
+	defer core.ClearDartTable()
+	loadExportSettings(t)
 
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/settings/export/new", nil)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusFound, w.Code)
+	redirectUrl := w.Result().Header["Location"][0]
+	newSettingsID := strings.Replace(redirectUrl, "/settings/export/edit/", "", 1)
+	assert.True(t, util.LooksLikeUUID(newSettingsID))
+	result := core.ObjFind(newSettingsID)
+	require.Nil(t, result.Error)
+	newSettings := result.ExportSetting()
+
+	testSettingsExportSave(t, newSettings)
+	testSettingsExportDelete(t, newSettingsID)
 }
 
-func TestSettingsExportNew(t *testing.T) {
+func testSettingsExportSave(t *testing.T, settings *core.ExportSettings) {
+	types := []string{
+		constants.TypeAppSetting,
+		constants.TypeBagItProfile,
+		constants.TypeRemoteRepository,
+		constants.TypeStorageService,
+	}
+	params := url.Values{}
+	params.Add("id", settings.ID)
+	params.Add("Name", settings.Name+" Edited")
+	// Add two AppSettings, two BagItProfiles, two remote repos
+	// and two storage services to these export settings.
+	for _, objType := range types {
+		paramName := fmt.Sprintf("%ss", objType)
+		if objType == constants.TypeRemoteRepository {
+			paramName = "RemoteRepositories"
+		}
+		for i, item := range core.ObjNameIdList(objType) {
+			params.Add(paramName, item.ID)
+			if i == 1 {
+				break
+			}
+		}
+	}
+	postTestSettings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/settings/export/save/%s", settings.ID),
+		Params:                   params,
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: fmt.Sprintf("/settings/export/edit/%s", settings.ID),
+	}
 
+	// This does the POST and tests the expectations.
+	PostUrl(t, postTestSettings)
+
+	// Reload to make sure settings really were saved.
+	result := core.ObjFind(settings.ID)
+	require.Nil(t, result.Error)
+	reloadedSettings := result.ExportSetting()
+
+	// Reloaded settings should have our name change
+	assert.Equal(t, (settings.Name + " Edited"), reloadedSettings.Name)
+
+	// And while original settings had no attached objects,
+	// our reloaded settings should have two of each.
+	assert.Equal(t, 0, len(settings.AppSettings))
+	assert.Equal(t, 2, len(reloadedSettings.AppSettings))
+
+	assert.Equal(t, 0, len(settings.BagItProfiles))
+	assert.Equal(t, 2, len(reloadedSettings.BagItProfiles))
+
+	assert.Equal(t, 0, len(settings.RemoteRepositories))
+	assert.Equal(t, 2, len(reloadedSettings.RemoteRepositories))
+
+	assert.Equal(t, 0, len(settings.StorageServices))
+	assert.Equal(t, 2, len(reloadedSettings.StorageServices))
 }
 
-func TestSettingsExportDelete(t *testing.T) {
+func testSettingsExportDelete(t *testing.T, settingsID string) {
+	postTestSettings := PostTestSettings{
+		EndpointUrl:              fmt.Sprintf("/settings/export/delete/%s", settingsID),
+		ExpectedResponseCode:     http.StatusFound,
+		ExpectedRedirectLocation: "/settings/export",
+	}
+	// This does the POST and tests the expectations.
+	PostUrl(t, postTestSettings)
 
+	// Now make sure the item was actually deleted from the DB.
+	result := core.ObjFind(settingsID)
+	assert.Equal(t, sql.ErrNoRows, result.Error)
 }
 
 func TestSettingsExportShowJson(t *testing.T) {
-
+	defer core.ClearDartTable()
+	settings := loadExportSettings(t)
+	expected := []string{
+		settings[1].ID,
+	}
+	for _, appSetting := range settings[1].AppSettings {
+		expected = append(expected, appSetting.ID)
+	}
+	for _, profile := range settings[1].BagItProfiles {
+		expected = append(expected, profile.ID)
+	}
+	for _, q := range settings[1].Questions {
+		expected = append(expected, q.ID)
+	}
+	for _, repo := range settings[1].RemoteRepositories {
+		expected = append(expected, repo.ID)
+	}
+	for _, ss := range settings[1].StorageServices {
+		expected = append(expected, ss.ID)
+	}
+	pageUrl := fmt.Sprintf("/settings/export/show_json/%s", settings[1].ID)
+	DoSimpleGetTest(t, pageUrl, expected)
 }
 
 func TestSettingsExportNewQuestion(t *testing.T) {
