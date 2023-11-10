@@ -19,11 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	NO_QUESTIONS   = 0
-	WITH_QUESTIONS = 1
-)
-
 // This loads settings fixtures into the database and returns
 // a slice of the two settings objects. Note that settings without
 // questions is the first item in the list, and settings with
@@ -359,13 +354,153 @@ func testSettingsExportDeleteQuestion(t *testing.T, settings *core.ExportSetting
 }
 
 func TestSettingsImportShow(t *testing.T) {
-
+	expected := []string{
+		"importSourceUrl",
+		"importSourceTextArea",
+		"txtUrl",
+		"txtJson",
+		"script",
+	}
+	DoSimpleGetTest(t, "/settings/import", expected)
 }
 
-func TestSettingsImportRun(t *testing.T) {
+func TestSettingsImportRunWithJson(t *testing.T) {
+	defer core.ClearDartTable()
+
+	// Don't preload data here, or we'll get a conflict
+	// when we do the import.
+
+	file := path.Join(util.ProjectRoot(), "testdata", "files", "export_settings_no_questions.json")
+	data, err := util.ReadFile(file)
+	require.Nil(t, err)
+	settingsWithoutQuestions := string(data)
+
+	file = path.Join(util.ProjectRoot(), "testdata", "files", "export_settings_with_questions.json")
+	data, err = util.ReadFile(file)
+	require.Nil(t, err)
+	settingsWithQuestions := string(data)
+
+	params := url.Values{}
+	params.Set("importSource", "textarea")
+	params.Set("txtJson", settingsWithQuestions)
+	testImportSettingsWithQuestions(t, params)
+
+	params.Set("txtJson", settingsWithoutQuestions)
+	testImportSettingsWithoutQuestions(t, params)
+}
+
+func TestSettingsImportRunWithUrl(t *testing.T) {
+	// Don't preload data here, or we'll get a conflict
+	// when we do the import. But do clear out any
+	// data we happen to import.
+	defer core.ClearDartTable()
+
+	// Also, note that the URLs below will likely have to
+	// change once we merge the server branch into master.
+	params := url.Values{}
+	params.Set("importSource", "url")
+	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/server/testdata/files/export_settings_with_questions.json")
+	testImportSettingsWithQuestions(t, params)
+
+	// Now try importing the settings that have no
+	// questions. In this case, we should go right
+	// to the import result page.
+	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/server/testdata/files/export_settings_no_questions.json")
+	testImportSettingsWithoutQuestions(t, params)
+}
+
+func testImportSettingsWithoutQuestions(t *testing.T, params url.Values) {
+	expected := []string{
+		"fa-check text-success",
+		"Test Setting (Imported - No Questions)",
+		"APTrust - Wasabi VA (Imported - No Questions)",
+		"Yale University Disk Image (Imported - No Questions)",
+		"Sample Repo (Imported - No Questions)",
+		"Local Minio (Imported - No Questions)",
+		"Local SFTP (Imported - No Questions)",
+	}
+
+	postTestSettings := PostTestSettings{
+		EndpointUrl:          "/settings/import",
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, postTestSettings)
+
+	// Make sure the new records are in the DB
+	assert.Equal(t, 1, len(core.ObjNameIdList(constants.TypeAppSetting)))
+	assert.Equal(t, 2, len(core.ObjNameIdList(constants.TypeBagItProfile)))
+	assert.Equal(t, 1, len(core.ObjNameIdList(constants.TypeRemoteRepository)))
+	assert.Equal(t, 2, len(core.ObjNameIdList(constants.TypeStorageService)))
+}
+
+func testImportSettingsWithQuestions(t *testing.T, params url.Values) {
+	// These are the question prompts for the export settings
+	// at the above URL. We should see these on the page.
+	questionPrompts := []string{
+		"What is your login name for the local Minio service?",
+		"Which port should we connect to for the local Minio service? Enter a positive whole number.",
+		"Does the local SFTP service allow downloads?",
+		"Enter a value for the test setting. Pick any word you like.",
+		"Choose a default access option for APTrust bags: Restricted, Institution, or Consortia.",
+		"Enter the default contact name for the Yale BagIt profile.",
+		"Enter the user id for the sample repo.",
+	}
+
+	// Settings in the URL above include questions,
+	// so we should be redirected to the "answer questions" page.
+	postTestSettings := PostTestSettings{
+		EndpointUrl:          "/settings/import",
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      questionPrompts,
+	}
+	DoSimplePostTest(t, postTestSettings)
 
 }
 
 func TestSettingsImportAnswers(t *testing.T) {
+	defer core.ClearDartTable()
+	settings := loadExportSettings(t)
 
+	// Make a copy of the settings that includes questions.
+	newSettings := settings[1]
+	newSettings.ID = uuid.NewString()
+
+	// Add the settings JSON to the form.
+	settingsJson, err := json.Marshal(newSettings)
+	require.Nil(t, err)
+	params := url.Values{}
+	params.Set("settingsJson", string(settingsJson))
+
+	// Now answer all the questions. Note that on the
+	// form, the name of each text entry is the question ID.
+	params.Set(newSettings.Questions[0].ID, "My Minio Service")
+	params.Set(newSettings.Questions[1].ID, "3333")
+	params.Set(newSettings.Questions[2].ID, "yes")
+	params.Set(newSettings.Questions[3].ID, "Naugahyde")
+	params.Set(newSettings.Questions[4].ID, "Restricted")
+	params.Set(newSettings.Questions[5].ID, "Joe Contact")
+	params.Set(newSettings.Questions[6].ID, "user@example.com")
+
+	expected := []string{
+		"fa-check text-success",
+		"Test Setting (Imported)",
+		"APTrust - Wasabi VA (Imported)",
+		"Yale University Disk Image (Imported)",
+		"Sample Repo (Imported)",
+		"Local Minio (Imported)",
+		"Local SFTP (Imported)",
+	}
+
+	// Note that if any portion of the import fails,
+	// we'll get http.StatusBadRequest instead of StatusOK.
+	postTestSettings := PostTestSettings{
+		EndpointUrl:          "/settings/import/answers",
+		Params:               params,
+		ExpectedResponseCode: http.StatusOK,
+		ExpectedContent:      expected,
+	}
+	DoSimplePostTest(t, postTestSettings)
 }

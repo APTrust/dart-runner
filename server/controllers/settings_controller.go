@@ -274,6 +274,13 @@ func SettingsImportShow(c *gin.Context) {
 	c.HTML(http.StatusOK, "settings/import.html", gin.H{})
 }
 
+// SettingsImportRun actually runs the import, saving whatever
+// export settings are submitted in the form or fetched from the URL.
+//
+// If the settings include questions, the user will have to
+// answer those before we actually do the import.
+//
+// POST /settings/import
 func SettingsImportRun(c *gin.Context) {
 	importSource := c.PostForm("importSource")
 	if importSource == "url" {
