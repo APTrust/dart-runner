@@ -12,20 +12,21 @@
 - [ ] Automated UI testing (Selenium)
 - [x] Save artifacts from jobs (manifests, tag files)
 - [ ] Expose artifacts in UI
-- [ ] Settings export
-- [ ] Settings export questions
-- [ ] Settings import
-- [ ] Settings import questions
+- [x] Settings export
+- [x] Settings export questions
+- [x] Settings import
+- [x] Settings import questions
 - [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Build Dashboard & APTrust client
+- [ ] Maybe - Add app setting for log level, with options Debug and Info.
 
 
 ## Later
 
 - [x] Fix auto generation of output file path on job packaging screen
-- [ ] Fix web font load error
+- [x] Fix web font load error
 - [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
 - [x] Fix invalid JSON "EOF" being returned to job run page
 - [x] Move job run JS to shared location so jobs, workflows, and batches can use it
