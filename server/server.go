@@ -97,8 +97,10 @@ func initRoutes(router *gin.Engine) {
 	router.StaticFile("/favicon.ico", "./server/assets/img/favicon.ico")
 	router.Static("/assets", "./server/assets")
 
-	// About
+	// Dashboard
 	router.GET("/", controllers.DashboardShow)
+
+	// About
 	router.GET("/about", controllers.AboutShow)
 	router.GET("/open_external", controllers.OpenExternalUrl)
 	router.GET("/open_log", controllers.OpenLog)
