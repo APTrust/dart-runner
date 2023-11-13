@@ -119,17 +119,6 @@ func (repo *RemoteRepository) TestConnection() error {
 	// we'll just use the APTrust client, because that's
 	// the only one that exists. LOCKSS should be coming later.
 
-	// PROBLEM: The Registry client in preservation services
-	// depends on a logger of type github.com/op/go-logging.
-	// It should accept any logger that implements the basic
-	// logging functions Info, Infof, Error, Errorf, etc.
-	// All it uses under the hood is Infof.
-	//
-	// Since github.com/op/go-logging just announced they're
-	// breaking backward compatibility in master, maybe we
-	// want to chuck that and go with something more basic
-	// in preservation-services.
-
 	// client, err := apt_network.NewRegistryClient(
 	// 	repo.Url,
 	// 	"v3",
