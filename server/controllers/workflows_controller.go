@@ -309,7 +309,7 @@ func WorkflowRunBatch(c *gin.Context) {
 		// Delete the temp copy of the uploaded CSV file
 		err = os.Remove(wb.PathToCSVFile)
 		if err != nil {
-			core.Dart.Log.Warn("Error deleting temp copy of CSV batch file '%s': %s", wb.PathToCSVFile, err.Error())
+			core.Dart.Log.Warningf("Error deleting temp copy of CSV batch file '%s': %s", wb.PathToCSVFile, err.Error())
 		} else {
 			core.Dart.Log.Info("Deleted temp copy of CSV batch file.")
 		}

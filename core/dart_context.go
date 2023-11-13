@@ -7,6 +7,7 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/op/go-logging"
 	_ "modernc.org/sqlite"
 )
 
@@ -14,7 +15,7 @@ var Dart *DartContext
 
 type DartContext struct {
 	DB          *sql.DB
-	Log         *util.Logger
+	Log         *logging.Logger
 	Paths       *util.Paths
 	RuntimeMode string
 }
@@ -24,7 +25,7 @@ func init() {
 	Dart = &DartContext{
 		DB:          initDB(paths),
 		Paths:       paths,
-		Log:         util.GetLogger(util.LevelDebug),
+		Log:         util.GetLogger(logging.DEBUG),
 		RuntimeMode: constants.ModeDartRunner, // this should be set on startup
 	}
 	InitSchema()

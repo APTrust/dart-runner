@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"runtime/debug"
 
 	"github.com/APTrust/dart-runner/core"
@@ -35,6 +34,6 @@ func getResponseData(err error) gin.H {
 }
 
 func logRequestError(c *gin.Context, status int, err error) {
-	core.Dart.Log.Error(fmt.Sprintf("Returned status %d for %s %s", status, c.Request.Method, c.Request.URL.RequestURI()))
+	core.Dart.Log.Errorf("Returned status %d for %s %s", status, c.Request.Method, c.Request.URL.RequestURI())
 	core.Dart.Log.Error(err.Error())
 }

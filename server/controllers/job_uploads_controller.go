@@ -89,11 +89,11 @@ func GetAvailableUploadTargets(selectedTargets []string) ([]core.Choice, error) 
 	for _, ss := range result.StorageServices {
 		isValid := ss.Validate()
 		if !isValid {
-			core.Dart.Log.Warn("Omitting storage service '%s' from upload targets due to validation errors: %v", ss.Name, ss.Errors)
+			core.Dart.Log.Warningf("Omitting storage service '%s' from upload targets due to validation errors: %v", ss.Name, ss.Errors)
 			continue
 		}
 		if !ss.AllowsUpload {
-			core.Dart.Log.Warn("Omitting storage service '%s' from upload targets because it does not allow uploads", ss.Name)
+			core.Dart.Log.Warningf("Omitting storage service '%s' from upload targets because it does not allow uploads", ss.Name)
 		} else {
 			choice := core.Choice{
 				Label:    ss.Name,

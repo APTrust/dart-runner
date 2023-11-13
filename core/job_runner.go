@@ -69,7 +69,7 @@ func (r *Runner) writeExitMessagesAndSaveResults() {
 	}
 	err := ObjSave(r.Job)
 	if err != nil {
-		Dart.Log.Warn("Error saving Job '%s' after running: %s", r.Job.Name, err.Error())
+		Dart.Log.Warningf("Error saving Job '%s' after running: %s", r.Job.Name, err.Error())
 	}
 	result := NewJobResult(r.Job)
 	bagName := ""
@@ -79,7 +79,7 @@ func (r *Runner) writeExitMessagesAndSaveResults() {
 	artifact := NewJobResultArtifact(bagName, result)
 	err = ArtifactSave(artifact)
 	if err != nil {
-		Dart.Log.Warn("Error saving result artifact for job '%s' after running: %s", r.Job.Name, err.Error())
+		Dart.Log.Warningf("Error saving result artifact for job '%s' after running: %s", r.Job.Name, err.Error())
 	}
 	r.MessageChannel <- FinishEvent(result)
 }
@@ -347,7 +347,7 @@ func (r *Runner) writeResult() {
 
 func (r *Runner) saveBaggingArtifacts(bagger *Bagger) {
 	if bagger == nil {
-		Dart.Log.Warn("SaveBaggingArtifacts got nil bagger")
+		Dart.Log.Warningf("SaveBaggingArtifacts got nil bagger")
 		return
 	}
 	// GUI mode has a local SQLite database; command line
@@ -367,14 +367,14 @@ func (r *Runner) saveArtifactsToDatabase(bagger *Bagger) {
 		artifact := NewManifestArtifact(r.Job.Name(), r.Job.ID, manifestName, content)
 		err := ArtifactSave(artifact)
 		if err != nil {
-			Dart.Log.Warn("Error saving manifest artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
+			Dart.Log.Warningf("Error saving manifest artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
 		}
 	}
 	for tagFileName, content := range bagger.TagFileArtifacts {
 		artifact := NewTagFileArtifact(r.Job.Name(), r.Job.ID, tagFileName, content)
 		err := ArtifactSave(artifact)
 		if err != nil {
-			Dart.Log.Warn("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())
+			Dart.Log.Warningf("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())
 		}
 	}
 }
@@ -383,26 +383,26 @@ func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
 	artifactsDir := bagger.ArtifactsDir()
 	err := os.Mkdir(artifactsDir, 0755)
 	if err != nil {
-		Dart.Log.Warn("Cannot create artifacts directory '%s': %s", artifactsDir, err.Error())
+		Dart.Log.Warningf("Cannot create artifacts directory '%s': %s", artifactsDir, err.Error())
 	}
 	// Even if mkdir above failed, the dir might already exist.
 	// We'll only bail on this operation if the dir isn't there.
 	if !util.FileExists(artifactsDir) {
-		Dart.Log.Warn("Will not write artifacts for bag %s because outputDir %s does not exist", r.Job.Name(), artifactsDir)
+		Dart.Log.Warningf("Will not write artifacts for bag %s because outputDir %s does not exist", r.Job.Name(), artifactsDir)
 		return
 	}
 	for manifestName, content := range bagger.ManifestArtifacts {
 		outputPath := path.Join(artifactsDir, manifestName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
-			Dart.Log.Warn("Error saving manifest file artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
+			Dart.Log.Warningf("Error saving manifest file artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
 		}
 	}
 	for tagFileName, content := range bagger.TagFileArtifacts {
 		outputPath := path.Join(artifactsDir, tagFileName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
-			Dart.Log.Warn("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())
+			Dart.Log.Warningf("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())
 		}
 	}
 }
