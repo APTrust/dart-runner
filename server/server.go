@@ -174,6 +174,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/remote_repositories/edit/:id", controllers.RemoteRepositorySave)
 	router.PUT("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
 	router.POST("/remote_repositories/delete/:id", controllers.RemoteRepositoryDelete)
+	router.POST("/remote_repositories/test/:id", controllers.RemoteRepositoryTestConnection)
 
 	// Settings import/export
 	router.GET("/settings/export", controllers.SettingsExportIndex)

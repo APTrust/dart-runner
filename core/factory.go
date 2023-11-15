@@ -87,7 +87,7 @@ func CreateStorageServices(howMany int) ([]*StorageService, error) {
 		ss.Host = gofakeit.DomainName()
 		ss.Login = gofakeit.Email()
 		ss.LoginExtra = gofakeit.Word()
-		ss.Name = gofakeit.Phrase()
+		ss.Name = fmt.Sprintf("%s - %d", gofakeit.Phrase(), i)
 		ss.Password = gofakeit.BuzzWord()
 		ss.Port = 1001 * i
 		ss.Protocol = protocol

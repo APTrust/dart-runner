@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/core"
@@ -31,6 +32,7 @@ func RemoteRepositoryEdit(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
+	request.TemplateData["showTestButton"] = request.QueryResult.RemoteRepository().Validate()
 	c.HTML(http.StatusOK, "remote_repository/form.html", request.TemplateData)
 }
 
@@ -77,4 +79,38 @@ func RemoteRepositorySave(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, "/remote_repositories")
+}
+
+// RemoteRepositoryTestConnection tests a connection to a remote
+// repository, so user can be sure they have everything configured
+// correctly.
+//
+// POST /remote_repositories/test/:id
+func RemoteRepositoryTestConnection(c *gin.Context) {
+	repo := &core.RemoteRepository{}
+	err := c.Bind(repo)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Save, because user may have updated URL or credentials.
+	// If save fails, continue with test.
+	core.ObjSave(repo)
+
+	status := http.StatusOK
+	succeeded := true
+	message := fmt.Sprintf("It worked! We got a successful response from %s.", repo.Url)
+	err = repo.TestConnection()
+	if err != nil {
+		message = fmt.Sprintf("Connection failed: %s", err.Error())
+		succeeded = false
+		status = http.StatusBadRequest
+	}
+	data := gin.H{
+		"repo":      repo,
+		"message":   message,
+		"succeeded": succeeded,
+	}
+	c.HTML(status, "remote_repository/test.html", data)
 }
