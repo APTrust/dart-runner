@@ -46,15 +46,15 @@ func RegisterRepoClient(name, id string, constructor func(*RemoteRepository) Rem
 // creating HTML select lists.
 func RepoClientList() []NameIDPair {
 	sort.Slice(repoClients, func(a, b int) bool {
-		return repoClients[a].Name > repoClients[b].Name
+		return repoClients[a].Name < repoClients[b].Name
 	})
 	return repoClients
 }
 
 // GetRemoteRepoClient returns a client that can talk to a RemoteRepository.
 func GetRemoteRepoClient(repo *RemoteRepository) (RemoteRepoClient, error) {
-	constructor := repoClientConstructors[repo.PluginID]
-	if constructor == nil {
+	constructor, ok := repoClientConstructors[repo.PluginID]
+	if !ok {
 		return nil, constants.ErrNoSuchClient
 	}
 	return constructor(repo), nil

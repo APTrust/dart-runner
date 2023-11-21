@@ -5,15 +5,15 @@ import (
 	"github.com/APTrust/dart-runner/util"
 )
 
-const aptrustV3ClientName = "APTrust Registry Client (v3)"
-
 func init() {
-	RegisterRepoClient(aptrustV3ClientName, constants.PluginIdAPTrustClientv3, RemoteRepoClientAPTrust)
+	RegisterRepoClient(constants.PluginNameLOCKSSClientv2, constants.PluginIdLOCKSSClientv2, RemoteRepoClientLOCKSS)
 }
 
-// APTrustClient is a remote repository client that can talk to
-// the APTrust Registry API.
-type APTrustClient struct {
+// LOCKSSClientV2 is a remote repository client that can talk to
+// the LOCKSS API. This client satisfies the RemoteRepoClient
+// interface and includes additional methods for depositing
+// materials into LOCKSS repos.
+type LOCKSSClientV2 struct {
 	id                   string
 	name                 string
 	description          string
@@ -22,62 +22,62 @@ type APTrustClient struct {
 	config               *RemoteRepository
 }
 
-// NewAPTrustClient returns a new instance of the APTrust remote repo client.
-func NewAPTrustClient(config *RemoteRepository) *APTrustClient {
-	return &APTrustClient{
-		id:          constants.PluginIdAPTrustClientv3,
-		name:        aptrustV3ClientName,
-		description: "This client talks to the APTrust Registry REST API.",
-		version:     "v3",
+// NewLOCKSSClientV2 returns a new instance of the LOCKSS remote repo client.
+func NewLOCKSSClientV2(config *RemoteRepository) *LOCKSSClientV2 {
+	return &LOCKSSClientV2{
+		id:          constants.PluginIdLOCKSSClientv2,
+		name:        constants.PluginNameLOCKSSClientv2,
+		description: "This client talks to the LOCKSS REST API.",
+		version:     "v2",
 		config:      config,
 		availableHTMLReports: []util.NameValuePair{
-			{Name: "Work Items", Value: "Returns a list of recent work items."},
+			{Name: "TBD", Value: "To be determined..."},
 		},
 	}
 }
 
-// RemoteRepoClientAPTrust returns an APTrustlient as a basic RemoteRepoClient
+// RemoteRepoClientLOCKSS returns a LOCKSSClient as a basic RemoteRepoClient
 // to support automated discovery and generation of clients using the factory
 // method GetRemoteRepoClient().
 //
-// If you need access to APTrust client methods outside of the RemoteRepoClient
+// If you need access to LOCKSS client methods outside of the RemoteRepoClient
 // interface, which is just for reporting, use NewLOCKSSClient() instead.
-func RemoteRepoClientAPTrust(config *RemoteRepository) RemoteRepoClient {
-	return NewAPTrustClient(config)
+func RemoteRepoClientLOCKSS(config *RemoteRepository) RemoteRepoClient {
+	return NewLOCKSSClientV2(config)
 }
 
 // ID returns this client's UUID.
-func (client *APTrustClient) ID() string {
+func (client *LOCKSSClientV2) ID() string {
 	return client.id
 }
 
 // Name returns the client name.
-func (client *APTrustClient) Name() string {
+func (client *LOCKSSClientV2) Name() string {
 	return client.name
 }
 
 // Description returns a short description of this client.
-func (client *APTrustClient) Description() string {
+func (client *LOCKSSClientV2) Description() string {
 	return client.description
 }
 
 // APIVersion returns the version number of the API that this client
 // can talk to.
-func (client *APTrustClient) APIVersion() string {
+func (client *LOCKSSClientV2) APIVersion() string {
 	return client.version
 }
 
 // AvailableHTMLReports returns a list of available HTML report names.
 // In the NameValuePair, Name is the name of the report and Value is
 // a description.
-func (client *APTrustClient) AvailableHTMLReports() []util.NameValuePair {
+func (client *LOCKSSClientV2) AvailableHTMLReports() []util.NameValuePair {
 	return client.availableHTMLReports
 }
 
 // TestConnection tests a connection to the remote repo. It returns true
 // or false to describe whether the connection succeeded. Check the error
 // if the connection did not succeed.
-func (client *APTrustClient) TestConnection() (bool, error) {
+func (client *LOCKSSClientV2) TestConnection() (bool, error) {
 
 	return true, nil
 }
@@ -85,7 +85,9 @@ func (client *APTrustClient) TestConnection() (bool, error) {
 // RunHTMLReport runs the named report and returns HTML suitable for
 // display on the DART dashboard. For a list of available report names,
 // call AvailableHTMLReports().
-func (client *APTrustClient) RunHTMLReport(name string) (string, error) {
+func (client *LOCKSSClientV2) RunHTMLReport(name string) (string, error) {
 
 	return "", nil
 }
+
+// TODO: Methods for creating objects, depositing to LOCKSS, etc.
