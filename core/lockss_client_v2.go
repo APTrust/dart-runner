@@ -77,9 +77,9 @@ func (client *LOCKSSClientV2) AvailableHTMLReports() []util.NameValuePair {
 // TestConnection tests a connection to the remote repo. It returns true
 // or false to describe whether the connection succeeded. Check the error
 // if the connection did not succeed.
-func (client *LOCKSSClientV2) TestConnection() (bool, error) {
+func (client *LOCKSSClientV2) TestConnection() error {
 
-	return true, nil
+	return nil
 }
 
 // RunHTMLReport runs the named report and returns HTML suitable for

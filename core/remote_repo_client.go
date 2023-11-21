@@ -25,7 +25,7 @@ type RemoteRepoClient interface {
 	Description() string
 	AvailableHTMLReports() []util.NameValuePair
 	RunHTMLReport(string) (string, error)
-	TestConnection() (bool, error)
+	TestConnection() error
 }
 
 // RegisterRepoClient registers a remote repo client, so that

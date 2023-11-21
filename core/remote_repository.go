@@ -2,13 +2,10 @@ package core
 
 import (
 	"fmt"
-	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
-	apt_network "github.com/APTrust/preservation-services/network"
 	"github.com/google/uuid"
 )
 
@@ -115,26 +112,12 @@ func (repo *RemoteRepository) IsDeletable() bool {
 }
 
 func (repo *RemoteRepository) TestConnection() error {
-	// Once we support more than a single client,
-	// we'll have to look up the PluginId here. For now,
-	// we'll just use the APTrust client, because that's
-	// the only one that exists. LOCKSS should be coming later.
-	client, err := apt_network.NewRegistryClient(
-		repo.Url,
-		"v3",
-		repo.UserID,
-		repo.APIToken,
-		Dart.Log,
-	)
+	if !util.LooksLikeUUID(repo.PluginID) {
+		return fmt.Errorf("Please choose a client plugin before testing connection.")
+	}
+	client, err := GetRemoteRepoClient(repo)
 	if err != nil {
 		return err
 	}
-	params := url.Values{}
-	params.Add("per_page", "1")
-	resp := client.WorkItemList(params)
-	if resp.Response.StatusCode == http.StatusUnauthorized || resp.Response.StatusCode == http.StatusForbidden {
-		return fmt.Errorf("Server returned status %d. Be sure your user id and API token are correct.", resp.Response.StatusCode)
-	}
-	// Other errors should be OK here. They indicate that we did successfully authenticate.
-	return nil
+	return client.TestConnection()
 }

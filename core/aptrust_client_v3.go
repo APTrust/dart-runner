@@ -1,8 +1,13 @@
 package core
 
 import (
+	"fmt"
+	"net/http"
+	"net/url"
+
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
+	apt_network "github.com/APTrust/preservation-services/network"
 )
 
 func init() {
@@ -75,9 +80,25 @@ func (client *APTrustClientV3) AvailableHTMLReports() []util.NameValuePair {
 // TestConnection tests a connection to the remote repo. It returns true
 // or false to describe whether the connection succeeded. Check the error
 // if the connection did not succeed.
-func (client *APTrustClientV3) TestConnection() (bool, error) {
-
-	return true, nil
+func (client *APTrustClientV3) TestConnection() error {
+	registryClient, err := apt_network.NewRegistryClient(
+		client.config.Url,
+		client.version,
+		client.config.UserID,
+		client.config.APIToken,
+		Dart.Log,
+	)
+	if err != nil {
+		return err
+	}
+	params := url.Values{}
+	params.Add("per_page", "1")
+	resp := registryClient.WorkItemList(params)
+	if resp.Response.StatusCode == http.StatusUnauthorized || resp.Response.StatusCode == http.StatusForbidden {
+		return fmt.Errorf("Server returned status %d. Be sure your user id and API token are correct.", resp.Response.StatusCode)
+	}
+	// Other errors should be OK here. They indicate that we did successfully authenticate.
+	return nil
 }
 
 // RunHTMLReport runs the named report and returns HTML suitable for
