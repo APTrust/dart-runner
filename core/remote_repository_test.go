@@ -83,7 +83,7 @@ func TestRemoteRepositoryToForm(t *testing.T) {
 	repo.APIToken = "1234"
 	repo.LoginExtra = "login-xtra"
 	repo.Name = "test repo"
-	repo.PluginID = constants.PluginIdAPTrustClient
+	repo.PluginID = constants.PluginIdAPTrustClientv3
 	repo.Url = "https://repo.example.com"
 	repo.UserID = "spongebob"
 

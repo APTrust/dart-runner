@@ -17,3 +17,5 @@ var ErrUniqueConstraint = errors.New("An object of this type already exists with
 var ErrNotAPointer = errors.New("argument is not a pointer")
 
 var ErrNoSuchField = errors.New("field does not exist")
+
+var ErrNoSuchClient = errors.New("no client exists for this repository type")
