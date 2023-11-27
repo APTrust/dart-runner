@@ -133,7 +133,7 @@ func (client *APTrustClientV3) runWorkItemReport() (string, error) {
 		"repoBaseUrl": client.repoBaseUrl(),
 	}
 	sb := &strings.Builder{}
-	_template := template.Must(template.New("work_items_report").Parse(workItemTemplate))
+	_template := template.Must(template.New("work_items_report").Parse(workItemsTemplate))
 	err = _template.Execute(sb, data)
 	if err != nil {
 		return "", err
@@ -142,8 +142,30 @@ func (client *APTrustClientV3) runWorkItemReport() (string, error) {
 }
 
 func (client *APTrustClientV3) runRecentObjectReport() (string, error) {
-	client.connect()
-	return "", nil
+	err := client.connect()
+	if err != nil {
+		return "", err
+	}
+	params := url.Values{}
+	params.Add("per_page", "30")
+	resp := client.registry.IntellectualObjectList(params)
+	if resp.Response.StatusCode == http.StatusUnauthorized || resp.Response.StatusCode == http.StatusForbidden {
+		return "", constants.ErrRepoUnauthorized
+	}
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	data := gin.H{
+		"items":       resp.IntellectualObjects(),
+		"repoBaseUrl": client.repoBaseUrl(),
+	}
+	sb := &strings.Builder{}
+	_template := template.Must(template.New("intellectual_objects_report").Parse(intellectualObjectsTemplate))
+	err = _template.Execute(sb, data)
+	if err != nil {
+		return "", err
+	}
+	return sb.String(), nil
 }
 
 func (client *APTrustClientV3) connect() error {
@@ -169,8 +191,10 @@ func (client *APTrustClientV3) isValidDomain() bool {
 	if err != nil {
 		return false
 	}
-	host := parsedUrl.Host
+	host := parsedUrl.Hostname()
+	// Allow localhost for testing.
 	isLocalHost := host == "localhost" || host == "127.0.0.1"
+	// And these are the real APTrust repo domains.
 	isAPTrustHost := host == "repo.aptrust.org" || host == "demo.aptrust.org" || host == "staging.aptrust.org"
 	return isLocalHost || isAPTrustHost
 }
@@ -183,7 +207,7 @@ func (client *APTrustClientV3) repoBaseUrl() string {
 		Dart.Log.Errorf("APTrustClientV3: bad repo url %s", client.config.Url)
 		return client.config.Url
 	}
-	host := parsedUrl.Host
+	host := parsedUrl.Hostname()
 
 	// Allow this for local testing.
 	if host == "localhost" || host == "127.0.0.1" {
@@ -192,7 +216,7 @@ func (client *APTrustClientV3) repoBaseUrl() string {
 	return fmt.Sprintf("https://%s", host)
 }
 
-var workItemTemplate = `
+var workItemsTemplate = `
 <h3>Recent Work Items</h3>
 <table class="table table-hover">
   <thead class="thead-inverse">
@@ -206,9 +230,30 @@ var workItemTemplate = `
     {{ $repoBaseUrl := .repoBaseUrl }}
     {{ range $index, $item := .items }}
     <tr>
-      <td><a href="{{ $repoBaseUrl }}/work_items/show{{ $item.ID }}">{{ $item.Name }}</a></td>
-      <td{{ displayDate $item.Stage }}</td>
-      <td{{ displayDate $item.Status }}</td>
+      <td><a href="{{ $repoBaseUrl }}/work_items/show/{{ $item.ID }}" target="_blank">{{ $item.Name }}</a></td>
+      <td>{{ $item.Stage }}</td>
+      <td>{{ $item.Status }}</td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+`
+
+var intellectualObjectsTemplate = `
+<h3>Recently Ingested Objects</h3>
+<table class="table table-hover">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Identifier</th>
+      <th>Storage Option</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ $repoBaseUrl := .repoBaseUrl }}
+    {{ range $index, $item := .items }}
+    <tr>
+      <td><a href="{{ $repoBaseUrl }}/objects/show/{{ $item.ID }}" target="_blank">{{ $item.Identifier }}</a></td>
+      <td>{{ $item.StorageOption }}</td>
     </tr>
     {{ end }}
   </tbody>
