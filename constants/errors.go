@@ -19,3 +19,7 @@ var ErrNotAPointer = errors.New("argument is not a pointer")
 var ErrNoSuchField = errors.New("field does not exist")
 
 var ErrNoSuchClient = errors.New("no client exists for this repository type")
+
+var ErrUnknownReport = errors.New("unknown report")
+
+var ErrRepoUnauthorized = errors.New("access unauthorized or forbidden - be sure your user id and api token are correct")
