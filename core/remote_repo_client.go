@@ -59,3 +59,26 @@ func GetRemoteRepoClient(repo *RemoteRepository) (RemoteRepoClient, error) {
 	}
 	return constructor(repo), nil
 }
+
+// // GetViableRepoClients returns a list of RemoteRepoClients that have
+// // proven they can connect to the repositories they're supposed to talk to.
+// func GetViableRepoClients() ([]RemoteRepoClient, error) {
+// 	clients := make([]RemoteRepoClient, 0)
+// 	result := ObjList(constants.TypeRemoteRepository, "obj_name", 100, 0)
+// 	if result.Error != nil {
+// 		Dart.Log.Errorf("GetViableRepoClients - Error fetching repo list: %s", result.Error.Error())
+// 		return nil, result.Error
+// 	}
+// 	for _, repo := range result.RemoteRepositories {
+// 		err := repo.TestConnection()
+// 		if err == nil {
+// 			newClient, clientErr := GetRemoteRepoClient(repo)
+// 			if clientErr != nil {
+// 				Dart.Log.Errorf("GetViableRepoClients - Error creating client for repo '%s': %s", repo.Name, clientErr.Error())
+// 			} else {
+// 				clients = append(clients, newClient)
+// 			}
+// 		}
+// 	}
+// 	return clients, nil
+// }

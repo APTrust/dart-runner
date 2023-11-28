@@ -99,6 +99,7 @@ func initRoutes(router *gin.Engine) {
 
 	// Dashboard
 	router.GET("/", controllers.DashboardShow)
+	router.GET("/dashboard/report", controllers.DashboardGetReport)
 
 	// About
 	router.GET("/about", controllers.AboutShow)
