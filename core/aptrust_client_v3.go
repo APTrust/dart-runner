@@ -219,13 +219,13 @@ func (client *APTrustClientV3) repoBaseUrl() string {
 }
 
 var workItemsTemplate = `
-<h3>Recent Work Items</h3>
 <table class="table table-hover">
   <thead class="thead-inverse">
     <tr>
       <th>Name</th>
       <th>Stage</th>
       <th>Status</th>
+	  <th>Last Updated</th>
     </tr>
   </thead>
   <tbody>
@@ -235,6 +235,7 @@ var workItemsTemplate = `
       <td><a href="{{ $repoBaseUrl }}/work_items/show/{{ $item.ID }}" target="_blank">{{ $item.Name }}</a></td>
       <td>{{ $item.Stage }}</td>
       <td>{{ $item.Status }}</td>
+	  <td>{{ $item.UpdatedAt.Format "2006-01-02" }}</td>
     </tr>
     {{ end }}
   </tbody>
@@ -242,12 +243,12 @@ var workItemsTemplate = `
 `
 
 var intellectualObjectsTemplate = `
-<h3>Recently Ingested Objects</h3>
 <table class="table table-hover">
   <thead class="thead-inverse">
     <tr>
       <th>Identifier</th>
       <th>Storage Option</th>
+	  <th>Last Updated</th>
     </tr>
   </thead>
   <tbody>
@@ -256,6 +257,7 @@ var intellectualObjectsTemplate = `
     <tr>
       <td><a href="{{ $repoBaseUrl }}/objects/show/{{ $item.ID }}" target="_blank">{{ $item.Identifier }}</a></td>
       <td>{{ $item.StorageOption }}</td>
+	  <td>{{ $item.UpdatedAt.Format "2006-01-02" }}</td>
     </tr>
     {{ end }}
   </tbody>

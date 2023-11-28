@@ -3,7 +3,7 @@
 {{ template "partials/page_header.html" .}}
 
 
-<div class="row mb-3">
+<div class="row mb-5">
   <div class="col-md-12">
     <div class="card">
       <div class="card-header">Recent Jobs</div>
@@ -38,8 +38,37 @@
 
 <script>
 $(function(){
-  var reports = {{ .reportListJson }}
+  var reports = JSON.parse({{ .reportListJson }})
 
+  function runReport(report) {
+    let url = `/dashboard/report?RemoteRepoID=${encodeURIComponent(report.repositoryId)}&ReportName=${encodeURIComponent(report.reportName)}`    
+    $.ajax({
+        url: url,
+        type: "get",
+    }).done(function (response) {
+        let displayName = `${report.reportName} from ${report.repositoryName}`
+        showReport(displayName, response.html)
+    }).fail(function (xhr, status, err) {
+        console.error(`URL: ${url}\nRepository: ${report.repositoryName}\nReport: ${report.reportName}\nResponse: ${xhr.responseText}`)
+    })
+  }
+
+  function showReport(displayName, html) {
+    let newReportDiv = `
+    <div class="row mb-5">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">${displayName}</div>
+          <div class="card-body dashboard-card-body" id="cardRecentJobs">
+          ${html}    
+          </div>
+        </div>
+      </div>
+    </div>`
+    $('#reportsContainer').append(newReportDiv)
+  }
+
+  reports.forEach((report) => runReport(report))  
 })
 </script>
 

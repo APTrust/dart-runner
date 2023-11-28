@@ -397,13 +397,13 @@ var objectResponseJson = `
 }`
 
 var expectedWorkItemHTML = `
-<h3>Recent Work Items</h3>
 <table class="table table-hover">
   <thead class="thead-inverse">
     <tr>
       <th>Name</th>
       <th>Stage</th>
       <th>Status</th>
+	  <th>Last Updated</th>
     </tr>
   </thead>
   <tbody>
@@ -413,36 +413,40 @@ var expectedWorkItemHTML = `
       <td><a href="http://127.0.0.1/work_items/show/933127" target="_blank">KNOX_007565.tar</a></td>
       <td>Cleanup</td>
       <td>Success</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/work_items/show/933126" target="_blank">KNOX_007564.tar</a></td>
       <td>Cleanup</td>
       <td>Success</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/work_items/show/933125" target="_blank">KNOX_007563.tar</a></td>
       <td>Cleanup</td>
       <td>Success</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/work_items/show/933124" target="_blank">KNOX_007562.tar</a></td>
       <td>Cleanup</td>
       <td>Success</td>
+	  <td>2023-11-21</td>
     </tr>
     
   </tbody>
 </table>
 `
 var expectedObjectListHTML = `
-<h3>Recently Ingested Objects</h3>
 <table class="table table-hover">
   <thead class="thead-inverse">
     <tr>
       <th>Identifier</th>
       <th>Storage Option</th>
+	  <th>Last Updated</th>
     </tr>
   </thead>
   <tbody>
@@ -451,21 +455,25 @@ var expectedObjectListHTML = `
     <tr>
       <td><a href="http://127.0.0.1/objects/show/271255" target="_blank">knox.edu/KNOX_000089</a></td>
       <td>Glacier-Deep-OH</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/objects/show/271254" target="_blank">knox.edu/KNOX_000088</a></td>
       <td>Glacier-Deep-OH</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/objects/show/271253" target="_blank">knox.edu/KNOX_000080</a></td>
       <td>Glacier-Deep-OH</td>
+	  <td>2023-11-21</td>
     </tr>
     
     <tr>
       <td><a href="http://127.0.0.1/objects/show/271252" target="_blank">knox.edu/KNOX_000087</a></td>
       <td>Glacier-Deep-OH</td>
+	  <td>2023-11-21</td>
     </tr>
     
   </tbody>
