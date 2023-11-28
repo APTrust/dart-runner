@@ -2,6 +2,7 @@ package core_test
 
 import (
 	"database/sql"
+	"os"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -148,4 +149,26 @@ func TestHasPlaintextAPIToken(t *testing.T) {
 	// not an ENV variable.
 	repo.APIToken = "this-here-is-secret"
 	assert.True(t, repo.HasPlaintextAPIToken())
+}
+
+func TestRepoGetUserID(t *testing.T) {
+	os.Setenv("dart-repo-user-test-id", "Helen Talboys")
+	defer os.Unsetenv("dart-repo-user-test-id")
+	repo := &core.RemoteRepository{}
+	repo.UserID = "Lucy Graham"
+	assert.Equal(t, "Lucy Graham", repo.GetUserID())
+
+	repo.UserID = "env:dart-repo-user-test-id"
+	assert.Equal(t, "Helen Talboys", repo.GetUserID())
+}
+
+func TestRepoGetAPIToken(t *testing.T) {
+	os.Setenv("dart-repo-test-token", "George Talboys")
+	defer os.Unsetenv("dart-repo-test-token")
+	repo := &core.RemoteRepository{}
+	repo.APIToken = "Robert Audley"
+	assert.Equal(t, "Robert Audley", repo.GetAPIToken())
+
+	repo.APIToken = "env:dart-repo-test-token"
+	assert.Equal(t, "George Talboys", repo.GetAPIToken())
 }

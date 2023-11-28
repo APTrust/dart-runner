@@ -178,8 +178,8 @@ func (client *APTrustClientV3) connect() error {
 	registryClient, err := apt_network.NewRegistryClient(
 		client.config.Url,
 		client.version,
-		client.config.UserID,
-		client.config.APIToken,
+		client.config.GetUserID(),
+		client.config.GetAPIToken(),
 		Dart.Log,
 	)
 	client.registry = registryClient

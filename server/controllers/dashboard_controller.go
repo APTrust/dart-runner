@@ -1,12 +1,21 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
 )
+
+type DashboardReport struct {
+	RepositoryID      string `json:"repositoryId"`
+	RepositoryName    string `json:"repositoryName"`
+	ReportName        string `json:"reportName"`
+	ReportDescription string `json:"reportDescription"`
+}
 
 // DashboardShow shows the DART dashboard. This is essentially
 // DART's homepage.
@@ -22,10 +31,16 @@ func DashboardShow(c *gin.Context) {
 		return
 	}
 
-	// TODO: Repo ids and report names
+	var reportListJson []byte
+	reports, err := getAvailableReports()
+	if len(reports) > 0 {
+		reportListJson, err = json.Marshal(reports)
+	}
 
 	data := gin.H{
-		"jobs": result.Jobs,
+		"jobs":       result.Jobs,
+		"reports":    string(reportListJson),
+		"reportsErr": err,
 	}
 
 	c.HTML(http.StatusOK, "dashboard/show.html", data)
@@ -57,6 +72,33 @@ func DashboardGetReport(c *gin.Context) {
 		"html":   html,
 	}
 	c.JSON(status, data)
+}
+
+func getAvailableReports() ([]DashboardReport, error) {
+	reports := make([]DashboardReport, 0)
+	result := core.ObjList(constants.TypeRemoteRepository, "obj_name", 100, 0)
+	if result.Error != nil {
+		return reports, result.Error
+	}
+	for _, repo := range result.RemoteRepositories {
+		if util.LooksLikeUUID(repo.PluginID) {
+			available, err := repo.ReportsAvailable()
+			if err != nil {
+				core.Dart.Log.Errorf("Error getting report list for repo %s (%s): %v", repo.Name, repo.ID, err)
+				continue
+			}
+			for _, report := range available {
+				report := DashboardReport{
+					RepositoryID:      repo.ID,
+					RepositoryName:    repo.Name,
+					ReportName:        report.Name,
+					ReportDescription: report.Value,
+				}
+				reports = append(reports, report)
+			}
+		}
+	}
+	return reports, nil
 }
 
 func getRepoReport(remoteRepoID, reportName string) (string, error) {

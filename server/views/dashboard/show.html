@@ -31,24 +31,18 @@
   </div>
 </div>
 
-{{ range $index, $reports := .reportRows }}
 
-<div class="row mb-3">
+<!-- Reports from remote repos will go in here -->
+<div id="reportsContainer"></div>
 
-  {{ range $ix, $report := .reports }}
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">{{ $report.title }}</div>
-      <div class="card-body dashboard-card-body" id="{{ $report.id }}">
 
-      </div>
-    </div>
-  </div>
-  {{ end }}
+<script>
+$(function(){
+  var repoReports = `{{ .reportListJson }}`
+  
+})
+</script>
 
-</div>
-
-{{ end }}
 
 {{ template "partials/page_footer.html" .}}
 

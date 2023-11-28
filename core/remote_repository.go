@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -36,6 +37,44 @@ func NewRemoteRepository() *RemoteRepository {
 	return &RemoteRepository{
 		ID: uuid.NewString(),
 	}
+}
+
+// GetUserID returns the UserID for logging into this remote repo.
+// If the UserID comes from an environment variable, this returns
+// the value of the ENV var. Otherwise, it returns the value of
+// this object's UserID property.
+//
+// When authenticating with a remote repo, call this instead of
+// accessing UserID directly.
+func (repo *RemoteRepository) GetUserID() string {
+	if strings.HasPrefix(repo.UserID, "env:") {
+		parts := strings.SplitN(repo.UserID, ":", 2)
+		userID := os.Getenv(parts[1])
+		if userID == "" {
+			Dart.Log.Warningf("UserID for repo '%s' is set to env var '%s', but the env var has no value", repo.Name, parts[1])
+		}
+		return userID
+	}
+	return repo.UserID
+}
+
+// GetUserAPIToken returns the API token for logging into this remote repo.
+// If the token comes from an environment variable, this returns
+// the value of the ENV var. Otherwise, it returns the value of
+// this object's APIToken property.
+//
+// When authenticating with a remote repo, call this instead of
+// accessing APIToken directly.
+func (repo *RemoteRepository) GetAPIToken() string {
+	if strings.HasPrefix(repo.APIToken, "env:") {
+		parts := strings.SplitN(repo.APIToken, ":", 2)
+		token := os.Getenv(parts[1])
+		if token == "" {
+			Dart.Log.Warningf("API token for repo '%s' is set to env var '%s', but the env var has no value", repo.Name, parts[1])
+		}
+		return token
+	}
+	return repo.APIToken
 }
 
 // HasPlaintextAPIToken returns true if this repo's API token
@@ -119,4 +158,21 @@ func (repo *RemoteRepository) TestConnection() error {
 		return err
 	}
 	return client.TestConnection()
+}
+
+// ReportsAvailable returns a list of reports that can be retrieved
+// from this remote repository.
+func (repo *RemoteRepository) ReportsAvailable() ([]util.NameValuePair, error) {
+	reports := make([]util.NameValuePair, 0)
+	if util.LooksLikeUUID(repo.PluginID) {
+		return reports, fmt.Errorf("no client exists for this repo because plugin id is not a uuid")
+	}
+	client, err := GetRemoteRepoClient(repo)
+	if err != nil {
+		return reports, err
+	}
+	if client == nil {
+		return reports, fmt.Errorf("client for repo %s is nil", repo.Name)
+	}
+	return client.AvailableHTMLReports(), nil
 }
