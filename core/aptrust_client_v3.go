@@ -186,6 +186,8 @@ func (client *APTrustClientV3) connect() error {
 	return err
 }
 
+// We check this because we don't want our depositors accidentally sending
+// their API credentials to just anyone.
 func (client *APTrustClientV3) isValidDomain() bool {
 	parsedUrl, err := url.Parse(client.config.Url)
 	if err != nil {

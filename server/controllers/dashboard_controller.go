@@ -38,9 +38,9 @@ func DashboardShow(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"jobs":       result.Jobs,
-		"reports":    string(reportListJson),
-		"reportsErr": err,
+		"jobs":           result.Jobs,
+		"reportListJson": string(reportListJson),
+		"reportsErr":     err,
 	}
 
 	c.HTML(http.StatusOK, "dashboard/show.html", data)

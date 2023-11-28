@@ -164,7 +164,7 @@ func (repo *RemoteRepository) TestConnection() error {
 // from this remote repository.
 func (repo *RemoteRepository) ReportsAvailable() ([]util.NameValuePair, error) {
 	reports := make([]util.NameValuePair, 0)
-	if util.LooksLikeUUID(repo.PluginID) {
+	if !util.LooksLikeUUID(repo.PluginID) {
 		return reports, fmt.Errorf("no client exists for this repo because plugin id is not a uuid")
 	}
 	client, err := GetRemoteRepoClient(repo)
