@@ -227,3 +227,77 @@ func TestJobPackageFormat(t *testing.T) {
 	job.PackageOp.PackageFormat = constants.PackageFormatBagIt
 	assert.Equal(t, constants.PackageFormatBagIt, job.PackageFormat())
 }
+
+func TestJobOutcome(t *testing.T) {
+	job := core.NewJob()
+
+	outcome := job.Outcome()
+	assert.Equal(t, job.Name(), outcome.JobName)
+	assert.False(t, outcome.JobWasRun)
+	assert.False(t, outcome.JobSucceeded)
+	assert.Equal(t, "Job has not run", outcome.Message)
+	assert.Equal(t, constants.StagePreRun, outcome.Stage)
+	assert.Empty(t, outcome.LastActivity)
+
+	// Mark the job's package operation as completed
+	// with no errors.
+	job.PackageOp.Result.Start()
+	job.PackageOp.Result.Finish(nil)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.True(t, outcome.JobSucceeded)
+	assert.Equal(t, "Packaging succeeded", outcome.Message)
+	assert.Equal(t, constants.StagePackage, outcome.Stage)
+	assert.Equal(t, job.PackageOp.Result.Completed, outcome.LastActivity)
+
+	// Package attempted but failed
+	errors := map[string]string{
+		"Oops!": "I did it again",
+	}
+	job.PackageOp.Result.Finish(errors)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.False(t, outcome.JobSucceeded)
+	assert.Equal(t, "Packaging failed", outcome.Message)
+	assert.Equal(t, constants.StagePackage, outcome.Stage)
+
+	// Validation succeeded
+	job.ValidationOp.Result.Start()
+	job.ValidationOp.Result.Finish(nil)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.True(t, outcome.JobSucceeded)
+	assert.Equal(t, "Validation succeeded", outcome.Message)
+	assert.Equal(t, constants.StageValidation, outcome.Stage)
+	assert.Equal(t, job.ValidationOp.Result.Completed, outcome.LastActivity)
+
+	// Validation failed
+	job.ValidationOp.Result.Finish(errors)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.False(t, outcome.JobSucceeded)
+	assert.Equal(t, "Validation failed", outcome.Message)
+	assert.Equal(t, constants.StageValidation, outcome.Stage)
+
+	// Upload succeeded
+	job.UploadOps = make([]*core.UploadOperation, 1)
+	ss := core.NewStorageService()
+	files := make([]string, 0)
+	job.UploadOps[0] = core.NewUploadOperation(ss, files)
+	job.UploadOps[0].Result.Start()
+	job.UploadOps[0].Result.Finish(nil)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.True(t, outcome.JobSucceeded)
+	assert.Equal(t, "Upload succeeded", outcome.Message)
+	assert.Equal(t, constants.StageFinish, outcome.Stage)
+	assert.Equal(t, job.UploadOps[0].Result.Completed, outcome.LastActivity)
+
+	// Upload failed
+	job.UploadOps[0].Result.Finish(errors)
+	outcome = job.Outcome()
+	assert.True(t, outcome.JobWasRun)
+	assert.False(t, outcome.JobSucceeded)
+	assert.Equal(t, "One or more uploads failed", outcome.Message)
+	assert.Equal(t, constants.StageUpload, outcome.Stage)
+}

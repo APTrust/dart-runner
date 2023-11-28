@@ -25,6 +25,15 @@ var TitleTags = []string{
 	"Description",
 }
 
+type JobOutcomeSummary struct {
+	JobName      string
+	JobWasRun    bool
+	JobSucceeded bool
+	Stage        string
+	Message      string
+	LastActivity time.Time
+}
+
 type Job struct {
 	ID               string               `json:"id"`
 	BagItProfile     *BagItProfile        `json:"bagItProfile"`
@@ -205,6 +214,64 @@ func (job Job) UploadSucceeded() bool {
 		}
 	}
 	return anyAttempted && allSucceeded
+}
+
+// Outcome returns a JobOutcomeSummary describing whether
+// or not the job was run and whether or not it succeeded.
+func (job *Job) Outcome() JobOutcomeSummary {
+	summary := JobOutcomeSummary{
+		JobName:      job.Name(),
+		JobWasRun:    false,
+		JobSucceeded: false,
+		Stage:        constants.StagePreRun,
+		Message:      "Job has not run",
+	}
+	if job.UploadAttempted() {
+		summary.JobWasRun = true
+		summary.Stage = constants.StageUpload
+		lastUploadResult := job.UploadOps[len(job.UploadOps)-1].Result
+		if !lastUploadResult.Completed.IsZero() {
+			summary.LastActivity = lastUploadResult.Completed
+		} else {
+			summary.LastActivity = lastUploadResult.Started
+		}
+		if job.UploadSucceeded() {
+			summary.Message = "Upload succeeded"
+			summary.JobSucceeded = true
+			summary.Stage = constants.StageFinish
+		} else {
+			summary.Message = "One or more uploads failed"
+		}
+	} else if job.ValidationAttempted() {
+		summary.JobWasRun = true
+		summary.Stage = constants.StageValidation
+		if !job.ValidationOp.Result.Completed.IsZero() {
+			summary.LastActivity = job.ValidationOp.Result.Completed
+		} else {
+			summary.LastActivity = job.ValidationOp.Result.Started
+		}
+		if job.ValidationSucceeded() {
+			summary.Message = "Validation succeeded"
+			summary.JobSucceeded = true
+		} else {
+			summary.Message = "Validation failed"
+		}
+	} else if job.PackageAttempted() {
+		summary.JobWasRun = true
+		summary.Stage = constants.StagePackage
+		if !job.PackageOp.Result.Completed.IsZero() {
+			summary.LastActivity = job.PackageOp.Result.Completed
+		} else {
+			summary.LastActivity = job.PackageOp.Result.Started
+		}
+		if job.PackageSucceeded() {
+			summary.Message = "Packaging succeeded"
+			summary.JobSucceeded = true
+		} else {
+			summary.Message = "Packaging failed"
+		}
+	}
+	return summary
 }
 
 // Validate returns true or false, indicating whether this object
