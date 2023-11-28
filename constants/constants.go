@@ -45,8 +45,8 @@ const (
 	PackageFormatNone         = "None" // Used when a job or workflow has no package operation.
 	PluginIdAPTrustClientv3   = "c5a6b7db-5a5f-4ca5-a8f8-31b2e60c84bd"
 	PluginIdLOCKSSClientv2    = "0dabdd1d-6227-4ad5-8a48-add1c699f8ab"
-	PluginNameAPTrustClientv3 = "APTrust Registry Client (v3)"
-	PluginNameLOCKSSClientv2  = "LOCKSS Client (v2)"
+	PluginNameAPTrustClientv3 = "APTrust Registry Client (API Version 3)"
+	PluginNameLOCKSSClientv2  = "LOCKSS Client (API Version 2)"
 	ProtocolS3                = "s3"
 	ProtocolSFTP              = "sftp"
 	ProfileIDAPTrust          = "043f1c22-c9ff-4112-86f8-8f8f1e6a2dca"
