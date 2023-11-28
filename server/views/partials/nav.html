@@ -1,14 +1,14 @@
 {{ define "partials/nav.html" }}
 
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-    <a class="navbar-brand" href="#Dashboard/show"><img src="/assets/img/dart.png" alt="DART logo" style="height:32px;width:32px;">DART</a>
+    <a class="navbar-brand" href="/"><img src="/assets/img/dart.png" alt="DART logo" style="height:32px;width:32px;">DART</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav">
         <li class="nav-item {{ if (eq .section "Dashboard") }}active{{ end }}">
-          <a class="nav-link" href="#Dashboard/show">Dashboard</a>
+          <a class="nav-link" href="/">Dashboard</a>
         </li>
         <li class="nav-item dropdown {{ if (eq .section "Settings")}}active{{ end }}">
           <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>

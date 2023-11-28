@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,19 @@ func DashboardShow(c *gin.Context) {
 	// Loop through remote repos. For any repo we can reach,
 	// pull back all usable reports. A report will simply
 	// return a blob of HTML to display.
-	c.HTML(http.StatusOK, "dashboard/show.html", gin.H{})
+	result := core.ObjList(constants.TypeJob, "updated_at desc", 20, 0)
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, result.Error)
+		return
+	}
+
+	// TODO: Repo ids and report names
+
+	data := gin.H{
+		"jobs": result.Jobs,
+	}
+
+	c.HTML(http.StatusOK, "dashboard/show.html", data)
 }
 
 // DashboardGetReport returns a report from a remote repository.

@@ -4,13 +4,32 @@
 
 
 <div class="row mb-3">
-
-  {{ template "partials/running_jobs.html" . }}
-
-  {{ template "partials/recent_jobs.html" . }}
-
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">Recent Jobs</div>
+      <div class="card-body dashboard-card-body" id="cardRecentJobs">
+        <table class="table table-hover">
+          <thead class="thead-inverse">
+            <tr>
+              <th>Name</th>
+              <th>Outcome</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ range $index, $job := .jobs }}
+            <tr>
+              <td><a href="/jobs/files/{{ $job.ID }}">{{ $job.Outcome.JobName }}</a></td>
+              <td>{{ $job.Outcome.Message }}</td>
+              <td>{{ dateISO $job.Outcome.LastActivity }}</td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
-
 
 {{ range $index, $reports := .reportRows }}
 
