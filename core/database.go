@@ -3,6 +3,7 @@ package core
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -435,10 +436,11 @@ func ArtifactSave(a *Artifact) error {
 }
 
 func ArtifactFind(uuid string) (*Artifact, error) {
-	row := Dart.DB.QueryRow("select uuid, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where uuid=?", uuid)
+	row := Dart.DB.QueryRow("select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where uuid=?", uuid)
 	artifact := Artifact{}
 	err := row.Scan(
 		&artifact.ID,
+		&artifact.JobID,
 		&artifact.BagName,
 		&artifact.ItemType,
 		&artifact.FileName,
@@ -452,7 +454,7 @@ func ArtifactFind(uuid string) (*Artifact, error) {
 func ArtifactNameIDList(jobID string) ([]NameIDPair, error) {
 	nameIdPairs := make([]NameIDPair, 0)
 	var rows *sql.Rows
-	rows, err := Dart.DB.Query("select uuid, file_name from artifacts where job_id = ? order by file_name", jobID)
+	rows, err := Dart.DB.Query("select uuid, file_name, updated_at from artifacts where job_id = ? order by updated_at desc, file_name asc", jobID)
 	// Jobs imported from DART v2 and jobs that have not run
 	// will have no artifacts. That's fine. We'll just return
 	// and empty list.
@@ -463,9 +465,11 @@ func ArtifactNameIDList(jobID string) ([]NameIDPair, error) {
 	for rows.Next() {
 		uuid := ""
 		name := ""
-		err = rows.Scan(&uuid, &name)
+		var updatedAt time.Time
+		err = rows.Scan(&uuid, &name, &updatedAt)
 		if err == nil {
-			nameIdPairs = append(nameIdPairs, NameIDPair{Name: name, ID: uuid})
+			itemName := fmt.Sprintf("%s -> %s", updatedAt.Format(time.DateTime), name)
+			nameIdPairs = append(nameIdPairs, NameIDPair{Name: itemName, ID: uuid})
 		}
 	}
 	return nameIdPairs, nil
