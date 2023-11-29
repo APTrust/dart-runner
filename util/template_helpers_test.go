@@ -130,3 +130,8 @@ func TestDisplayDate(t *testing.T) {
 func TestAdd(t *testing.T) {
 	assert.Equal(t, 5, util.Add(3, 2))
 }
+
+func TestMod(t *testing.T) {
+	assert.True(t, util.Mod(16, 4))
+	assert.False(t, util.Mod(16, 5))
+}

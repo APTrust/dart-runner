@@ -10,20 +10,34 @@
   <thead class="thead-inverse">
     <tr>
       <th>Name</th>
-      <th>Packaged</th>
-      <th>Validated</th>
-      <th>Uploaded</th>
+      <th>Status</th>
+      <th>Artifacts</th>
       <th>&nbsp;</th>
     </tr>
   </thead>
   <tbody>
     {{ range $index, $item := .items }}
     <tr>
-      <td><a href="/jobs/files/{{ $item.ID }}">{{ $item.Name }}</a></td>
-      <td class="{{ if $item.PackageSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.PackagedAt }}</td>
-      <td class="{{ if $item.ValidationSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.ValidatedAt }}</td>
-      <td class="{{ if $item.UploadSucceeded }}text-success{{ else }}text-danger{{ end }}">{{ displayDate $item.UploadedAt }}</td>
-      <td><a href="javascript:confirmForegroundDeletion('Delete job {{ $item.Name }}?', '/jobs/delete/{{ $item.ID }}')" title="Delete job {{ $item.Name }}"><i class="fa fa-times text-danger" aria-hidden="true"></i></a></td>
+      <td><a href="/jobs/files/{{ $item.Job.ID }}">{{ $item.Job.Name }}</a></td>
+      <td>
+        <span class="{{ if $item.Job.Outcome.JobSucceeded }}text-success{{ else }}text-danger{{ end }}">
+          Last Stage Completed: {{ $item.Job.Outcome.Stage }}
+        </span> <br/> 
+        {{ displayDate $item.Job.Outcome.LastActivity}}<br/>
+        {{ $item.Job.Outcome.Message }}
+      </td>
+      <td>
+        <div class="form-group ">
+          <select class="form-control">
+            <option value="">-- View Artifact --</option>
+            {{ range $i, $artifact := $item.Artifacts }}
+            <option value="{{ $artifact.ID }}">{{ $artifact.Name }}</option>
+            {{ end }}
+          </select>
+        </div>
+
+      </td>
+      <td><a href="javascript:confirmForegroundDeletion('Delete job {{ $item.Job.Name }}?', '/jobs/delete/{{ $item.Job.ID }}')" title="Delete job {{ $item.Job.Name }}"><i class="fa fa-times text-danger" aria-hidden="true"></i></a></td>
     </tr>
     {{ end }}
   </tbody>

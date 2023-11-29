@@ -449,6 +449,28 @@ func ArtifactFind(uuid string) (*Artifact, error) {
 	return &artifact, err
 }
 
+func ArtifactNameIDList(jobID string) ([]NameIDPair, error) {
+	nameIdPairs := make([]NameIDPair, 0)
+	var rows *sql.Rows
+	rows, err := Dart.DB.Query("select uuid, file_name from artifacts where job_id = ? order by file_name", jobID)
+	// Jobs imported from DART v2 and jobs that have not run
+	// will have no artifacts. That's fine. We'll just return
+	// and empty list.
+	if err != nil && err != sql.ErrNoRows {
+		return nameIdPairs, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		uuid := ""
+		name := ""
+		err = rows.Scan(&uuid, &name)
+		if err == nil {
+			nameIdPairs = append(nameIdPairs, NameIDPair{Name: name, ID: uuid})
+		}
+	}
+	return nameIdPairs, nil
+}
+
 func ArtifactListByJobID(jobID string) ([]*Artifact, error) {
 	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where job_id=? order by file_name"
 	return artifactList(query, jobID)

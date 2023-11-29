@@ -8,7 +8,7 @@
 - [x] Test Workflow Batch endpoints
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
-- [ ] Add logging to all critical sections
+- [x] Add logging to all critical sections
 - [ ] Automated UI testing (Selenium)
 - [x] Save artifacts from jobs (manifests, tag files)
 - [ ] Expose artifacts in UI
@@ -19,7 +19,7 @@
 - [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
-- [ ] Build Dashboard & APTrust client
+- [x] Build Dashboard & APTrust client
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
 
 

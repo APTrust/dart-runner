@@ -174,3 +174,8 @@ func DirStats(dir string) *DirectoryStats {
 func Add(a, b int) int {
 	return a + b
 }
+
+// Mod returns true of a modulus b equals zero.
+func Mod(a, b int) bool {
+	return a%b == 0
+}

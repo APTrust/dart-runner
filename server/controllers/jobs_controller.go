@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type JobListItem struct {
+	Job       *core.Job
+	Artifacts []core.NameIDPair
+}
+
 // PUT /jobs/delete/:id
 // POST /jobs/delete/:id
 func JobDelete(c *gin.Context) {
@@ -31,9 +36,21 @@ func JobIndex(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	request.TemplateData["items"] = request.QueryResult.Jobs
+	jobs := request.QueryResult.Jobs
+	items := make([]JobListItem, len(jobs))
+	for i, job := range jobs {
+		artifacts, err := core.ArtifactNameIDList(job.ID)
+		if err != nil {
+			core.Dart.Log.Warningf("Error getting artifact list for job %s: %v", job.Name(), err)
+		}
+		item := JobListItem{
+			Job:       job,
+			Artifacts: artifacts,
+		}
+		items[i] = item
+	}
+	request.TemplateData["items"] = items
 	c.HTML(http.StatusOK, "job/list.html", request.TemplateData)
-
 }
 
 // GET /jobs/new

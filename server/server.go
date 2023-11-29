@@ -61,6 +61,7 @@ func initTemplates(router *gin.Engine) {
 		"escapeHTML":     util.EscapeHTML,
 		"fileIconFor":    util.FileIconFor,
 		"humanSize":      util.HumanSize,
+		"mod":            util.Mod,
 		"strEq":          util.StrEq,
 		"strStartsWith":  util.StrStartsWith,
 		"truncate":       util.Truncate,
