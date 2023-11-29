@@ -30,12 +30,12 @@
  
     <div class="bottom-buttons">
       {{ if eq .form.Fields.IsBuiltIn.Value "false" }} 
-      <div class="pull-left">
+      <div class="float-left">
         <!-- This needs to be a PUT or POST -->
         <a class="btn btn-danger" href="/profiles/delete_tag/{{ .bagItProfileID }}/{{ .form.Fields.ID.Value }}" role="button">Delete</a>
       </div>
       {{ end }}
-      <div class="pull-right">
+      <div class="float-right">
       <button type="button" class="btn btn-primary" role="button" onclick="submitTagDefForm('#{{ .form.Fields.ID.Value }}')">Save</a>
       </div>
     </div>

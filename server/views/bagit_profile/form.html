@@ -95,17 +95,17 @@
 {{ template "partials/input_hidden.html" dict "field" .form.Fields.BaseProfileID }}
 
 <div class="bottom-buttons">
-  <div class="pull-left">
+  <div class="float-left">
   {{ if and .form.UserCanDelete .objectExistsInDB  }}
     <button type="button" class="btn btn-danger" onclick="deleteProfile('#DeleteProfile-{{ .form.Fields.ID.Value }}')" role="button">Delete Profile</button>
   {{ end }}
     <a class="btn btn-outline-success" onclick="loadIntoModal('get', 'BagIt Profile', '/profiles/export/{{ .form.Fields.ID.Value }}', '')" role="button">Export Profile</a>
   </div>
 
-  <div class="pull-right">
+  <div class="float-right">
     <button class="btn btn-primary" type="submit" role="button">Save</a>
   </div>
-  <div class="pull-right mr-5">
+  <div class="float-right mr-5">
     <a class="btn btn-secondary" href="/profiles/list" role="button">Cancel</a>
   </div>
 </div>

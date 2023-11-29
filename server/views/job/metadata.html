@@ -7,10 +7,10 @@
 
 <div style="height: 50px;">
   <div>
-    <div class="pull-right p-r-3">
+    <div class="float-right p-r-3">
       <button type="button" class="btn btn-primary" id="btnToggleHidden" style="margin-left: 25px;" onclick="toggleTags()">Show All Tags</button>
     </div>
-    <div class="pull-right">
+    <div class="float-right">
       <button role="button" class="btn btn-primary" onclick="loadIntoModal('GET', 'New Tag', '/jobs/add_tag/{{ .job.ID }}')" id="btnAddNewTag">Add New Tag</button>
     </div>
   </div>
@@ -25,7 +25,7 @@
     <div class="card mb-3">
       <div class="card-header">
         <a data-toggle="collapse" href="#{{ $tagFile.Name }}" aria-expanded="true" aria-controls="{{ $tagFile.Name }}">{{ $tagFile.Name }}</a>
-        <div class="what-is-showing pull-right text-muted">
+        <div class="what-is-showing float-right text-muted">
           <i>Tags with default values are not showing.</i>
         </div>
       </div>
@@ -63,11 +63,11 @@
 
       <input type="hidden" name="direction" value="next"/>
 
-      <div class="pull-left mb-5" id="btnBackDiv">
+      <div class="float-left mb-5" id="btnBackDiv">
         <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
       </div>
       
-      <div class="pull-right mb-5" id="btnNextDiv">
+      <div class="float-right mb-5" id="btnNextDiv">
         <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
       </div>
     

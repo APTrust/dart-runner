@@ -20,10 +20,10 @@
 
 
 <div class="bottom-buttons">
-  <div class="pull-left">
+  <div class="float-left">
     <button type="button" class="btn btn-secondary" id="btnCancel" data-dismiss="modal">Cancel</a>
   </div>
-  <div class="pull-right">
+  <div class="float-right">
       <button type="button" class="btn btn-primary" id="btnSaveQuestion" onclick="postDataInBackground('/settings/export/questions/{{ .settings.ID }}', Object.fromEntries(new FormData(document.forms['{{ .form.ObjectID }}'])))">Save</button>
   </div>
 </div>

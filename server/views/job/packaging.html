@@ -36,11 +36,11 @@
   <input type="hidden" name="direction" value="next"/>
 
 
-  <div class="pull-left" id="btnBackDiv">
+  <div class="float-left" id="btnBackDiv">
     <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
   </div>
   
-  <div class="pull-right" id="btnNextDiv">
+  <div class="float-right" id="btnNextDiv">
     <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
   </div>
   

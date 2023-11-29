@@ -11,13 +11,13 @@ job details and progress.
 {{ template "partials/job_run.html" . }}
 
 <div class="mt-5">
-  <div class="pull-left" id="btnBackDiv">
+  <div class="float-left" id="btnBackDiv">
     <a class="btn btn-primary" href="/jobs/upload/{{ .job.ID }}" role="button">&lt;&lt; Back</a>
   </div>
 
 
 
-  <div class="pull-right" id="btnNextDiv">
+  <div class="float-right" id="btnNextDiv">
     {{ if not .job.WorkflowID }}
     <button class="btn btn-info mr-5" onclick="postDataInBackground('/workflows/from_job/{{ .job.ID }}')" role="button">Create Workflow</button>
     {{  end }}

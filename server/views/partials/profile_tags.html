@@ -1,7 +1,7 @@
 {{ define "partials/profile_tags.html" }}
 
 <h2>Tags in {{ .tagFileName }}</h2>
-<div class="pull-right mt-1 mb-3">
+<div class="float-right mt-1 mb-3">
 
     {{ if (and (ne "bagit.txt" .tagFileName) (ne "bag-info.txt" .tagFileName)) }}
     <button class="btn btn-danger mr-3" type="button" onclick="confirmBackgroundDeletion('Delete this tag file?', '/profiles/delete_tag_file/{{ .bagItProfileID }}', {'tagFile': '{{ .tagFileName }}'})" role="button">Delete File</button>  

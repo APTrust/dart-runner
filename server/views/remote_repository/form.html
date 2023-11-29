@@ -6,7 +6,7 @@
 
 
 {{ if .showTestButton }}
-<div class="pull-right mt-1 mb-3">
+<div class="float-right mt-1 mb-3">
   <button class="btn btn-primary" onclick="loadIntoModal('post', 'Connection Test', '/remote_repositories/test/{{ .form.Fields.ID.Value }}', '{{ .form.ObjType }}')" role="button">Test Connection</button>
 </div>
 {{ end }}
