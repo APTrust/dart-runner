@@ -219,5 +219,24 @@ func TestGetAppSetting(t *testing.T) {
 	value, err = core.GetAppSetting("Test Setting")
 	assert.NoError(t, err)
 	assert.Equal(t, "Test Value", value)
+}
 
+func TestArtifactNameIDList(t *testing.T) {
+	defer core.ClearArtifactsTable()
+	for i := 0; i < 5; i++ {
+		artifact := core.NewManifestArtifact(
+			"test-bag.tar",
+			constants.EmptyUUID,
+			fmt.Sprintf("manifest-%d.txt", i),
+			fmt.Sprintf("Contents of manifest %d ...", i))
+		require.NoError(t, core.ArtifactSave(artifact))
+	}
+	nameIDList, err := core.ArtifactNameIDList(constants.EmptyUUID)
+	require.Nil(t, err)
+	assert.Equal(t, 5, len(nameIDList))
+
+	// If no artifacts, we should get empty list.
+	nameIDList, err = core.ArtifactNameIDList(uuid.NewString())
+	require.Nil(t, err)
+	assert.Equal(t, 0, len(nameIDList))
 }
