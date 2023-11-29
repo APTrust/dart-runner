@@ -52,41 +52,40 @@ func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.Exte
 // Run builds the bag and returns the number of files bagged.
 func (b *Bagger) Run() bool {
 	b.reset()
-	if !b.validateProfile() {
-		return false
-	}
-
 	b.calculatePathPrefix()
 	b.calculateBagName()
+	Dart.Log.Infof("Starting to build bag %s", b.bagName)
+
+	if !b.validateProfile() {
+		return b.finish()
+	}
 
 	if !b.initWriter() {
-		return false
+		return b.finish()
 	}
 
 	if !b.addPayloadFiles() {
-		return false
+		return b.finish()
 	}
 
 	// Here we should have enough info to print
 	// the Payload-Oxum in bag-info.txt.
 	if !b.addTagFiles() {
-		return false
+		return b.finish()
 	}
 
 	// Payload manifests
 	if !b.addManifests(constants.FileTypeManifest) {
-		return false
+		return b.finish()
 	}
 
 	// Tag manifests must be added last because they
 	// need to run checksums on tag files and payload manifests.
 	if !b.addManifests(constants.FileTypeTagManifest) {
-		return false
+		return b.finish()
 	}
 
-	b.finish()
-
-	return len(b.Errors) == 0
+	return b.finish()
 }
 
 func (b *Bagger) PayloadBytes() int64 {
@@ -360,6 +359,8 @@ func (b *Bagger) pathForTagFile(fullPath string) string {
 }
 
 // Close the writer and do any other required cleanup.
+// Returns true if bagging finished without errors,
+// false otherwise.
 func (b *Bagger) finish() bool {
 	if b.writer != nil {
 		err := b.writer.Close()
@@ -367,10 +368,18 @@ func (b *Bagger) finish() bool {
 			b.Errors["BagWriter"] = fmt.Sprintf("Error closing bag writer: %s", err.Error())
 		}
 	}
-	return true
+	Dart.Log.Infof("Finished bag %s", b.bagName)
+	if len(b.Errors) > 0 {
+		Dart.Log.Errorf("Bagging %s failed with the following errors:", b.bagName)
+	}
+	for key, value := range b.Errors {
+		Dart.Log.Errorf("%s: %s", key, value)
+	}
+	return len(b.Errors) == 0
 }
 
 func (b *Bagger) info(message string) {
+	Dart.Log.Info(message)
 	if b.MessageChannel == nil {
 		b.currentFileNum += 1
 		return
