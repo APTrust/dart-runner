@@ -23,6 +23,7 @@ type TarredBagReader struct {
 func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 	file, err := os.Open(validator.PathToBag)
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader can't open file %s: %v", validator.PathToBag, err)
 		return nil, err
 	}
 	return &TarredBagReader{
@@ -42,9 +43,11 @@ func (r *TarredBagReader) ScanMetadata() error {
 	for {
 		err := r.processMetaEntry()
 		if err == io.EOF {
+			Dart.Log.Debugf("TarredBagReader.ScanMetadata finished reading metadata in %s", r.validator.PathToBag)
 			break
 		}
 		if err != nil {
+			Dart.Log.Errorf("TarredBagReader.ScanMetadata error reading %s: %v", r.validator.PathToBag, err)
 			return err
 		}
 	}
@@ -58,9 +61,11 @@ func (r *TarredBagReader) ScanPayload() error {
 	for {
 		err := r.processPayloadEntry()
 		if err == io.EOF {
+			Dart.Log.Debugf("TarredBagReader.ScanPayload finished reading payload in %s", r.validator.PathToBag)
 			break
 		}
 		if err != nil {
+			Dart.Log.Errorf("TarredBagReader.ScanPayload error reading %s: %v", r.validator.PathToBag, err)
 			return err
 		}
 	}
@@ -128,6 +133,7 @@ func (r *TarredBagReader) processPayloadEntry() error {
 func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 	pathInBag, err := util.TarPathToBagPath(header.Name)
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader: Can't convert header path %s to bag path: %v", header.Name, err)
 		return err
 	}
 	fileMap := r.validator.MapForPath(pathInBag)
@@ -141,6 +147,7 @@ func (r *TarredBagReader) ensureFileRecord(header *tar.Header) error {
 		algs, err = r.validator.TagManifestAlgs()
 	}
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader.ensureFileRecord for %s: %v", pathInBag, err)
 		return err
 	}
 	return r.addChecksums(pathInBag, fileRecord, algs)
@@ -192,6 +199,7 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord,
 	multiWriter := io.MultiWriter(writers...)
 	_, err := io.Copy(multiWriter, r.tarReader)
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader error adding checksums for file %s: %v", pathInBag, err)
 		return err
 	}
 
@@ -221,10 +229,12 @@ func (r *TarredBagReader) addChecksums(pathInBag string, fileRecord *FileRecord,
 func (r *TarredBagReader) parseManifest(pathInBag string, fileMap *FileMap) error {
 	alg, err := util.AlgorithmFromManifestName(pathInBag)
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader.parseManifest error getting algs for %s: %v", pathInBag, err)
 		return err
 	}
 	entries, err := ParseManifest(r.tarReader)
 	if err != nil {
+		Dart.Log.Errorf("TarredBagReader.parseManifest error parsing entries for %s: %v", pathInBag, err)
 		return err
 	}
 	for filePath, digest := range entries {

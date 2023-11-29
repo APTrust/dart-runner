@@ -44,6 +44,9 @@ func (p *PackageOperation) Validate() bool {
 	if p.SourceFiles == nil || util.IsEmptyStringList(p.SourceFiles) {
 		p.Errors["PackageOperation.SourceFiles"] = "Specify at least one file or directory to package."
 	}
+	for key, value := range p.Errors {
+		Dart.Log.Errorf("%s: %s", key, value)
+	}
 	return len(p.Errors) == 0
 }
 

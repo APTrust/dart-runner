@@ -155,9 +155,16 @@ func (repo *RemoteRepository) TestConnection() error {
 	}
 	client, err := GetRemoteRepoClient(repo)
 	if err != nil {
+		Dart.Log.Errorf("Can't get client for repo '%s': %v", repo.Name, err)
 		return err
 	}
-	return client.TestConnection()
+	err = client.TestConnection()
+	if err != nil {
+		Dart.Log.Errorf("Test connection failed for repo '%s': %v", repo.Name, err)
+	} else {
+		Dart.Log.Infof("Test connection succeeded for repo %s", repo.Name)
+	}
+	return err
 }
 
 // ReportsAvailable returns a list of reports that can be retrieved

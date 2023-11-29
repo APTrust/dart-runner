@@ -45,6 +45,9 @@ func (wb *WorkflowBatch) Validate() bool {
 	}
 
 	if len(wb.Errors) > 0 {
+		for key, value := range wb.Errors {
+			Dart.Log.Errorf("%s: %s", key, value)
+		}
 		return false
 	}
 
@@ -78,6 +81,11 @@ func (wb *WorkflowBatch) validateCSVFile() bool {
 		// valid values for all of the workflow's required tags.
 		wb.checkRequiredTags(record, lineNumber)
 	}
+
+	for key, value := range wb.Errors {
+		Dart.Log.Errorf("%s: %s", key, value)
+	}
+
 	return len(wb.Errors) == 0
 }
 

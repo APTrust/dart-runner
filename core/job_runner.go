@@ -382,7 +382,7 @@ func (r *Runner) saveArtifactsToDatabase(bagger *Bagger) {
 func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
 	artifactsDir := bagger.ArtifactsDir()
 	err := os.Mkdir(artifactsDir, 0755)
-	if err != nil {
+	if err != nil && !util.FileExists(artifactsDir) {
 		Dart.Log.Warningf("Cannot create artifacts directory '%s': %s", artifactsDir, err.Error())
 	}
 	// Even if mkdir above failed, the dir might already exist.

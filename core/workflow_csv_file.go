@@ -24,6 +24,7 @@ type WorkflowCSVFile struct {
 func NewWorkflowCSVFile(pathToFile string) (*WorkflowCSVFile, error) {
 	f, err := os.Open(pathToFile)
 	if err != nil {
+		Dart.Log.Error("Can't open CSV file %s: %v", pathToFile, err)
 		return nil, err
 	}
 	// If the CSV file was exported from Excel, it probably
@@ -38,6 +39,7 @@ func NewWorkflowCSVFile(pathToFile string) (*WorkflowCSVFile, error) {
 	err = csvFile.parseHeaders()
 	if err != nil {
 		f.Close()
+		Dart.Log.Error("Error parsing headers in CSV file %s: %v", pathToFile, err)
 		return nil, err
 	}
 	return csvFile, nil

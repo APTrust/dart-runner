@@ -38,7 +38,9 @@ func (writer *TarWriter) DigestAlgs() []string {
 func (writer *TarWriter) Open() error {
 	tarFile, err := os.Create(writer.PathToTarFile)
 	if err != nil {
-		return fmt.Errorf("Error creating tar file: %v", err)
+		message := fmt.Sprintf("Error creating tar file: %v", err)
+		Dart.Log.Error(message)
+		return fmt.Errorf(message)
 	}
 	writer.tarWriter = tar.NewWriter(tarFile)
 	return nil
@@ -77,7 +79,9 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 	hashes := util.GetHashes(writer.digestAlgs)
 
 	if writer.tarWriter == nil {
-		return checksums, fmt.Errorf("Underlying TarWriter is nil. Has it been opened?")
+		message := "Underlying TarWriter is nil. Has it been opened?"
+		Dart.Log.Error(message)
+		return checksums, fmt.Errorf(message)
 	}
 
 	// This returns actual owner and group id on posix systems,
@@ -86,6 +90,7 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 	if !writer.rootDirCreated {
 		err := writer.initRootDir(uid, gid)
 		if err != nil {
+			Dart.Log.Errorf("Tar writer can't create root directory header: %v", err)
 			return checksums, err
 		}
 	}
@@ -111,6 +116,7 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 	// Write the header entry
 	if err := writer.tarWriter.WriteHeader(header); err != nil {
 		// Most likely error is archive/tar: write after close
+		Dart.Log.Errorf("Tar writer can't write header: %v", err)
 		return checksums, err
 	}
 
@@ -122,10 +128,11 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 
 	// Open the file whose data we're going to add.
 	file, err := os.Open(xFileInfo.FullPath)
-	defer file.Close()
 	if err != nil {
+		Dart.Log.Errorf("TarWriter can't open file %s: %v", xFileInfo.FullPath, err)
 		return checksums, err
 	}
+	defer file.Close()
 
 	// Copy the contents of the file into the tarWriter,
 	// passing it through the hashes along the way.
@@ -137,12 +144,14 @@ func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArc
 	multiWriter := io.MultiWriter(writers...)
 	bytesWritten, err := io.Copy(multiWriter, file)
 	if bytesWritten != header.Size {
-		return checksums, fmt.Errorf("addToArchive() copied only %d of %d bytes for file %s",
-			bytesWritten, header.Size, xFileInfo.FullPath)
+		message := fmt.Sprintf("TarWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, header.Size, xFileInfo.FullPath)
+		Dart.Log.Error(message)
+		return checksums, fmt.Errorf(message)
 	}
 	if err != nil {
-		return checksums, fmt.Errorf("Error copying %s into tar archive: %v",
-			xFileInfo.FullPath, err)
+		message := fmt.Sprintf("Error copying %s into tar archive: %v", xFileInfo.FullPath, err)
+		Dart.Log.Error(message)
+		return checksums, fmt.Errorf(message)
 	}
 
 	// Gather the checksums.

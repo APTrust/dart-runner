@@ -485,9 +485,5 @@ func (job *Job) ToForm() *Form {
 	outputPath := form.AddField("OutputPath", "Output Path", job.PackageOp.OutputPath, true)
 	outputPath.Help = "This is where DART will create the bag. This field updates automatically when you update the package name."
 
-	// UploadOps
-
-	// ValidationOp
-
 	return form
 }

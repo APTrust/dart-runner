@@ -57,6 +57,9 @@ func (u *UploadOperation) Validate() bool {
 	if len(missingFiles) > 0 {
 		u.Errors["UploadOperation.SourceFiles"] = fmt.Sprintf("UploadOperation source files are missing: %s", strings.Join(missingFiles, ";"))
 	}
+	for key, value := range u.Errors {
+		Dart.Log.Errorf("%s: %s", key, value)
+	}
 	return len(u.Errors) == 0
 }
 
@@ -65,11 +68,13 @@ func (u *UploadOperation) CalculatePayloadSize() error {
 	for _, fileOrDir := range u.SourceFiles {
 		stat, err := os.Stat(fileOrDir)
 		if err != nil {
+			Dart.Log.Errorf("UploadOperation.CalculatePayloadSize - can't stat %s: %v", fileOrDir, err)
 			return err
 		}
 		if stat.IsDir() {
 			children, err := util.RecursiveFileList(fileOrDir, false)
 			if err != nil {
+				Dart.Log.Errorf("UploadOperation.CalculatePayloadSize - can't recusively list %s: %v", fileOrDir, err)
 				return err
 			}
 			for _, child := range children {
@@ -94,6 +99,12 @@ func (u *UploadOperation) DoUpload(messageChannel chan *EventMessage) bool {
 	default:
 		u.Errors["Protocol"] = fmt.Sprintf("Unsupported upload protocol: %s", u.StorageService.Protocol)
 	}
+	if len(u.Errors) > 0 {
+		Dart.Log.Error("One or more errors occurred while uploading to %s service %s at %s", u.StorageService.Protocol, u.StorageService.Name, u.StorageService.HostAndPort())
+	}
+	for key, value := range u.Errors {
+		Dart.Log.Errorf("%s: %s", key, value)
+	}
 	return ok
 }
 
@@ -116,6 +127,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 	for _, sourceFile := range u.SourceFiles {
 		s3Key := path.Base(sourceFile)
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
+		Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
 		putOptions := minio.PutObjectOptions{}
 		if messageChannel != nil {
 			progress := NewStreamProgress(u.PayloadSize, messageChannel)
@@ -137,6 +149,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 			allSucceeded = false
 		} else {
 			u.Result.RemoteChecksum = uploadInfo.ETag
+			Dart.Log.Infof("Finished S3 upload of file %s; got e-tag %s", sourceFile, uploadInfo.ETag)
 		}
 	}
 	return allSucceeded
@@ -162,5 +175,7 @@ func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 // connections for S3 uploads. This returns true unless we're talking
 // to localhost (which we do in unit tests).
 func (u *UploadOperation) useSSL() bool {
-	return !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
+	useSSL := !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
+	Dart.Log.Infof("Use SSL for upload = %t", useSSL)
+	return useSSL
 }

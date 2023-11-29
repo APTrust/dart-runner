@@ -35,10 +35,9 @@ func SSHConnect(ss *StorageService) (*goph.Client, error) {
 		Addr:     ss.Host,
 		Port:     uint(ss.Port),
 		Timeout:  5 * time.Second,
-		Callback: ssh.InsecureIgnoreHostKey(), // Change this for production
+		Callback: ssh.InsecureIgnoreHostKey(), // TODO: Change this for production
 	}
 	return goph.NewConn(config)
-	//return goph.New(ss.Login, ss.HostAndPort(), auth)
 }
 
 // SFTPConnect returns an sftp connection or an error. If the StorageService
@@ -48,6 +47,7 @@ func SSHConnect(ss *StorageService) (*goph.Client, error) {
 func SFTPConnect(ss *StorageService) (*sftp.Client, error) {
 	conn, err := SSHConnect(ss)
 	if err != nil {
+		Dart.Log.Errorf("Connection to SFTP service %s at %s failed: %v", ss.Name, ss.HostAndPort(), err)
 		return nil, err
 	}
 	return conn.NewSftp()
@@ -64,6 +64,7 @@ func SFTPConnect(ss *StorageService) (*sftp.Client, error) {
 func SFTPUpload(ss *StorageService, localPath string, uploadProgress *StreamProgress) (int64, error) {
 	localFile, err := os.Open(localPath)
 	if err != nil {
+		Dart.Log.Errorf("SFTPUpload can't open file %s: %v", localPath, err)
 		return 0, err
 	}
 	client, err := SFTPConnect(ss)
@@ -75,14 +76,20 @@ func SFTPUpload(ss *StorageService, localPath string, uploadProgress *StreamProg
 
 	err = client.MkdirAll(ss.Bucket)
 	if err != nil {
-		return 0, fmt.Errorf("cannot create parent directories for '%s': %v", ss.Bucket, err)
+		message := fmt.Sprintf("SFTPUpload cannot create remote parent directories for '%s': %v", ss.Bucket, err)
+		Dart.Log.Error(message)
+		return 0, fmt.Errorf(message)
 	}
 
 	remoteFile, err := client.Create(remoteFileName)
 	if err != nil {
-		return 0, fmt.Errorf("cannot create remote file '%s': %v", remoteFileName, err)
+		message := fmt.Sprintf("SFTPUpload cannot create remote file '%s': %v", remoteFileName, err)
+		Dart.Log.Error(message)
+		return 0, fmt.Errorf(message)
 	}
 	defer remoteFile.Close()
+
+	Dart.Log.Infof("SFTPUpload: uploading %s to %s", localPath, remoteFileName)
 
 	bytesWritten := int64(0)
 	if uploadProgress != nil {
@@ -104,5 +111,6 @@ func SFTPUpload(ss *StorageService, localPath string, uploadProgress *StreamProg
 	} else {
 		bytesWritten, err = io.Copy(remoteFile, localFile)
 	}
+	Dart.Log.Infof("SFTPUpload: uploaded %d bytes to %s", bytesWritten, remoteFileName)
 	return bytesWritten, err
 }

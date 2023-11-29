@@ -29,5 +29,8 @@ func (op *ValidationOperation) Validate() bool {
 	} else if !util.FileExists(op.PathToBag) {
 		op.Errors["ValidationOperation.pathToBag"] = fmt.Sprintf("The bag to be validated does not exist at %s", op.PathToBag)
 	}
+	for key, value := range op.Errors {
+		Dart.Log.Infof("%s: %s", key, value)
+	}
 	return len(op.Errors) == 0
 }

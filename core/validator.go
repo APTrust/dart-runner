@@ -73,11 +73,11 @@ func (v *Validator) Validate() bool {
 	// Make sure BagItProfile is present and valid.
 	if !v.Profile.Validate() {
 		v.Errors = v.Profile.Errors
-		return false
+		return v.finish()
 	}
 	// Make sure bag has valid serialization format, per profile.
 	if !v.validateSerialization() {
-		return false
+		return v.finish()
 	}
 
 	// Scan the bag.
@@ -137,7 +137,7 @@ func (v *Validator) Validate() bool {
 		v.Errors[key] = value
 	}
 
-	return len(v.Errors) == 0
+	return v.finish()
 }
 
 // ScanBag scans the bag's metadata and payload, recording file names,
@@ -384,4 +384,15 @@ func (v *Validator) ErrorString() string {
 func (v *Validator) ErrorJSON() string {
 	data, _ := json.Marshal(v.Errors)
 	return string(data)
+}
+
+func (v *Validator) finish() bool {
+	if len(v.Errors) > 0 {
+		Dart.Log.Errorf("Validation failed for bag %s", v.PathToBag)
+		for key, value := range v.Errors {
+			Dart.Log.Errorf("%s: %s", key, value)
+		}
+		return false
+	}
+	return true
 }
