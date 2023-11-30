@@ -28,7 +28,7 @@
       </td>
       <td>
         <div class="form-group ">
-          <select class="form-control">
+          <select class="form-control" data-action="show-artifact" data-job-name="{{ $item.Job.Name }}">
             <option value="">-- View Artifact --</option>
             {{ range $i, $artifact := $item.Artifacts }}
             <option value="{{ $artifact.ID }}">{{ $artifact.Name }}</option>
@@ -44,6 +44,21 @@
 </table>
 
 {{ template "partials/table_bottom_links.html" . }}
+
+<script>
+$(function(){
+  $('select[data-action="show-artifact"]').on("change", function(){
+    let artifactId = $(this).val()
+    let artifactName = $(this).find("option:selected").text()
+    let jobName = $(this).attr('data-job-name')
+    let modalTitle = `${jobName} ${artifactName}`
+    if (artifactId != "") {
+      let url = `/jobs/artifact/${artifactId}`
+      loadIntoModal('get', modalTitle, url)
+    }
+  })
+})
+</script>
 
 {{ template "partials/page_footer.html" .}}
 

@@ -20,6 +20,12 @@ func AbortWithErrorJSON(c *gin.Context, status int, err error) {
 	c.Abort()
 }
 
+func AbortWithErrorModal(c *gin.Context, status int, err error) {
+	logRequestError(c, status, err)
+	c.HTML(status, "error/show_modal.html", getResponseData(err))
+	c.Abort()
+}
+
 func getResponseData(err error) gin.H {
 	stack := debug.Stack()
 	errorMessage := err.Error()

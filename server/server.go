@@ -166,6 +166,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/jobs/delete_file/:id", controllers.JobDeleteFile)
 	router.GET("/jobs/summary/:id", controllers.JobRunShow)
 	router.GET("/jobs/run/:id", controllers.JobRunExecute)
+	router.GET("/jobs/artifact/:id", controllers.JobArtifactShow)
 
 	// Remote Repositories
 	router.GET("/remote_repositories", controllers.RemoteRepositoryIndex)

@@ -68,3 +68,16 @@ func JobNew(c *gin.Context) {
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
 }
+
+// GET /jobs/artifact/:id
+func JobArtifactShow(c *gin.Context) {
+	artifact, err := core.ArtifactFind(c.Param("id"))
+	if err != nil {
+		AbortWithErrorModal(c, http.StatusNotFound, err)
+		return
+	}
+	data := gin.H{
+		"artifact": artifact,
+	}
+	c.HTML(http.StatusOK, "job/artifact.html", data)
+}
