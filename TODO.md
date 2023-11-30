@@ -25,6 +25,7 @@
 - [x] Improve job results display: bagging profile and all uploads (succeeded & failed)
 - [ ] Delete artifacts when deleting job 
 - [ ] Fix output path autofill on job packaging page
+- [ ] Fix Windows paths
 
 ## Later
 
@@ -41,7 +42,6 @@
 - [ ] Context-sensitive help
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
-- [ ] Fix Windows paths
 - [ ] Windows code signing
 - [ ] Mac code signing
 - [ ] User acceptance tests
