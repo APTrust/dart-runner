@@ -49,6 +49,10 @@ func (pager *Pager) SetCounts(totalItems, itemsInResultSet int) {
 	pager.ItemsInResultSet = itemsInResultSet
 	pager.ItemLast = pager.QueryOffset + itemsInResultSet
 
+	if pager.TotalItems == 0 {
+		pager.ItemFirst = 0
+	}
+
 	queryValues := pager.URL.Query()
 	queryValues["per_page"] = []string{strconv.Itoa(pager.PerPage)}
 	if pager.Page > 1 {

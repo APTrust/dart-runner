@@ -14,20 +14,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SettingsExportIndex displays a list of ExportSettings
+// ExportSettingsIndex displays a list of ExportSettings
 // objects.
 //
 // GET /settings/export
-func SettingsExportIndex(c *gin.Context) {
-	result := core.ObjList(constants.TypeExportSettings, "obj_name", 100, 0)
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusInternalServerError, result.Error)
+func ExportSettingsIndex(c *gin.Context) {
+	request := NewRequest(c)
+	if request.HasErrors() {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	data := gin.H{
-		"items": result.ExportSettings,
-	}
-	c.HTML(http.StatusOK, "settings/list.html", data)
+	request.TemplateData["items"] = request.QueryResult.ExportSettings
+	c.HTML(http.StatusOK, "settings/list.html", request.TemplateData)
 }
 
 // SettingsExportEdit shows a form on which user can edit

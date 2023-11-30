@@ -180,7 +180,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/remote_repositories/test/:id", controllers.RemoteRepositoryTestConnection)
 
 	// Settings import/export
-	router.GET("/settings/export", controllers.SettingsExportIndex)
+	router.GET("/settings/export", controllers.ExportSettingsIndex)
 	router.GET("/settings/export/new", controllers.SettingsExportNew)
 	router.GET("/settings/export/edit/:id", controllers.SettingsExportEdit)
 	router.POST("/settings/export/save/:id", controllers.SettingsExportSave)

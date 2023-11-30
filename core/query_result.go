@@ -93,12 +93,44 @@ func (qr *QueryResult) WorkflowBatch() *WorkflowBatch {
 	return nil
 }
 
+// Result count returns the total number of records
+// returned by the query. This is different from ObjectCount,
+// which is the total number of objects of a specified type
+// in the DB.
+func (qr *QueryResult) ResultCount() int {
+	count := 0
+	switch qr.ObjType {
+	case constants.TypeAppSetting:
+		count = len(qr.AppSettings)
+	case constants.TypeBagItProfile:
+		count = len(qr.BagItProfiles)
+	case constants.TypeExportSettings:
+		count = len(qr.ExportSettings)
+	case constants.TypeInternalSetting:
+		count = len(qr.InternalSettings)
+	case constants.TypeJob:
+		count = len(qr.Jobs)
+	case constants.TypeRemoteRepository:
+		count = len(qr.RemoteRepositories)
+	case constants.TypeStorageService:
+		count = len(qr.StorageServices)
+	case constants.TypeWorkflow:
+		count = len(qr.Workflows)
+	case constants.TypeWorkflowBatch:
+		count = len(qr.WorkflowBatches)
+	}
+	return count
+}
+
 func (qr *QueryResult) GetForm() (*Form, error) {
 	if qr.ResultType != constants.ResultTypeSingle || qr.ObjCount < 1 {
 		return nil, constants.ErrWrongTypeForForm
 	}
 	var form *Form
 	var err error
+
+	// Note that there's no form for type Job
+	// because Job form is actually multiple forms.
 	switch qr.ObjType {
 	case constants.TypeAppSetting:
 		form = qr.AppSetting().ToForm()

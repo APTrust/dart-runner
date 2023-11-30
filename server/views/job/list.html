@@ -45,6 +45,9 @@
 
 {{ template "partials/table_bottom_links.html" . }}
 
+
+{{ template "partials/pager.html" . }}
+
 <script>
 $(function(){
   $('select[data-action="show-artifact"]').on("change", function(){

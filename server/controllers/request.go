@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -64,6 +65,8 @@ func (r *Request) initFromHandlerName() {
 }
 
 func (r *Request) loadObjects() {
+	pageNumber := r.QueryParamAsInt("page", 1)
+	perPage := r.QueryParamAsInt("per_page", 25)
 	objId := r.ginCtx.Param("id")
 	if !r.IsListResponse {
 		r.QueryResult = core.ObjFind(objId)
@@ -80,12 +83,8 @@ func (r *Request) loadObjects() {
 		}
 	} else {
 		orderBy := r.ginCtx.DefaultQuery("orderBy", "obj_name")
-		offset := r.ginCtx.GetInt("offset")
-		limit := r.ginCtx.GetInt("limit")
-		if limit < 1 {
-			limit = 25
-		}
-		r.QueryResult = core.ObjList(r.ObjType, orderBy, limit, offset)
+		offset := (pageNumber - 1) * perPage
+		r.QueryResult = core.ObjList(r.ObjType, orderBy, perPage, offset)
 		if r.QueryResult.Error != nil {
 			r.Errors = append(r.Errors, r.QueryResult.Error)
 			return
@@ -95,12 +94,15 @@ func (r *Request) loadObjects() {
 			r.Errors = append(r.Errors, err)
 			return
 		}
-		totalObjectCount, err := core.ObjCount(r.QueryResult.ObjType)
-		if err != nil {
-			r.Errors = append(r.Errors, err)
-			return
-		}
-		pager.SetCounts(totalObjectCount, r.QueryResult.ObjCount)
+		pager.SetCounts(r.QueryResult.ObjCount, r.QueryResult.ResultCount())
 		r.TemplateData["pager"] = pager
 	}
+}
+
+func (r *Request) QueryParamAsInt(paramName string, defaultValue int) int {
+	value, err := strconv.Atoi(r.ginCtx.Query(paramName))
+	if err != nil {
+		value = defaultValue
+	}
+	return value
 }
