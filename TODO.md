@@ -11,7 +11,7 @@
 - [x] Add logging to all critical sections
 - [ ] Automated UI testing (Selenium)
 - [x] Save artifacts from jobs (manifests, tag files)
-- [ ] Expose artifacts in UI
+- [x] Expose artifacts in UI
 - [x] Settings export
 - [x] Settings export questions
 - [x] Settings import
@@ -21,6 +21,8 @@
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [x] Build Dashboard & APTrust client
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
+- [ ] Add paging to list pages. Show only 25-50 items at a time.
+- [ ] Improve job results display: bagging profile and all uploads (succeeded & failed)
 
 
 ## Later
