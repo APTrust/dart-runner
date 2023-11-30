@@ -26,12 +26,15 @@ var TitleTags = []string{
 }
 
 type JobOutcomeSummary struct {
-	JobName      string
-	JobWasRun    bool
-	JobSucceeded bool
-	Stage        string
-	Message      string
-	LastActivity time.Time
+	JobName           string
+	JobWasRun         bool
+	JobSucceeded      bool
+	Stage             string
+	Message           string
+	BagItProfileName  string
+	SuccessfulUploads []string
+	FailedUploads     []string
+	LastActivity      time.Time
 }
 
 type Job struct {
@@ -220,11 +223,16 @@ func (job Job) UploadSucceeded() bool {
 // or not the job was run and whether or not it succeeded.
 func (job *Job) Outcome() JobOutcomeSummary {
 	summary := JobOutcomeSummary{
-		JobName:      job.Name(),
-		JobWasRun:    false,
-		JobSucceeded: false,
-		Stage:        constants.StagePreRun,
-		Message:      "Job has not run",
+		JobName:           job.Name(),
+		JobWasRun:         false,
+		JobSucceeded:      false,
+		Stage:             constants.StagePreRun,
+		Message:           "Job has not run",
+		SuccessfulUploads: make([]string, 0),
+		FailedUploads:     make([]string, 0),
+	}
+	if job.BagItProfile != nil {
+		summary.BagItProfileName = job.BagItProfile.Name
 	}
 	if job.UploadAttempted() {
 		summary.JobWasRun = true
@@ -241,6 +249,13 @@ func (job *Job) Outcome() JobOutcomeSummary {
 			summary.Stage = constants.StageFinish
 		} else {
 			summary.Message = "One or more uploads failed"
+		}
+		for _, op := range job.UploadOps {
+			if op.Result.Succeeded() {
+				summary.SuccessfulUploads = append(summary.SuccessfulUploads, op.StorageService.Name)
+			} else {
+				summary.FailedUploads = append(summary.FailedUploads, op.StorageService.Name)
+			}
 		}
 	} else if job.ValidationAttempted() {
 		summary.JobWasRun = true

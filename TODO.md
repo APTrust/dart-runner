@@ -21,9 +21,10 @@
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [x] Build Dashboard & APTrust client
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
-- [ ] Add paging to list pages. Show only 25-50 items at a time.
-- [ ] Improve job results display: bagging profile and all uploads (succeeded & failed)
-
+- [x] Add paging to list pages. Show only 25-50 items at a time.
+- [x] Improve job results display: bagging profile and all uploads (succeeded & failed)
+- [ ] Delete artifacts when deleting job 
+- [ ] Fix output path autofill on job packaging page
 
 ## Later
 

@@ -293,6 +293,10 @@ func TestJobOutcome(t *testing.T) {
 	assert.Equal(t, constants.StageFinish, outcome.Stage)
 	assert.Equal(t, job.UploadOps[0].Result.Completed, outcome.LastActivity)
 
+	assert.Empty(t, outcome.FailedUploads)
+	require.Equal(t, 1, len(outcome.SuccessfulUploads))
+	assert.Equal(t, job.UploadOps[0].StorageService.Name, outcome.SuccessfulUploads[0])
+
 	// Upload failed
 	job.UploadOps[0].Result.Finish(errors)
 	outcome = job.Outcome()
@@ -300,4 +304,9 @@ func TestJobOutcome(t *testing.T) {
 	assert.False(t, outcome.JobSucceeded)
 	assert.Equal(t, "One or more uploads failed", outcome.Message)
 	assert.Equal(t, constants.StageUpload, outcome.Stage)
+
+	assert.Empty(t, outcome.SuccessfulUploads)
+	require.Equal(t, 1, len(outcome.FailedUploads))
+	assert.Equal(t, job.UploadOps[0].StorageService.Name, outcome.FailedUploads[0])
+
 }

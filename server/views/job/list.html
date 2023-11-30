@@ -20,13 +20,41 @@
     <tr>
       <td><a href="/jobs/files/{{ $item.Job.ID }}">{{ $item.Job.Name }}</a></td>
       <td>
-        <span class="{{ if $item.Job.Outcome.JobSucceeded }}text-success{{ else }}text-danger{{ end }}">
-          Last Stage Completed: {{ $item.Job.Outcome.Stage }}
-        </span> <br/> 
         {{ displayDate $item.Job.Outcome.LastActivity}}<br/>
+        
+        <!-- Packaging Info -->
+        {{ if $item.Job.PackageAttempted }}
+          {{ if $item.Job.PackageSucceeded }}
+            <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Packaged 
+              {{ if $item.Job.Outcome.BagItProfileName }}
+              with profile {{ $item.Job.Outcome.BagItProfileName }} 
+              {{ end }}
+              <br/>
+          {{ else }}
+            <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> Packaging failed <br/>
+          {{ end }}
+        {{ end }}
+
+        <!-- Validation Info -->
+        {{ if $item.Job.ValidationAttempted }}
+          {{ if $item.Job.ValidationSucceeded }}
+            <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Validation succeeded <br/>
+          {{ else }}
+            <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> Validation failed <br/>
+          {{ end }}
+        {{ end }}
+
+        <!-- Upload info -->
+        {{ range $a, $uploadTarget := $item.Job.Outcome.SuccessfulUploads }}
+          <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Uploaded to {{ $uploadTarget }} <br/>
+        {{ end }}
+        {{ range $a, $uploadTarget := $item.Job.Outcome.FailedUploads }}
+          <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i>  Upload to {{ $uploadTarget }} failed <br/>
+        {{ end }}
         {{ $item.Job.Outcome.Message }}
       </td>
       <td>
+        {{ if $item.Job.Outcome.JobWasRun }}
         <div class="form-group ">
           <select class="form-control" data-action="show-artifact" data-job-name="{{ $item.Job.Name }}">
             <option value="">-- View Artifact --</option>
@@ -35,7 +63,7 @@
             {{ end }}
           </select>
         </div>
-
+        {{ end }}
       </td>
       <td><a href="javascript:confirmForegroundDeletion('Delete job {{ $item.Job.Name }}?', '/jobs/delete/{{ $item.Job.ID }}')" title="Delete job {{ $item.Job.Name }}"><i class="fa fa-times text-danger" aria-hidden="true"></i></a></td>
     </tr>
