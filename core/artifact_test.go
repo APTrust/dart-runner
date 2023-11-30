@@ -31,7 +31,7 @@ func TestNewJobResultArtifact(t *testing.T) {
 	assert.Equal(t, constants.FileTypeJsonData, artifact.FileType)
 	assert.NotEmpty(t, artifact.UpdatedAt)
 
-	resultJson, err := json.Marshal(jobResult)
+	resultJson, err := json.MarshalIndent(jobResult, "", "  ")
 	require.NoError(t, err)
 	assert.Equal(t, string(resultJson), artifact.RawData)
 }

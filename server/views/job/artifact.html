@@ -1,7 +1,40 @@
 {{ define "job/artifact.html" }}
 
-<pre>
+<table class="table">
+    <tr>
+        <th>Job</th>
+        <td>{{ .artifact.BagName }}</td>
+    </tr>
+    <tr>
+        <th>File Name</th>
+        <td>{{ .artifact.FileName }}</td>
+    </tr>
+    <tr>
+        <th>Run Date</th>
+        <td>{{ displayDate .artifact.UpdatedAt }}</td>
+    </tr>
+</table>
+
+<hr class="mb-5"/>
+
+<pre id="artifactContent" class="text-primary">
 {{ .artifact.RawData }}
 </pre>
+
+<hr class="mb-5"/>
+
+<div class="mt-1 mb-1">
+  <div id="copied" class="text-success" style="display:none">
+    Data has been copied to the clipboard.
+  </div>
+</div>
+
+<div class="bottom-buttons">
+  <div class="float-right mr-5">
+    <button type="button" class="btn btn-primary mr-5" id="btnCopyToClipboard" onclick="copyToClipboard('#artifactContent', '#copied')">Copy to Clipboard</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+  </div>
+</div>
+
 
 {{ end }}

@@ -13,7 +13,7 @@ type Artifact struct {
 	ID        string
 	JobID     string
 	BagName   string
-	ItemType  string // File or WorkResult
+	ItemType  string // File or JobResult
 	FileName  string // name of manifest or tag file
 	FileType  string // manifest or tag file
 	RawData   string // file content or work result json
@@ -30,7 +30,7 @@ func NewArtifact() *Artifact {
 
 // NewJobResultArtifact creates a new Artifact to store a JobResult.
 func NewJobResultArtifact(bagName string, jobResult *JobResult) *Artifact {
-	resultJson, _ := json.Marshal(jobResult)
+	resultJson, _ := json.MarshalIndent(jobResult, "", "  ")
 	return &Artifact{
 		ID:        uuid.NewString(),
 		JobID:     jobResult.JobID,

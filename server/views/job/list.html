@@ -49,12 +49,9 @@
 $(function(){
   $('select[data-action="show-artifact"]').on("change", function(){
     let artifactId = $(this).val()
-    let artifactName = $(this).find("option:selected").text()
-    let jobName = $(this).attr('data-job-name')
-    let modalTitle = `${jobName} ${artifactName}`
     if (artifactId != "") {
       let url = `/jobs/artifact/${artifactId}`
-      loadIntoModal('get', modalTitle, url)
+      loadIntoModal('get', 'Job Artifact', url)
     }
   })
 })
