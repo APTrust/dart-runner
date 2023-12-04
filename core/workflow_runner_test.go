@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -16,27 +16,27 @@ import (
 )
 
 func createBatchFile(t *testing.T) string {
-	batchFile := path.Join(util.PathToTestData(), "files", "test_batch.csv")
+	batchFile := filepath.Join(util.PathToTestData(), "files", "test_batch.csv")
 	batchData, err := util.ReadFile(batchFile)
 	require.Nil(t, err)
 	// Change placeholder PROJECT_ROOT to the actual project root
 	// on this system, so the bagger can find the files it needs to bag.
 	batchDataWithPath := strings.ReplaceAll(string(batchData), "PROJECT_ROOT", util.ProjectRoot())
-	tmpBatchFile := path.Join(os.TempDir(), "test_batch.csv")
+	tmpBatchFile := filepath.Join(os.TempDir(), "test_batch.csv")
 	err = os.WriteFile(tmpBatchFile, []byte(batchDataWithPath), 0644)
 	require.Nil(t, err)
 	return tmpBatchFile
 }
 
 func runnerCleanup() {
-	os.Remove(path.Join(os.TempDir(), "test_batch.csv"))
-	os.Remove(path.Join(os.TempDir(), "RunnerTestCore.tar"))
-	os.Remove(path.Join(os.TempDir(), "RunnerTestServer.tar"))
-	os.Remove(path.Join(os.TempDir(), "RunnerTestUtil.tar"))
+	os.Remove(filepath.Join(os.TempDir(), "test_batch.csv"))
+	os.Remove(filepath.Join(os.TempDir(), "RunnerTestCore.tar"))
+	os.Remove(filepath.Join(os.TempDir(), "RunnerTestServer.tar"))
+	os.Remove(filepath.Join(os.TempDir(), "RunnerTestUtil.tar"))
 }
 
 func TestWorkflowRunner(t *testing.T) {
-	workflowFile := path.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
+	workflowFile := filepath.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
 	batchFile := createBatchFile(t)
 	defer runnerCleanup()
 

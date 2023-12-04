@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
-	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"time"
@@ -46,7 +46,7 @@ func NewPaths() *Paths {
 	envPaths := &Paths{
 		appName: AppName,
 		Home:    homeDir,
-		TempDir: path.Join(os.TempDir(), AppName),
+		TempDir: filepath.Join(os.TempDir(), AppName),
 	}
 	switch runtime.GOOS {
 	case "darwin":
@@ -62,19 +62,19 @@ func NewPaths() *Paths {
 }
 
 func (p *Paths) setMacOS() {
-	library := path.Join(p.Home, "Library")
-	p.DataDir = path.Join(library, "Application Support", p.appName)
-	p.Config = path.Join(library, "Preferences", p.appName)
-	p.Cache = path.Join(library, "Caches", p.appName)
-	p.LogDir = path.Join(library, "Logs", p.appName)
+	library := filepath.Join(p.Home, "Library")
+	p.DataDir = filepath.Join(library, "Application Support", p.appName)
+	p.Config = filepath.Join(library, "Preferences", p.appName)
+	p.Cache = filepath.Join(library, "Caches", p.appName)
+	p.LogDir = filepath.Join(library, "Logs", p.appName)
 
-	p.Desktop = path.Join(p.Home, "Desktop")
-	p.Documents = path.Join(p.Home, "Documents")
-	p.Downloads = path.Join(p.Home, "Downloads")
-	p.Music = path.Join(p.Home, "Music")
-	p.Photos = path.Join(p.Home, "Pictures")
-	p.Public = path.Join(p.Home, "Public")
-	p.Videos = path.Join(p.Home, "Movies")
+	p.Desktop = filepath.Join(p.Home, "Desktop")
+	p.Documents = filepath.Join(p.Home, "Documents")
+	p.Downloads = filepath.Join(p.Home, "Downloads")
+	p.Music = filepath.Join(p.Home, "Music")
+	p.Photos = filepath.Join(p.Home, "Pictures")
+	p.Public = filepath.Join(p.Home, "Public")
+	p.Videos = filepath.Join(p.Home, "Movies")
 	p.Root = "/"
 	p.UserMount = "/Volumes"
 }
@@ -82,24 +82,24 @@ func (p *Paths) setMacOS() {
 func (p *Paths) setWindows() {
 	appData := os.Getenv("APPDATA")
 	if appData == "" {
-		appData = path.Join(p.Home, "AppData", "Roaming")
+		appData = filepath.Join(p.Home, "AppData", "Roaming")
 	}
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
-		localAppData = path.Join(p.Home, "AppData", "Local")
+		localAppData = filepath.Join(p.Home, "AppData", "Local")
 	}
-	p.DataDir = path.Join(localAppData, p.appName, "Data")
-	p.Config = path.Join(appData, p.appName, "Config")
-	p.Cache = path.Join(localAppData, p.appName, "Cache")
-	p.LogDir = path.Join(localAppData, p.appName, "Log")
+	p.DataDir = filepath.Join(localAppData, p.appName, "Data")
+	p.Config = filepath.Join(appData, p.appName, "Config")
+	p.Cache = filepath.Join(localAppData, p.appName, "Cache")
+	p.LogDir = filepath.Join(localAppData, p.appName, "Log")
 
-	p.Desktop = path.Join(p.Home, "Desktop")
-	p.Documents = path.Join(p.Home, "Documents")
-	p.Downloads = path.Join(p.Home, "Downloads")
-	p.Music = path.Join(p.Home, "Music")
-	p.Photos = path.Join(p.Home, "Pictures")
-	p.Public = path.Join(p.Home, "c:\\Users\\Public")
-	p.Videos = path.Join(p.Home, "Videos")
+	p.Desktop = filepath.Join(p.Home, "Desktop")
+	p.Documents = filepath.Join(p.Home, "Documents")
+	p.Downloads = filepath.Join(p.Home, "Downloads")
+	p.Music = filepath.Join(p.Home, "Music")
+	p.Photos = filepath.Join(p.Home, "Pictures")
+	p.Public = filepath.Join(p.Home, "c:\\Users\\Public")
+	p.Videos = filepath.Join(p.Home, "Videos")
 
 	p.Root = "c:\\"
 	p.UserMount = ""
@@ -111,21 +111,21 @@ func (p *Paths) setWindows() {
 func (p *Paths) setLinux() {
 	dataDir := os.Getenv("XDG_DATA_HOME")
 	if dataDir == "" {
-		dataDir = path.Join(p.Home, ".local", "share", p.appName)
+		dataDir = filepath.Join(p.Home, ".local", "share", p.appName)
 	}
 	configDir := os.Getenv("XDG_CONFIG_HOME")
 	if configDir == "" {
-		configDir = path.Join(p.Home, ".config", p.appName)
+		configDir = filepath.Join(p.Home, ".config", p.appName)
 	}
 
 	cacheDir := os.Getenv("XDG_CACHE_HOME")
 	if cacheDir == "" {
-		cacheDir = path.Join(p.Home, ".cache", p.appName)
+		cacheDir = filepath.Join(p.Home, ".cache", p.appName)
 	}
 
 	logDir := os.Getenv("XDG_STATE_HOME")
 	if logDir == "" {
-		logDir = path.Join(p.Home, ".local", "state", p.appName)
+		logDir = filepath.Join(p.Home, ".local", "state", p.appName)
 	}
 
 	user, err := user.Current()
@@ -137,17 +137,17 @@ func (p *Paths) setLinux() {
 	p.Config = configDir
 	p.Cache = cacheDir
 	p.LogDir = logDir
-	p.TempDir = path.Join(os.TempDir(), user.Name, AppName)
+	p.TempDir = filepath.Join(os.TempDir(), user.Name, AppName)
 
-	p.Desktop = path.Join(p.Home, "Desktop")
-	p.Documents = path.Join(p.Home, "Documents")
-	p.Downloads = path.Join(p.Home, "Downloads")
-	p.Music = path.Join(p.Home, "Music")
-	p.Photos = path.Join(p.Home, "Pictures")
-	p.Public = path.Join(p.Home, "Public")
-	p.Videos = path.Join(p.Home, "Videos")
+	p.Desktop = filepath.Join(p.Home, "Desktop")
+	p.Documents = filepath.Join(p.Home, "Documents")
+	p.Downloads = filepath.Join(p.Home, "Downloads")
+	p.Music = filepath.Join(p.Home, "Music")
+	p.Photos = filepath.Join(p.Home, "Pictures")
+	p.Public = filepath.Join(p.Home, "Public")
+	p.Videos = filepath.Join(p.Home, "Videos")
 	p.Root = "/"
-	p.UserMount = path.Join("/", "media", user.Name)
+	p.UserMount = filepath.Join("/", "media", user.Name)
 }
 
 func (p *Paths) LogFile() (string, error) {
@@ -163,7 +163,7 @@ func (p *Paths) LogFile() (string, error) {
 			lastLog = f
 		}
 	}
-	return path.Join(p.LogDir, lastLog.Name()), nil
+	return filepath.Join(p.LogDir, lastLog.Name()), nil
 }
 
 // DefaultPaths returns a list of ExtendedFileInfo objects describing

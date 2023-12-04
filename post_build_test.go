@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -35,13 +35,27 @@ func Setup(t *testing.T) {
 }
 
 func build(t *testing.T) {
-	buildScript := path.Join(util.ProjectRoot(), "scripts", "build.sh")
-	stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, os.Environ(), nil)
-	assert.NotEmpty(t, stdout)
-	assert.Equal(t, 0, exitCode, string(stderr))
-	if exitCode == 0 {
-		setupSucceeded = true
+	if runtime.GOOS == "windows" {
+		buildWindows(t)
+	} else {
+		buildScript := filepath.Join(util.ProjectRoot(), "scripts", "build.sh")
+		stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, os.Environ(), nil)
+		assert.NotEmpty(t, stdout)
+		assert.Equal(t, 0, exitCode, string(stderr))
+		if exitCode == 0 {
+			setupSucceeded = true
+		}
 	}
+}
+
+func buildWindows(t *testing.T) {
+	buildDir := filepath.Join(util.ProjectRoot(), "dist", "windows")
+	require.NoError(t, os.MkdirAll(buildDir, 0755))
+	command := `go build -o dist/windows/dart-runner -ldflags "-X 'main.Version=TEST'" -tags windows`
+	stdout, stderr, exitCode := util.ExecCommand(command, nil, os.Environ(), nil)
+	assert.Equal(t, 0, exitCode, string(stdout), string(stderr))
+	setupAttempted = true
+	setupSucceeded = exitCode == 0
 }
 
 // runner returns the path to the dart-runner executable created by build()
@@ -56,7 +70,7 @@ func runner() string {
 			osName = "mac-arm64"
 		}
 	}
-	return path.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
+	return filepath.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
 }
 
 // When we run post-build tests, DART needs to know it's running in
@@ -71,12 +85,12 @@ func envForRunner() []string {
 // dirs returns a list of directories commonly used in tests
 func dirs(t *testing.T) (filesDir, homeDir, outputDir string) {
 	var err error
-	filesDir = path.Join(util.PathToTestData(), "files")
+	filesDir = filepath.Join(util.PathToTestData(), "files")
 	homeDir, err = os.UserHomeDir()
 	require.Nil(t, err)
 
 	// NOTE: scripts/test.rb should create this dir before tests start.
-	outputDir = path.Join(homeDir, "tmp", "bags")
+	outputDir = filepath.Join(homeDir, "tmp", "bags")
 
 	return filesDir, homeDir, outputDir
 }
@@ -106,7 +120,7 @@ func TestRunJobCommand(t *testing.T) {
 	Setup(t)
 	filesDir, homeDir, outputDir := dirs(t)
 	command := runner()
-	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
+	jobParamsJson, err := util.ReadFile(filepath.Join(filesDir, "postbuild_test_params.json"))
 	require.Nil(t, err, command)
 	require.True(t, len(string(jobParamsJson)) > 100)
 	args := []string{
@@ -165,7 +179,7 @@ func TestWorkflowBatchCommand(t *testing.T) {
 func testOutputFile(t *testing.T, homeDir, file string) {
 	// This directory is also created by scripts/test.rb.
 	// Post-build tests upload to the dart-runner.test bucket.
-	fullPath := path.Join(homeDir, "tmp", "minio", "dart-runner.test", file)
+	fullPath := filepath.Join(homeDir, "tmp", "minio", "dart-runner.test", file)
 	require.True(t, util.FileExists(fullPath), fullPath)
 
 	fileInfo, err := os.Stat(fullPath)

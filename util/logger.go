@@ -3,7 +3,7 @@ package util
 import (
 	stdlog "log"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/op/go-logging"
 )
@@ -15,7 +15,15 @@ func GetLogger(level logging.Level) *logging.Logger {
 		return log
 	}
 	paths := NewPaths()
-	logFile := path.Join(paths.LogDir, "dart.log")
+
+	if !FileExists(paths.LogDir) {
+		err := os.MkdirAll(paths.LogDir, 0755)
+		if err != nil && err != os.ErrExist {
+			panic(err)
+		}
+	}
+
+	logFile := filepath.Join(paths.LogDir, "dart.log")
 	f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		panic(err)
