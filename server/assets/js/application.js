@@ -217,3 +217,4 @@ function execCmd(url) {
 $(function () {
     $('[data-toggle="popover"]').popover()
 })
+

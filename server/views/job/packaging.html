@@ -48,28 +48,37 @@
 </form>
 
 <script>
-function setOutputPath() {
-  var packageName = $('#Job_PackageName').val()
-  var extension = $('#Job_BagItSerialization').val();
-  if (packageName && !packageName.endsWith(extension)) {
-    packageName += extension;
+$(function() {
+
+  let baggingDir = {{ .baggingDir }}
+  let separator = {{ .pathSeparator }}
+
+  let extensionForType = {
+    "application/x-7z-compressed": ".7z",
+    "application/tar": ".tar",
+    "application/x-tar": ".tar",
+    "application/zip": ".zip",
+    "application/gzip": ".gz",
+    "application/x-rar-compressed": ".rar",
+    "application/tar+gzip": ".tgz"
   }
-  //if (extension == '') {
-  //  packageName = packageName.replace(/\.\w+$/, '')
-  //}
-  var outputPath = $('#Job_OutputPath').val()
-  var separator = "{{ .pathSeparator }}"
-  var newOutputPath = ""
-  if (outputPath.endsWith(separator)) {
-    newOutputPath = outputPath + packageName
-  } else {
-    var pathComponents = outputPath.split(separator)
-    pathComponents[pathComponents.length - 1] = packageName
-    newOutputPath = pathComponents.join(separator)
+
+  function setOutputPath() {
+    var packageName = $('#Job_PackageName').val()
+    var mimeType = $('#Job_BagItSerialization').val();
+    var extension = extensionForType[mimeType] || ''
+    if (packageName && !packageName.endsWith(extension)) {
+      packageName += extension;
+    }
+    // In case user switched to a package format that's not serialized.
+    if (extension == '') {
+      packageName = packageName.replace(/\.\w+$/, '')
+    }
+    $('#Job_OutputPath').val(`${baggingDir}${separator}${packageName}`)
   }
-  $('#Job_OutputPath').val(newOutputPath)
-}
-$('#Job_PackageName').on('keyup', setOutputPath)
+  $('#Job_PackageName').on('keyup', setOutputPath)
+  $('#Job_BagItSerialization').on('change', setOutputPath)
+})
 </script>
 
 {{ template "partials/page_footer.html" .}}

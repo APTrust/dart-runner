@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/APTrust/dart-runner/core"
@@ -18,10 +19,16 @@ func JobShowPackaging(c *gin.Context) {
 		return
 	}
 	job := result.Job()
+	baggingDir, err := core.GetAppSetting("Bagging Directory")
+	if err != nil {
+		baggingDir = path.Join(core.Dart.Paths.Documents, "DART")
+		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)
+	}
 	data := gin.H{
 		"job":           job,
 		"form":          job.ToForm(),
 		"pathSeparator": string(os.PathSeparator),
+		"baggingDir":    baggingDir,
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }
