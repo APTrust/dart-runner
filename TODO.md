@@ -24,8 +24,9 @@
 - [x] Add paging to list pages. Show only 25-50 items at a time.
 - [x] Improve job results display: bagging profile and all uploads (succeeded & failed)
 - [ ] Delete artifacts when deleting job 
-- [ ] Fix output path autofill on job packaging page
+- [x] Fix output path autofill on job packaging page
 - [ ] Fix Windows paths
+- [ ] Move Minio to Docker (requires substantial changes to post-build tests)
 
 ## Later
 
@@ -38,7 +39,6 @@
 - [ ] PID file (or db entry) for running process
 - [ ] Ping script from front-end
 - [ ] Auto-open browser on start
-- [ ] Move Minio to Docker (requires substantial changes to post-build tests)
 - [ ] Context-sensitive help
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
