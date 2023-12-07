@@ -52,6 +52,7 @@ $(function() {
 
   let baggingDir = {{ .baggingDir }}
   let separator = {{ .pathSeparator }}
+  let autoSetSerialization = {{ .autoSetSerialization }}
 
   let extensionForType = {
     "application/x-7z-compressed": ".7z",
@@ -78,6 +79,14 @@ $(function() {
   }
   $('#Job_PackageName').on('keyup', setOutputPath)
   $('#Job_BagItSerialization').on('change', setOutputPath)
+
+  function setSerialization() {
+    let profileId = $(this).val()
+    let serializationFormat = autoSetSerialization[profileId]
+    $('#Job_BagItSerialization').val(serializationFormat)
+  }
+  $('#Job_BagItProfileID').on('change', setSerialization)
+
 })
 </script>
 

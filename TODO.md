@@ -31,12 +31,13 @@
 - [ ] Implement validation-only jobs.
 - [ ] Implement upload-only jobs.
 - [ ] Context-sensitive help
+- [x] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
 
 ## Later
 
+- [ ] Ensure backwards compatibility with DART Runner v0.96-beta
 - [x] Fix auto generation of output file path on job packaging screen
 - [x] Fix web font load error
-- [ ] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
 - [x] Fix invalid JSON "EOF" being returned to job run page
 - [x] Move job run JS to shared location so jobs, workflows, and batches can use it
 - [ ] Script to pre-load sample jobs and workflows for developers

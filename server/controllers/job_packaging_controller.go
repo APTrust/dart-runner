@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -25,10 +26,11 @@ func JobShowPackaging(c *gin.Context) {
 		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)
 	}
 	data := gin.H{
-		"job":           job,
-		"form":          job.ToForm(),
-		"pathSeparator": string(os.PathSeparator),
-		"baggingDir":    baggingDir,
+		"job":                  job,
+		"form":                 job.ToForm(),
+		"pathSeparator":        string(os.PathSeparator),
+		"baggingDir":           baggingDir,
+		"autoSetSerialization": getSerlializationAutosets(),
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }
@@ -98,4 +100,20 @@ func JobSavePackaging(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, nextPage)
+}
+
+func getSerlializationAutosets() map[string]string {
+	autosetMap := make(map[string]string)
+	// Typical installation has 3-10 profiles.
+	result := core.ObjList(constants.TypeBagItProfile, "obj_name", 1000, 0)
+	if result.Error != nil {
+		core.Dart.Log.Warningf("Could not load BagIt profiles for serialization auto-set: %s", result.Error.Error())
+		return autosetMap
+	}
+	for _, profile := range result.BagItProfiles {
+		if profile.Serialization == constants.SerializationRequired && len(profile.AcceptSerialization) == 1 {
+			autosetMap[profile.ID] = profile.AcceptSerialization[0]
+		}
+	}
+	return autosetMap
 }
