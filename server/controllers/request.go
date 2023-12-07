@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
@@ -82,7 +83,11 @@ func (r *Request) loadObjects() {
 			r.TemplateData["form"] = form
 		}
 	} else {
-		orderBy := r.ginCtx.DefaultQuery("orderBy", "obj_name")
+		defaultSortColumn := "obj_name"
+		if r.ObjType == constants.TypeJob {
+			defaultSortColumn = "updated_at desc"
+		}
+		orderBy := r.ginCtx.DefaultQuery("orderBy", defaultSortColumn)
 		offset := (pageNumber - 1) * perPage
 		r.QueryResult = core.ObjList(r.ObjType, orderBy, perPage, offset)
 		if r.QueryResult.Error != nil {
