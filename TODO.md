@@ -27,6 +27,10 @@
 - [x] Fix output path autofill on job packaging page
 - [ ] Fix Windows paths
 - [ ] Move Minio to Docker (requires substantial changes to post-build tests)
+- [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
+- [ ] Implement validation-only jobs.
+- [ ] Implement upload-only jobs.
+- [ ] Context-sensitive help
 
 ## Later
 
@@ -39,7 +43,6 @@
 - [ ] PID file (or db entry) for running process
 - [ ] Ping script from front-end
 - [ ] Auto-open browser on start
-- [ ] Context-sensitive help
 - [ ] Test DART tar files with 7-zip. See https://github.com/APTrust/dart/issues/229
 - [ ] [Systray](https://github.com/getlantern/systray/) or [Wails](https://wails.io) or [Fyne Systray](https://developer.fyne.io/explore/systray.html)
 - [ ] Windows code signing

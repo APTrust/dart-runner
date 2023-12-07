@@ -275,7 +275,7 @@ func (v *Validator) checkForbiddenManifests() bool {
 	for _, alg := range algs {
 		if !util.StringListContains(v.Profile.ManifestsAllowed, alg) {
 			filename := fmt.Sprintf("manifest-%s.txt", alg)
-			v.Errors[filename] = "Payload manifest is forbidden by profile."
+			v.Errors[filename] = fmt.Sprintf("Payload manifest is forbidden by profile: %s", filename)
 			hasForbidden = true
 		}
 	}
@@ -290,7 +290,7 @@ func (v *Validator) checkForbiddenTagManifests() bool {
 	for _, alg := range algs {
 		if !util.StringListContains(v.Profile.TagManifestsAllowed, alg) {
 			filename := fmt.Sprintf("tagmanifest-%s.txt", alg)
-			v.Errors[filename] = "Tag manifest is forbidden by profile."
+			v.Errors[filename] = fmt.Sprintf("Tag manifest is forbidden by profile: %s", filename)
 			hasForbidden = true
 		}
 	}
@@ -300,8 +300,11 @@ func (v *Validator) checkForbiddenTagManifests() bool {
 func (v *Validator) checkRequiredTagFiles() bool {
 	valid := true
 	for _, filename := range v.Profile.TagFilesRequired {
+		if filename == "" {
+			continue
+		}
 		if _, ok := v.TagFiles.Files[filename]; !ok {
-			v.Errors[filename] = "Required tag file is missing."
+			v.Errors[filename] = fmt.Sprintf("Required tag file is missing: %s", filename)
 			valid = false
 		}
 	}

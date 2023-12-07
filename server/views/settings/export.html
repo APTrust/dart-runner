@@ -69,7 +69,7 @@
       <a role="button" class="btn btn-secondary" href="/settings/export">Cancel</a>
     </div>
     <div class="float-right">
-      <a role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." href="/settings/export/show_json/{{ .settings.ID }}">Export</a>
+      <buton role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." onclick='loadIntoModal("get", "Settings", "/settings/export/show_json/{{ .settings.ID }}")'>Export</button>
     </div>
     <div class="float-right mr-3">
       <button type="submit" class="btn btn-primary" id="btnSave">Save</a>
