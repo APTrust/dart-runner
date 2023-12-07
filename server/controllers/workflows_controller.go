@@ -75,6 +75,7 @@ func WorkflowDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted workflow %s", result.Workflow().Name))
 	c.Redirect(http.StatusFound, "/workflows")
 }
 
@@ -126,8 +127,8 @@ func WorkflowSave(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "workflow/form.html", data)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Saved workflow %s", workflow.Name))
 	c.Redirect(http.StatusFound, "/workflows")
-
 }
 
 // GET /workflows/export/:id

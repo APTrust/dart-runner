@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/core"
@@ -20,8 +21,8 @@ func StorageServiceDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted storage service %s", request.QueryResult.StorageService().Name))
 	c.Redirect(http.StatusFound, "/storage_services")
-
 }
 
 // GET /storage_services/edit/:id
@@ -77,6 +78,7 @@ func StorageServiceSave(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "storage_service/form.html", data)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Saved storage service %s", ss.Name))
 	c.Redirect(http.StatusFound, "/storage_services")
 }
 

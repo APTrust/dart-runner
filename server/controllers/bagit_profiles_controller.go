@@ -55,6 +55,7 @@ func BagItProfileDelete(c *gin.Context) {
 		"status":   "OK",
 		"location": "/profiles",
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted BagIt Profile %s", result.BagItProfile().Name))
 	c.JSON(http.StatusOK, data)
 }
 

@@ -21,8 +21,8 @@ func RemoteRepositoryDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted remote repo %s", request.QueryResult.RemoteRepository().Name))
 	c.Redirect(http.StatusFound, "/remote_repositories")
-
 }
 
 // GET /remote_repositories/edit/:id
@@ -78,6 +78,7 @@ func RemoteRepositorySave(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "remote_repository/form.html", data)
 		return
 	}
+	SetFlashCookie(c, "Remote repo settings saved.")
 	c.Redirect(http.StatusFound, "/remote_repositories")
 }
 

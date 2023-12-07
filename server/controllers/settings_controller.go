@@ -106,6 +106,7 @@ func SettingsExportDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted settings %s", exportSettings.Name))
 	c.Redirect(http.StatusFound, "/settings/export")
 }
 

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/APTrust/dart-runner/core"
@@ -20,6 +21,7 @@ func AppSettingDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Deleted app setting %s", request.QueryResult.AppSetting()))
 	c.Redirect(http.StatusFound, "/app_settings")
 }
 
@@ -74,5 +76,6 @@ func AppSettingSave(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "app_setting/form.html", data)
 		return
 	}
+	SetFlashCookie(c, fmt.Sprintf("Saved setting %s", setting.Name))
 	c.Redirect(http.StatusFound, "/app_settings")
 }

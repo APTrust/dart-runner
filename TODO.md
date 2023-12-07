@@ -32,7 +32,7 @@
 - [ ] Implement upload-only jobs.
 - [ ] Context-sensitive help
 - [x] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
-- [ ] Show flash confirmation message on successful save and delete
+- [x] Show flash confirmation message on successful save and delete
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 
 ## Later

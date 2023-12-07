@@ -6,7 +6,7 @@ import (
 )
 
 func SetFlashCookie(c *gin.Context, message string) {
-	c.SetCookie(constants.FlashCookieName, message, 5, "/", "localhost", false, false)
+	c.SetCookie(constants.FlashCookieName, message, 2, "/", "localhost", false, false)
 }
 
 func GetFlashCookie(c *gin.Context) string {

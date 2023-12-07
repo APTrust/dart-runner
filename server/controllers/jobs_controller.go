@@ -33,7 +33,7 @@ func JobDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, deletionErr)
 		return
 	}
-	SetFlashCookie(c, fmt.Sprintf("Job %s was deleted.", result.Job().Name()))
+	SetFlashCookie(c, fmt.Sprintf("Deleted job %s.", result.Job().Name()))
 	c.Redirect(http.StatusFound, "/jobs")
 }
 
