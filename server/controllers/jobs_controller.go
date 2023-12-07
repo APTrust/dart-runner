@@ -16,7 +16,8 @@ type JobListItem struct {
 // PUT /jobs/delete/:id
 // POST /jobs/delete/:id
 func JobDelete(c *gin.Context) {
-	result := core.ObjFind(c.Param("id"))
+	jobID := c.Param("id")
+	result := core.ObjFind(jobID)
 	if result.Error != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
@@ -26,6 +27,13 @@ func JobDelete(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
+	err = core.ArtifactsDeleteByJobID(jobID)
+	if err != nil {
+		deletionErr := fmt.Errorf("job was deleted but artifacts were not: %v", err)
+		AbortWithErrorHTML(c, http.StatusInternalServerError, deletionErr)
+		return
+	}
+	SetFlashCookie(c, fmt.Sprintf("Job %s was deleted.", result.Job().Name()))
 	c.Redirect(http.StatusFound, "/jobs")
 }
 

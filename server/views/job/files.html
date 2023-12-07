@@ -75,7 +75,7 @@
 <div class="row mt-3 mb-3">
     <div class="col-12">
         <div class="float-left">
-            <button class="btn btn-danger" onclick="confirmForegroundDeletion('Delete this job?', '/jobs/delete/{{ .job.ID }}')" role="button">Delete Job</button>
+            <button class="btn btn-danger" onclick="confirmForegroundDeletion('Do you want to delete this job? Doing so will also delete associated artifacts such as manifests and tag files.', '/jobs/delete/{{ .job.ID }}')" role="button">Delete Job</button>
         </div>
 
         <div class="float-right" id="btnJobPackagingDiv">

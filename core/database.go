@@ -485,6 +485,13 @@ func ArtifactListByJobName(bagName string) ([]*Artifact, error) {
 	return artifactList(query, bagName)
 }
 
+// ArtifactsDeleteByJobID deletes all artifacts associated with JobID.
+func ArtifactsDeleteByJobID(jobID string) error {
+	query := "delete from artifacts where job_id=?"
+	_, err := Dart.DB.Exec(query, jobID)
+	return err
+}
+
 func artifactList(query string, params ...interface{}) ([]*Artifact, error) {
 	rows, err := Dart.DB.Query(query, params...)
 	if err != nil {

@@ -23,7 +23,7 @@
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
 - [x] Add paging to list pages. Show only 25-50 items at a time.
 - [x] Improve job results display: bagging profile and all uploads (succeeded & failed)
-- [ ] Delete artifacts when deleting job 
+- [x] Delete artifacts when deleting job 
 - [x] Fix output path autofill on job packaging page
 - [ ] Fix Windows paths
 - [ ] Move Minio to Docker (requires substantial changes to post-build tests)
@@ -32,6 +32,8 @@
 - [ ] Implement upload-only jobs.
 - [ ] Context-sensitive help
 - [x] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
+- [ ] Show flash confirmation message on successful save and delete
+- [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 
 ## Later
 

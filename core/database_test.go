@@ -239,4 +239,13 @@ func TestArtifactNameIDList(t *testing.T) {
 	nameIDList, err = core.ArtifactNameIDList(uuid.NewString())
 	require.Nil(t, err)
 	assert.Equal(t, 0, len(nameIDList))
+
+	testArtifactsDeleteByJobID(t, constants.EmptyUUID)
+}
+
+func testArtifactsDeleteByJobID(t *testing.T, jobID string) {
+	require.NoError(t, core.ArtifactsDeleteByJobID(jobID))
+	nameIDList, err := core.ArtifactNameIDList(jobID)
+	require.Nil(t, err)
+	assert.Empty(t, nameIDList)
 }
