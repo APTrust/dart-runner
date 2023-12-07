@@ -157,8 +157,16 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 	if qr.Error != nil {
 		return qr
 	}
+
+	// TODO: Make a proper whitelist of allowed order by clauses.
+	// Right now, we only use two. We can't pass order by as query param.
+	strQuery := "select obj_json from dart where obj_type = ? order by obj_name limit ? offset ?"
+	if orderBy == "updated_at desc" {
+		strQuery = "select obj_json from dart where obj_type = ? order by updated_at desc limit ? offset ?"
+	}
+
 	var rows *sql.Rows
-	rows, qr.Error = Dart.DB.Query("select obj_json from dart where obj_type = ? order by ? limit ? offset ?", objType, orderBy, limit, offset)
+	rows, qr.Error = Dart.DB.Query(strQuery, objType, limit, offset)
 	if qr.Error != nil {
 		return qr
 	}
