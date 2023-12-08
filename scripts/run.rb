@@ -48,14 +48,46 @@ class Runner
   end
 
   def start_minio
-    bin = self.bin_dir
-    minio_cmd = "#{bin}/minio server --quiet --address=localhost:9899 ~/tmp/minio"
-    log_file = log_file_path("minio")
-    puts "Minio is running on localhost:9899. User/Pwd: minioadmin/minioadmin"
-    @minio_pid = Process.spawn(ENV, minio_cmd, out: log_file, err: log_file)
-    Process.detach @minio_pid
-    puts "Minio PID is #{@minio_pid} logging to #{log_file}"
+    # bin = self.bin_dir
+    # minio_cmd = "#{bin}/minio server --quiet --address=localhost:9899 ~/tmp/minio"
+    # log_file = log_file_path("minio")
+    # puts "Minio is running on localhost:9899. User/Pwd: minioadmin/minioadmin"
+    # puts "Minio console available at http://127.0.0.1:9001"
+    # @minio_pid = Process.spawn(ENV, minio_cmd, out: log_file, err: log_file)
+    # Process.detach @minio_pid
+    # puts "Minio PID is #{@minio_pid} logging to #{log_file}"
+    puts "Starting Minio container"
+    @docker_minio_id = `docker run -p 9899:9000 -p 9001:9001 -d minio/minio server /data --console-address ":9001"`
+    @docker_minio_id = @docker_minio_id.chomp
+    if $?.exitstatus == 0
+      puts "Started Minio server with id #{@docker_minio_id}"
+      puts "Minio is running on localhost:9899. User/Pwd: minioadmin/minioadmin"
+      puts "Minio console available at http://127.0.0.1:9001"
+      @minio_started = true
+      # Make our two test buckets
+      `docker exec -it #{@docker_minio_id} mkdir /data/test`
+      `docker exec -it #{@docker_minio_id} mkdir /data/dart-runner.test`
+    else
+      puts "Error starting Minio docker container. Is one already running?"
+      puts @docker_minio_id
+    end    
   end
+
+  def stop_minio
+    if @minio_started
+      result = `docker stop #{@docker_minio_id}`
+      if $?.exitstatus == 0
+        puts "Stopped docker Minio service"
+      else
+        puts "Failed to stop docker Minio service with id #{@docker_minio_id}"
+        puts "See if you can kill it."
+        puts "Hint: run `docker ps` and look for the image named 'minio/minio'"
+      end
+    else
+      puts "Not killing Minio service because it failed to start"
+    end
+  end
+
 
   def stop_dart
     if !@dart_pid
@@ -70,32 +102,32 @@ class Runner
     end
   end
 
-  def stop_minio
-    if !@minio_pid
-        puts "Pid for Minio is zero. Can't kill that..."
-        return
-    end
+  # def stop_minio
+  #   if !@minio_pid
+  #       puts "Pid for Minio is zero. Can't kill that..."
+  #       return
+  #   end
 
-    puts "Stopping minio service (pid #{@minio_pid})"
+  #   puts "Stopping minio service (pid #{@minio_pid})"
 
-    begin
-      Process.kill('TERM', @minio_pid)
-    rescue
-      # We'll handle this below
-    end
+  #   begin
+  #     Process.kill('TERM', @minio_pid)
+  #   rescue
+  #     # We'll handle this below
+  #   end
 
-    ps_pid = `ps -ef | grep minio`.split(/\s+/)[1].to_i
-    if (ps_pid > 0)
-      begin
-        Process.kill('TERM', ps_pid)
-        puts "Also stopped minio child process #{ps_pid}"
-      rescue
-        puts "Couldn't kill minio."
-        puts "Check system processes to see if a version "
-        puts "of that process is lingering from a previous test run."
-        end
-    end
-  end
+  #   ps_pid = `ps -ef | grep minio`.split(/\s+/)[1].to_i
+  #   if (ps_pid > 0)
+  #     begin
+  #       Process.kill('TERM', ps_pid)
+  #       puts "Also stopped minio child process #{ps_pid}"
+  #     rescue
+  #       puts "Couldn't kill minio."
+  #       puts "Check system processes to see if a version "
+  #       puts "of that process is lingering from a previous test run."
+  #       end
+  #   end
+  # end
 
   # This command starts a docker container that runs an SFTP service.
   # We use this to test SFTP uploads.
@@ -178,13 +210,13 @@ class Runner
   end
 
   def log_file_path(service_name)
-    log_dir = File.join(ENV['HOME'], "tmp", "logs")
+    log_dir = File.join(Dir.home, "tmp", "logs")
     FileUtils.mkdir_p(log_dir)
     return File.join(log_dir, service_name + ".log")
   end
 
   def make_test_dirs
-    base = File.join(ENV['HOME'], "tmp")
+    base = File.join(Dir.home, "tmp")
     if base.end_with?("tmp") # So we don't delete anyone's home dir
       puts "Deleting #{base}"
     end
