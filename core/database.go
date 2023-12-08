@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -49,6 +50,10 @@ func InitDBForFirstUse() {
 	if err == sql.ErrNoRows {
 		paths := util.NewPaths()
 		dir := filepath.Join(paths.Documents, "DART")
+		err = os.MkdirAll(dir, 0755)
+		if err != nil {
+			Dart.Log.Errorf("Could not create Bagging Directory at %s: %v", dir, err)
+		}
 		setting := NewAppSetting("Bagging Directory", dir)
 		err = ObjSave(setting)
 		if err != nil {
