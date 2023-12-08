@@ -26,7 +26,7 @@
 - [x] Delete artifacts when deleting job 
 - [x] Fix output path autofill on job packaging page
 - [ ] Fix Windows paths
-- [ ] Move Minio to Docker (requires substantial changes to post-build tests)
+- [x] Move Minio to Docker (requires substantial changes to post-build tests)
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [ ] Implement validation-only jobs.
 - [ ] Implement upload-only jobs.
