@@ -35,6 +35,9 @@ func init() {
 		fmt.Println("Database file: ", filepath.Join(paths.DataDir, "dart.db"))
 		panic(err)
 	}
+	if !util.TestsAreRunning() {
+		InitDBForFirstUse()
+	}
 }
 
 func initDB(paths *util.Paths) *sql.DB {

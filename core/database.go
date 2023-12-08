@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/profiles"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -40,6 +42,56 @@ func InitSchema() error {
 	`
 	_, err := Dart.DB.Exec(schema)
 	return err
+}
+
+func InitDBForFirstUse() {
+	_, err := GetAppSetting("Bagging Directory")
+	if err == sql.ErrNoRows {
+		paths := util.NewPaths()
+		dir := filepath.Join(paths.Documents, "DART")
+		setting := NewAppSetting("Bagging Directory", dir)
+		err = ObjSave(setting)
+		if err != nil {
+			Dart.Log.Errorf("Could not save Bagging Directory setting: %v", err)
+		}
+	}
+	result := ObjList(constants.TypeBagItProfile, "obj_name", 100, 0)
+	if result.Error != nil {
+		Dart.Log.Errorf("Could not get profiles list: ", result.Error)
+		return
+	}
+	foundAPTrustProfile := false
+	foundBTRProfile := false
+	foundEmptyProfile := false
+	for _, profile := range result.BagItProfiles {
+		switch profile.BagItProfileInfo.BagItProfileIdentifier {
+		case constants.BTRProfileIdentifier:
+			foundBTRProfile = true
+		case constants.DefaultProfileIdentifier:
+			foundAPTrustProfile = true
+		case constants.EmptyProfileIdentifier:
+			foundEmptyProfile = true
+		}
+	}
+	if !foundAPTrustProfile {
+		initProfileInDB("APTrust", profiles.APTrust_V_2_2)
+	}
+	if !foundBTRProfile {
+		initProfileInDB("BTR", profiles.BTR_V_1_0)
+	}
+	if !foundEmptyProfile {
+		initProfileInDB("Empty", profiles.Empty_V_1_0)
+	}
+}
+
+func initProfileInDB(name, profileJson string) {
+	profile, err := BagItProfileFromJSON(profileJson)
+	if err == nil {
+		err = ObjSave(profile)
+	}
+	if err != nil {
+		Dart.Log.Errorf("Error loading %s profile into local DB: %v", name, err)
+	}
 }
 
 // ObjSave validates an object and then saves it if it passes validation.

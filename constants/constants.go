@@ -9,6 +9,7 @@ const (
 	BagItProfileDefault       = "aptrust-v2.2.json"
 	BTRProfileIdentifier      = "https://github.com/dpscollaborative/btr_bagit_profile/releases/download/1.0/btr-bagit-profile.json"
 	DefaultProfileIdentifier  = "https://raw.githubusercontent.com/APTrust/preservation-services/master/profiles/aptrust-v2.2.json"
+	EmptyProfileIdentifier    = "https://raw.githubusercontent.com/APTrust/dart/tree/master/profiles/empty_profile.json"
 	EmptyProfileID            = "73d1b307-4d6b-494b-b0c9-a8595222ae5a"
 	EmptyUUID                 = "00000000-0000-0000-0000-000000000000"
 	EventTypeBatchCompleted   = "batch completed"

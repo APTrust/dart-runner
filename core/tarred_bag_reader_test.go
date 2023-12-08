@@ -3,7 +3,7 @@ package core_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,7 +21,7 @@ func loadValidatorFromJson(t *testing.T, jsonFile string) *core.Validator {
 	filePath := filepath.Join(util.PathToTestData(), "files", jsonFile)
 	file, err := os.Open(filePath)
 	require.Nil(t, err)
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	require.Nil(t, err)
 	validator := &core.Validator{}
 	err = json.Unmarshal(data, validator)
