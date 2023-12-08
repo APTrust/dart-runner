@@ -47,15 +47,20 @@ class Runner
     end
   end
 
+  def stop_dart
+    if !@dart_pid
+        puts "Pid for DART is zero. Can't kill that..."
+        return
+    end
+    puts "Stopping DART service (pid #{@dart_pid})"
+    begin
+      Process.kill('TERM', @dart_pid)
+    rescue
+      puts "Could not kill DART. :("
+    end
+  end
+
   def start_minio
-    # bin = self.bin_dir
-    # minio_cmd = "#{bin}/minio server --quiet --address=localhost:9899 ~/tmp/minio"
-    # log_file = log_file_path("minio")
-    # puts "Minio is running on localhost:9899. User/Pwd: minioadmin/minioadmin"
-    # puts "Minio console available at http://127.0.0.1:9001"
-    # @minio_pid = Process.spawn(ENV, minio_cmd, out: log_file, err: log_file)
-    # Process.detach @minio_pid
-    # puts "Minio PID is #{@minio_pid} logging to #{log_file}"
     puts "Starting Minio container"
     @docker_minio_id = `docker run -p 9899:9000 -p 9001:9001 -d minio/minio server /data --console-address ":9001"`
     @docker_minio_id = @docker_minio_id.chomp
@@ -87,47 +92,6 @@ class Runner
       puts "Not killing Minio service because it failed to start"
     end
   end
-
-
-  def stop_dart
-    if !@dart_pid
-        puts "Pid for DART is zero. Can't kill that..."
-        return
-    end
-    puts "Stopping DART service (pid #{@dart_pid})"
-    begin
-      Process.kill('TERM', @dart_pid)
-    rescue
-      puts "Could not kill DART. :("
-    end
-  end
-
-  # def stop_minio
-  #   if !@minio_pid
-  #       puts "Pid for Minio is zero. Can't kill that..."
-  #       return
-  #   end
-
-  #   puts "Stopping minio service (pid #{@minio_pid})"
-
-  #   begin
-  #     Process.kill('TERM', @minio_pid)
-  #   rescue
-  #     # We'll handle this below
-  #   end
-
-  #   ps_pid = `ps -ef | grep minio`.split(/\s+/)[1].to_i
-  #   if (ps_pid > 0)
-  #     begin
-  #       Process.kill('TERM', ps_pid)
-  #       puts "Also stopped minio child process #{ps_pid}"
-  #     rescue
-  #       puts "Couldn't kill minio."
-  #       puts "Check system processes to see if a version "
-  #       puts "of that process is lingering from a previous test run."
-  #       end
-  #   end
-  # end
 
   # This command starts a docker container that runs an SFTP service.
   # We use this to test SFTP uploads.
@@ -195,20 +159,6 @@ class Runner
     File.expand_path(File.join(File.dirname(__FILE__), ".."))
   end
 
-  def bin_dir
-    os = ""
-    if RUBY_PLATFORM =~ /darwin/
-      os = "osx"
-    elsif RUBY_PLATFORM =~ /linux/
-      os = "linux"
-    elsif RUBY_PLATFORM =~ /win32/ || RUBY_PLATFORM =~ /mingw/
-      os = "windows"
-    else
-      abort("Unsupported platform: #{RUBY_PLATFORM}")
-    end
-    File.join(project_root, "bin", os)
-  end
-
   def log_file_path(service_name)
     log_dir = File.join(Dir.home, "tmp", "logs")
     FileUtils.mkdir_p(log_dir)
@@ -221,22 +171,11 @@ class Runner
       puts "Deleting #{base}"
     end
     FileUtils.remove_dir(base ,true)
-    dirs = ["bags", "bin", "logs", "minio"]
+    dirs = ["bags", "bin", "logs"]
     dirs.each do |dir|
       full_dir = File.join(base, dir)
       puts "Creating #{full_dir}"
       FileUtils.mkdir_p full_dir
-    end
-    # S3 buckets for minio. We should ideally read these from the
-    # .env.test file.
-    buckets = [
-      "dart-runner.test",
-      "test",
-    ]
-    buckets.each do |bucket|
-      full_bucket = File.join(base, "minio", bucket)
-      puts "Creating local minio bucket #{bucket}"
-      FileUtils.mkdir_p full_bucket
     end
   end
 

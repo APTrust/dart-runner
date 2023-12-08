@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -179,17 +182,22 @@ func TestWorkflowBatchCommand(t *testing.T) {
 func testOutputFile(t *testing.T, homeDir, file string) {
 	// This directory is also created by scripts/test.rb.
 	// Post-build tests upload to the dart-runner.test bucket.
-	fullPath := filepath.Join(homeDir, "tmp", "minio", "dart-runner.test", file)
-	require.True(t, util.FileExists(fullPath), fullPath)
 
-	fileInfo, err := os.Stat(fullPath)
-	require.Nil(t, err, fullPath)
+	accessKeyId := "minioadmin"
+	secretKey := "minioadmin"
+	options := &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
+		Secure: false,
+	}
+	client, err := minio.New("127.0.0.1:9899", options)
+	require.NoError(t, err)
 
-	// Make sure size is sane and modtime is fresh (so we know file isn't
-	// left over from a prior test run... the test script at scripts/test.rb
-	// should delete contents of this dir before each run, but let's be sure).
-	assert.True(t, fileInfo.Size() > int64(10000), fullPath)
-	assert.WithinDuration(t, time.Now(), fileInfo.ModTime(), 30*time.Second)
+	objInfo, err := client.StatObject(context.Background(), "dart-runner.test", file, minio.StatObjectOptions{})
+	require.NoError(t, err)
+	require.NotNil(t, objInfo)
+
+	assert.True(t, objInfo.Size > int64(10000), file)
+	assert.WithinDuration(t, time.Now(), objInfo.LastModified, 30*time.Second)
 }
 
 func testJsonOutput(t *testing.T, data string) {
