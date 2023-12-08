@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/APTrust/dart-runner/core"
 )
@@ -64,7 +64,7 @@ func ImportStorageServices() {
 
 func GetJson(filename string) []byte {
 	dataDir := core.Dart.Paths.DataDir
-	jsonFile := path.Join(dataDir, filename)
+	jsonFile := filepath.Join(dataDir, filename)
 	jsonData, err := os.ReadFile(jsonFile)
 	if err != nil {
 		fmt.Println(err)

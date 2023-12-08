@@ -3,6 +3,7 @@ package util_test
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -44,7 +45,7 @@ func TestLooksSafeToDelete(t *testing.T) {
 
 func TestCopyFile(t *testing.T) {
 	src := util.PathToUnitTestBag("example.edu.sample_good.tar")
-	dest := path.Join(util.ProjectRoot(), "example.edu.sample_good.tar")
+	dest := filepath.Join(util.ProjectRoot(), "example.edu.sample_good.tar")
 	_, err := util.CopyFile(dest, src)
 	defer os.Remove(dest)
 	assert.Nil(t, err)
@@ -116,7 +117,7 @@ func TestRecursiveFileList(t *testing.T) {
 }
 
 func TestGetDirectoryStats(t *testing.T) {
-	dir := path.Join(util.ProjectRoot(), "server", "views")
+	dir := filepath.Join(util.ProjectRoot(), "server", "views")
 	dirStats := util.GetDirectoryStats(dir)
 	require.Empty(t, dirStats.Error)
 	assert.Equal(t, dir, dirStats.FullPath)
@@ -125,10 +126,10 @@ func TestGetDirectoryStats(t *testing.T) {
 	assert.True(t, dirStats.FileCount > dirStats.DirCount*2)
 	assert.True(t, dirStats.TotalBytes > 40000)
 
-	dirStats = util.GetDirectoryStats(path.Join(util.ProjectRoot(), "path-does", "not-exist"))
+	dirStats = util.GetDirectoryStats(filepath.Join(util.ProjectRoot(), "path-does", "not-exist"))
 	assert.Contains(t, dirStats.Error, "no such file or directory")
 
-	file := path.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
+	file := filepath.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
 	dirStats = util.GetDirectoryStats(file)
 	assert.Empty(t, dirStats.Error)
 	assert.Equal(t, file, dirStats.FullPath)
@@ -142,7 +143,7 @@ func TestGetDirectoryStats(t *testing.T) {
 }
 
 func TestListDirectory(t *testing.T) {
-	dir := path.Join(util.ProjectRoot(), "util")
+	dir := filepath.Join(util.ProjectRoot(), "util")
 	files, err := util.ListDirectory(dir)
 	require.Nil(t, err)
 	require.NotEmpty(t, files)
@@ -150,7 +151,7 @@ func TestListDirectory(t *testing.T) {
 }
 
 func TestListDirectoryWithSort(t *testing.T) {
-	dir := path.Join(util.ProjectRoot())
+	dir := filepath.Join(util.ProjectRoot())
 	entries, err := util.ListDirectoryWithSort(dir)
 	require.Nil(t, err)
 	require.NotEmpty(t, entries)
@@ -192,7 +193,7 @@ func TestParseCSV(t *testing.T) {
 		"custom-tag-file.txt/Tag-Two",
 	}
 
-	pathToCSVFile := path.Join(util.PathToTestData(), "files", "test_batch.csv")
+	pathToCSVFile := filepath.Join(util.PathToTestData(), "files", "test_batch.csv")
 	headers, records, err := util.ParseCSV(pathToCSVFile)
 	require.Nil(t, err)
 	assert.Equal(t, expectedHeaders, headers)

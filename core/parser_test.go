@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -37,7 +37,7 @@ var expectedChecksums = map[string]string{
 }
 
 func TestParseTagFile(t *testing.T) {
-	tagfile := path.Join(util.PathToTestData(), "files", "bag-info.txt")
+	tagfile := filepath.Join(util.PathToTestData(), "files", "bag-info.txt")
 	file, err := os.Open(tagfile)
 	require.Nil(t, err)
 	defer file.Close()
@@ -52,7 +52,7 @@ func TestParseTagFile(t *testing.T) {
 }
 
 func TestParseManifest(t *testing.T) {
-	manifest := path.Join(util.PathToTestData(), "files", "manifest-sha256.txt")
+	manifest := filepath.Join(util.PathToTestData(), "files", "manifest-sha256.txt")
 	file, err := os.Open(manifest)
 	require.Nil(t, err)
 	defer file.Close()

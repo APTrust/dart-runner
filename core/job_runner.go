@@ -3,7 +3,7 @@ package core
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -392,14 +392,14 @@ func (r *Runner) saveArtifactsToFileSystem(bagger *Bagger) {
 		return
 	}
 	for manifestName, content := range bagger.ManifestArtifacts {
-		outputPath := path.Join(artifactsDir, manifestName)
+		outputPath := filepath.Join(artifactsDir, manifestName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
 			Dart.Log.Warningf("Error saving manifest file artifact %s for job %s: %s", manifestName, r.Job.Name(), err.Error())
 		}
 	}
 	for tagFileName, content := range bagger.TagFileArtifacts {
-		outputPath := path.Join(artifactsDir, tagFileName)
+		outputPath := filepath.Join(artifactsDir, tagFileName)
 		err := os.WriteFile(outputPath, []byte(content), 0644)
 		if err != nil {
 			Dart.Log.Warningf("Error saving tag file artifact %s for job %s: %s", tagFileName, r.Job.Name(), err.Error())

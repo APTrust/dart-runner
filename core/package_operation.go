@@ -2,6 +2,7 @@ package core
 
 import (
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -21,7 +22,7 @@ type PackageOperation struct {
 
 func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *PackageOperation {
 	if path.Base(outputPath) != packageName {
-		outputPath = path.Join(outputPath, packageName)
+		outputPath = filepath.Join(outputPath, packageName)
 	}
 	return &PackageOperation{
 		PackageName: packageName,

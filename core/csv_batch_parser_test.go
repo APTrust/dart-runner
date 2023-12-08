@@ -1,7 +1,8 @@
 package core_test
 
 import (
-	"path"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -21,7 +22,7 @@ func TestCSVBatchParserBadFile(t *testing.T) {
 	assert.Equal(t, "open /path/-to-/nowhere/file.csv: no such file or directory", err.Error())
 
 	// Attempt to parse a non-csv file should give us an error.
-	jsonFile := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	jsonFile := filepath.Join(util.PathToTestData(), "files", "sample_job.json")
 	parser = core.NewCSVBatchParser(jsonFile, workflow)
 	jobParamsList, err = parser.ParseAll("/tmp")
 	assert.Nil(t, jobParamsList)
@@ -31,7 +32,7 @@ func TestCSVBatchParserBadFile(t *testing.T) {
 
 func TestCSVBatchParserGoodFile(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
-	csvFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	csvFile := filepath.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
 	parser := core.NewCSVBatchParser(csvFile, workflow)
 	jobParamsList, err := parser.ParseAll("/tmp/csvtest")
 	require.Nil(t, err)
@@ -59,7 +60,7 @@ func TestCSVBatchParserGoodFile(t *testing.T) {
 			}
 		}
 		assert.Equal(t, bagName, jobParams.PackageName)
-		assert.Equal(t, path.Join("/tmp/csvtest", bagName), jobParams.OutputPath)
+		assert.Equal(t, filepath.Join(string(os.PathSeparator), "tmp", "csvtest", bagName), jobParams.OutputPath)
 		assert.NotEmpty(t, fileList)
 		assert.Equal(t, fileList, jobParams.Files)
 

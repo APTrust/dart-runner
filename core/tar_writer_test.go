@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -27,7 +28,7 @@ func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
 }
 
 func getTarWriter(t *testing.T, filename string) (*core.TarWriter, string) {
-	tempFilePath := path.Join(os.TempDir(), filename)
+	tempFilePath := filepath.Join(os.TempDir(), filename)
 	w := core.NewTarWriter(tempFilePath, digestAlgs)
 	assert.NotNil(t, w)
 	assert.Equal(t, tempFilePath, w.PathToTarFile)

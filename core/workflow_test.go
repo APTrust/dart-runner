@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -14,7 +14,7 @@ import (
 )
 
 func loadJsonWorkflow(t *testing.T) *core.Workflow {
-	pathToFile := path.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
+	pathToFile := filepath.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
 	workflow, err := core.WorkflowFromJson(pathToFile)
 	require.Nil(t, err)
 	require.NotNil(t, workflow)
@@ -28,7 +28,7 @@ func TestWorkflowFromJson(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
 
 	// Spot check the workflow's BagIt profile.
-	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	pathToProfile := filepath.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
 	aptProfile, err := core.BagItProfileLoad(pathToProfile)
 	require.Nil(t, err)
 

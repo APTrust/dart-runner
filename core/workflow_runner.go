@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"sync"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -206,7 +206,7 @@ func (r *WorkflowRunner) getJobParams(entry *WorkflowCSVEntry) *JobParams {
 	return NewJobParams(
 		r.Workflow.Copy(),
 		entry.BagName,
-		path.Join(r.OutputDir, entry.BagName),
+		filepath.Join(r.OutputDir, entry.BagName),
 		[]string{entry.RootDir},
 		entry.Tags)
 }

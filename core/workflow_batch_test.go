@@ -3,7 +3,7 @@ package core_test
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -87,7 +87,7 @@ func TestWorkflowBatchValidateBadParams(t *testing.T) {
 	assert.Equal(t, "Profile must allow at least one manifest algorithm.", wb.Errors["Workflow_BagItProfile.ManifestsAllowed"])
 
 	// This json file is unparsable as CSV
-	pathToJSONFile := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	pathToJSONFile := filepath.Join(util.PathToTestData(), "files", "sample_job.json")
 	workflow := loadJsonWorkflow(t)
 	wb = core.NewWorkflowBatch(workflow, pathToJSONFile)
 	assert.False(t, wb.Validate())
@@ -98,7 +98,7 @@ func TestWorkflowBatchValidateBadParams(t *testing.T) {
 
 func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 	workflow := loadJsonWorkflow(t)
-	pathToBatchFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	pathToBatchFile := filepath.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
 
 	// This file is mostly valid, but it contains relative paths
 	// that DART won't be able to find. The validator should note those.
@@ -121,7 +121,7 @@ func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 	// of the workflow's BagIt profile. This file contains quite a
 	// few errors, but we're only going to spot check a handful of
 	// basic cases.
-	csvWithBadTags := path.Join(util.PathToTestData(), "files", "csv_batch_invalid_tags.csv")
+	csvWithBadTags := filepath.Join(util.PathToTestData(), "files", "csv_batch_invalid_tags.csv")
 	wb = core.NewWorkflowBatch(workflow, csvWithBadTags)
 	assert.False(t, wb.Validate())
 	assert.Equal(t, "Value Spongebob for tag aptrust-info.txt/Access on line 1 is not in the list of allowed values.", wb.Errors["1-aptrust-info.txt/Access"])
@@ -135,7 +135,7 @@ func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 func TestWBPersistentObjectInterface(t *testing.T) {
 	defer core.ClearDartTable()
 	workflow := loadJsonWorkflow(t)
-	pathToBatchFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	pathToBatchFile := filepath.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
 
 	// We need valid paths in our batch file, or we won't be
 	// able to save this due to validation errors.

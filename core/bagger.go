@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -125,7 +126,7 @@ func (b *Bagger) ArtifactsDir() string {
 		artifactsDir = b.OutputPath + "_artifacts"
 	} else {
 		artifactsDir = path.Dir(b.OutputPath)
-		artifactsDir = path.Join(artifactsDir, fmt.Sprintf("%s_artifacts", b.bagName))
+		artifactsDir = filepath.Join(artifactsDir, fmt.Sprintf("%s_artifacts", b.bagName))
 	}
 	return artifactsDir
 }
@@ -241,7 +242,7 @@ func (b *Bagger) addTagFiles() bool {
 		// an Artifact when job completes.
 		b.TagFileArtifacts[tagFileName] = contents
 
-		tempFilePath := path.Join(os.TempDir(), fmt.Sprintf("%s-%d", tagFileName, time.Now().UnixNano()))
+		tempFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", tagFileName, time.Now().UnixNano()))
 		defer os.Remove(tempFilePath)
 		err = os.WriteFile(tempFilePath, []byte(contents), 0644)
 		if err != nil {

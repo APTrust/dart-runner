@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -205,7 +205,7 @@ func WorkflowBatchValidate(c *gin.Context) {
 		return
 	}
 
-	tempFile := path.Join(os.TempDir(), csvFileHeader.Filename)
+	tempFile := filepath.Join(os.TempDir(), csvFileHeader.Filename)
 	err = c.SaveUploadedFile(csvFileHeader, tempFile)
 	if err != nil {
 		AbortWithErrorJSON(c, http.StatusInternalServerError, err)

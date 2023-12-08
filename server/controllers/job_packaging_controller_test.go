@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -41,7 +41,7 @@ func TestJobSavePackaging(t *testing.T) {
 	job := loadTestJob(t)
 	require.NoError(t, core.ObjSave(job))
 	require.NoError(t, core.ObjSave(job.BagItProfile))
-	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "btr-v1.0-1.3.0.json")
+	pathToProfile := filepath.Join(util.ProjectRoot(), "profiles", "btr-v1.0-1.3.0.json")
 	btrProfile, err := core.BagItProfileLoad(pathToProfile)
 	require.Nil(t, err)
 	require.NotNil(t, btrProfile)

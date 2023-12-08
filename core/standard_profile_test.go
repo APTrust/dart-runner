@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -12,7 +12,7 @@ import (
 )
 
 func loadStandardProfile(t *testing.T, name string) *core.StandardProfile {
-	filename := path.Join(util.PathToTestData(), "profiles", name)
+	filename := filepath.Join(util.PathToTestData(), "profiles", name)
 	jsonBytes, err := os.ReadFile(filename)
 	require.Nil(t, err)
 	profile, err := core.StandardProfileFromJson(jsonBytes)

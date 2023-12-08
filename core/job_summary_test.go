@@ -3,7 +3,7 @@ package core_test
 import (
 	"encoding/json"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -14,7 +14,7 @@ import (
 )
 
 func loadTestJob(t *testing.T) *core.Job {
-	filename := path.Join(util.PathToTestData(), "files", "aptrust_unit_test_job.json")
+	filename := filepath.Join(util.PathToTestData(), "files", "aptrust_unit_test_job.json")
 	data, err := os.ReadFile(filename)
 	require.Nil(t, err)
 	job := &core.Job{}

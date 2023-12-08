@@ -3,7 +3,7 @@ package core_test
 import (
 	"database/sql"
 	"fmt"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -16,7 +16,7 @@ import (
 )
 
 func loadProfile(t *testing.T, name string) *core.BagItProfile {
-	filename := path.Join(util.ProjectRoot(), "profiles", name)
+	filename := filepath.Join(util.ProjectRoot(), "profiles", name)
 	profile, err := core.BagItProfileLoad(filename)
 	assert.Nil(t, err)
 	require.NotNil(t, profile)
@@ -72,7 +72,7 @@ func TestBagItProfileLoad(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Test with non-JSON file. This is a tar file.
-	filename := path.Join(util.PathToUnitTestBag("example.edu.tagsample_good.tar"))
+	filename := filepath.Join(util.PathToUnitTestBag("example.edu.tagsample_good.tar"))
 	_, err = core.BagItProfileLoad(filename)
 	assert.NotNil(t, err)
 

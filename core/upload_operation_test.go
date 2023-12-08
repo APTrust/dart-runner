@@ -1,7 +1,7 @@
 package core_test
 
 import (
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -60,7 +60,7 @@ func TestUploadOperation(t *testing.T) {
 	// This should calculate the size of all files
 	// under that directory.
 	files = []string{
-		path.Join(util.ProjectRoot(), "core"),
+		filepath.Join(util.ProjectRoot(), "core"),
 	}
 	op = core.NewUploadOperation(ss, files)
 	require.NotNil(t, op)

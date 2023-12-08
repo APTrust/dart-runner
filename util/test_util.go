@@ -2,7 +2,7 @@ package util
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,7 +12,7 @@ import (
 // Paths in pastbuild_test_batch.csv file are relative.
 // Create a temp file with absolute paths.
 func MakeTempCSVFileWithValidPaths(t *testing.T, pathToCSVFile string) string {
-	tempFilePath := path.Join(os.TempDir(), "temp_batch.csv")
+	tempFilePath := filepath.Join(os.TempDir(), "temp_batch.csv")
 	csvContents, err := os.ReadFile(pathToCSVFile)
 	require.Nil(t, err)
 	absPrefix := ProjectRoot() + string(os.PathSeparator)

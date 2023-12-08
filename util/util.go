@@ -5,7 +5,6 @@ import (
 	"math"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -260,18 +259,18 @@ func PrintAndExit(message string) {
 // ProjectRoot returns the project root.
 func ProjectRoot() string {
 	_, thisFile, _, _ := runtime.Caller(0)
-	absPath, _ := filepath.Abs(path.Join(thisFile, "..", ".."))
+	absPath, _ := filepath.Abs(filepath.Join(thisFile, "..", ".."))
 	return absPath
 }
 
 // PathToTestData returns the path to the directory containing test data.
 // This is used only in testing.
 func PathToTestData() string {
-	return path.Join(ProjectRoot(), "testdata")
+	return filepath.Join(ProjectRoot(), "testdata")
 }
 
 func PathToUnitTestBag(bagName string) string {
-	return path.Join(ProjectRoot(), "testdata", "bags", bagName)
+	return filepath.Join(ProjectRoot(), "testdata", "bags", bagName)
 }
 
 // TestsAreRunning returns true when code is running under "go test"

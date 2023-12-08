@@ -3,7 +3,7 @@ package core_test
 import (
 	"encoding/json"
 	"io"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -13,7 +13,7 @@ import (
 )
 
 func TestWorkflowCSVFile(t *testing.T) {
-	pathToFile := path.Join(util.PathToTestData(), "files", "csv_workflow_batch.csv")
+	pathToFile := filepath.Join(util.PathToTestData(), "files", "csv_workflow_batch.csv")
 	csv, err := core.NewWorkflowCSVFile(pathToFile)
 	require.Nil(t, err)
 	require.NotNil(t, csv)

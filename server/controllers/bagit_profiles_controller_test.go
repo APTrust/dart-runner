@@ -6,7 +6,7 @@ import (
 	"html"
 	"net/http"
 	"net/url"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -203,7 +203,7 @@ func testImportFromUrl(t *testing.T) {
 
 func testImportFromJson(t *testing.T) {
 
-	pathToFile := path.Join(util.PathToTestData(), "profiles", "standard", "bagProfileFoo.json")
+	pathToFile := filepath.Join(util.PathToTestData(), "profiles", "standard", "bagProfileFoo.json")
 	jsonData, err := util.ReadFile(pathToFile)
 	require.Nil(t, err)
 
@@ -567,7 +567,7 @@ func saveTestProfiles(t *testing.T) {
 		"empty_profile.json",
 	}
 	for _, filename := range profiles {
-		pathToFile := path.Join(util.ProjectRoot(), "profiles", filename)
+		pathToFile := filepath.Join(util.ProjectRoot(), "profiles", filename)
 		data, err := util.ReadFile(pathToFile)
 		require.Nil(t, err)
 		profile, err := core.BagItProfileFromJSON(string(data))

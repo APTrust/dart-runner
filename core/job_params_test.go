@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -14,7 +14,7 @@ import (
 )
 
 func getTestWorkflow(t *testing.T) *core.Workflow {
-	pathToProfile := path.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
+	pathToProfile := filepath.Join(util.ProjectRoot(), "profiles", "aptrust-v2.2.json")
 	profile, err := core.BagItProfileLoad(pathToProfile)
 	require.Nil(t, err)
 	require.NotNil(t, profile)
@@ -68,7 +68,7 @@ func getTestTags() []*core.Tag {
 
 func getTestFileList() []string {
 	return []string{
-		path.Join(util.ProjectRoot(), "profiles"),
+		filepath.Join(util.ProjectRoot(), "profiles"),
 		util.PathToTestData(),
 	}
 }

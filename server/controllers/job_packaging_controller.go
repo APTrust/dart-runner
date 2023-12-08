@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -22,7 +22,7 @@ func JobShowPackaging(c *gin.Context) {
 	job := result.Job()
 	baggingDir, err := core.GetAppSetting("Bagging Directory")
 	if err != nil {
-		baggingDir = path.Join(core.Dart.Paths.Documents, "DART")
+		baggingDir = filepath.Join(core.Dart.Paths.Documents, "DART")
 		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)
 	}
 	data := gin.H{

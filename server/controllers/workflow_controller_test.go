@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -269,7 +269,7 @@ func TestWorkflowBatchValidate_Invalid(t *testing.T) {
 	workflow := loadTestWorkflow(t)
 	require.NoError(t, core.ObjSave(workflow))
 
-	csvFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	csvFile := filepath.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
@@ -299,7 +299,7 @@ func TestWorkflowBatchValidate_Valid(t *testing.T) {
 	workflow := loadTestWorkflow(t)
 	require.NoError(t, core.ObjSave(workflow))
 
-	csvFile := path.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
+	csvFile := filepath.Join(util.PathToTestData(), "files", "postbuild_test_batch.csv")
 
 	// Make the relative paths absolute, and the validator should be
 	// happy because this file contains a complete and valid set of tags.
@@ -334,7 +334,7 @@ func TestWorkflowBatchValidate_Valid(t *testing.T) {
 	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &responseData))
 
 	// Temp CSV file path will differ on Windows vs. Linux/Mac.
-	expectedTempPath := path.Join(os.TempDir(), "temp_batch.csv")
+	expectedTempPath := filepath.Join(os.TempDir(), "temp_batch.csv")
 	params := url.Values{}
 	params.Set("PathToCSVFile", expectedTempPath)
 	params.Set("WorkflowID", workflow.ID)
@@ -383,7 +383,7 @@ func testWorkflowRunBatch(t *testing.T, batchUrl string) {
 }
 
 func loadTestWorkflow(t *testing.T) *core.Workflow {
-	filepath := path.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json")
+	filepath := filepath.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json")
 	workflow, err := core.WorkflowFromJson(filepath)
 	require.Nil(t, err)
 	require.NotNil(t, workflow)

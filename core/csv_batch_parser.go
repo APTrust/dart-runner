@@ -1,7 +1,7 @@
 package core
 
 import (
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/APTrust/dart-runner/util"
@@ -42,7 +42,7 @@ func (p *CSVBatchParser) ParseAll(outputDir string) ([]*JobParams, error) {
 		filesToBagPair, _ := nvpList.FirstMatching("Root-Directory")
 		filesToBag := []string{filesToBagPair.Value}
 
-		outputFile := path.Join(outputDir, packageName)
+		outputFile := filepath.Join(outputDir, packageName)
 		tags := p.parseTags(nvpList)
 		jobParams := NewJobParams(p.Workflow, packageName, outputFile, filesToBag, tags)
 		jobParamsList = append(jobParamsList, jobParams)

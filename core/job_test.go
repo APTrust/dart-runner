@@ -3,7 +3,7 @@ package core_test
 import (
 	"database/sql"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -64,7 +64,7 @@ func TestJobValidate(t *testing.T) {
 }
 
 func TestJobFromJson(t *testing.T) {
-	pathToJobFile := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	pathToJobFile := filepath.Join(util.PathToTestData(), "files", "sample_job.json")
 	job, err := core.JobFromJson(pathToJobFile)
 	require.Nil(t, err)
 	require.NotNil(t, job)
@@ -165,7 +165,7 @@ func TestJobToForm(t *testing.T) {
 	assert.Equal(t, ".tar", form.Fields["BagItSerialization"].Value)
 	assert.Equal(t, "job_unit_test.tar", form.Fields["PackageName"].Value)
 
-	expectedOutputPath := path.Join(os.TempDir(), job.PackageOp.PackageName)
+	expectedOutputPath := filepath.Join(os.TempDir(), job.PackageOp.PackageName)
 	assert.Equal(t, expectedOutputPath, form.Fields["OutputPath"].Value)
 
 	// Test some specifics of OutputPath

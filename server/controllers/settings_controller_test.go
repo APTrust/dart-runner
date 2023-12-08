@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -30,7 +30,7 @@ func loadExportSettings(t *testing.T) []*core.ExportSettings {
 		"export_settings_with_questions.json",
 	}
 	for i, fixture := range fixtures {
-		file := path.Join(util.ProjectRoot(), "testdata", "files", fixture)
+		file := filepath.Join(util.ProjectRoot(), "testdata", "files", fixture)
 		data, err := util.ReadFile(file)
 		require.Nil(t, err)
 		settings := &core.ExportSettings{}
@@ -370,12 +370,12 @@ func TestSettingsImportRunWithJson(t *testing.T) {
 	// Don't preload data here, or we'll get a conflict
 	// when we do the import.
 
-	file := path.Join(util.ProjectRoot(), "testdata", "files", "export_settings_no_questions.json")
+	file := filepath.Join(util.ProjectRoot(), "testdata", "files", "export_settings_no_questions.json")
 	data, err := util.ReadFile(file)
 	require.Nil(t, err)
 	settingsWithoutQuestions := string(data)
 
-	file = path.Join(util.ProjectRoot(), "testdata", "files", "export_settings_with_questions.json")
+	file = filepath.Join(util.ProjectRoot(), "testdata", "files", "export_settings_with_questions.json")
 	data, err = util.ReadFile(file)
 	require.Nil(t, err)
 	settingsWithQuestions := string(data)

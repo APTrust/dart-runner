@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -31,7 +31,7 @@ func CreateBagItProfiles(howMany int) ([]*BagItProfile, error) {
 	// Empty profile satisfies the bare requirements of the BagIt spec
 	// without any customizations.
 	profiles := make([]*BagItProfile, howMany)
-	filename := path.Join(util.ProjectRoot(), "profiles", "empty_profile.json")
+	filename := filepath.Join(util.ProjectRoot(), "profiles", "empty_profile.json")
 	emptyProfile, err := BagItProfileLoad(filename)
 	if err != nil {
 		return profiles, err

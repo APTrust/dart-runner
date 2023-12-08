@@ -172,7 +172,7 @@ func ListDirectory(dir string) ([]*ExtendedFileInfo, error) {
 		if err != nil {
 			return nil, nil
 		}
-		extFileInfo := NewExtendedFileInfo(path.Join(dir, fileInfo.Name()), fileInfo)
+		extFileInfo := NewExtendedFileInfo(filepath.Join(dir, fileInfo.Name()), fileInfo)
 		if entry.IsDir() {
 			directories = append(directories, extFileInfo)
 		} else {

@@ -3,7 +3,7 @@ package core
 import (
 	"database/sql"
 	"log"
-	"path"
+	"path/filepath"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
@@ -46,12 +46,12 @@ func initDB(paths *util.Paths) *sql.DB {
 
 func LogFilePath() string {
 	paths := util.NewPaths()
-	return path.Join(paths.LogDir, "dart.log")
+	return filepath.Join(paths.LogDir, "dart.log")
 }
 
 func DataFilePath() string {
 	paths := util.NewPaths()
-	dbPath := path.Join(paths.DataDir, "dart.db")
+	dbPath := filepath.Join(paths.DataDir, "dart.db")
 	// Run tests in an in-memory db, so we don't pollute
 	// our actual dart db.
 	if util.TestsAreRunning() {

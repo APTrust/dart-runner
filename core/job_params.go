@@ -2,7 +2,7 @@ package core
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -114,7 +114,7 @@ func (p *JobParams) makePackageOp(job *Job) {
 // something and includes a BagIt profile.
 func (p *JobParams) makeValidationOp(job *Job) {
 	if p.PackageName != "" && p.Workflow.BagItProfile != nil {
-		pathToBag := path.Join(p.OutputPath, p.PackageName)
+		pathToBag := filepath.Join(p.OutputPath, p.PackageName)
 		if job.PackageOp != nil {
 			pathToBag = job.PackageOp.OutputPath
 		}

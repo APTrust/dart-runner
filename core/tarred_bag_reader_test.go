@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -14,26 +14,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func loadProfile(jsonFile string) (*core.BagItProfile, error) {
-// 	filePath := path.Join(util.ProjectRoot(), "profiles", jsonFile)
-// 	file, err := os.Open(filePath)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	data, err := ioutil.ReadAll(file)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	profile := &core.BagItProfile{}
-// 	err = json.Unmarshal(data, profile)
-// 	return profile, err
-// }
-
 // We have json files containing metadata that a read should
 // find when scanning a bag. We test our reader results against
 // this known good data.
 func loadValidatorFromJson(t *testing.T, jsonFile string) *core.Validator {
-	filePath := path.Join(util.PathToTestData(), "files", jsonFile)
+	filePath := filepath.Join(util.PathToTestData(), "files", jsonFile)
 	file, err := os.Open(filePath)
 	require.Nil(t, err)
 	data, err := ioutil.ReadAll(file)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -17,9 +18,9 @@ import (
 func getRunnerTestJob(t *testing.T, bagName string) *core.Job {
 	workflow := loadJsonWorkflow(t)
 	files := []string{
-		path.Join(util.PathToTestData(), "files"),
+		filepath.Join(util.PathToTestData(), "files"),
 	}
-	outputPath := path.Join(os.TempDir(), bagName)
+	outputPath := filepath.Join(os.TempDir(), bagName)
 	tags := getTestTags()
 	jobParams := core.NewJobParams(workflow, bagName, outputPath, files, tags)
 	return jobParams.ToJob()
@@ -32,7 +33,7 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 2) {
 			os.Remove(job.PackageOp.OutputPath)
 			fileName := strings.TrimSuffix(path.Base(job.PackageOp.OutputPath), path.Ext(job.PackageOp.OutputPath))
-			artifactsDir := path.Join(path.Dir(job.PackageOp.OutputPath), fileName+"_artifacts")
+			artifactsDir := filepath.Join(path.Dir(job.PackageOp.OutputPath), fileName+"_artifacts")
 			os.RemoveAll(artifactsDir)
 		}
 	}()
@@ -89,10 +90,10 @@ func assertArtifactsWereSaved(t *testing.T, job *core.Job, outputDir string) {
 		// For dart runner and apt-cmd, artifacts go into output dir.
 		for _, alg := range job.BagItProfile.ManifestsRequired {
 			manifestName := fmt.Sprintf("manifest-%s.txt", alg)
-			assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, manifestName)))
+			assert.True(t, util.FileExists(filepath.Join(job.ArtifactsDir, manifestName)))
 		}
-		assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, "bagit.txt")), path.Join(job.ArtifactsDir, "bagit.txt"))
-		assert.True(t, util.FileExists(path.Join(job.ArtifactsDir, "bag-info.txt")), path.Join(job.ArtifactsDir, "bag-info.txt"))
+		assert.True(t, util.FileExists(filepath.Join(job.ArtifactsDir, "bagit.txt")), filepath.Join(job.ArtifactsDir, "bagit.txt"))
+		assert.True(t, util.FileExists(filepath.Join(job.ArtifactsDir, "bag-info.txt")), filepath.Join(job.ArtifactsDir, "bag-info.txt"))
 	}
 
 }

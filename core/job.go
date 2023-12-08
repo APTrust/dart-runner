@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -488,7 +489,7 @@ func (job *Job) ToForm() *Form {
 		if strings.HasPrefix(jobName, "Job of ") {
 			jobName = ""
 		}
-		job.PackageOp.OutputPath = path.Join(baggingDir, jobName)
+		job.PackageOp.OutputPath = filepath.Join(baggingDir, jobName)
 	}
 	// Force a trailing slash (or backslash) onto the end of
 	// the bagging directory. This is for the benefit of the

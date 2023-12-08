@@ -2,7 +2,7 @@ package core_test
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -20,7 +20,7 @@ const (
 )
 
 func getBagger(t *testing.T, bagName, profileName string, files []*util.ExtendedFileInfo) *core.Bagger {
-	outputPath := path.Join(os.TempDir(), bagName)
+	outputPath := filepath.Join(os.TempDir(), bagName)
 	profile := loadProfile(t, profileName)
 	bagger := core.NewBagger(outputPath, profile, files)
 	return bagger
@@ -82,9 +82,9 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 	assert.True(t, len(bagger.TagFileArtifacts["bag-info.txt"]) > 100)
 
 	if strings.Contains(bagger.OutputPath, "apt") {
-		assert.Equal(t, path.Join(os.TempDir(), "apt_bag_artifacts"), bagger.ArtifactsDir())
+		assert.Equal(t, filepath.Join(os.TempDir(), "apt_bag_artifacts"), bagger.ArtifactsDir())
 	} else if strings.Contains(bagger.OutputPath, "btr") {
-		assert.Equal(t, path.Join(os.TempDir(), "btr_bag_artifacts"), bagger.ArtifactsDir())
+		assert.Equal(t, filepath.Join(os.TempDir(), "btr_bag_artifacts"), bagger.ArtifactsDir())
 	}
 }
 

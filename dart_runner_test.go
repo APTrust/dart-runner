@@ -4,7 +4,7 @@ import (
 	// "encoding/json"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	//"strings"
 	"testing"
@@ -65,7 +65,7 @@ func TestShowVersion(t *testing.T) {
 
 func optsForJobParams(t *testing.T) *core.Options {
 	filesDir, _, outputDir := dirs(t)
-	jobParamsJson, err := util.ReadFile(path.Join(filesDir, "postbuild_test_params.json"))
+	jobParamsJson, err := util.ReadFile(filepath.Join(filesDir, "postbuild_test_params.json"))
 	require.Nil(t, err)
 	return &core.Options{
 		OutputDir:        outputDir,

@@ -1,7 +1,7 @@
 package core_test
 
 import (
-	"path"
+	"path/filepath"
 	"sync"
 	"testing"
 
@@ -43,7 +43,7 @@ func TestSftpUploadWithSSHKey(t *testing.T) {
 	ss := getSftpStorageService()
 	ss.Login = "key_user"
 	ss.Password = "not-a-valid-password"
-	ss.LoginExtra = path.Join(util.PathToTestData(), "sftp", "sftp_user_key")
+	ss.LoginExtra = filepath.Join(util.PathToTestData(), "sftp", "sftp_user_key")
 
 	sshClient, err := core.SSHConnect(ss)
 	require.Nil(t, err)
@@ -58,7 +58,7 @@ func TestSftpUploadWithSSHKey(t *testing.T) {
 }
 
 func testUploadWithoutProgress(t *testing.T, sftpClient *sftp.Client, ss *core.StorageService) {
-	fileToUpload := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
+	fileToUpload := filepath.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
 	bytesCopied, err := core.SFTPUpload(ss, fileToUpload, nil)
 	require.Nil(t, err)
 	assert.Equal(t, tarFileSize, bytesCopied)
@@ -113,7 +113,7 @@ func testUploadWithProgress(t *testing.T, sftpClient *sftp.Client, ss *core.Stor
 	// the message channel and testing to see whether the go
 	// routine actually read a message.
 	wg.Add(1)
-	fileToUpload := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
+	fileToUpload := filepath.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
 	bytesCopied, err := core.SFTPUpload(ss, fileToUpload, progress)
 	require.Nil(t, err)
 	assert.Equal(t, tarFileSize, bytesCopied)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -16,7 +16,7 @@ import (
 )
 
 func loadTestJob(t *testing.T) *core.Job {
-	filename := path.Join(util.PathToTestData(), "files", "aptrust_unit_test_job.json")
+	filename := filepath.Join(util.PathToTestData(), "files", "aptrust_unit_test_job.json")
 	data, err := os.ReadFile(filename)
 	require.Nil(t, err)
 	job := &core.Job{}
@@ -27,7 +27,7 @@ func loadTestJob(t *testing.T) *core.Job {
 	// Note that because this is a pre-made test job,
 	// we know for sure that it has a PackageOp, a
 	// ValidationOp, and at least one UploadOp.
-	outputPath := path.Join(os.TempDir(), "JobFilesControllerTest.tar")
+	outputPath := filepath.Join(os.TempDir(), "JobFilesControllerTest.tar")
 	job.PackageOp.OutputPath = outputPath
 	job.ValidationOp.PathToBag = outputPath
 	job.UploadOps[0].SourceFiles = []string{outputPath}
@@ -37,9 +37,9 @@ func loadTestJob(t *testing.T) *core.Job {
 	// we know they exist. This gives us three directories
 	// from the current project with a variety of file types.
 	job.PackageOp.SourceFiles = []string{
-		path.Join(util.ProjectRoot(), "core"),
-		path.Join(util.ProjectRoot(), "server", "assets"),
-		path.Join(util.ProjectRoot(), "util"),
+		filepath.Join(util.ProjectRoot(), "core"),
+		filepath.Join(util.ProjectRoot(), "server", "assets"),
+		filepath.Join(util.ProjectRoot(), "util"),
 	}
 
 	return job
@@ -82,7 +82,7 @@ func TestJobAddFile(t *testing.T) {
 
 	// Add a new file to this job via JobAddFile.
 	// Make sure we get the expected redirect and not an error.
-	fileToAdd := path.Join(util.PathToTestData(), "files", "sample_job.json")
+	fileToAdd := filepath.Join(util.PathToTestData(), "files", "sample_job.json")
 	params := url.Values{}
 	params.Add("fullPath", fileToAdd)
 	postTestSettings := PostTestSettings{
