@@ -2,6 +2,7 @@ package core
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -28,7 +29,11 @@ func init() {
 		Log:         util.GetLogger(logging.DEBUG),
 		RuntimeMode: constants.ModeDartRunner, // this should be set on startup
 	}
-	InitSchema()
+	err := InitSchema()
+	if err != nil {
+		fmt.Println("Database file: ", filepath.Join(paths.DataDir, "dart.db"))
+		panic(err)
+	}
 }
 
 func initDB(paths *util.Paths) *sql.DB {
