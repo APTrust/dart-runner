@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -42,6 +43,11 @@ func initDB(paths *util.Paths) *sql.DB {
 	// github.com/mattn/go-sqlite3, the driver name
 	// would have to change to "sqlite3". Both are
 	// compatible with sqlite3.
+	dataFile := DataFilePath()
+	err := os.MkdirAll(filepath.Dir(dataFile), 0755)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	db, err := sql.Open("sqlite", DataFilePath())
 	if err != nil {
 		log.Fatal(err)
