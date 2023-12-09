@@ -1,7 +1,6 @@
 package core
 
 import (
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -21,7 +20,7 @@ type PackageOperation struct {
 }
 
 func NewPackageOperation(packageName, outputPath string, sourceFiles []string) *PackageOperation {
-	if path.Base(outputPath) != packageName {
+	if filepath.Base(outputPath) != packageName {
 		outputPath = filepath.Join(outputPath, packageName)
 	}
 	return &PackageOperation{

@@ -134,7 +134,7 @@ func RecursiveFileList(dir string, includeIrregulars bool) ([]*ExtendedFileInfo,
 func GetDirectoryStats(dir string) *DirectoryStats {
 	dirStats := &DirectoryStats{
 		FullPath: dir,
-		BaseName: path.Base(dir),
+		BaseName: filepath.Base(dir),
 	}
 	rootStat, err := os.Stat(dir)
 	if err != nil {

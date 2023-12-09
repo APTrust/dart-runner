@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -340,7 +341,7 @@ func (b *Bagger) setBagInfoAutoValues() {
 }
 
 func (b *Bagger) calculateBagName() {
-	b.bagName = path.Base(b.OutputPath)
+	b.bagName = filepath.Base(b.OutputPath)
 	b.bagName = strings.TrimSuffix(b.bagName, path.Ext(b.bagName))
 	// Handle common .tar.gz case
 	b.bagName = strings.TrimSuffix(b.bagName, ".tar")
@@ -348,6 +349,9 @@ func (b *Bagger) calculateBagName() {
 
 func (b *Bagger) pathForPayloadFile(fullPath string) string {
 	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+	if runtime.GOOS == "windows" {
+		shortPath = strings.ReplaceAll(shortPath, "\\", "/")
+	}
 	if !strings.HasPrefix(shortPath, "/") {
 		shortPath = "/" + shortPath
 	}

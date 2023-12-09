@@ -196,7 +196,18 @@ func (r *Runner) RunValidationOp() bool {
 	}
 	// Validate the package / bag
 	op := r.Job.ValidationOp
+
+	// Note that calling Start() resets info like
+	// op.Result.FileSize. So call this first, then
+	// set the relevant info.
 	op.Result.Start()
+
+	op.Result.FilePath = r.Job.ValidationOp.PathToBag
+	fileInfo, err := os.Stat(r.Job.ValidationOp.PathToBag)
+	if err == nil && fileInfo != nil {
+		op.Result.FileSize = fileInfo.Size()
+		op.Result.FileMTime = fileInfo.ModTime()
+	}
 	ok := r.Job.ValidationOp.Validate()
 	if !ok {
 		r.setResultFileInfo(op.Result, op.PathToBag, op.Errors)
@@ -226,6 +237,9 @@ func (r *Runner) RunValidationOp() bool {
 	}
 	ok = validator.Validate()
 	op.Result.Finish(validator.Errors)
+	if ok {
+		op.Result.Info = "Bag is valid."
+	}
 	return ok
 }
 

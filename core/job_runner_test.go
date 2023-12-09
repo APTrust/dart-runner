@@ -32,7 +32,7 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	defer func() {
 		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 2) {
 			os.Remove(job.PackageOp.OutputPath)
-			fileName := strings.TrimSuffix(path.Base(job.PackageOp.OutputPath), path.Ext(job.PackageOp.OutputPath))
+			fileName := strings.TrimSuffix(filepath.Base(job.PackageOp.OutputPath), path.Ext(job.PackageOp.OutputPath))
 			artifactsDir := filepath.Join(path.Dir(job.PackageOp.OutputPath), fileName+"_artifacts")
 			os.RemoveAll(artifactsDir)
 		}

@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -64,7 +63,7 @@ func TestAddFile(t *testing.T) {
 	// Note that the first "file" added to the bag is the root directory,
 	// which has the same name as the bag, minus the .tar extension
 	filesAdded := []string{
-		util.CleanBagName(path.Base(w.PathToTarFile)),
+		util.CleanBagName(filepath.Base(w.PathToTarFile)),
 	}
 	files := listTestFiles(t)
 	for _, xFileInfo := range files {

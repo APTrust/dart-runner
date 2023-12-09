@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -125,7 +125,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 	}
 	allSucceeded := true
 	for _, sourceFile := range u.SourceFiles {
-		s3Key := path.Base(sourceFile)
+		s3Key := filepath.Base(sourceFile)
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
 		Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
 		putOptions := minio.PutObjectOptions{}

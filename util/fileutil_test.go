@@ -2,7 +2,6 @@ package util_test
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -121,7 +120,7 @@ func TestGetDirectoryStats(t *testing.T) {
 	dirStats := util.GetDirectoryStats(dir)
 	require.Empty(t, dirStats.Error)
 	assert.Equal(t, dir, dirStats.FullPath)
-	assert.Equal(t, path.Base(dir), dirStats.BaseName)
+	assert.Equal(t, filepath.Base(dir), dirStats.BaseName)
 	assert.True(t, dirStats.DirCount > 10)
 	assert.True(t, dirStats.FileCount > dirStats.DirCount*2)
 	assert.True(t, dirStats.TotalBytes > 40000)

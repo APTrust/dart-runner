@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -99,13 +98,13 @@ func JobFromWorkflow(workflow *Workflow) *Job {
 // the package being built, validated, or uploaded.
 func (job *Job) Name() string {
 	if job.PackageOp != nil && job.PackageOp.PackageName != "" {
-		return path.Base(job.PackageOp.PackageName)
+		return filepath.Base(job.PackageOp.PackageName)
 	}
 	if job.ValidationOp != nil && job.ValidationOp.PathToBag != "" {
-		return path.Base(job.ValidationOp.PathToBag)
+		return filepath.Base(job.ValidationOp.PathToBag)
 	}
 	if job.UploadOps != nil && len(job.UploadOps) > 0 && len(job.UploadOps[0].SourceFiles) > 0 {
-		return path.Base(job.UploadOps[0].SourceFiles[0])
+		return filepath.Base(job.UploadOps[0].SourceFiles[0])
 	}
 	// Try to get a title from the bag.
 	if job.BagItProfile != nil {
