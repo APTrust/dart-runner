@@ -2,6 +2,7 @@
 
 ## Priority
 
+- [ ] Fix Windows integration tests 
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
@@ -9,7 +10,6 @@
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
-- [ ] Fix Windows paths in bag: actual paths in data dir are absolute but shouldn't be; paths in manifest mix forward & backslashes
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [ ] Implement validation-only jobs.
 - [ ] Implement upload-only jobs.
@@ -31,6 +31,7 @@
 
 ## Done
 
+- [x] Fix Windows paths in bagging
 - [x] Fix auto generation of output file path on job packaging screen
 - [x] Fix web font load error
 - [x] Fix invalid JSON "EOF" being returned to job run page
