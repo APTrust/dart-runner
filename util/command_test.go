@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/APTrust/dart-runner/util"
@@ -9,16 +10,27 @@ import (
 )
 
 func TestExecCommand(t *testing.T) {
+	command := "ls"
 	args := []string{"-la"}
-	stdout, stderr, exitCode := util.ExecCommand("ls", args, os.Environ(), nil)
-	assert.NotEmpty(t, stdout)
-	assert.Empty(t, stderr)
+	if runtime.GOOS == "windows" {
+		command = "dir"
+		args = []string{"C:\\"}
+	}
+	stdout, stderr, exitCode := util.ExecCommand(command, args, os.Environ(), nil)
+	assert.NotEmpty(t, stdout, string(stdout))
+	assert.Empty(t, stderr, string(stderr))
 	assert.Equal(t, 0, exitCode)
 
 	args = []string{"-la", "/does-not-exist"}
-	stdout, stderr, exitCode = util.ExecCommand("ls", args, os.Environ(), nil)
-	assert.Empty(t, stdout)
-	assert.NotEmpty(t, stderr)
+	if runtime.GOOS == "windows" {
+		args = []string{"C:\\does-not-exist-no-no-no"}
+	}
+	stdout, stderr, exitCode = util.ExecCommand(command, args, os.Environ(), nil)
+	// Windows sends a warning to STDOUT in addition to the error message on stderr
+	if runtime.GOOS != "windows" {
+		assert.Empty(t, stdout, string(stdout))
+	}
+	assert.NotEmpty(t, stderr, string(stderr))
 	assert.NotEqual(t, 0, exitCode)
 
 	if systemHasAwk() {

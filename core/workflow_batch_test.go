@@ -129,7 +129,7 @@ func TestWorkflowBatchValidateCSVContents(t *testing.T) {
 	assert.Equal(t, "Bag-Name is missing from line 3", wb.Errors["3-Bag-Name"])
 	assert.Equal(t, "Required tag aptrust-info.txt/Title on line 3 is missing or empty.", wb.Errors["3-aptrust-info.txt/Title"])
 
-	fmt.Println(wb.Errors)
+	//fmt.Println(wb.Errors)
 }
 
 func TestWBPersistentObjectInterface(t *testing.T) {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -228,12 +227,24 @@ func TarPathToBagPath(name string) (string, error) {
 }
 
 // PathTo returns the path to the specified program.
+// Note that this can be spotty on Windows. We'll need
+// to watch this, log "not found" errors and work from
+// there.
 func PathTo(program string) (string, error) {
-	output, err := exec.Command("which", program).Output()
-	if err != nil {
-		return "", err
+	cmd := "which"
+	args := []string{program}
+	if runtime.GOOS == "windows" {
+		cmd = "where.exe"
 	}
-	return strings.TrimSpace(string(output)), nil
+	stdout, stderr, exitcode := ExecCommand(cmd, args, os.Environ(), nil)
+	if exitcode != 0 {
+		return "", fmt.Errorf(string(stderr))
+	}
+	// Windows where.exe can return multiple lines if the
+	// system has multiple copies of an executable in the path.
+	// We'll go with the first line.
+	lines := strings.Split(string(stdout), "\n")
+	return strings.TrimSpace(lines[0]), nil
 }
 
 // StringIsShellSafe returns true if string looks safe to pass

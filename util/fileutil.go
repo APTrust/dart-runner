@@ -218,9 +218,10 @@ func GetWindowsDrives() []string {
 	drives := make([]string, 0)
 	if runtime.GOOS == "windows" {
 		for _, drive := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
-			_, err := os.Stat(string(drive) + ":\\")
+			fullDriveName := string(drive) + ":\\"
+			_, err := os.Stat(fullDriveName)
 			if err == nil {
-				drives = append(drives, string(drive))
+				drives = append(drives, fullDriveName)
 			}
 		}
 	}

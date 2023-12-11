@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"os/exec"
+	"runtime"
 )
 
 const STDIN_ERROR = -10000
@@ -14,6 +15,10 @@ const STDIN_ERROR = -10000
 // but not Mac. See https://github.com/golang/go/issues/9307
 func ExecCommand(command string, args []string, env []string, stdinData []byte) (stdout, stderr []byte, exitCode int) {
 	cmd := exec.Command(command, args...)
+	if runtime.GOOS == "windows" {
+		windowsArgs := append([]string{"/C", command}, args...)
+		cmd = exec.Command("cmd", windowsArgs...)
+	}
 	var outBuffer, errBuffer bytes.Buffer
 	cmd.Stdout = &outBuffer
 	cmd.Stderr = &errBuffer

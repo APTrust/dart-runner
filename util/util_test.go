@@ -2,6 +2,8 @@ package util_test
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -277,13 +279,22 @@ func TestPathTo(t *testing.T) {
 	programs := []string{
 		"go",
 		"ls",
-		"which",
+		"echo",
+	}
+	if runtime.GOOS == "windows" {
+		programs = []string{
+			"go",
+			"notepad",
+		}
 	}
 	pathSep := string(os.PathSeparator)
 	for _, program := range programs {
 		pathToProgram, err := util.PathTo(program)
-		require.Nil(t, err)
-		assert.True(t, strings.HasSuffix(pathToProgram, pathSep+program))
+		require.Nil(t, err, program)
+
+		hasMatchingSuffix := strings.HasSuffix(pathToProgram, pathSep+program)
+		hasMatchingExeSuffix := strings.HasSuffix(pathToProgram, pathSep+program+".exe")
+		assert.True(t, hasMatchingSuffix || hasMatchingExeSuffix, program)
 	}
 }
 
@@ -480,28 +491,36 @@ func TestIsType(t *testing.T) {
 
 func TestFileCommonPrefix(t *testing.T) {
 	list1 := []string{
-		"/user/joe/photo",
-		"/user/joe/docs/resume",
-		"/user/joe/docs/letter",
-		"/user/joe/photos/car",
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photo"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "docs", "resume"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "docs", "letter"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photos", "car"),
 	}
 	list2 := []string{
-		"/user/joe/photos/dog",
-		"/user/joe/photos/car",
-		"/user/joe/photos/house",
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photos", "dog"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photos", "car"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photos", "house"),
 	}
 	list3 := []string{
-		"/home/linus/torvalds",
-		"/user/joe/photos/car",
-		"/etc/apache2/conf",
+		filepath.Join(string(os.PathSeparator), "home", "linus", "torvalds"),
+		filepath.Join(string(os.PathSeparator), "user", "joe", "photos", "car"),
+		filepath.Join(string(os.PathSeparator), "etc", "apache2", "conf"),
 	}
 	list4 := []string{
-		"/home/linus/torvalds",
+		filepath.Join(string(os.PathSeparator), "home", "linus", "torvalds"),
 		"my_photos",
 	}
-	assert.Equal(t, "/user/joe/", util.FindCommonPrefix(list1))
-	assert.Equal(t, "/user/joe/photos/", util.FindCommonPrefix(list2))
-	assert.Equal(t, "/", util.FindCommonPrefix(list3))
+
+	// /user/joe/ on posix or \user\joe\ on Windows.
+	assert.Equal(t, filepath.Join(string(os.PathSeparator), "user", "joe")+string(os.PathSeparator), util.FindCommonPrefix(list1))
+
+	// /user/joe/photos/ (posix) or \user\joe\photos (windows)
+	assert.Equal(t, filepath.Join(string(os.PathSeparator), "user", "joe", "photos")+string(os.PathSeparator), util.FindCommonPrefix(list2))
+
+	// / (posix) or \ (windows)
+	assert.Equal(t, string(os.PathSeparator), util.FindCommonPrefix(list3))
+
+	// empty string on any OS
 	assert.Equal(t, "", util.FindCommonPrefix(list4))
 }
 
@@ -514,7 +533,14 @@ func TestCommonPrefixEndsAtPathDelimiter(t *testing.T) {
 		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_005.tif",
 		"/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/853dbf149078419e87a69856394cbf6f_006.tif",
 	}
-	assert.Equal(t, "/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/", util.FindCommonPrefix(files))
+	expected := "/mnt/IIIF_Testing_Area/tmp/853dbf149078419e87a69856394cbf6f/"
+	if runtime.GOOS == "windows" {
+		expected = strings.ReplaceAll(expected, "/", "\\")
+		for i, filename := range files {
+			files[i] = strings.ReplaceAll(filename, "/", "\\")
+		}
+	}
+	assert.Equal(t, expected, util.FindCommonPrefix(files))
 }
 
 func TestToHumanSize(t *testing.T) {

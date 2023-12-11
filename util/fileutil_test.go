@@ -38,8 +38,8 @@ func TestExpandTilde(t *testing.T) {
 }
 
 func TestLooksSafeToDelete(t *testing.T) {
-	assert.True(t, util.LooksSafeToDelete("/mnt/apt/data/some_dir", 15, 3))
-	assert.False(t, util.LooksSafeToDelete("/usr/local", 12, 3))
+	assert.True(t, util.LooksSafeToDelete(filepath.Join("mnt", "apt", "data", "some_dir"), 15, 3))
+	assert.False(t, util.LooksSafeToDelete(filepath.Join("", "usr", "local"), 12, 3))
 }
 
 func TestCopyFile(t *testing.T) {
@@ -126,7 +126,11 @@ func TestGetDirectoryStats(t *testing.T) {
 	assert.True(t, dirStats.TotalBytes > 40000)
 
 	dirStats = util.GetDirectoryStats(filepath.Join(util.ProjectRoot(), "path-does", "not-exist"))
-	assert.Contains(t, dirStats.Error, "no such file or directory")
+	expectedErr := "no such file or directory"
+	if runtime.GOOS == "windows" {
+		expectedErr = "The system cannot find the path specified."
+	}
+	assert.Contains(t, dirStats.Error, expectedErr)
 
 	file := filepath.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
 	dirStats = util.GetDirectoryStats(file)
