@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -148,5 +149,9 @@ func TestAddFileWithBadFilePath(t *testing.T) {
 	checksums, err := w.AddFile(xFileInfo, "file.pdf")
 	require.NotNil(t, err)
 	assert.Empty(t, checksums)
-	assert.True(t, strings.Contains(err.Error(), "no such file or directory"))
+	expectedErr := "no such file or directory"
+	if runtime.GOOS == "windows" {
+		expectedErr = "The system cannot find the file specified."
+	}
+	assert.True(t, strings.Contains(err.Error(), expectedErr), err.Error())
 }

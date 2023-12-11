@@ -169,7 +169,7 @@ func TestJobToForm(t *testing.T) {
 	assert.Equal(t, expectedOutputPath, form.Fields["OutputPath"].Value)
 
 	// Test some specifics of OutputPath
-	baggingDir := "/home/someone/dart"
+	baggingDir := filepath.Join("home", "someone", "dart")
 	setting := core.NewAppSetting("Bagging Directory", baggingDir)
 	assert.NoError(t, core.ObjSave(setting))
 
@@ -178,7 +178,8 @@ func TestJobToForm(t *testing.T) {
 	// bagging dir + package name.
 	job.PackageOp.OutputPath = ""
 	form = job.ToForm()
-	assert.Equal(t, "/home/someone/dart/job_unit_test.tar", form.Fields["OutputPath"].Value)
+	expectedOutputPath = filepath.Join(baggingDir, "job_unit_test.tar")
+	assert.Equal(t, expectedOutputPath, form.Fields["OutputPath"].Value)
 
 	// This following emulates a common case in which the user
 	// runs a job as an instance of a workflow. When we convert
@@ -207,7 +208,8 @@ func TestJobToForm(t *testing.T) {
 	// Now rebuild the form and test our output path.
 	// It should have the trailing slash.
 	form = job.ToForm()
-	assert.Equal(t, "/home/someone/dart/", form.Fields["OutputPath"].Value)
+	expectedOutputPath = filepath.Join("home", "someone", "dart") + string(os.PathSeparator)
+	assert.Equal(t, expectedOutputPath, form.Fields["OutputPath"].Value)
 }
 
 func TestJobPackageFormat(t *testing.T) {

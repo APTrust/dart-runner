@@ -3,6 +3,7 @@ package core_test
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -19,7 +20,11 @@ func TestCSVBatchParserBadFile(t *testing.T) {
 	jobParamsList, err := parser.ParseAll("/tmp")
 	assert.Nil(t, jobParamsList)
 	require.Error(t, err)
-	assert.Equal(t, "open /path/-to-/nowhere/file.csv: no such file or directory", err.Error())
+	expectedErr := "open /path/-to-/nowhere/file.csv: no such file or directory"
+	if runtime.GOOS == "windows" {
+		expectedErr = "open /path/-to-/nowhere/file.csv: The system cannot find the path specified."
+	}
+	assert.Equal(t, expectedErr, err.Error())
 
 	// Attempt to parse a non-csv file should give us an error.
 	jsonFile := filepath.Join(util.PathToTestData(), "files", "sample_job.json")

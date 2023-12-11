@@ -63,7 +63,7 @@ func (r *OperationResult) WasAttempted() bool {
 }
 
 func (r *OperationResult) WasCompleted() bool {
-	return !r.Started.IsZero() && !r.Completed.IsZero() && r.Completed.After(r.Started)
+	return !r.Started.IsZero() && !r.Completed.IsZero() && !r.Completed.Before(r.Started)
 }
 
 func (r *OperationResult) Succeeded() bool {
