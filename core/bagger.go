@@ -126,7 +126,7 @@ func (b *Bagger) ArtifactsDir() string {
 	if util.IsDirectory(b.OutputPath) {
 		artifactsDir = b.OutputPath + "_artifacts"
 	} else {
-		artifactsDir = path.Dir(b.OutputPath)
+		artifactsDir = filepath.Dir(b.OutputPath)
 		artifactsDir = filepath.Join(artifactsDir, fmt.Sprintf("%s_artifacts", b.bagName))
 	}
 	return artifactsDir

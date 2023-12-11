@@ -54,9 +54,20 @@ func build(t *testing.T) {
 func buildWindows(t *testing.T) {
 	buildDir := filepath.Join(util.ProjectRoot(), "dist", "windows")
 	require.NoError(t, os.MkdirAll(buildDir, 0755))
-	command := `go build -o dist/windows/dart-runner -ldflags "-X 'main.Version=TEST'" -tags windows`
-	stdout, stderr, exitCode := util.ExecCommand(command, nil, os.Environ(), nil)
-	assert.Equal(t, 0, exitCode, string(stdout), string(stderr))
+	//command := `go build -o dist/windows/dart-runner.exe -ldflags "-X 'main.Version=TEST'" -tags windows`
+	version := fmt.Sprintf("DART Runner TEST for WINDOWS (Build TEST %s)", time.Now().Format(time.RFC3339))
+	command := "go"
+	args := []string{
+		"build",
+		"-o",
+		".\\dist\\windows\\dart-runner.exe",
+		"-ldflags",
+		fmt.Sprintf("-X 'main.Version=%s'", version),
+		"-tags",
+		"windows",
+	}
+	stdout, stderr, exitCode := util.ExecCommand(command, args, os.Environ(), nil)
+	assert.Equal(t, 0, exitCode, "stdout: %s \n stderr: %s", string(stdout), string(stderr))
 	setupAttempted = true
 	setupSucceeded = exitCode == 0
 }
@@ -64,16 +75,22 @@ func buildWindows(t *testing.T) {
 // runner returns the path to the dart-runner executable created by build()
 func runner() string {
 	osName := "windows"
-	if runtime.GOOS == "linux" {
+	exeName := "dart-runner"
+
+	switch runtime.GOOS {
+	case "linux":
 		osName = "linux"
-	} else if runtime.GOOS == "darwin" {
-		if runtime.GOARCH == "amd64" {
+	case "darwin":
+		if runtime.GOARCH == "amd-64" {
 			osName = "mac-x64"
 		} else {
 			osName = "mac-arm64"
 		}
+	case "windows":
+		osName = "windows"
+		exeName = "dart-runner.exe"
 	}
-	return filepath.Join(util.ProjectRoot(), "dist", osName, "dart-runner")
+	return filepath.Join(util.ProjectRoot(), "dist", osName, exeName)
 }
 
 // When we run post-build tests, DART needs to know it's running in

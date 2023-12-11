@@ -31,6 +31,7 @@ echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart-runner"
 mkdir -p dist/mac
 GOOS=darwin GOARCH=arm64 go build -o dist/mac-arm64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
+# Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
 echo "Building Windows amd64 version in ./dist/windows/dart-runner"
 mkdir -p dist/windows
 GOOS=windows GOARCH=amd64 go build -o dist/windows/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS

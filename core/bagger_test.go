@@ -113,6 +113,8 @@ func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInf
 			continue
 		}
 		shortPath := "data" + strings.Replace(xFileInfo.FullPath, util.ProjectRoot(), "", 1)
+		// Fix Windows paths to match bag paths, which only use forward slashes
+		shortPath = strings.ReplaceAll(shortPath, "\\", "/")
 		fileRecord := actual[shortPath]
 		assert.NotNil(t, fileRecord, shortPath)
 	}
