@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"testing"
 
 	"github.com/APTrust/dart-runner/core"
@@ -37,5 +38,8 @@ func TestAbortWithErrorJson(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	responseText := w.Body.String()
 	expected := `{"error":"open --this-dir-does-not-exist--: no such file or directory","status":"500"}`
+	if runtime.GOOS == "windows" {
+		expected = `{"error":"open --this-dir-does-not-exist--: The system cannot find the file specified.","status":"500"}`
+	}
 	assert.Equal(t, expected, responseText)
 }

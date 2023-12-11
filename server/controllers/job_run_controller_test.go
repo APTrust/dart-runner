@@ -3,6 +3,8 @@ package controllers_test
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -16,6 +18,13 @@ func TestJobRunShow(t *testing.T) {
 	job := loadTestJob(t)
 	require.NoError(t, core.ObjSave(job))
 	require.NoError(t, core.ObjSave(job.BagItProfile))
+	outputPath := job.PackageOp.OutputPath
+
+	// Windows :(
+	if runtime.GOOS == "windows" {
+		outputPath = "\\" + filepath.Base(outputPath)
+	}
+
 	expectedContent := []string{
 		"Package Name",
 		"BagIt Profile",
@@ -26,7 +35,7 @@ func TestJobRunShow(t *testing.T) {
 		job.Name(),
 		job.ID,
 		job.PackageOp.PackageName,
-		job.PackageOp.OutputPath,
+		outputPath,
 		"Local Minio",     // upload target
 		"Payload Summary", // file count, dir count and bytes will change as project changes
 		"Directories",
