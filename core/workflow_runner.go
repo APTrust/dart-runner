@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -27,6 +28,8 @@ type WorkflowRunner struct {
 	errMutex     sync.Mutex
 	fCountMutex  sync.Mutex
 	sCountMutex  sync.Mutex
+	stdErrWriter *bytes.Buffer
+	stdOutWriter *bytes.Buffer
 }
 
 // NewWorkflowRunner creates a new WorkFlowRunner object. Param workflowFile
@@ -156,6 +159,23 @@ func NewWorkflowRunnerWithMessageChannel(workflowID, csvFile, outputDir string, 
 	return runner, nil
 }
 
+// SetStdOut causes messages to be written to buffer b instead of
+// os.Stdout. We use this in testing to capture output that would go
+// to os.Stdout. On Windows, redirecting os.Stdout to a pipe using
+// os.Pipe() causes some writes to hang forever. This happens deep
+// inside Syscall6, so there's nothing we can do about it. The pipe
+// works fine on Linux and MacOS, but not on Windows. Hence, this.
+func (r *WorkflowRunner) SetStdOut(b *bytes.Buffer) {
+	r.stdOutWriter = b
+}
+
+// SetStdErr causes messages to be written to buffer b instead of
+// os.Stderr. See the doc comments for SetStdOut above for why
+// this exists.
+func (r *WorkflowRunner) SetStdErr(b *bytes.Buffer) {
+	r.stdErrWriter = b
+}
+
 // Run runs the workflow, writing one line of JSON output per job
 // to STDOUT. The output is a serialized JobResult object. Errors
 // will be written to STDERR, though there **should** also be
@@ -239,13 +259,29 @@ func (r *WorkflowRunner) writeResult(job *Job) {
 // writeStdOut safely writes to STDOUT from concurrent go routines.
 func (r *WorkflowRunner) writeStdOut(msg string) {
 	r.outMutex.Lock()
-	fmt.Println(msg)
-	r.outMutex.Unlock()
+	defer r.outMutex.Unlock()
+	if r.stdOutWriter != nil {
+		_, err := fmt.Fprintln(r.stdOutWriter, msg)
+		if err != nil {
+			Dart.Log.Errorf("Error writing to stdout builder: %v", err.Error())
+			Dart.Log.Warningf("stdout message was: %s", msg)
+		}
+	} else {
+		fmt.Println(msg)
+	}
 }
 
 // writeStdErr safely writes to STDOUT from concurrent go routines.
 func (r *WorkflowRunner) writeStdErr(msg string) {
 	r.errMutex.Lock()
-	fmt.Fprintln(os.Stderr, msg)
-	r.errMutex.Unlock()
+	defer r.errMutex.Unlock()
+	if r.stdErrWriter != nil {
+		_, err := fmt.Fprintln(r.stdErrWriter, msg)
+		if err != nil {
+			Dart.Log.Errorf("Error writing to stderr builder: %v", err.Error())
+			Dart.Log.Warningf("stderr message was: %s", msg)
+		}
+	} else {
+		fmt.Fprintln(os.Stderr, msg)
+	}
 }

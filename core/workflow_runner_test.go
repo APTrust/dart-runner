@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"os"
@@ -44,33 +45,28 @@ func TestWorkflowRunner(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, runner)
 
-	origStdout := os.Stdout
-	origStderr := os.Stderr
-
-	stdOutReader, stdOutWriter, _ := os.Pipe()
-	stdErrReader, stdErrWriter, _ := os.Pipe()
-	os.Stdout = stdOutWriter
-	os.Stderr = stdErrWriter
+	// Don't redirect stdout/stderr to pipes on Windows
+	// because some write calls will hang forever.
+	// Write directly to these buffers instead.
+	stdErr := new(bytes.Buffer)
+	runner.SetStdErr(stdErr)
+	stdOut := new(bytes.Buffer)
+	runner.SetStdOut(stdOut)
 
 	retVal := runner.Run()
 	assert.Equal(t, retVal, constants.ExitOK)
 
-	stdOutWriter.Close()
-	stdErrWriter.Close()
-	stdOutBytes, _ := io.ReadAll(stdOutReader)
-	stdErrBytes, _ := io.ReadAll(stdErrReader)
-
-	os.Stdout = origStdout
-	os.Stderr = origStderr
+	stdOutBytes, _ := io.ReadAll(stdOut)
+	stdErrBytes, _ := io.ReadAll(stdErr)
 
 	assert.NotEmpty(t, stdOutBytes)
-	assert.Empty(t, string(stdErrBytes))
+	assert.Empty(t, stdErrBytes)
 
 	// STDOUT should have three JSON objects,
 	// each one representing the result of a job.
 	// Parse and test these three...
 	jsonStr := strings.TrimRight(string(stdOutBytes), "\r\n")
-	jsonLines := strings.Split(jsonStr, util.NewLine())
+	jsonLines := strings.Split(jsonStr, "\n")
 	assert.Equal(t, 3, len(jsonLines), "Workflow should have produced 3 JSON results.")
 
 	for _, line := range jsonLines {
@@ -91,5 +87,4 @@ func TestWorkflowRunner(t *testing.T) {
 			assert.True(t, strings.HasSuffix(opResult.RemoteURL, ".tar"))
 		}
 	}
-	//assert.True(t, false)
 }
