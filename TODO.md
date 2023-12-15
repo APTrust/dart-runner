@@ -2,19 +2,19 @@
 
 ## Priority
 
-- [ ] Fix Windows integration tests 
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
-- [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
-- [ ] Automated UI testing (Selenium)
-- [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
-- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
-- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
-- [ ] Maybe - Add app setting for log level, with options Debug and Info.
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [ ] Implement validation-only jobs.
 - [ ] Implement upload-only jobs.
 - [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
+- [ ] Allow import of DART-native profiles
+- [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
+- [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
+- [ ] Automated UI testing (Selenium)
+- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
+- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
+- [ ] Maybe - Add app setting for log level, with options Debug and Info.
 
 ## Later
 
@@ -32,6 +32,7 @@
 ## Done
 
 - [x] Fix Windows paths in bagging
+- [x] Fix Windows integration tests 
 - [x] Fix auto generation of output file path on job packaging screen
 - [x] Fix web font load error
 - [x] Fix invalid JSON "EOF" being returned to job run page
