@@ -5,7 +5,9 @@
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [ ] Implement validation-only jobs.
+- [ ] Ensure we can validate loose bags (directories)
 - [ ] Implement upload-only jobs.
+- [ ] Ensure we can upload directories (recursive file list?)
 - [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 - [ ] Allow import of DART-native profiles

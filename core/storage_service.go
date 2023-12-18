@@ -2,8 +2,10 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -241,32 +243,17 @@ func (ss *StorageService) testSFTPConnection() error {
 	return err
 }
 
-// GetLocalMinioTestService returns a StorageService that can connect
-// to a locally running Minio service. This service only exists in our
-// dev and test environments. When testing, the service is started
-// automatically by ./scripts/test.rb. If you're not running tests, you'll
-// need to start the service manually by changing into the project root
-// directory and running:
+// For testing only. Valid fixtures are:
 //
-// ./bin/linux/minio server --address=localhost:9899 ~/tmp/minio
-//
-// This service does not exist outside our dev and testing environments,
-// so attempts to connect to it will fail!
-func GetLocalMinioTestService() *StorageService {
-	// Note that ./scripts/test.rb starts a local minio service.
-	// We can connect to this in our tests.
-	return &StorageService{
-		ID:             "d9ba0629-6870-48a3-9dd7-89e21410453b",
-		AllowsDownload: true,
-		AllowsUpload:   true,
-		Bucket:         "test",
-		Description:    "Local minio s3 service",
-		Host:           "127.0.0.1",
-		Login:          "minioadmin",
-		LoginExtra:     "",
-		Name:           "Local Minio",
-		Password:       "minioadmin",
-		Port:           9899,
-		Protocol:       "s3",
+// storage_service_local_minio.json
+// storage_service_local_sftp.json
+func LoadStorageServiceFixture(filename string) (*StorageService, error) {
+	fullpath := filepath.Join(util.PathToTestData(), "files", filename)
+	data, err := os.ReadFile(fullpath)
+	if err != nil {
+		return nil, err
 	}
+	ss := &StorageService{}
+	err = json.Unmarshal(data, ss)
+	return ss, err
 }

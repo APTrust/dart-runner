@@ -243,12 +243,8 @@ func TestStorageServiceConnectionS3(t *testing.T) {
 	// If you're running this test without using ./scripts/test.rb,
 	// start the local minio server with the following command first.
 	// You would run this from the dart-runner project root directory.
-	//
-	// ./bin/linux/minio server --address=localhost:9899 ~/tmp/minio
-	//
-	// You may also have to `mkdir ~/tmp/minio/test` if it doesn't
-	// yet exist.
-	ss := core.GetLocalMinioTestService()
+	ss, err := core.LoadStorageServiceFixture("storage_service_local_minio.json")
+	require.NoError(t, err)
 	assert.NoError(t, ss.TestConnection())
 }
 

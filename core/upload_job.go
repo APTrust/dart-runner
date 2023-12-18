@@ -16,7 +16,7 @@ type UploadJob struct {
 	ID                string
 	PathsToUpload     []string
 	StorageServiceIDs []string
-	UploadOps         []UploadOperation
+	UploadOps         []*UploadOperation
 	Name              string
 	Errors            map[string]string
 }
@@ -26,7 +26,7 @@ func NewUploadJob() *UploadJob {
 		ID:                uuid.NewString(),
 		PathsToUpload:     make([]string, 0),
 		StorageServiceIDs: make([]string, 0),
-		UploadOps:         make([]UploadOperation, 0),
+		UploadOps:         make([]*UploadOperation, 0),
 		Name:              fmt.Sprintf("Upload Job - %s", time.Now().Format(time.RFC3339Nano)),
 		Errors:            make(map[string]string),
 	}
@@ -91,4 +91,73 @@ func (job *UploadJob) Validate() bool {
 // UploadJob is not valid.
 func (job *UploadJob) GetErrors() map[string]string {
 	return job.Errors
+}
+
+func (job *UploadJob) Run(messageChannel chan *EventMessage) int {
+	job.UploadOps = make([]*UploadOperation, 0)
+
+	if !job.Validate() {
+		return constants.ExitUsageErr
+	}
+
+	//
+	// TODO: If path is directory, expand by listing all files recursively.
+	//
+
+	uploadTargets := make(map[string]*StorageService)
+	for i, ssid := range job.StorageServiceIDs {
+		result := ObjFind(ssid)
+		if result.Error != nil {
+			errName := fmt.Sprintf("StorageService #%d", i+1)
+			job.Errors[errName] = result.Error.Error()
+		} else {
+			uploadTargets[ssid] = result.StorageService()
+		}
+	}
+	if len(uploadTargets) == 0 {
+		// User didn't provide any valid Storage Services
+		job.Errors["StorageService"] = "No valid storage services found."
+		return constants.ExitUsageErr
+	}
+
+	// Try all uploads, and keep going if any fail.
+	exitCode := constants.ExitOK
+	for _, storageService := range uploadTargets {
+		if !job.runOne(storageService, messageChannel) {
+			exitCode = constants.ExitRuntimeErr
+		}
+	}
+	return exitCode
+}
+
+func (job *UploadJob) runOne(storageService *StorageService, messageChannel chan *EventMessage) bool {
+	uploadOp := NewUploadOperation(storageService, job.PathsToUpload)
+	job.UploadOps = append(job.UploadOps, uploadOp)
+	uploadOp.Result.Start()
+	if !uploadOp.Validate() {
+		uploadOp.Result.Finish(uploadOp.Errors)
+		return false
+	}
+
+	err := uploadOp.CalculatePayloadSize()
+	if err != nil {
+		uploadOp.Result.Finish(map[string]string{"Upload.CalculatePayloadSize": err.Error()})
+		return false
+	}
+	ok := uploadOp.DoUpload(messageChannel)
+	uploadOp.Result.Finish(uploadOp.Errors)
+	if messageChannel != nil {
+		status := constants.StatusFailed
+		if ok {
+			status = constants.StatusSuccess
+		}
+		eventMessage := &EventMessage{
+			EventType: constants.EventTypeFinish,
+			Stage:     constants.StageUpload,
+			Status:    status,
+			Message:   storageService.Name,
+		}
+		messageChannel <- eventMessage
+	}
+	return ok
 }

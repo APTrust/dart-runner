@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -87,4 +88,82 @@ func TestUploadJobPersistence(t *testing.T) {
 		assert.Equal(t, id, uploadJob.ID)
 		assert.NoError(t, core.ObjDelete(uploadJob))
 	}
+}
+
+// Note that for this to work, our local Minio and SFTP
+// containers have to be running. They will be if you run
+// tests via `./scripts/run.rb tests`.
+//
+// To debug this test, start the Minio and SFTP containers
+// using `./scripts/run.rb dart`, and then debug this.
+func TestUploadRun(t *testing.T) {
+	defer core.ClearDartTable()
+	localMinioService, err := core.LoadStorageServiceFixture("storage_service_local_minio.json")
+	require.Nil(t, err)
+	require.NotNil(t, localMinioService)
+
+	localSFTPService, err := core.LoadStorageServiceFixture("storage_service_local_sftp.json")
+	require.Nil(t, err)
+	require.NotNil(t, localSFTPService)
+
+	require.NoError(t, core.ObjSave(localMinioService))
+	require.NoError(t, core.ObjSave(localSFTPService))
+
+	uploadJob := core.NewUploadJob()
+	uploadJob.StorageServiceIDs = []string{
+		localMinioService.ID,
+		localSFTPService.ID,
+	}
+	uploadJob.PathsToUpload = []string{
+		filepath.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json"),
+		filepath.Join(util.PathToTestData(), "files", "aptrust_unit_test_job.json"),
+		filepath.Join(util.PathToTestData(), "files", "test_batch.csv"),
+	}
+
+	result := uploadJob.Run(nil)
+	assert.Equal(t, constants.ExitOK, result)
+	assert.Equal(t, 2, len(uploadJob.UploadOps))
+	for _, op := range uploadJob.UploadOps {
+		assert.True(t, op.Result.Succeeded(), op.StorageService.Name)
+	}
+
+	// Test a failure case: Good file, but bad storage service.
+	badStorageService := core.NewStorageService()
+	badStorageService.AllowsDownload = true
+	badStorageService.AllowsDownload = true
+	badStorageService.Bucket = "bucket-one"
+	badStorageService.Host = "127.0.0.1"
+	badStorageService.Name = "Bad Storage Service"
+	badStorageService.Port = 54321
+	badStorageService.Protocol = constants.ProtocolS3
+	badStorageService.Login = "Bad-login"
+	badStorageService.Password = "Bad-password"
+	require.Nil(t, core.ObjSave(badStorageService))
+
+	uploadJob = core.NewUploadJob()
+	uploadJob.StorageServiceIDs = []string{
+		badStorageService.ID,
+	}
+	uploadJob.PathsToUpload = []string{
+		filepath.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json"),
+	}
+	result = uploadJob.Run(nil)
+	assert.Equal(t, constants.ExitRuntimeErr, result)
+	assert.Equal(t, 1, len(uploadJob.UploadOps))
+	assert.False(t, uploadJob.UploadOps[0].Result.Succeeded(), uploadJob.UploadOps[0].StorageService.Name)
+
+	// Test another failure case: good storage service but bad file.
+	uploadJob = core.NewUploadJob()
+	uploadJob.StorageServiceIDs = []string{
+		localMinioService.ID,
+	}
+	uploadJob.PathsToUpload = []string{
+		filepath.Join(util.PathToTestData(), "files", "postbuild_test_workflow.json"),
+		filepath.Join(util.PathToTestData(), "files", "this-file-does-not-exist.txt"),
+	}
+	result = uploadJob.Run(nil)
+	assert.Equal(t, constants.ExitRuntimeErr, result)
+	assert.Equal(t, 1, len(uploadJob.UploadOps))
+	assert.False(t, uploadJob.UploadOps[0].Result.Succeeded(), uploadJob.UploadOps[0].StorageService.Name)
+
 }

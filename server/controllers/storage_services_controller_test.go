@@ -186,13 +186,12 @@ func testSSNewSaveEditDeleteWithGoodParams(t *testing.T) {
 
 // This test should be run from ./scripts/test.rb, so we know
 // the local minio test service is running. Otherwise, you'll
-// have to start the service manually with this command from
-// the dart-runner project root directory:
-//
-// ./bin/linux/minio server --address=localhost:9899 ~/tmp/minio
+// have to start the service manually.
 func TestStorageServiceConnection(t *testing.T) {
 	defer core.ClearDartTable()
-	ss := core.GetLocalMinioTestService()
+	ss, err := core.LoadStorageServiceFixture("storage_service_local_minio.json")
+	require.NoError(t, err)
+
 	//assert.NoError(t, core.ObjSave(ss))
 
 	expected := []string{
