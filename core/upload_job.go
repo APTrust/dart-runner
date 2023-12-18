@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/google/uuid"
@@ -22,12 +21,13 @@ type UploadJob struct {
 }
 
 func NewUploadJob() *UploadJob {
+	id := uuid.NewString()
 	return &UploadJob{
-		ID:                uuid.NewString(),
+		ID:                id,
 		PathsToUpload:     make([]string, 0),
 		StorageServiceIDs: make([]string, 0),
 		UploadOps:         make([]*UploadOperation, 0),
-		Name:              fmt.Sprintf("Upload Job - %s", time.Now().Format(time.RFC3339Nano)),
+		Name:              fmt.Sprintf("Upload Job - %s", id),
 		Errors:            make(map[string]string),
 	}
 }

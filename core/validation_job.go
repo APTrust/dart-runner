@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/google/uuid"
@@ -22,12 +21,13 @@ type ValidationJob struct {
 }
 
 func NewValidationJob() *ValidationJob {
+	id := uuid.NewString()
 	return &ValidationJob{
-		ID:              uuid.NewString(),
+		ID:              id,
 		PathsToValidate: make([]string, 0),
 		ValidationOps:   make([]*ValidationOperation, 0),
 		Errors:          make(map[string]string),
-		Name:            fmt.Sprintf("Validation Operation: %s", time.Now().Format(time.RFC3339Nano)),
+		Name:            fmt.Sprintf("Validation Job: %s", id),
 	}
 }
 
