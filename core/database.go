@@ -188,6 +188,14 @@ func findOne(row *sql.Row) *QueryResult {
 		item := &StorageService{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
 		qr.StorageServices = append(qr.StorageServices, item)
+	case constants.TypeUploadJob:
+		item := &UploadJob{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.UploadJobs = append(qr.UploadJobs, item)
+	case constants.TypeValidationJob:
+		item := &ValidationJob{}
+		qr.Error = json.Unmarshal([]byte(objJson), item)
+		qr.ValidationJobs = append(qr.ValidationJobs, item)
 	case constants.TypeWorkflow:
 		item := &Workflow{}
 		qr.Error = json.Unmarshal([]byte(objJson), item)
@@ -244,6 +252,10 @@ func ObjList(objType, orderBy string, limit, offset int) *QueryResult {
 		remoteRepositoryList(rows, qr)
 	case constants.TypeStorageService:
 		storageServiceList(rows, qr)
+	case constants.TypeUploadJob:
+		uploadJobList(rows, qr)
+	case constants.TypeValidationJob:
+		validationJobList(rows, qr)
 	case constants.TypeWorkflow:
 		workflowList(rows, qr)
 	case constants.TypeWorkflowBatch:
@@ -447,6 +459,38 @@ func storageServiceList(rows *sql.Rows, qr *QueryResult) {
 			return
 		}
 		qr.StorageServices = append(qr.StorageServices, item)
+	}
+}
+
+func uploadJobList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &UploadJob{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.UploadJobs = append(qr.UploadJobs, item)
+	}
+}
+
+func validationJobList(rows *sql.Rows, qr *QueryResult) {
+	for rows.Next() {
+		var jsonBytes []byte
+		qr.Error = rows.Scan(&jsonBytes)
+		if qr.Error != nil {
+			return
+		}
+		item := &ValidationJob{}
+		qr.Error = json.Unmarshal(jsonBytes, item)
+		if qr.Error != nil {
+			return
+		}
+		qr.ValidationJobs = append(qr.ValidationJobs, item)
 	}
 }
 

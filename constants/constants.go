@@ -83,6 +83,8 @@ const (
 	TypeRemoteRepository      = "RemoteRepository"
 	TypeStorageService        = "StorageService"
 	TypeTagDefinition         = "TagDefinition"
+	TypeUploadJob             = "UploadJob"
+	TypeValidationJob         = "ValidationJob"
 	TypeWorkflow              = "Workflow"
 	TypeWorkflowBatch         = "WorkflowBatch"
 )

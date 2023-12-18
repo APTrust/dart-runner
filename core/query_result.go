@@ -19,6 +19,8 @@ type QueryResult struct {
 	RemoteRepositories []*RemoteRepository
 	ResultType         string
 	StorageServices    []*StorageService
+	UploadJobs         []*UploadJob
+	ValidationJobs     []*ValidationJob
 	Workflows          []*Workflow
 	WorkflowBatches    []*WorkflowBatch
 }
@@ -79,6 +81,20 @@ func (qr *QueryResult) StorageService() *StorageService {
 	return nil
 }
 
+func (qr *QueryResult) UploadJob() *UploadJob {
+	if len(qr.UploadJobs) > 0 {
+		return qr.UploadJobs[0]
+	}
+	return nil
+}
+
+func (qr *QueryResult) ValidationJob() *ValidationJob {
+	if len(qr.ValidationJobs) > 0 {
+		return qr.ValidationJobs[0]
+	}
+	return nil
+}
+
 func (qr *QueryResult) Workflow() *Workflow {
 	if len(qr.Workflows) > 0 {
 		return qr.Workflows[0]
@@ -114,6 +130,10 @@ func (qr *QueryResult) ResultCount() int {
 		count = len(qr.RemoteRepositories)
 	case constants.TypeStorageService:
 		count = len(qr.StorageServices)
+	case constants.TypeUploadJob:
+		count = len(qr.UploadJobs)
+	case constants.TypeValidationJob:
+		count = len(qr.ValidationJobs)
 	case constants.TypeWorkflow:
 		count = len(qr.Workflows)
 	case constants.TypeWorkflowBatch:
@@ -144,6 +164,10 @@ func (qr *QueryResult) GetForm() (*Form, error) {
 		form = qr.RemoteRepository().ToForm()
 	case constants.TypeStorageService:
 		form = qr.StorageService().ToForm()
+	case constants.TypeUploadJob:
+		form = qr.UploadJob().ToForm()
+	case constants.TypeValidationJob:
+		form = qr.ValidationJob().ToForm()
 	case constants.TypeWorkflow:
 		form = qr.Workflow().ToForm()
 	case constants.TypeWorkflowBatch:
