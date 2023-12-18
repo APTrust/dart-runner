@@ -82,3 +82,75 @@ func TestValidationJobPersistence(t *testing.T) {
 		assert.NoError(t, core.ObjDelete(valJob))
 	}
 }
+
+func TestValidationJobRun(t *testing.T) {
+	defer core.ClearDartTable()
+	profile := loadProfile(t, APTProfile)
+	require.NoError(t, core.ObjSave(profile))
+
+	// This should succeed, as all bags are valid
+	valJob := core.NewValidationJob()
+	valJob.BagItProfileID = profile.ID
+	valJob.PathsToValidate = []string{
+		util.PathToUnitTestBag("example.edu.sample_good.tar"),
+		util.PathToUnitTestBag("example.edu.tagsample_good.tar"),
+	}
+	result := valJob.Run(nil)
+	assert.Equal(t, constants.ExitOK, result)
+	assert.Equal(t, 2, len(valJob.ValidationOps))
+	for _, op := range valJob.ValidationOps {
+		assert.True(t, op.Result.Succeeded(), op.PathToBag)
+	}
+
+	// This should fail, as some bags are invalid
+	valJob = core.NewValidationJob()
+	valJob.BagItProfileID = profile.ID
+	valJob.PathsToValidate = []string{
+		util.PathToUnitTestBag("example.edu.sample_good.tar"),
+		util.PathToUnitTestBag("example.edu.tagsample_good.tar"),
+		util.PathToUnitTestBag("example.edu.sample_missing_data_file.tar"),
+		util.PathToUnitTestBag("example.edu.sample_no_md5_manifest.tar"),
+	}
+	result = valJob.Run(nil)
+	assert.Equal(t, result, constants.ExitRuntimeErr)
+	assert.Equal(t, 4, len(valJob.ValidationOps))
+	for i, op := range valJob.ValidationOps {
+		if i < 2 {
+			assert.True(t, op.Result.Succeeded(), op.PathToBag)
+			assert.Empty(t, op.Errors)
+			assert.Empty(t, op.Result.Errors)
+		} else {
+			assert.False(t, op.Result.Succeeded(), op.PathToBag)
+			assert.Empty(t, op.Errors)
+			assert.NotEmpty(t, op.Result.Errors)
+		}
+	}
+
+	// Other reasons to fail.
+	//
+	// 1. Job itself is invalid because it has no
+	//    profile and no paths to validate.
+	valJob = core.NewValidationJob()
+	result = valJob.Run(nil)
+	assert.Equal(t, constants.ExitUsageErr, result)
+
+	// 2. Profile with this ID does not exist.
+	valJob = core.NewValidationJob()
+	valJob.BagItProfileID = constants.EmptyUUID
+	valJob.PathsToValidate = []string{
+		util.PathToUnitTestBag("example.edu.sample_good.tar"),
+		util.PathToUnitTestBag("example.edu.tagsample_good.tar"),
+	}
+	result = valJob.Run(nil)
+	assert.Equal(t, constants.ExitRuntimeErr, result)
+
+	// 3. The paths we're supposed to validate don't exist.
+	valJob = core.NewValidationJob()
+	valJob.BagItProfileID = profile.ID
+	valJob.PathsToValidate = []string{
+		util.PathToUnitTestBag("i-dont-exist.tar"),
+		util.PathToUnitTestBag("neither-do-i.tar"),
+	}
+	result = valJob.Run(nil)
+	assert.Equal(t, constants.ExitRuntimeErr, result)
+}

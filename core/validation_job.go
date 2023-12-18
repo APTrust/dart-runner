@@ -16,7 +16,7 @@ type ValidationJob struct {
 	ID              string
 	BagItProfileID  string
 	PathsToValidate []string
-	ValidationOps   []ValidationOperation
+	ValidationOps   []*ValidationOperation
 	Name            string
 	Errors          map[string]string
 }
@@ -25,7 +25,7 @@ func NewValidationJob() *ValidationJob {
 	return &ValidationJob{
 		ID:              uuid.NewString(),
 		PathsToValidate: make([]string, 0),
-		ValidationOps:   make([]ValidationOperation, 0),
+		ValidationOps:   make([]*ValidationOperation, 0),
 		Errors:          make(map[string]string),
 		Name:            fmt.Sprintf("Validation Operation: %s", time.Now().Format(time.RFC3339Nano)),
 	}
@@ -87,4 +87,91 @@ func (job *ValidationJob) Validate() bool {
 // ValidationJob is not valid.
 func (job *ValidationJob) GetErrors() map[string]string {
 	return job.Errors
+}
+
+// Run runs this validation job, validating all PathsToValidate against
+// the selected BagItProfile. This returns constants.ExitOK if all
+// operations succeed. If any params are invalid or the required profile
+// cannot be found, it returns constants.ExitUsage error because the
+// user didn't supply valid info to complete the job. For any other
+// runtime failure, it returns constants.ExitRuntimeError.
+//
+// Note that as long as the user supplies a valid profile and paths to
+// validate, this will attempt to validate all bags. It's possible that
+// some bags will be valid and some will not. Check the results of each
+// ValidationOperation.Result if you get a non-zero exit code.
+func (job *ValidationJob) Run(messageChannel chan *EventMessage) int {
+	job.ValidationOps = make([]*ValidationOperation, 0)
+	if !job.Validate() {
+		// job.Errors is set inside call to Validate()
+		return constants.ExitUsageErr
+	}
+	result := ObjFind(job.BagItProfileID)
+	if result.Error != nil {
+		job.Errors["BagItProfile"] = result.Error.Error()
+		return constants.ExitRuntimeErr
+	}
+	profile := result.BagItProfile()
+	if !profile.Validate() {
+		job.Errors["BagItProfile"] = "BagIt profile is not valid"
+		for key, value := range profile.Errors {
+			job.Errors[key] = value
+		}
+		return constants.ExitUsageErr
+	}
+	exitCode := constants.ExitOK
+	for _, pathToValidate := range job.PathsToValidate {
+		if !job.runOne(pathToValidate, profile, messageChannel) {
+			exitCode = constants.ExitRuntimeErr
+		}
+	}
+	return exitCode
+}
+
+func (job *ValidationJob) runOne(pathToBag string, profile *BagItProfile, messageChannel chan *EventMessage) bool {
+	op := NewValidationOperation(pathToBag)
+	job.ValidationOps = append(job.ValidationOps, op)
+	op.Result.Start()
+
+	// Get a validator object to do the work. If this returns an
+	// error, it's usually "file not found."
+	validator, err := NewValidator(pathToBag, profile)
+	if err != nil {
+		errMap := map[string]string{
+			pathToBag: err.Error(),
+		}
+		op.Result.Finish(errMap)
+		return false
+	}
+
+	// When running from the UI, we'll have a message channel to pass
+	// info back to the front end. When running from command line, we won't.
+	if messageChannel != nil {
+		validator.MessageChannel = messageChannel
+	}
+
+	// Scan the bag first, to build up an idea of what's in it.
+	// This man return an error if the path is unreadable or if
+	// we're trying to read a corrupt tar file.
+	err = validator.ScanBag()
+	if err != nil {
+		errors := make(map[string]string)
+		if len(validator.Errors) > 0 {
+			errors = validator.Errors
+		} else {
+			errors["Validator.Scan"] = err.Error()
+		}
+		op.Result.Finish(errors)
+		return false
+	}
+
+	// Now that we know what's in the bag, validate it.
+	// If the contents are invalid, validator.Errors will
+	// contain specific info about what's wrong.
+	ok := validator.Validate()
+	op.Result.Finish(validator.Errors)
+	if ok {
+		op.Result.Info = "Bag is valid."
+	}
+	return ok
 }
