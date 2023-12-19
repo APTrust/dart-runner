@@ -99,7 +99,7 @@ func JobDeleteFile(c *gin.Context) {
 	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s?%s", job.ID, values.Encode()))
 }
 
-func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInfo, error) {
+func GetDirList(dirname string) ([]*util.ExtendedFileInfo, error) {
 	var entries []*util.ExtendedFileInfo
 	var err error
 	if dirname == "" {
@@ -107,6 +107,11 @@ func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInf
 	} else {
 		entries, err = util.ListDirectoryWithSort(dirname)
 	}
+	return entries, err
+}
+
+func GetJobAndDirList(jobId, dirname string) (*core.Job, []*util.ExtendedFileInfo, error) {
+	entries, err := GetDirList(dirname)
 	if err != nil {
 		return nil, nil, err
 	}

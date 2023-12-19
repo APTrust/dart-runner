@@ -74,26 +74,29 @@ func JobSavePackaging(c *gin.Context) {
 		job.ValidationOp.PathToBag = job.PackageOp.OutputPath
 	}
 
-	ok := job.PackageOp.Validate()
-	if !ok {
-		// Errors from sub-object have sub-object prefix for
-		// display when running jobs from command line. We
-		// want to strip that prefix here.
-		errors := make(map[string]string)
-		for key, value := range job.PackageOp.Errors {
-			fieldName := strings.Replace(key, "PackageOperation.", "", 1)
-			errors[fieldName] = value
+	if direction == "next" {
+		ok := job.PackageOp.Validate()
+		if !ok {
+			// Errors from sub-object have sub-object prefix for
+			// display when running jobs from command line. We
+			// want to strip that prefix here.
+			errors := make(map[string]string)
+			for key, value := range job.PackageOp.Errors {
+				fieldName := strings.Replace(key, "PackageOperation.", "", 1)
+				errors[fieldName] = value
+			}
+			job.Errors = errors
+			form := job.ToForm()
+			data := gin.H{
+				"job":           job,
+				"form":          form,
+				"pathSeparator": string(os.PathSeparator),
+			}
+			c.HTML(http.StatusBadRequest, "job/packaging.html", data)
+			return
 		}
-		job.Errors = errors
-		form := job.ToForm()
-		data := gin.H{
-			"job":           job,
-			"form":          form,
-			"pathSeparator": string(os.PathSeparator),
-		}
-		c.HTML(http.StatusBadRequest, "job/packaging.html", data)
-		return
 	}
+	// If direction == "previous", just save and go back.
 	err := core.ObjSaveWithoutValidation(job)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)

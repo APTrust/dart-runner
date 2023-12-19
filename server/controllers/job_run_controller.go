@@ -35,7 +35,7 @@ func JobRunShow(c *gin.Context) {
 // GET /jobs/run/:id
 //
 // By REST standards, this should be a POST. However, the Server
-// Side Events standard for JavaScript only supports GET, so GET
+// Sent Events standard for JavaScript only supports GET, so GET
 // it is.
 func JobRunExecute(c *gin.Context) {
 	// Run the job in response to user clicking the Run button.
@@ -133,5 +133,5 @@ func JobRunExecute(c *gin.Context) {
 	// The client should disconnect when we send it the disconnect event.
 	c.Stream(streamer)
 	c.Writer.Flush()
-	fmt.Println("Job Execute: client disconnected.")
+	//fmt.Println("Job Execute: client disconnected.")
 }

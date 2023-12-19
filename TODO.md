@@ -9,6 +9,7 @@
 - [ ] Ensure we can validate loose bags (directories)
 - [ ] Implement upload-only jobs.
 - [ ] Ensure we can upload directories (recursive file list?)
+- [ ] Ensure that jobs won't initiate if already running (prevent double-get request)
 - [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 - [ ] Allow import of DART-native profiles
