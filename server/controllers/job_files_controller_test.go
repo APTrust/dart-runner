@@ -68,6 +68,10 @@ func TestJobShowFiles(t *testing.T) {
 		"Total Size",
 		"Delete Job",
 		"Next",
+		fmt.Sprintf("/jobs/add_file/%s", job.ID),
+		fmt.Sprintf("/jobs/delete/%s", job.ID),
+		fmt.Sprintf("/jobs/delete_file/%s", job.ID),
+		fmt.Sprintf("/jobs/packaging/%s", job.ID),
 	}
 	expected = append(expected, job.PackageOp.SourceFiles...)
 

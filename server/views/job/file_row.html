@@ -11,7 +11,7 @@
     <td class="dirCount">{{ $dirStats.DirCount }}</td>
     <td class="fileCount">{{ $dirStats.FileCount }}</td>
     <td class="fileSize" data-bytes="{{ $dirStats.TotalBytes }}">{{ $dirStats.TotalBytes }}</td>
-    <td class="clickable delete-file" onclick="confirmForegroundDeletion('Do you want to remove this item?', '/jobs/delete_file/{{ .job.ID }}', { 'fullPath': '{{ .filepath }}', 'directory': '{{ .currentDir }}' })">
+    <td class="clickable delete-file" onclick="confirmForegroundDeletion('Do you want to remove this item?', {{ .fileDeletionUrl }}, { 'fullPath': '{{ .filepath }}', 'directory': '{{ .currentDir }}' })">
       <i class="fas fa-times text-danger" title="Delete {{ .filepath }}"></i>
     </td>
 </tr>

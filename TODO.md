@@ -5,6 +5,7 @@
 - [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [ ] Implement validation-only jobs.
+- [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
 - [ ] Ensure we can validate loose bags (directories)
 - [ ] Implement upload-only jobs.
 - [ ] Ensure we can upload directories (recursive file list?)

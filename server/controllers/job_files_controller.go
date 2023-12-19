@@ -29,6 +29,13 @@ func JobShowFiles(c *gin.Context) {
 	templateData["job"] = job
 	templateData["items"] = items
 	templateData["showJobFiles"] = job.PackageOp != nil && len(job.PackageOp.SourceFiles) > 0
+
+	templateData["dragDropInstructions"] = "Drag and drop the items from the left that you want to package."
+	templateData["fileDeletionUrl"] = fmt.Sprintf("/jobs/delete_file/%s", job.ID)
+	templateData["jobDeletionUrl"] = fmt.Sprintf("/jobs/delete/%s", job.ID)
+	templateData["nextButtonUrl"] = fmt.Sprintf("/jobs/packaging/%s", job.ID)
+	templateData["addFileUrl"] = fmt.Sprintf("/jobs/add_file/%s", job.ID)
+
 	c.HTML(http.StatusOK, "job/files.html", templateData)
 }
 
