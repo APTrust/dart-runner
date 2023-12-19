@@ -80,3 +80,22 @@ func NewJobSummary(job *Job) *JobSummary {
 
 	return info
 }
+
+func NewValidationJobSummary(valJob *ValidationJob, profile *BagItProfile) *JobSummary {
+	return &JobSummary{
+		ID:                      valJob.ID,
+		BagItProfileDescription: profile.Description,
+		BagItProfileName:        profile.Name,
+		ByteCount:               0,
+		ByteCountFormatted:      "N/A",
+		ByteCountHuman:          "0",
+		DirectoryCount:          0,
+		HasBagItProfile:         true,
+		HasPackageOp:            false,
+		HasUploadOps:            false,
+		Name:                    "Validate Bags",
+		PathSeparator:           string(os.PathSeparator),
+		PayloadFileCount:        0,
+		SourceFiles:             valJob.PathsToValidate,
+	}
+}

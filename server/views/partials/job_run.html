@@ -365,7 +365,6 @@ an idea of what goes into them.
 
     function activateOutputPathLink() {
       var div = $('#outputPathLink')
-      //var url = div.data('url') // Get this from JobSummary instead
       var url = settings.outputPath
       var dir = url.split(settings.pathSeparator).slice(0, -1).join(settings.pathSeparator)
       //console.log(dir)
@@ -385,7 +384,6 @@ an idea of what goes into them.
           batchLineNumber += 1
         }
     }
-
 
     function showBatchJobFailed(data) {
         if (weAreRunningAWorkflowBatch && data.stage == "" && data.jobResult) {

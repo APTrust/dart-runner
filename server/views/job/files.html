@@ -46,7 +46,7 @@
                         <tbody>
                             {{ $fileDeletionUrl := .fileDeletionUrl }}
                             {{ $currentDir := .currentDir }}
-                            {{ range $index, $filepath := .job.PackageOp.SourceFiles }}
+                            {{ range $index, $filepath := .sourceFiles }}
                                 {{ template "job/file_row.html"  dict "filepath" $filepath "fileDeletionUrl" $fileDeletionUrl "currentDir" $currentDir }}
                             {{ end }}
                             <tr id="fileTotals">
@@ -140,7 +140,7 @@
             e.currentTarget.classList.remove('drop-zone-over');
             return false;
         });
-        //console.log("Attached drag and drop events")
+        // console.log("Attached drag and drop events")
     }
     attachDragAndDropEvents();
 </script>

@@ -207,6 +207,7 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/storage_services/test/:id", controllers.StorageServiceTestConnection)
 
 	// Validation Jobs
+	router.GET("/validation_jobs/new", controllers.ValidationJobNew)
 	router.GET("/validation_jobs/files/:id", controllers.ValidationJobShowFiles)
 	router.POST("/validation_jobs/add_file/:id", controllers.ValidationJobAddFile)
 	router.POST("/validation_jobs/delete_file/:id", controllers.ValidationJobDeleteFile)

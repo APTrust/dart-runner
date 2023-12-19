@@ -69,11 +69,6 @@ func JobNew(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-	err = core.ObjSaveWithoutValidation(job)
-	if err != nil {
-		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
-		return
-	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
 }
 

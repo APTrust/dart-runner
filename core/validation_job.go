@@ -64,8 +64,13 @@ func (job *ValidationJob) IsDeletable() bool {
 func (job *ValidationJob) ToForm() *Form {
 	form := NewForm(constants.TypeValidationJob, job.ID, job.Errors)
 	form.UserCanDelete = true
-	form.AddField("BagItProfileID", "BagIt Profile", job.BagItProfileID, true)
-	form.AddMultiValueField("PathsToValidate", "Items to Validate", job.PathsToValidate, true)
+
+	profileField := form.AddField("BagItProfileID", "BagIt Profile", job.BagItProfileID, true)
+	profileField.Choices = ObjChoiceList(constants.TypeBagItProfile, []string{job.BagItProfileID})
+
+	pathsField := form.AddMultiValueField("PathsToValidate", "Items to Validate", job.PathsToValidate, true)
+	pathsField.Values = job.PathsToValidate
+
 	return form
 }
 

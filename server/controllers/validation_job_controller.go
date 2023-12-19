@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,6 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GET /validation_jobs/new
+func ValidationJobNew(c *gin.Context) {
+	valJob := core.NewValidationJob()
+	err := core.ObjSaveWithoutValidation(valJob)
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/validation_jobs/files/%s", valJob.ID))
+}
+
 // GET /validation_jobs/files/:id
 func ValidationJobShowFiles(c *gin.Context) {
 	templateData, err := InitFileChooser(c)
@@ -17,12 +29,11 @@ func ValidationJobShowFiles(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	valJob := result.ValidationJob()
 
 	directory := c.Query("directory")
 	if directory == "" {
@@ -36,11 +47,13 @@ func ValidationJobShowFiles(c *gin.Context) {
 	templateData["job"] = valJob
 	templateData["items"] = items
 	templateData["showJobFiles"] = len(valJob.PathsToValidate) > 0
+	templateData["sourceFiles"] = valJob.PathsToValidate
+	templateData["showJumpMenu"] = true
 
 	templateData["dragDropInstructions"] = "Drag and drop the items from the left that you want to validate."
 	templateData["fileDeletionUrl"] = fmt.Sprintf("/validation_jobs/delete_file/%s", valJob.ID)
 	templateData["jobDeletionUrl"] = fmt.Sprintf("/validation_jobs/delete/%s", valJob.ID)
-	templateData["nextButtonUrl"] = fmt.Sprintf("/validation_jobs/profile/%s", valJob.ID)
+	templateData["nextButtonUrl"] = fmt.Sprintf("/validation_jobs/profiles/%s", valJob.ID)
 	templateData["addFileUrl"] = fmt.Sprintf("/validation_jobs/add_file/%s", valJob.ID)
 
 	c.HTML(http.StatusOK, "job/files.html", templateData)
@@ -49,12 +62,11 @@ func ValidationJobShowFiles(c *gin.Context) {
 // POST /validation_jobs/add_file/:id
 func ValidationJobAddFile(c *gin.Context) {
 	fileToAdd := c.PostForm("fullPath")
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	valJob := result.ValidationJob()
 	index := -1
 	for i, filename := range valJob.PathsToValidate {
 		if fileToAdd == filename {
@@ -79,12 +91,11 @@ func ValidationJobAddFile(c *gin.Context) {
 // POST /validation_jobs/delete_file/:id
 func ValidationJobDeleteFile(c *gin.Context) {
 	fileToDelete := c.PostForm("fullPath")
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	valJob := result.ValidationJob()
 	index := -1
 	for i, filename := range valJob.PathsToValidate {
 		if fileToDelete == filename {
@@ -108,18 +119,72 @@ func ValidationJobDeleteFile(c *gin.Context) {
 
 // GET /validation_jobs/profiles/:id
 func ValidationJobShowProfiles(c *gin.Context) {
-	// Show list of BagIt profiles
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	form := valJob.ToForm()
+	data := gin.H{
+		"form":   form,
+		"valJob": valJob,
+	}
+	c.HTML(http.StatusOK, "validate/choose_profile.html", data)
 }
 
 // POST /validation_jobs/profiles/:id
 func ValidationJobSaveProfile(c *gin.Context) {
-	// Save the selected profile to ValidationJob
-	// and redirect to ValidationJobReview
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	valJob.BagItProfileID = c.PostForm("BagItProfileID")
+	err = core.ObjSave(valJob)
+	if err != nil {
+		form := valJob.ToForm()
+		data := gin.H{
+			"form":   form,
+			"valJob": valJob,
+		}
+		c.HTML(http.StatusBadRequest, "validate/choose_profile.html", data)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/validation_jobs/review/%s", valJob.ID))
 }
 
 // GET /validation_jobs/review/:id
 func ValidationJobReview(c *gin.Context) {
-	// Show validation job details and Run button.
+
+	// TODO: Either convert this to a standard Job,
+	//       or adapt the UI to support sub-types
+	//       like ValidationJob and UploadJob.
+	//
+	// Currently, this is choking on this part of the template:
+	//
+	// Error #01: template: run.html:21:18: executing "job/run.html" at <.job.WorkflowID>:
+	// can't evaluate field WorkflowID in type interface {}
+
+	result := core.ObjFind(c.Param("id"))
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	valJob := result.ValidationJob()
+	result = core.ObjFind(valJob.BagItProfileID)
+	if result.Error != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+		return
+	}
+	jobSummary := core.NewValidationJobSummary(valJob, result.BagItProfile())
+	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
+
+	data := gin.H{
+		"job":            valJob,
+		"jobSummary":     jobSummary,
+		"jobSummaryJson": string(jobSummaryJson),
+	}
+	c.HTML(http.StatusOK, "job/run.html", data)
 }
 
 // GET /validation_jobs/run/:id
@@ -129,4 +194,9 @@ func ValidationJobReview(c *gin.Context) {
 func ValidationJobRun(c *gin.Context) {
 	// Run this job using Server Sent Events.
 	// See JobRunExecute()
+}
+
+func loadValidationJob(valJobID string) (*core.ValidationJob, error) {
+	result := core.ObjFind(valJobID)
+	return result.ValidationJob(), result.Error
 }

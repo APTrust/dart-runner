@@ -38,7 +38,7 @@
 
     {{ if .showParentDirLink }}
     <div class="file-browser-item" title="Parent Directory">
-    <a class="file-link" href="/jobs/files/{{ .job.ID}}?directory={{ .parentDir }}&showHiddenFiles={{ .showHiddenFiles }}"><i class="fas fa-angle-left"></i>{{ .parentDirShortName }}</a>
+    <a class="file-link" href="?directory={{ .parentDir }}&showHiddenFiles={{ .showHiddenFiles }}"><i class="fas fa-angle-left"></i>{{ .parentDirShortName }}</a>
     </div>
     {{ end }}
 
@@ -61,7 +61,7 @@
 
             {{ if $item.FileInfo.IsDir }} 
             <div class="{{ $cssClass }}" draggable="true" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
-                <a class="file-link" href="/jobs/files/{{ $job.ID}}?directory={{ $item.FullPath }}&showHiddenFiles={{ $showHiddenFiles }}">{{ $item.FileInfo.Name }}</a>
+                <a class="file-link" href="?directory={{ $item.FullPath }}&showHiddenFiles={{ $showHiddenFiles }}">{{ $item.FileInfo.Name }}</a>
             </div>    
             {{ else }}
             <div class="{{ $cssClass }}" draggable="true" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
