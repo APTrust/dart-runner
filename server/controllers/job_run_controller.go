@@ -30,6 +30,7 @@ func JobRunShow(c *gin.Context) {
 		"jobSummary":     jobSummary,
 		"jobSummaryJson": string(jobSummaryJson),
 		"jobRunUrl":      "/jobs/run",
+		"backButtonUrl":  fmt.Sprintf("/jobs/upload/%s", job.ID),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
@@ -89,7 +90,7 @@ func JobRunExecute(c *gin.Context) {
 		}
 		eventMessage := &core.EventMessage{
 			EventType: constants.EventTypeDisconnect,
-			Message:   fmt.Sprintf("Job completed with exit code %d", exitCode),
+			Message:   fmt.Sprintf("Job completed with exit code %d (%s)", exitCode, status),
 			Status:    status,
 		}
 		messageChannel <- eventMessage

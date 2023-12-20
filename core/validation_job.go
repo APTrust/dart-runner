@@ -125,11 +125,30 @@ func (job *ValidationJob) Run(messageChannel chan *EventMessage) int {
 		return constants.ExitUsageErr
 	}
 	exitCode := constants.ExitOK
+	status := constants.StatusSuccess
+	message := ""
 	for _, pathToValidate := range job.PathsToValidate {
 		if !job.runOne(pathToValidate, profile, messageChannel) {
 			exitCode = constants.ExitRuntimeErr
+			status = constants.StatusFailed
+			message += fmt.Sprintf("%s failed validation", pathToValidate)
 		}
 	}
+
+	// Tell the listener we finished.
+	if messageChannel != nil {
+		if exitCode == constants.ExitOK {
+			message = "All bags are valid according to the selected profile."
+		}
+		eventMessage := &EventMessage{
+			EventType: constants.EventTypeFinish,
+			Stage:     constants.StageValidation,
+			Status:    status,
+			Message:   message,
+		}
+		messageChannel <- eventMessage
+	}
+
 	return exitCode
 }
 

@@ -77,7 +77,7 @@ func TestJobRunExecute(t *testing.T) {
 	html := recorder.Body.String()
 	assert.NotEmpty(t, html)
 	assert.True(t, recorder.EventCount > 100)
-	assert.Equal(t, "Job completed with exit code 0", recorder.LastEvent.Message)
+	assert.Equal(t, "Job completed with exit code 0 (success)", recorder.LastEvent.Message)
 
 	// Test the job result that came through in the SSE event stream.
 	jobResult := recorder.ResultEvent.JobResult

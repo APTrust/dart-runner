@@ -3,9 +3,12 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
@@ -155,19 +158,12 @@ func ValidationJobSaveProfile(c *gin.Context) {
 
 // GET /validation_jobs/review/:id
 func ValidationJobReview(c *gin.Context) {
-
-	// TODO: Either convert this to a standard Job,
-	//       or adapt the UI to support sub-types
-	//       like ValidationJob and UploadJob.
-	//
-
-	result := core.ObjFind(c.Param("id"))
-	if result.Error != nil {
-		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
 		return
 	}
-	valJob := result.ValidationJob()
-	result = core.ObjFind(valJob.BagItProfileID)
+	result := core.ObjFind(valJob.BagItProfileID)
 	if result.Error != nil {
 		AbortWithErrorHTML(c, http.StatusNotFound, result.Error)
 		return
@@ -181,6 +177,7 @@ func ValidationJobReview(c *gin.Context) {
 		"jobSummary":     jobSummary,
 		"jobSummaryJson": string(jobSummaryJson),
 		"jobRunUrl":      "/validation_jobs/run/",
+		"backButtonUrl":  fmt.Sprintf("/validation_jobs/profiles/%s", valJob.ID),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
@@ -190,8 +187,105 @@ func ValidationJobReview(c *gin.Context) {
 // By REST standards, this should be a POST. However, the Server
 // Send Events standard for JavaScript only supports GET.
 func ValidationJobRun(c *gin.Context) {
-	// Run this job using Server Sent Events.
-	// See JobRunExecute()
+	valJob, err := loadValidationJob(c.Param("id"))
+	if err != nil {
+		detailedError := fmt.Errorf("ValidationJob record not found. %s", err.Error())
+		AbortWithErrorHTML(c, http.StatusNotFound, detailedError)
+		return
+	}
+	if !valJob.Validate() {
+		validationErr := ""
+		for _, msg := range valJob.Errors {
+			validationErr += msg + " "
+		}
+		AbortWithErrorHTML(c, http.StatusBadRequest, fmt.Errorf("Job is invalid. %s", validationErr))
+		return
+	}
+
+	result := core.ObjFind(valJob.BagItProfileID)
+	if result.Error != nil {
+		detailedError := fmt.Errorf("BagIt profile not found. %s", err.Error())
+		AbortWithErrorHTML(c, http.StatusNotFound, detailedError)
+		return
+	}
+	profile := result.BagItProfile()
+
+	messageChannel := make(chan *core.EventMessage)
+	go func() {
+
+		// Give the listeners below a chance to attach.
+		time.Sleep(200 * time.Millisecond)
+
+		// Send initialization data to the
+		// front end, so it knows what to display.
+		jobSummary := core.NewValidationJobSummary(valJob, profile)
+		initEvent := core.InitEvent(jobSummary)
+		messageChannel <- initEvent
+
+		// Run the job and have it send status updates back to the
+		// front end through the message channel.
+		exitCode := valJob.Run(messageChannel)
+
+		// *****************************************************
+		//
+		// START HERE!
+		//
+		// *****************************************************
+		// TODO: Create a Finish Event with Job Result.
+		// The Job Result must collect all validation
+		// errors, so we can display them on the front end.
+		// *****************************************************
+
+		// When job completes, create the final disconnect event
+		// to tell the front end to stop listening for server-sent
+		// events. This is the last message we'll send.
+		// When the front end gets this, it terminates
+		// the server-sent event connection. The call to c.Stream() below
+		// will return when the connection is terminated.
+		status := constants.StatusFailed
+		if exitCode == constants.ExitOK {
+			status = constants.StatusSuccess
+		}
+		eventMessage := &core.EventMessage{
+			EventType: constants.EventTypeDisconnect,
+			Message:   fmt.Sprintf("Job completed with exit code %d (%s)", exitCode, status),
+			Status:    status,
+		}
+		messageChannel <- eventMessage
+	}()
+
+	// While the job runner is pumping events into one end of
+	// our message channel, we need a listener on the other end
+	// to do something with those events. The streamer merely
+	// receives events from the job runner and passes them out
+	// to the client as server-sent events.
+	streamer := func(w io.Writer) bool {
+		if msg, ok := <-messageChannel; ok {
+			c.SSEvent("message", msg)
+			if msg.EventType != constants.EventTypeDisconnect {
+				return true
+			}
+		}
+		err := core.ObjSave(valJob)
+		if err != nil {
+			core.Dart.Log.Error("Error saving validation job %s after run: %v", valJob.ID, err)
+		}
+		return false
+	}
+
+	// At this point, we have a job running in a separate go routine,
+	// and a streamer set up to pass job events along to the client.
+	//
+	// The last thing we need to do is attach the streamer to gin's
+	// io.Writer, which is the pipe through which messages are written
+	// to the client. The c.Stream() function keeps writing until the
+	// remote client disconnects. Note that c.Stream() blocks until
+	// the client disconnects.
+	//
+	// The client should disconnect when we send it the disconnect event.
+	c.Stream(streamer)
+	c.Writer.Flush()
+	//fmt.Println("Job Execute: client disconnected.")
 }
 
 func loadValidationJob(valJobID string) (*core.ValidationJob, error) {

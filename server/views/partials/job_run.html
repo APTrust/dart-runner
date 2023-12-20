@@ -145,6 +145,8 @@ an idea of what goes into them.
             console.log(data.message)
             eventSrc.close()
           } else {
+            // This handles the default case, where eventType == "info".
+            // Most messages have this type.
             renderInfo(data)
           }
         }
@@ -216,11 +218,11 @@ an idea of what goes into them.
 
     function hideValidationJobInfo() {
       $('#validationFilesDiv').hide()
-      $('#pathsToValidate').empty()
     }
 
     // This is specific to validation-only jobs.
     function showValidationJobInfo() {
+      $('#pathsToValidate').empty()
       $('#bagItProfileName').text(settings.bagItProfileName)
       $('#bagItProfileDescription').text(settings.bagItProfileDescription)
       $('#bagItProfileDiv').show()
@@ -240,6 +242,10 @@ an idea of what goes into them.
                 initProgressBar('validationInfo');
                 $(`#runningJobDisplay div.validationInfo`).show();
             }
+        }
+        if (settings.jobType == "ValidationJob") {
+          initProgressBar('validationInfo');
+          $(`#runningJobDisplay div.validationInfo`).show();
         }
         if (settings.hasUploadOps) {
             initProgressBar('uploadInfo');
@@ -265,6 +271,7 @@ an idea of what goes into them.
             completedUploads.push(data.message)
             markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"))
           } else {
+            //console.log(section)
             markSuccess(detailDiv, progressBar, data.message)
           }
           activateOutputPathLink()
