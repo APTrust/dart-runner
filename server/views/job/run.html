@@ -12,18 +12,18 @@ job details and progress.
 
 <div class="mt-5">
   <div class="float-left" id="btnBackDiv">
-    <a class="btn btn-primary" href="/jobs/upload/{{ .job.ID }}" role="button">&lt;&lt; Back</a>
+    <a class="btn btn-primary" href="/jobs/upload/{{ .jobID }}" role="button">&lt;&lt; Back</a>
   </div>
 
 
 
   <div class="float-right" id="btnNextDiv">
-    {{ if not .job.WorkflowID }}
-    <button class="btn btn-info mr-5" onclick="postDataInBackground('/workflows/from_job/{{ .job.ID }}')" role="button">Create Workflow</button>
+    {{ if not .workflowID }}
+    <button class="btn btn-info mr-5" onclick="postDataInBackground('/workflows/from_job/{{ .jobID }}')" role="button">Create Workflow</button>
     {{  end }}
 
     <!-- Though it acts like a link, this has to be a button so we can disable it after click. -->
-    <button id="btnRunJob" class="btn btn-success ml-5" onclick="runJob('/jobs/run/', '{{ .job.ID }}')" role="button">Run Job</button>
+    <button id="btnRunJob" class="btn btn-success ml-5" onclick="runJob({{ .jobRunUrl }}, '{{ .jobID }}')" role="button">Run Job</button>
   </div>
 </div>
 

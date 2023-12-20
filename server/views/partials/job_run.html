@@ -43,6 +43,13 @@ an idea of what goes into them.
   </div>
 </div>
 
+<div class="row mb-1" id="validationFilesDiv" style="display:none">
+  <div class="col text-right font-weight-bold">Bags to Validate</div>
+  <div class="col-10">
+    <ul id="pathsToValidate" class="flush-no-marker"></ul>
+  </div>
+</div>
+
 <div class="row mb-1" id="outputPathDiv" style="display:none">
   <div class="col text-right font-weight-bold">Output Path</div>
   <div class="col-10"><div id="outputPathLink" data-url=""></div></div>
@@ -86,6 +93,7 @@ an idea of what goes into them.
     // bottom of this file. See below.
     {{ if .jobSummaryJson }}
     settings = JSON.parse({{ .jobSummaryJson }});
+    console.log(settings)
     {{ end }}
 
     function runJob(eventSourceUrl, jobId) {
@@ -151,6 +159,10 @@ an idea of what goes into them.
       if (settings.hasPackageOp) {
         showPackagingInfo()
       } 
+      if (settings.jobType == "ValidationJob") {
+        console.log("Adding paths to validation job info div")
+        showValidationJobInfo()
+      }
       $('#uploadTargets').empty()
       if (settings.hasUploadOps) {
         $('#uploadOpsDiv').show()
@@ -200,6 +212,23 @@ an idea of what goes into them.
         $('#payloadSummaryDiv').show()
         $('#sourceFilesDiv').show()
         $('#outputPathDiv').show()
+    }
+
+    function hideValidationJobInfo() {
+      $('#validationFilesDiv').hide()
+      $('#pathsToValidate').empty()
+    }
+
+    // This is specific to validation-only jobs.
+    function showValidationJobInfo() {
+      $('#bagItProfileName').text(settings.bagItProfileName)
+      $('#bagItProfileDescription').text(settings.bagItProfileDescription)
+      $('#bagItProfileDiv').show()
+      var sourceListElement = $('#pathsToValidate')
+      settings.sourceFiles.forEach(function (path){
+        sourceListElement.append(`<li>${path}</li>`)
+      })
+      $('#validationFilesDiv').show()
     }
 
     function showProgressDivs() {

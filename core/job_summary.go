@@ -3,6 +3,7 @@ package core
 import (
 	"os"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -17,6 +18,7 @@ import (
 // it's easy to test.
 type JobSummary struct {
 	ID                      string   `json:"id"`
+	JobType                 string   `json:"jobType"`
 	Name                    string   `json:"name"`
 	HasPackageOp            bool     `json:"hasPackageOp"`
 	HasUploadOps            bool     `json:"hasUploadOps"`
@@ -44,6 +46,7 @@ type JobSummary struct {
 func NewJobSummary(job *Job) *JobSummary {
 	info := &JobSummary{
 		ID:               job.ID,
+		JobType:          constants.TypeJob,
 		Name:             job.Name(),
 		HasPackageOp:     job.HasPackageOp(),
 		HasUploadOps:     job.HasUploadOps(),
@@ -84,6 +87,7 @@ func NewJobSummary(job *Job) *JobSummary {
 func NewValidationJobSummary(valJob *ValidationJob, profile *BagItProfile) *JobSummary {
 	return &JobSummary{
 		ID:                      valJob.ID,
+		JobType:                 constants.TypeValidationJob,
 		BagItProfileDescription: profile.Description,
 		BagItProfileName:        profile.Name,
 		ByteCount:               0,

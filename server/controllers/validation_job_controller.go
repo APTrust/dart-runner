@@ -160,10 +160,6 @@ func ValidationJobReview(c *gin.Context) {
 	//       or adapt the UI to support sub-types
 	//       like ValidationJob and UploadJob.
 	//
-	// Currently, this is choking on this part of the template:
-	//
-	// Error #01: template: run.html:21:18: executing "job/run.html" at <.job.WorkflowID>:
-	// can't evaluate field WorkflowID in type interface {}
 
 	result := core.ObjFind(c.Param("id"))
 	if result.Error != nil {
@@ -180,9 +176,11 @@ func ValidationJobReview(c *gin.Context) {
 	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
 
 	data := gin.H{
-		"job":            valJob,
+		"jobID":          valJob.ID,
+		"workflowID":     "-",
 		"jobSummary":     jobSummary,
 		"jobSummaryJson": string(jobSummaryJson),
+		"jobRunUrl":      "/validation_jobs/run/",
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }

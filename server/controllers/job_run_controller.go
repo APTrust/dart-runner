@@ -25,9 +25,11 @@ func JobRunShow(c *gin.Context) {
 	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
 
 	data := gin.H{
-		"job":            job,
+		"jobID":          job.ID,
+		"workflowID":     job.WorkflowID,
 		"jobSummary":     jobSummary,
 		"jobSummaryJson": string(jobSummaryJson),
+		"jobRunUrl":      "/jobs/run",
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
