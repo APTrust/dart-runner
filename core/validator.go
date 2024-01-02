@@ -248,7 +248,7 @@ func (v *Validator) checkRequiredManifests() bool {
 	for _, alg := range v.Profile.ManifestsRequired {
 		filename := fmt.Sprintf("manifest-%s.txt", alg)
 		if _, ok := v.PayloadManifests.Files[filename]; !ok {
-			v.Errors[filename] = "Required manifest is missing."
+			v.Errors[filename] = fmt.Sprintf("Required manifest '%s' is missing.", filename)
 			valid = false
 		}
 	}
@@ -260,7 +260,7 @@ func (v *Validator) checkRequiredTagManifests() bool {
 	for _, alg := range v.Profile.TagManifestsRequired {
 		filename := fmt.Sprintf("tagmanifest-%s.txt", alg)
 		if _, ok := v.TagManifests.Files[filename]; !ok {
-			v.Errors[filename] = "Required tag manifest is missing."
+			v.Errors[filename] = fmt.Sprintf("Required tag manifest '%s' is missing.", filename)
 			valid = false
 		}
 	}
@@ -352,7 +352,7 @@ func (v *Validator) validateTags() bool {
 		key := tagDef.FullyQualifiedName()
 		tags := v.GetTags(tagDef.TagFile, tagDef.TagName)
 		if len(tags) == 0 && tagDef.Required {
-			v.Errors[key] = "Required tag is missing."
+			v.Errors[key] = fmt.Sprintf("Required tag is missing: %s", key)
 			valid = false
 			continue
 		}
@@ -362,12 +362,12 @@ func (v *Validator) validateTags() bool {
 				hasValue = true
 			}
 			if !tagDef.IsLegalValue(tag.Value) {
-				v.Errors[key] = fmt.Sprintf("Tag has illegal value '%s'. Allowed values are: %s", tag.Value, strings.Join(tagDef.Values, ","))
+				v.Errors[key] = fmt.Sprintf("Tag '%s' has illegal value '%s'. Allowed values are: %s", key, tag.Value, strings.Join(tagDef.Values, ","))
 				valid = false
 			}
 		}
 		if tagDef.Required && !tagDef.EmptyOK && !hasValue {
-			v.Errors[key] = "Required tag is present but has no value."
+			v.Errors[key] = fmt.Sprintf("Required tag '%s' is present but has no value.", key)
 			valid = false
 		}
 	}

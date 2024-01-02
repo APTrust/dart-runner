@@ -378,12 +378,23 @@ an idea of what goes into them.
         })
         html += "</ol>"
       }
-      if (result.validationResult && result.validationResult.errors && Object.values(result.validationResult.errors).length > 0) {
-        html += "<p class='font-weight-bold'>Validation Errors</p><ol>"
-        Object.values(result.validationResult.errors).forEach(function(errMessage) {
-          html += `<li>${errMessage}</li>`
+      if (result.validationResults) {
+        result.validationResults.forEach(function(validationResult) {
+          if (validationResult.errors && Object.values(validationResult.errors).length > 0) {
+            if (validationResult.info) {
+              // This is a validation-only job, which can have multiple validation results.
+              // In this case, the bag path is in the info.
+              html += `<p class='font-weight-bold'>Validation Errors for ${validationResult.info}</p><ol>`
+            } else {
+              // This is a standard package, validate & upload job.
+              html += `<p class='font-weight-bold'>Validation Errors</p><ol>`
+            }
+            Object.values(validationResult.errors).forEach(function(errMessage) {
+              html += `<li>${errMessage}</li>`
+            })
+            html += "</ol>"
+          } 
         })
-        html += "</ol>"
       }
       if (result.uploadResults) {
         result.uploadResults.forEach(function(uploadResult) {
@@ -448,7 +459,11 @@ an idea of what goes into them.
     function getAllErrorsFromJobResult(result) {
       let errors = []
       errors = errors.concat(getErrorsFromOperation(result.packageResult))
-      errors = errors.concat(getErrorsFromOperation(result.validationResult))
+      if (result.validationResults) {
+        for (const validationResult of result.validationResults) {
+          errors = errors.concat(getErrorsFromOperation(validationResult))
+        }
+      }
       if (result.uploadResults) {
         for (const uploadResult of result.uploadResults) {
           errors = errors.concat(getErrorsFromOperation(uploadResult))

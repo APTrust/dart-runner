@@ -228,7 +228,7 @@ func testJsonOutput(t *testing.T, data string) {
 	assert.True(t, result.PayloadFileCount > 0)
 	assert.True(t, result.PayloadByteCount > 0)
 	assert.NotNil(t, result.PackageResult)
-	assert.NotNil(t, result.ValidationResult)
+	assert.NotEmpty(t, result.ValidationResults)
 	assert.NotNil(t, result.UploadResults)
 	assert.Equal(t, 1, len(result.UploadResults))
 	assert.True(t, result.Succeeded)

@@ -79,7 +79,8 @@ func TestWorkflowRunner(t *testing.T) {
 		assert.True(t, result.Succeeded)
 
 		assert.True(t, result.PackageResult.Succeeded())
-		assert.True(t, result.ValidationResult.Succeeded())
+		require.NotEmpty(t, result.ValidationResults)
+		assert.True(t, result.ValidationResults[0].Succeeded())
 
 		for _, opResult := range result.UploadResults {
 			assert.True(t, len(opResult.RemoteChecksum) >= 32)

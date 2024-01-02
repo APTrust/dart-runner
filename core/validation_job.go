@@ -145,6 +145,7 @@ func (job *ValidationJob) Run(messageChannel chan *EventMessage) int {
 			Stage:     constants.StageValidation,
 			Status:    status,
 			Message:   message,
+			JobResult: NewJobResultFromValidationJob(job),
 		}
 		messageChannel <- eventMessage
 	}

@@ -58,7 +58,7 @@ func (fm *FileMap) validateChecksums(algs []string, callback func(string, string
 		}
 		err := file.Validate(fm.Type, algs)
 		if err != nil {
-			errors[name] = err.Error()
+			errors[name] = fmt.Sprintf("%s: %s", err.Error(), name)
 			if len(errors) >= MaxErrors {
 				break
 			}

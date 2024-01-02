@@ -177,7 +177,7 @@ Output from a successful job looks like this:
 		"started": "2021-12-14T14:50:50.66122-05:00",
 		"warning": ""
 	},
-	"validationResult": {
+	"validationResults": [{
 		"attempt": 1,
 		"completed": "2021-12-14T14:50:50.684665-05:00",
 		"errors": {},
@@ -191,7 +191,7 @@ Output from a successful job looks like this:
 		"remoteURL": "",
 		"started": "2021-12-14T14:50:50.684656-05:00",
 		"warning": ""
-	},
+	}],
 	"uploadResults": [{
 		"attempt": 1,
 		"completed": "2021-12-14T14:50:50.733585-05:00",

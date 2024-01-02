@@ -107,9 +107,10 @@ func testPostRunJobResult(t *testing.T, jobResult *core.JobResult, whence string
 	assert.Empty(t, jobResult.PackageResult.Errors, whence)
 
 	// Make sure the job validated the bag and found no errors.
-	assert.True(t, jobResult.ValidationResult.WasAttempted(), whence)
-	assert.True(t, jobResult.ValidationResult.Succeeded(), whence)
-	assert.Empty(t, jobResult.ValidationResult.Errors, whence)
+	require.NotEmpty(t, jobResult.ValidationResults)
+	assert.True(t, jobResult.ValidationResults[0].WasAttempted(), whence)
+	assert.True(t, jobResult.ValidationResults[0].Succeeded(), whence)
+	assert.Empty(t, jobResult.ValidationResults[0].Errors, whence)
 
 	// Make sure all upload operations were attempted and succeeded.
 	for _, uploadResult := range jobResult.UploadResults {

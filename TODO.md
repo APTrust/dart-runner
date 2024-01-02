@@ -19,6 +19,7 @@
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
+- [ ] Replace history.back() with proper back links! 
 
 ## Later
 
