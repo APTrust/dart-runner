@@ -226,16 +226,6 @@ func ValidationJobRun(c *gin.Context) {
 		// front end through the message channel.
 		exitCode := valJob.Run(messageChannel)
 
-		// *****************************************************
-		//
-		// START HERE!
-		//
-		// *****************************************************
-		// TODO: Create a Finish Event with Job Result.
-		// The Job Result must collect all validation
-		// errors, so we can display them on the front end.
-		// *****************************************************
-
 		// When job completes, create the final disconnect event
 		// to tell the front end to stop listening for server-sent
 		// events. This is the last message we'll send.

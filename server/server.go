@@ -206,6 +206,16 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/storage_services/delete/:id", controllers.StorageServiceDelete)
 	router.POST("/storage_services/test/:id", controllers.StorageServiceTestConnection)
 
+	// Upload Jobs
+	router.GET("/upload_jobs/new", controllers.UploadJobNew)
+	router.GET("/upload_jobs/files/:id", controllers.UploadJobShowFiles)
+	router.POST("/upload_jobs/add_file/:id", controllers.UploadJobAddFile)
+	router.POST("/upload_jobs/delete_file/:id", controllers.UploadJobDeleteFile)
+	router.GET("/upload_jobs/profiles/:id", controllers.UploadJobShowTargets)
+	router.POST("/upload_jobs/profiles/:id", controllers.UploadJobSaveTarget)
+	router.GET("/upload_jobs/review/:id", controllers.UploadJobReview)
+	router.GET("/upload_jobs/run/:id", controllers.UploadJobRun)
+
 	// Validation Jobs
 	router.GET("/validation_jobs/new", controllers.ValidationJobNew)
 	router.GET("/validation_jobs/files/:id", controllers.ValidationJobShowFiles)
