@@ -2,6 +2,7 @@ package controllers_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -133,9 +134,9 @@ func PostUrl(t *testing.T, settings PostTestSettings) string {
 func DoSimpleGetTest(t *testing.T, endpointUrl string, expected []string) {
 	html := GetUrl(t, endpointUrl)
 	ok, notFound := AssertContainsAllStrings(html, expected)
-	// if !ok {
-	// 	fmt.Println(html)
-	// }
+	if !ok {
+		fmt.Println(html)
+	}
 	assert.True(t, ok, "Missing from page %s: %v", endpointUrl, notFound)
 }
 
@@ -162,4 +163,21 @@ func DoPostTestWithRedirect(t *testing.T, settings PostTestSettings) {
 	redirectUrl := w.Header().Get("Location")
 	require.NotEmpty(t, redirectUrl)
 	DoSimpleGetTest(t, redirectUrl, settings.ExpectedContent)
+}
+
+// DoGetTestWithRedirect posts data, follows the redirect, and then checks
+// the content of the redirect page to ensure it contains expected content.
+func DoGetTestWithRedirect(t *testing.T, endpointUrl, redirectPrefix string, expectedContent []string) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest(http.MethodGet, endpointUrl, nil)
+	require.Nil(t, err)
+	dartServer.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusFound, w.Code)
+	if redirectPrefix != "" {
+		assert.True(t, strings.HasPrefix(w.Header().Get("Location"), redirectPrefix))
+	}
+	// Follow the redirect URL and see if it contains the expected content.
+	redirectUrl := w.Header().Get("Location")
+	require.NotEmpty(t, redirectUrl)
+	DoSimpleGetTest(t, redirectUrl, expectedContent)
 }
