@@ -65,8 +65,12 @@ func (job *UploadJob) IsDeletable() bool {
 func (job *UploadJob) ToForm() *Form {
 	form := NewForm(constants.TypeUploadJob, job.ID, job.Errors)
 	form.UserCanDelete = true
+
 	form.AddMultiValueField("PathsToUpload", "Items to Upload", job.PathsToUpload, true)
-	form.AddMultiValueField("StorageServiceIDs", "Upload Targets", job.StorageServiceIDs, true)
+
+	ssidField := form.AddMultiValueField("StorageServiceIDs", "Upload Targets", job.StorageServiceIDs, true)
+	ssidField.Choices = ObjChoiceList(constants.TypeStorageService, job.StorageServiceIDs)
+
 	return form
 }
 

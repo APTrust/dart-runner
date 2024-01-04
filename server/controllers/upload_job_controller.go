@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/gin-gonic/gin"
@@ -53,7 +57,7 @@ func UploadJobShowFiles(c *gin.Context) {
 	templateData["dragDropInstructions"] = "Drag and drop the items from the left that you want to upload."
 	templateData["fileDeletionUrl"] = fmt.Sprintf("/upload_jobs/delete_file/%s", uploadJob.ID)
 	templateData["jobDeletionUrl"] = fmt.Sprintf("/upload_jobs/delete/%s", uploadJob.ID)
-	templateData["nextButtonUrl"] = fmt.Sprintf("/upload_jobs/profiles/%s", uploadJob.ID)
+	templateData["nextButtonUrl"] = fmt.Sprintf("/upload_jobs/targets/%s", uploadJob.ID)
 	templateData["addFileUrl"] = fmt.Sprintf("/upload_jobs/add_file/%s", uploadJob.ID)
 
 	c.HTML(http.StatusOK, "job/files.html", templateData)
@@ -118,19 +122,71 @@ func UploadJobDeleteFile(c *gin.Context) {
 	c.Redirect(http.StatusFound, fmt.Sprintf("/upload_jobs/files/%s?%s", uploadJob.ID, values.Encode()))
 }
 
-// GET /upload_jobs/profiles/:id
+// GET /upload_jobs/targets/:id
 func UploadJobShowTargets(c *gin.Context) {
-
+	uploadJob, err := loadUploadJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	form := uploadJob.ToForm()
+	data := gin.H{
+		"form":      form,
+		"uploadJob": uploadJob,
+	}
+	c.HTML(http.StatusOK, "upload_job/choose_targets.html", data)
 }
 
-// POST /upload_jobs/profiles/:id
+// POST /upload_jobs/targets/:id
 func UploadJobSaveTarget(c *gin.Context) {
-
+	uploadJob, err := loadUploadJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	uploadJob.StorageServiceIDs = c.PostFormArray("StorageServiceIDs")
+	uploadJob.UploadOps = make([]*core.UploadOperation, len(uploadJob.StorageServiceIDs))
+	for i, ssid := range uploadJob.StorageServiceIDs {
+		result := core.ObjFind(ssid)
+		if result.Error != nil {
+			core.Dart.Log.Errorf("In UploadJobController.UploadJobSaveTarget, storage service not found: %s", ssid)
+			AbortWithErrorHTML(c, http.StatusNotFound, err)
+			return
+		}
+		uploadJob.UploadOps[i] = core.NewUploadOperation(result.StorageService(), uploadJob.PathsToUpload)
+	}
+	err = core.ObjSave(uploadJob)
+	if err != nil {
+		form := uploadJob.ToForm()
+		data := gin.H{
+			"form":      form,
+			"uploadJob": uploadJob,
+		}
+		c.HTML(http.StatusBadRequest, "upload_job/choose_targets.html", data)
+		return
+	}
+	c.Redirect(http.StatusFound, fmt.Sprintf("/upload_jobs/review/%s", uploadJob.ID))
 }
 
 // GET /upload_jobs/review/:id
 func UploadJobReview(c *gin.Context) {
+	uploadJob, err := loadUploadJob(c.Param("id"))
+	if err != nil {
+		AbortWithErrorHTML(c, http.StatusNotFound, err)
+		return
+	}
+	jobSummary := core.NewUploadJobSummary(uploadJob)
+	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
 
+	data := gin.H{
+		"jobID":          uploadJob.ID,
+		"workflowID":     "-",
+		"jobSummary":     jobSummary,
+		"jobSummaryJson": string(jobSummaryJson),
+		"jobRunUrl":      "/upload_jobs/run/",
+		"backButtonUrl":  fmt.Sprintf("/upload_jobs/targets/%s", uploadJob.ID),
+	}
+	c.HTML(http.StatusOK, "job/run.html", data)
 }
 
 // GET /upload_jobs/run/:id
@@ -138,6 +194,87 @@ func UploadJobReview(c *gin.Context) {
 // By REST standards, this should be a POST. However, the Server
 // Send Events standard for JavaScript only supports GET.
 func UploadJobRun(c *gin.Context) {
+	uploadJob, err := loadUploadJob(c.Param("id"))
+	if err != nil {
+		detailedError := fmt.Errorf("UploadJob record not found. %s", err.Error())
+		AbortWithErrorHTML(c, http.StatusNotFound, detailedError)
+		return
+	}
+	if !uploadJob.Validate() {
+		validationErr := ""
+		for _, msg := range uploadJob.Errors {
+			validationErr += msg + " "
+		}
+		AbortWithErrorHTML(c, http.StatusBadRequest, fmt.Errorf("Job is invalid. %s", validationErr))
+		return
+	}
+
+	messageChannel := make(chan *core.EventMessage)
+	go func() {
+
+		// Give the listeners below a chance to attach.
+		time.Sleep(200 * time.Millisecond)
+
+		// Send initialization data to the
+		// front end, so it knows what to display.
+		jobSummary := core.NewUploadJobSummary(uploadJob)
+		initEvent := core.InitEvent(jobSummary)
+		messageChannel <- initEvent
+
+		// Run the job and have it send status updates back to the
+		// front end through the message channel.
+		exitCode := uploadJob.Run(messageChannel)
+
+		// When job completes, create the final disconnect event
+		// to tell the front end to stop listening for server-sent
+		// events. This is the last message we'll send.
+		// When the front end gets this, it terminates
+		// the server-sent event connection. The call to c.Stream() below
+		// will return when the connection is terminated.
+		status := constants.StatusFailed
+		if exitCode == constants.ExitOK {
+			status = constants.StatusSuccess
+		}
+		eventMessage := &core.EventMessage{
+			EventType: constants.EventTypeDisconnect,
+			Message:   fmt.Sprintf("Job completed with exit code %d (%s)", exitCode, status),
+			Status:    status,
+		}
+		messageChannel <- eventMessage
+	}()
+
+	// While the job runner is pumping events into one end of
+	// our message channel, we need a listener on the other end
+	// to do something with those events. The streamer merely
+	// receives events from the job runner and passes them out
+	// to the client as server-sent events.
+	streamer := func(w io.Writer) bool {
+		if msg, ok := <-messageChannel; ok {
+			c.SSEvent("message", msg)
+			if msg.EventType != constants.EventTypeDisconnect {
+				return true
+			}
+		}
+		err := core.ObjSave(uploadJob)
+		if err != nil {
+			core.Dart.Log.Error("Error saving upload job %s after run: %v", uploadJob.ID, err)
+		}
+		return false
+	}
+
+	// At this point, we have a job running in a separate go routine,
+	// and a streamer set up to pass job events along to the client.
+	//
+	// The last thing we need to do is attach the streamer to gin's
+	// io.Writer, which is the pipe through which messages are written
+	// to the client. The c.Stream() function keeps writing until the
+	// remote client disconnects. Note that c.Stream() blocks until
+	// the client disconnects.
+	//
+	// The client should disconnect when we send it the disconnect event.
+	c.Stream(streamer)
+	c.Writer.Flush()
+	//fmt.Println("Job Execute: client disconnected.")
 
 }
 

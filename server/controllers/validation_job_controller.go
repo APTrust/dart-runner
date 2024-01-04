@@ -132,7 +132,7 @@ func ValidationJobShowProfiles(c *gin.Context) {
 		"form":   form,
 		"valJob": valJob,
 	}
-	c.HTML(http.StatusOK, "validate/choose_profile.html", data)
+	c.HTML(http.StatusOK, "validation_job/choose_profile.html", data)
 }
 
 // POST /validation_jobs/profiles/:id

@@ -103,3 +103,35 @@ func NewValidationJobSummary(valJob *ValidationJob, profile *BagItProfile) *JobS
 		SourceFiles:             valJob.PathsToValidate,
 	}
 }
+
+func NewUploadJobSummary(uploadJob *UploadJob) *JobSummary {
+	byteCount := int64(0)
+	if len(uploadJob.UploadOps) > 0 {
+		uploadJob.UploadOps[0].CalculatePayloadSize()
+		byteCount = uploadJob.UploadOps[0].PayloadSize
+	}
+	info := &JobSummary{
+		ID:                 uploadJob.ID,
+		JobType:            constants.TypeUploadJob,
+		ByteCount:          byteCount,
+		ByteCountFormatted: util.HumanSize(byteCount),
+		//ByteCountHuman:     "0",
+		//DirectoryCount:     0,
+		HasBagItProfile:  false,
+		HasPackageOp:     false,
+		HasUploadOps:     true,
+		Name:             "Upload Files",
+		PathSeparator:    string(os.PathSeparator),
+		PayloadFileCount: 0,
+		SourceFiles:      uploadJob.PathsToUpload,
+		UploadTargets:    make([]string, len(uploadJob.UploadOps)),
+	}
+
+	// Upload targets
+	info.UploadTargets = make([]string, len(uploadJob.UploadOps))
+	for i, op := range uploadJob.UploadOps {
+		info.UploadTargets[i] = op.StorageService.Name
+	}
+
+	return info
+}

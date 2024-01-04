@@ -211,8 +211,8 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/upload_jobs/files/:id", controllers.UploadJobShowFiles)
 	router.POST("/upload_jobs/add_file/:id", controllers.UploadJobAddFile)
 	router.POST("/upload_jobs/delete_file/:id", controllers.UploadJobDeleteFile)
-	router.GET("/upload_jobs/profiles/:id", controllers.UploadJobShowTargets)
-	router.POST("/upload_jobs/profiles/:id", controllers.UploadJobSaveTarget)
+	router.GET("/upload_jobs/targets/:id", controllers.UploadJobShowTargets)
+	router.POST("/upload_jobs/targets/:id", controllers.UploadJobSaveTarget)
 	router.GET("/upload_jobs/review/:id", controllers.UploadJobReview)
 	router.GET("/upload_jobs/run/:id", controllers.UploadJobRun)
 
