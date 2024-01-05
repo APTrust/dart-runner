@@ -15,8 +15,8 @@ require (
 	github.com/pkg/sftp v1.13.5
 	github.com/stretchr/stew v0.0.0-20130812190256-80ef0842b48b
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.13.0
-	golang.org/x/text v0.13.0
+	golang.org/x/crypto v0.17.0
+	golang.org/x/text v0.14.0
 	modernc.org/sqlite v1.27.0
 )
 
@@ -62,8 +62,8 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
