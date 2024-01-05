@@ -13,11 +13,11 @@
     <input type="hidden" name="direction" value="next"/>
 
     <div class="float-left" id="btnBackDiv">
-        <button type="button" onclick="history.back()" class="btn btn-primary" role="button">&lt;&lt; Back</button>
+        <button type="submit" onclick="document.forms['validationProfileForm'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
     </div>
 
     <div class="float-right" id="btnNextDiv">
-        <button type="submit" class="btn btn-primary" role="button">Next &gt;&gt;</button>
+        <button type="submit" onclick="document.forms['validationProfileForm'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
     </div>
 
 </form>

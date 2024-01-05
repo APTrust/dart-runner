@@ -55,6 +55,13 @@ an idea of what goes into them.
   <div class="col-10"><div id="outputPathLink" data-url=""></div></div>
 </div>
 
+<div class="row mb-1" id="uploadFilesDiv" style="display:none">
+  <div class="col text-right font-weight-bold">Files to Upload</div>
+  <div class="col-10">
+    <ul id="uploadFiles" class="flush-no-marker"></ul>
+  </div>
+</div>
+
 <div class="row mb-1" id="uploadOpsDiv" style="display:none">
   <div class="col text-right font-weight-bold">Upload To</div>
   <div class="col-10">
@@ -72,6 +79,15 @@ an idea of what goes into them.
 <script>
 
     // TODO: Clean this up! This code is nasty!
+    //
+    // What happened here?
+    //
+    // This code was initially written to display info about
+    // standard package-validate-upload jobs. Then it was 
+    // expanded to also display info about workflow batches.
+    // Then it was expanded to also include upload-only and
+    // validation-only jobs. At this point, we have a mess and
+    // we're just hacking, so it's time to refactor.
 
     // These vars are set dynamically by the back end.
     // TODO: In batch workflow, allow dynamic vars to be
@@ -167,15 +183,24 @@ an idea of what goes into them.
         console.log("Adding paths to validation job info div")
         showValidationJobInfo()
       }
-      $('#uploadTargets').empty()
       if (settings.hasUploadOps) {
         $('#uploadOpsDiv').show()
+        $('#uploadTargets').empty()
         for (let item of settings.uploadTargets) {
           $('#uploadTargets').append(`<li>${item}</li>`)
         }
+        if (settings.jobType == "UploadJob") {
+          $('#uploadFiles').empty()
+          $('#uploadFilesDiv').show()
+          for (let item of settings.sourceFiles) {
+            $('#uploadFiles').append(`<li>${item}</li>`)
+          }
+        }
       } else {
         $('#uploadOpsDiv').hide()
+        $('#uploadFilesDiv').hide()
         $('#uploadTargets').empty()
+        $('#uploadFilesDiv').empty()
       }
     }
 
