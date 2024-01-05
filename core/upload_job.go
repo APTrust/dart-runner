@@ -126,11 +126,31 @@ func (job *UploadJob) Run(messageChannel chan *EventMessage) int {
 
 	// Try all uploads, and keep going if any fail.
 	exitCode := constants.ExitOK
+	status := constants.StatusSuccess
+	message := ""
 	for _, storageService := range uploadTargets {
 		if !job.runOne(storageService, messageChannel) {
 			exitCode = constants.ExitRuntimeErr
+			status = constants.StatusFailed
+			message += fmt.Sprintf("One or more uploads to %s failed", storageService)
 		}
 	}
+
+	// Tell the listener we finished.
+	if messageChannel != nil {
+		if exitCode == constants.ExitOK {
+			message = "All uploads succeeded."
+		}
+		eventMessage := &EventMessage{
+			EventType: constants.EventTypeFinish,
+			Stage:     constants.StageValidation,
+			Status:    status,
+			Message:   message,
+			JobResult: NewJobResultFromUploadJob(job),
+		}
+		messageChannel <- eventMessage
+	}
+
 	return exitCode
 }
 

@@ -67,6 +67,7 @@ func NewJobResultFromValidationJob(valJob *ValidationJob) *JobResult {
 		JobName:           valJob.Name,
 		Succeeded:         true,
 		ValidationResults: make([]*OperationResult, len(valJob.ValidationOps)),
+		ValidationErrors:  valJob.Errors, // These are errors in the job definition, not bag validation errors.
 	}
 	for i, op := range valJob.ValidationOps {
 		jobResult.ValidationResults[i] = op.Result
@@ -74,6 +75,23 @@ func NewJobResultFromValidationJob(valJob *ValidationJob) *JobResult {
 		if !op.Result.Succeeded() {
 			jobResult.Succeeded = false
 			jobResult.ValidationResults[i].Info = op.PathToBag
+		}
+	}
+	return jobResult
+}
+
+func NewJobResultFromUploadJob(uploadJob *UploadJob) *JobResult {
+	jobResult := &JobResult{
+		JobID:            uploadJob.ID,
+		JobName:          uploadJob.Name,
+		Succeeded:        len(uploadJob.Errors) == 0,
+		UploadResults:    make([]*OperationResult, len(uploadJob.UploadOps)),
+		ValidationErrors: uploadJob.Errors,
+	}
+	for i, op := range uploadJob.UploadOps {
+		jobResult.UploadResults[i] = op.Result
+		if !op.Result.Succeeded() {
+			jobResult.Succeeded = false
 		}
 	}
 	return jobResult
