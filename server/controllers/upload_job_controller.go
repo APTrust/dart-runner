@@ -165,7 +165,20 @@ func UploadJobSaveTarget(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "upload_job/choose_targets.html", data)
 		return
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/upload_jobs/review/%s", uploadJob.ID))
+
+	// Go to next or previous page, as specified by user
+	direction := c.PostForm("direction")
+	nextPage := fmt.Sprintf("/upload_jobs/review/%s", uploadJob.ID)
+
+	// If user wants to go back to the packaging page,
+	// let them go. We don't need to display the errors
+	// because they'll come back through this page again.
+	if direction == "previous" {
+		nextPage = fmt.Sprintf("/upload_jobs/files/%s", uploadJob.ID)
+		c.Redirect(http.StatusFound, nextPage)
+	}
+
+	c.Redirect(http.StatusFound, nextPage)
 }
 
 // GET /upload_jobs/review/:id

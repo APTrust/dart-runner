@@ -153,7 +153,20 @@ func ValidationJobSaveProfile(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "validate/choose_profile.html", data)
 		return
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/validation_jobs/review/%s", valJob.ID))
+
+	// Go to next or previous page, as specified by user
+	direction := c.PostForm("direction")
+	nextPage := fmt.Sprintf("/validation_jobs/review/%s", valJob.ID)
+
+	// If user wants to go back to the packaging page,
+	// let them go. We don't need to display the errors
+	// because they'll come back through this page again.
+	if direction == "previous" {
+		nextPage = fmt.Sprintf("/validation_jobs/files/%s", valJob.ID)
+		c.Redirect(http.StatusFound, nextPage)
+	}
+
+	c.Redirect(http.StatusFound, nextPage)
 }
 
 // GET /validation_jobs/review/:id
