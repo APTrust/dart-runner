@@ -20,6 +20,9 @@
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
 - [ ] Replace history.back() with proper back links! 
+- [ ] Rotate log files at about 5 MB
+- [ ] When opening log file, alert user that file was opened in system text editor, which may appear on another desktop
+
 
 ## Later
 
