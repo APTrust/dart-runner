@@ -85,21 +85,27 @@ $(function() {
       // was invalid. So we do the following:
       // 1. Display form validation errors below form controls.
       // 2. Display other validation errors in list below form.
+      // console.log(xhr.responseText)
+      var showGeneralError = true
       let data = JSON.parse(xhr.responseText)
-      if (data.errors["CsvUpload"]) {
-        $('#CsvUploadError').html(data.errors["CsvUpload"])
+      if (data.errors["WorkflowBatch_CsvUpload"]) {
+        $('#WorkflowBatch_CsvUploadError').html(data.errors["WorkflowBatch_CsvUpload"])
+        showGeneralError = false
       }
-      if (data.errors["WorkflowID"]) {
-        $('#WorkflowBatch_WorkflowIDError').html(data.errors["WorkflowID"])
+      if (data.errors["WorkflowBatch_WorkflowID"]) {
+        $('#WorkflowBatch_WorkflowIDError').html(data.errors["WorkflowBatch_WorkflowID"])
+        showGeneralError = false
       }
-      displayValidationErrors(data.errors)
+      if (showGeneralError) {
+        displayValidationErrors(data.errors)
+      }
     })
   }
 
   // Clear all error messages from the display. We do this
   // when the user is resubmitting a batch.
   function clearErrors() {
-    $('#CsvUploadError').html("")
+    $('#WorkflowBatch_CsvUploadError').html("")
     $('#WorkflowBatch_WorkflowIDError').html('')
     $('#batchValidation').hide()
     $('#batchValidationErrorList').empty()
@@ -109,18 +115,6 @@ $(function() {
   function displayValidationErrors(errors) {
     for(var key of Object.keys(errors).sort()){
       let errMsg = errors[key]
-      // First two case: invalid or missing parameter to set up the batch job.
-      if (key == "CsvUpload") {
-        $('#CsvUploadError').html(errMsg)
-        continue
-      }
-      if (key == "WorkflowID") {
-        $('#WorkflowBatch_WorkflowIDError').html(errMsg)
-        continue
-      }
-      // All other cases are errors found while parsing the CSV file.
-      // These are usually missing/invalid tag values, missing bag
-      // name, missing/invalid root directory.
       $('#batchValidation').show()
       $('#batchValidationErrorList').append(`<li>${key} - ${errMsg}</li>`)
     }    

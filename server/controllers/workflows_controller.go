@@ -200,8 +200,15 @@ func WorkflowBatchValidate(c *gin.Context) {
 	workflowID := c.PostForm("WorkflowID")
 	csvFileHeader, err := c.FormFile("CsvUpload")
 	if err != nil {
-		// TODO: Ensure proper json format
-		AbortWithErrorJSON(c, http.StatusBadRequest, err)
+		// User didn't choose a CSV file.
+		// Error handling here differs from our usual pattern only
+		// because this is a file upload input instead of a regular
+		// form input.
+		data := gin.H{}
+		data["errors"] = map[string]string{
+			"WorkflowBatch_CsvUpload": "Please choose a CSV file containing batch information",
+		}
+		c.JSON(http.StatusBadRequest, data)
 		return
 	}
 

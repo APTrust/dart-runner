@@ -115,10 +115,11 @@ an idea of what goes into them.
     {{ end }}
 
     function runJob(eventSourceUrl, jobId) {
-      // The general pattern SSE listener pattern is:
-      //
-      // sse.addEventListener("eventName", (e) => { code... });
-      // 
+      // Disable this button so user can't kick off a job
+      // while the job is already running.
+      $('#btnRunJob').prop('disabled', true)
+      $('#runWorkflowBatch').prop('disabled', true)
+
       if (jobId && !eventSourceUrl.endsWith("/")) {
         eventSourceUrl += "/"
       }
@@ -132,6 +133,11 @@ an idea of what goes into them.
         $('div.batch-result').remove();
         batchLineNumber = 1
       }
+
+      // The general pattern SSE listener pattern is:
+      //
+      // sse.addEventListener("eventName", (e) => { code... });
+      // 
       let eventSrc = new EventSource(eventSourceUrl + jobId)
         eventSrc.onmessage = (event) => {
           //console.log(event)
@@ -158,6 +164,7 @@ an idea of what goes into them.
           } else if (data.eventType == "batch completed") {
             $('#batchRunning').hide();
             $('#batchCompleted').show();
+            $('#runWorkflowBatch').prop('disabled', false)
           } else if (data.eventType == "disconnect") {
             console.log("Received disconnect from server")
             console.log(data.message)
@@ -297,7 +304,6 @@ an idea of what goes into them.
           if (section == "") {
             completedUploads.push(data.message)
             markSuccess(detailDiv, progressBar, completedUploads.join("<br/>\n"))
-            // *** TODO ***: Display target+file as success below job info
           } else {
             //console.log(section)
             markSuccess(detailDiv, progressBar, data.message)
@@ -310,11 +316,15 @@ an idea of what goes into them.
           detailDiv = $(`#runningJobDisplay div.outcome div.detail div.message`);
           markFailed(detailDiv, progressBar, getErrorsAsHTML(data))
           showBatchJobFailed(data)
-          // *** TODO ***: Display target+file as failed below job info
         }
         if (data.stage = "") {
           // We just completed a job, not a stage.
           batchLineNumber += 1
+        }
+        if (!weAreRunningAWorkflowBatch) {
+          // This is not a batch. We just completed a job.
+          // So now it's safe to reactivate the Run Job button.
+          $('#btnRunJob').prop('disabled', false)
         }
       } else { // info message
         detailDiv.text(data.message)

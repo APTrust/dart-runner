@@ -2,27 +2,21 @@
 
 ## Priority
 
-- [x] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
-- [x] Implement validation-only jobs.
+- [ ] Clicking Settings > Export saves settings but does not export them.
+- [ ] Allow import of DART-native profiles
 - [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
 - [ ] Ensure we can validate loose bags (directories)
-- [x] Implement upload-only jobs.
 - [ ] Ensure we can upload directories (recursive file list?)
-- [ ] Ensure that jobs won't initiate if already running (prevent double-get request)
 - [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
-- [ ] Allow import of DART-native profiles
-- [x] Replace calls to window.confirm() and window.alert() with a custom dialog because user may inadvertantly silence these dialogs.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
-- [x] Replace history.back() with proper back links! 
 - [ ] Rotate log files at about 5 MB
 - [ ] When opening log file, alert user that file was opened in system text editor, which may appear on another desktop
-- [ ] Clicking Settings > Export saves settings but does not export them.
 
 ## Later
 
@@ -65,3 +59,10 @@
 - [x] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
 - [x] Show flash confirmation message on successful save and delete
 - [x] Init DB with profiles and bagging dir for fresh installation
+- [x] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
+- [x] Implement validation-only jobs.
+- [x] Implement upload-only jobs.
+- [x] Replace calls to window.confirm() and window.alert() with a custom dialog because user may inadvertantly silence these dialogs.
+- [x] Replace history.back() with proper back links! 
+- [x] Ensure that jobs won't initiate if already running (prevent double-get request)
+- [x] Display workflow batch error if user doesn't choose a CSV file
