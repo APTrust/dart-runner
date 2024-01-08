@@ -178,6 +178,11 @@ ul.ui-autocomplete {
     margin: 1.75rem auto;
 }
 
+/* We use this in our bootbox dialogs when we say we want size: "small" */
+.modal-sm {
+    max-width: 450px;
+}
+
 .file-browser-top {
 
 }

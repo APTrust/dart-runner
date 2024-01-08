@@ -2,7 +2,7 @@
 
 ## Priority
 
-- [ ] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
+- [x] Fix _errors_ format in AbortWithErrorJSON. Most JS handlers are expecting an object, not an array or scalar. Need to check all handlers.
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
 - [x] Implement validation-only jobs.
 - [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
@@ -13,7 +13,7 @@
 - [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 - [ ] Allow import of DART-native profiles
-- [ ] Replace calls to window.confirm() with a custom dialog because confirm() is deprecated.
+- [x] Replace calls to window.confirm() and window.alert() with a custom dialog because user may inadvertantly silence these dialogs.
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)

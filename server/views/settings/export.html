@@ -45,6 +45,7 @@
       </span>
     </div>
     <div class="card-body">
+      <a id="questions"></a>
       <table class="table table-hover" id="setupQuestionsList">
         <tbody>
         {{ $settings := .settings }}
@@ -56,7 +57,6 @@
               </tr>
         {{ end }}
         </tbody>
-        <a name="questions"></a>
       </table>     
     </div>
   </div>
@@ -69,10 +69,10 @@
       <a role="button" class="btn btn-secondary" href="/settings/export">Cancel</a>
     </div>
     <div class="float-right">
-      <buton role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." onclick='loadIntoModal("get", "Settings", "/settings/export/show_json/{{ .settings.ID }}")'>Export</button>
+      <button role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." onclick='loadIntoModal("get", "Settings", "/settings/export/show_json/{{ .settings.ID }}")'>Export</button>
     </div>
     <div class="float-right mr-3">
-      <button type="submit" class="btn btn-primary" id="btnSave">Save</a>
+      <button type="submit" class="btn btn-primary" id="btnSave">Save</button>
     </div>
   </div>
 
@@ -85,14 +85,21 @@
 <script>
 $(function(){
     $('#btnReset').on('click', function() {
-        if(confirm("Do you want to clear this form and remove questions related to these settings?")){
-            document.forms['exportSettingsForm'].reset()
-        }
+        confirmOperation("Do you want to clear this form and remove questions related to these settings?",
+          function(userApproved) {
+            if (userApproved) {
+              document.forms['exportSettingsForm'].reset()
+            }
+          })
     })
     $('#btnDelete').on('click', function() {
-        if(confirm("Do you want to delete the export version of these settings? The settings will still exist for your personal use. Only the exportable JSON data will go away.")){
-            document.forms['settingsDeletionForm'].submit()
-        }
+        confirmOperation("Do you want to delete the export version of these settings? The settings will still exist for your personal use. Only the exportable JSON data will go away.",
+          function(userApproved) {
+            if (userApproved) {
+              document.forms['settingsDeletionForm'].submit()
+            }
+          }
+        )
     })
 })
 </script>

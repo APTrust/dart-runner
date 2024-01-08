@@ -123,30 +123,53 @@ function submitNewTagFileForm(formId) {
 // On success, the endpoint will send a JSON response with location info.
 // On error, it will send HTML to display in the modal dialog.
 function confirmBackgroundDeletion(question, url, data) {
-    if (confirm(question)) {
-        $.ajax({
-            url: url,
-            type: "post",
-            data: data ? jQuery.param(data) : null,
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        }).done(function (response) {
-            location.href = response.location
-        }).fail(function (xhr, status, err) {
-            console.log(xhr)
-            console.log(status)
-            console.log(err)
-            showModalContent("Error deleting item", xhr.responseText)
-        })    
-    }
+    confirmOperation(question, function(userApproved) {
+        if (userApproved) {
+            $.ajax({
+                url: url,
+                type: "post",
+                data: data ? jQuery.param(data) : null,
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            }).done(function (response) {
+                location.href = response.location
+            }).fail(function (xhr, status, err) {
+                console.log(xhr)
+                console.log(status)
+                console.log(err)
+                showModalContent("Error deleting item", xhr.responseText)
+            })
+        }
+    })
 }
 
 // This deletes an object by constructing a form with the supplied data
 // and submitting it to the specified URL. This is a normal HTTP request
 // (not AJAX), so any response will replace the current page.
 function confirmForegroundDeletion(question, url, data) {
-    if (confirm(question)) {
-        postForm(url, data)
-    }
+    confirmOperation(question, function(userApproved) {
+        if (userApproved) {
+           postForm(url, data)
+        }
+    })
+}
+
+// Use bootbox.confirm instead of window.confirm to provide a UI consistent
+// with our bootstrap modal and bootbox alert. See comment on alertWithSize below.
+function confirmOperation(question, callback) {
+    bootbox.confirm({
+        size: "small",
+        message: question, 
+        callback: callback
+    })
+}
+
+// Use bootbox alert because users can inadvertently silence window.alert()
+// if they see too many of them, and then users may miss important alerts.
+function alertWithSize(size, message) {
+    bootbox.alert({
+        size: size,
+        message: message
+    })
 }
 
 function postDataInBackground(url, data = {}) {
@@ -182,9 +205,11 @@ function postForm(url, data) {
   
 
 function deleteProfile(formId) {
-    if (confirm("Delete this BagIt profile?")) {
-        submitTagDefForm(formId)
-    }
+    confirmOperation("Delete this BagIt profile?", function(userApproved) {
+        if (userApproved) {
+            submitTagDefForm(formId)
+        }
+    })
 }
 
 function openExternalUrl(url) {
@@ -196,7 +221,7 @@ function openExternalUrl(url) {
     }).done(function (response) {
         console.log("Show help succeeded")
     }).fail(function (xhr, status, err) {
-        alert(xhr.responseText)        
+        alertWithSize("large", xhr.responseText)        
     })        
 }
 
@@ -207,7 +232,7 @@ function execCmd(url) {
     }).done(function (response) {
         console.log("Exec command succeeded")
     }).fail(function (xhr, status, err) {
-        alert(xhr.responseText)        
+        alertWithSize("large", xhr.responseText)        
     })        
 }
 
