@@ -10,7 +10,11 @@
       <button class="btn btn-primary" type="submit" role="button">Save</a>
     </div>
     <div class="float-right mr-5">
-      <button class="btn btn-secondary" type="button" role="button" onclick="history.back()">Cancel</a>
+      {{ if .backUrl }}
+      <a class="btn btn-secondary" type="button" role="button" href="{{ .backUrl }}">Cancel</a>
+      {{ else }}
+      <button class="btn btn-secondary" type="button" role="button" onclick="history.back()">Cancel</button>
+      {{ end }}
     </div>
   </div>
 

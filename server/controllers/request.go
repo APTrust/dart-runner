@@ -40,6 +40,7 @@ func NewRequest(c *gin.Context) *Request {
 		PathAndQuery:   pathAndQuery,
 		TemplateData: gin.H{
 			"currentUrl":  c.Request.URL.Path,
+			"backUrl":     c.Request.Referer(),
 			"showAsModal": c.Query("modal") == "true",
 			"flash":       GetFlashCookie(c),
 		},

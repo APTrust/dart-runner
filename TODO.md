@@ -19,10 +19,10 @@
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
 - [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
-- [ ] Replace history.back() with proper back links! 
+- [x] Replace history.back() with proper back links! 
 - [ ] Rotate log files at about 5 MB
 - [ ] When opening log file, alert user that file was opened in system text editor, which may appear on another desktop
-
+- [ ] Clicking Settings > Export saves settings but does not export them.
 
 ## Later
 
