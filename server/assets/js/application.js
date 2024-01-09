@@ -177,7 +177,7 @@ function postDataInBackground(url, data = {}) {
         url: url,
         type: "post",
         data: jQuery.param(data),
-        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
     }).done(function (response) {
         location.href = response.location
     }).fail(function (xhr, status, err) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -209,9 +210,14 @@ func SettingsExportSaveQuestion(c *gin.Context) {
 		return
 	}
 
+	// Note that we add a random query string value here. This is
+	// because the browser will not reload the underlying page if
+	// only the query hash has changed. The additional random param
+	// forces the browser to reload the underlying page after we
+	// save the export question.
 	data := map[string]string{
 		"status":   "OK",
-		"location": fmt.Sprintf("/settings/export/edit/%s#questions", exportSettings.ID),
+		"location": fmt.Sprintf("/settings/export/edit/%s?rand=%d#questions", exportSettings.ID, rand.Intn(500000)),
 	}
 	c.JSON(http.StatusOK, data)
 
