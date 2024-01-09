@@ -133,6 +133,7 @@ func UploadJobShowTargets(c *gin.Context) {
 	data := gin.H{
 		"form":      form,
 		"uploadJob": uploadJob,
+		"helpUrl":   GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "upload_job/choose_targets.html", data)
 }
@@ -161,6 +162,7 @@ func UploadJobSaveTarget(c *gin.Context) {
 		data := gin.H{
 			"form":      form,
 			"uploadJob": uploadJob,
+			"helpUrl":   GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "upload_job/choose_targets.html", data)
 		return
@@ -198,6 +200,7 @@ func UploadJobReview(c *gin.Context) {
 		"jobSummaryJson": string(jobSummaryJson),
 		"jobRunUrl":      "/upload_jobs/run/",
 		"backButtonUrl":  fmt.Sprintf("/upload_jobs/targets/%s", uploadJob.ID),
+		"helpUrl":        GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }

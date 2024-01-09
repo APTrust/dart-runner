@@ -30,6 +30,7 @@ func AboutShow(c *gin.Context) {
 		"userDataPath": core.Dart.Paths.DataDir,
 		"logFilePath":  logFile,
 		"tailCommand":  tailCommand,
+		"helpUrl":      GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "about/index.html", templateData)
 }

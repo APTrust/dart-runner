@@ -52,6 +52,7 @@ func AppSettingNew(c *gin.Context) {
 	data := gin.H{
 		"form":                 setting.ToForm(),
 		"suppressDeleteButton": true,
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "app_setting/form.html", data)
 }
@@ -72,6 +73,7 @@ func AppSettingSave(c *gin.Context) {
 		data := gin.H{
 			"form":             setting.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
+			"helpUrl":          GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "app_setting/form.html", data)
 		return

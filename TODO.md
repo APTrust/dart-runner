@@ -2,13 +2,10 @@
 
 ## Priority
 
-- [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
-- [x] Clicking Settings > Export saves settings but does not export them. It should show the export JSON.
-- [ ] Allow import of DART-native profiles
+- [ ] Display Job artifacts on separate page, possibly with side bar and main pane.
 - [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
 - [ ] Ensure we can validate loose bags (directories)
 - [ ] Ensure we can upload directories (recursive file list?)
-- [ ] Context-sensitive help
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
@@ -66,3 +63,7 @@
 - [x] Replace history.back() with proper back links! 
 - [x] Ensure that jobs won't initiate if already running (prevent double-get request)
 - [x] Display workflow batch error if user doesn't choose a CSV file
+- [x] Fix question bug in export settings. Question select lists won't populate until settings are saved.
+- [x] Clicking Settings > Export saves settings but does not export them. It should show the export JSON.
+- [x] Allow import of DART-native profiles
+- [x] Context-sensitive help

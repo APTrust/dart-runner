@@ -53,9 +53,9 @@ func RemoteRepositoryNew(c *gin.Context) {
 	data := gin.H{
 		"form":                 repo.ToForm(),
 		"suppressDeleteButton": true,
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "remote_repository/form.html", data)
-
 }
 
 // PUT /remote_repositories/edit/:id
@@ -74,6 +74,7 @@ func RemoteRepositorySave(c *gin.Context) {
 		data := gin.H{
 			"form":             repo.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
+			"helpUrl":          GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "remote_repository/form.html", data)
 		return
@@ -112,6 +113,7 @@ func RemoteRepositoryTestConnection(c *gin.Context) {
 		"repo":      repo,
 		"message":   message,
 		"succeeded": succeeded,
+		"helpUrl":   GetHelpUrl(c),
 	}
 	c.HTML(status, "remote_repository/test.html", data)
 }

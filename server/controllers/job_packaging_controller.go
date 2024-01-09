@@ -31,6 +31,7 @@ func JobShowPackaging(c *gin.Context) {
 		"pathSeparator":        string(os.PathSeparator),
 		"baggingDir":           baggingDir,
 		"autoSetSerialization": getSerlializationAutosets(),
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }
@@ -91,6 +92,7 @@ func JobSavePackaging(c *gin.Context) {
 				"job":           job,
 				"form":          form,
 				"pathSeparator": string(os.PathSeparator),
+				"helpUrl":       GetHelpUrl(c),
 			}
 			c.HTML(http.StatusBadRequest, "job/packaging.html", data)
 			return

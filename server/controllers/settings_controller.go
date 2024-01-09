@@ -43,6 +43,7 @@ func SettingsExportEdit(c *gin.Context) {
 		"settings": exportSettings,
 		"form":     exportSettings.ToForm(),
 		"flash":    GetFlashCookie(c),
+		"helpUrl":  GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "settings/export.html", data)
 }
@@ -144,6 +145,7 @@ func SettingsExportShowJson(c *gin.Context) {
 		"displayPasswordWarning":  displayPasswordWarning,
 		"displayTokenWarning":     displayTokenWarning,
 		"displayPlaintextWarning": displayPlainTextWarning,
+		"helpUrl":                 GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
@@ -173,6 +175,7 @@ func SettingsExportNewQuestion(c *gin.Context) {
 		"question":    question,
 		"form":        question.ToForm(),
 		"optionsJson": template.JS(string(optionsJson)),
+		"helpUrl":     GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "settings/question.html", data)
 }
@@ -250,6 +253,7 @@ func SettingsExportEditQuestion(c *gin.Context) {
 		"question":    question,
 		"form":        question.ToForm(),
 		"optionsJson": template.JS(string(optionsJson)),
+		"helpUrl":     GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "settings/question.html", data)
 }
@@ -285,7 +289,10 @@ func SettingsExportDeleteQuestion(c *gin.Context) {
 //
 // GET /settings/import
 func SettingsImportShow(c *gin.Context) {
-	c.HTML(http.StatusOK, "settings/import.html", gin.H{})
+	data := gin.H{
+		"helpUrl": GetHelpUrl(c),
+	}
+	c.HTML(http.StatusOK, "settings/import.html", data)
 }
 
 // SettingsImportRun actually runs the import, saving whatever
@@ -421,6 +428,7 @@ func importSettings(c *gin.Context, settings *core.ExportSettings) {
 		"profileResults":    profileResults,
 		"repoResults":       repoResults,
 		"ssResults":         ssResults,
+		"helpUrl":           GetHelpUrl(c),
 	}
 	c.HTML(status, "settings/import_result.html", data)
 }
@@ -534,18 +542,18 @@ func setStorageServiceValue(settings *core.ExportSettings, question *core.Export
 	return err
 }
 
-// TODO: Delete this? I'm not sure it's used anymore.
-//
-// GET /settings/profile_tags
-func SettingsProfileTagList(c *gin.Context) {
-	profileID := c.Query("profileID")
-	list, err := core.UserSettableTagsForProfile(profileID)
-	if err != nil {
-		AbortWithErrorJSON(c, http.StatusNotFound, err)
-		return
-	}
-	c.JSON(http.StatusOK, list)
-}
+// // TODO: Delete this? I'm not sure it's used anymore.
+// //
+// // GET /settings/profile_tags
+// func SettingsProfileTagList(c *gin.Context) {
+// 	profileID := c.Query("profileID")
+// 	list, err := core.UserSettableTagsForProfile(profileID)
+// 	if err != nil {
+// 		AbortWithErrorJSON(c, http.StatusNotFound, err)
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, list)
+// }
 
 // setExportSettingsCollections sets AppSettings, BagItProfiles,
 // RemoteRepositories, and StorageServices on the exportSettings

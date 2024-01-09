@@ -193,7 +193,7 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/settings/import", controllers.SettingsImportShow)
 	router.POST("/settings/import", controllers.SettingsImportRun)
 	router.POST("/settings/import/answers", controllers.SettingsImportAnswers)
-	router.GET("/settings/profile_tags", controllers.SettingsProfileTagList)
+	// router.GET("/settings/profile_tags", controllers.SettingsProfileTagList)
 
 	// Strorage Services
 	router.GET("/storage_services", controllers.StorageServiceIndex)

@@ -50,7 +50,7 @@
         <li class="nav-item dropdown {{ if (eq .section "Help")}}active{{ end }}">
           <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</a>
           <div class="dropdown-menu" aria-labelledby="navbarHelpDropdownLink">
-            <a class="dropdown-item" href="#" onclick="openExternalUrl('https://aptrust.github.io/dart-docs/users/getting_started/')">Documentation</a>
+            <a class="dropdown-item" href="#" onclick="openExternalUrl({{ .helpUrl }})">Documentation</a>
             <a class="dropdown-item" href="#" onclick="execCmd('/open_log')">Open Log File</a>
             <a class="dropdown-item" href="#" onclick="execCmd('/open_log_folder')">Open Log Folder</a>
             <div class="dropdown-divider"></div>

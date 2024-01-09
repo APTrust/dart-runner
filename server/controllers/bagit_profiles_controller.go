@@ -97,7 +97,8 @@ func BagItProfileNew(c *gin.Context) {
 		return
 	}
 	data := gin.H{
-		"form": form,
+		"form":    form,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "bagit_profile/new.html", data)
 }
@@ -105,7 +106,11 @@ func BagItProfileNew(c *gin.Context) {
 // GET /profiles/import_start
 func BagItProfileImportStart(c *gin.Context) {
 	form := core.NewBagItProfileImport("", "", nil).ToForm()
-	c.HTML(http.StatusOK, "bagit_profile/import.html", gin.H{"form": form})
+	data := gin.H{
+		"helpUrl": GetHelpUrl(c),
+		"form":    form,
+	}
+	c.HTML(http.StatusOK, "bagit_profile/import.html", data)
 }
 
 // POST /profiles/import
@@ -133,7 +138,11 @@ func BagItProfileImport(c *gin.Context) {
 	convertedProfile.Name = fmt.Sprintf("%s %s", convertedProfile.Name, time.Now().Format(time.Stamp))
 	err = core.ObjSave(convertedProfile)
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "bagit_profile/import.html", gin.H{"form": bpi.ToForm()})
+		data := gin.H{
+			"form":    bpi.ToForm(),
+			"helpUrl": GetHelpUrl(c),
+		}
+		c.HTML(http.StatusBadRequest, "bagit_profile/import.html", data)
 		return
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/edit/%s", convertedProfile.ID))
@@ -192,6 +201,7 @@ func BagItProfileSave(c *gin.Context) {
 			"objectExistsInDB": objectExistsInDB,
 			"errMsg":           "Please correct the following errors",
 			"errors":           profile.Errors,
+			"helpUrl":          GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "bagit_profile/form.html", data)
 		return
@@ -211,6 +221,7 @@ func BagItProfileNewTag(c *gin.Context) {
 		"bagItProfileID": c.Param("profile_id"),
 		"tag":            tag,
 		"form":           tag.ToForm(),
+		"helpUrl":        GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
 }
@@ -228,6 +239,7 @@ func BagItProfileEditTag(c *gin.Context) {
 		"bagItProfileID": profile.ID,
 		"tag":            tag,
 		"form":           tag.ToForm(),
+		"helpUrl":        GetHelpUrl(c),
 	}
 
 	c.HTML(http.StatusOK, "tag_definition/form.html", templateData)
@@ -256,6 +268,7 @@ func BagItProfileSaveTag(c *gin.Context) {
 			"bagItProfileID": profile.ID,
 			"tag":            tag,
 			"form":           tag.ToForm(),
+			"helpUrl":        GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "tag_definition/form.html", templateData)
 		return
@@ -340,6 +353,7 @@ func BagItProfileNewTagFile(c *gin.Context) {
 	data := gin.H{
 		"form":           form,
 		"bagItProfileID": profileID,
+		"helpUrl":        GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "bagit_profile/new_tag_file.html", data)
 }
@@ -353,6 +367,7 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 		data := gin.H{
 			"form":           form,
 			"bagItProfileID": profileID,
+			"helpUrl":        GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "bagit_profile/new_tag_file.html", data)
 		return
@@ -373,6 +388,7 @@ func BagItProfileCreateTagFile(c *gin.Context) {
 		data := gin.H{
 			"form":           form,
 			"bagItProfileID": profileID,
+			"helpUrl":        GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "bagit_profile/new_tag_file.html", data)
 		return

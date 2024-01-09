@@ -31,6 +31,7 @@ func JobShowMetadata(c *gin.Context) {
 		"job":      job,
 		"form":     job.ToForm(),
 		"tagFiles": tagFiles,
+		"helpUrl":  GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/metadata.html", data)
 }
@@ -68,6 +69,7 @@ func JobSaveMetadata(c *gin.Context) {
 			"job":      job,
 			"form":     job.ToForm(),
 			"tagFiles": tagFiles,
+			"helpUrl":  GetHelpUrl(c),
 		}
 		c.HTML(http.StatusOK, "job/metadata.html", data)
 	}
@@ -84,8 +86,9 @@ func JobAddTag(c *gin.Context) {
 	}
 	form := tagDef.ToForm()
 	data := gin.H{
-		"jobID": c.Param("id"),
-		"form":  form,
+		"jobID":   c.Param("id"),
+		"form":    form,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/new_tag.html", data)
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ type Request struct {
 
 // Regex to help us extract object type from handler name.
 // E.g. AppSettingIndex -> AppSetting, StorageServiceEdit -> StorageService.
-var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete$`)
+var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete|GetReport$`)
 
 func NewRequest(c *gin.Context) *Request {
 	pathAndQuery := c.Request.URL.Path
@@ -38,12 +39,7 @@ func NewRequest(c *gin.Context) *Request {
 		IsListResponse: false,
 		Path:           c.Request.URL.Path,
 		PathAndQuery:   pathAndQuery,
-		TemplateData: gin.H{
-			"currentUrl":  c.Request.URL.Path,
-			"backUrl":     c.Request.Referer(),
-			"showAsModal": c.Query("modal") == "true",
-			"flash":       GetFlashCookie(c),
-		},
+		TemplateData:   DefaultTemplateData(c),
 	}
 	request.initFromHandlerName()
 	request.loadObjects()
@@ -111,4 +107,27 @@ func (r *Request) QueryParamAsInt(paramName string, defaultValue int) int {
 		value = defaultValue
 	}
 	return value
+}
+
+func GetHelpUrl(c *gin.Context) string {
+	helpUrl := "https://aptrust.github.io/dart-docs/users/getting_started/"
+	handler := ""
+	nameParts := strings.Split(c.HandlerName(), ".")
+	if len(nameParts) > 1 {
+		handler = nameParts[len(nameParts)-1]
+	}
+	if handler != "" {
+		helpUrl = fmt.Sprintf("%s%s", constants.BaseHelpUrl, constants.HelpUrlFor[handler])
+	}
+	return helpUrl
+}
+
+func DefaultTemplateData(c *gin.Context) gin.H {
+	return gin.H{
+		"currentUrl":  c.Request.URL.Path,
+		"backUrl":     c.Request.Referer(),
+		"helpUrl":     GetHelpUrl(c),
+		"showAsModal": c.Query("modal") == "true",
+		"flash":       GetFlashCookie(c),
+	}
 }

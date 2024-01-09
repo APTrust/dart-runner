@@ -41,6 +41,7 @@ func DashboardShow(c *gin.Context) {
 		"jobs":           result.Jobs,
 		"reportListJson": string(reportListJson),
 		"reportsErr":     err,
+		"helpUrl":        GetHelpUrl(c),
 	}
 
 	c.HTML(http.StatusOK, "dashboard/show.html", data)
@@ -67,9 +68,10 @@ func DashboardGetReport(c *gin.Context) {
 		errMsg = err.Error()
 	}
 	data := gin.H{
-		"result": result,
-		"error":  errMsg,
-		"html":   html,
+		"result":  result,
+		"error":   errMsg,
+		"html":    html,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.JSON(status, data)
 }

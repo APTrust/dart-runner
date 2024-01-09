@@ -81,6 +81,7 @@ func JobArtifactShow(c *gin.Context) {
 	}
 	data := gin.H{
 		"artifact": artifact,
+		"helpUrl":  GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/artifact.html", data)
 }

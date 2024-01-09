@@ -24,8 +24,9 @@ func JobShowUpload(c *gin.Context) {
 		return
 	}
 	data := gin.H{
-		"job":  job,
-		"form": form,
+		"job":     job,
+		"form":    form,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/uploads.html", data)
 }

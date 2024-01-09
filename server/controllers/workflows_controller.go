@@ -31,6 +31,7 @@ func WorkflowNew(c *gin.Context) {
 	data := gin.H{
 		"form":                 workflow.ToForm(),
 		"suppressDeleteButton": false,
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "workflow/form.html", data)
 }
@@ -123,6 +124,7 @@ func WorkflowSave(c *gin.Context) {
 		data := gin.H{
 			"form":             workflow.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
+			"helpUrl":          GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "workflow/form.html", data)
 		return
@@ -151,6 +153,7 @@ func WorkflowExport(c *gin.Context) {
 	data := gin.H{
 		"json":                   string(workflowJson),
 		"passwordWarningDisplay": passwordWarningDisplay,
+		"helpUrl":                GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
@@ -189,8 +192,9 @@ func WorkflowShowBatchForm(c *gin.Context) {
 	dummyJob.PackageOp.PackageFormat = constants.PackageFormatBagIt
 
 	data := gin.H{
-		"form": form,
-		"job":  dummyJob,
+		"form":    form,
+		"job":     dummyJob,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "workflow/batch.html", data)
 }

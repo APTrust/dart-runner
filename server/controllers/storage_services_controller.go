@@ -53,6 +53,7 @@ func StorageServiceNew(c *gin.Context) {
 	data := gin.H{
 		"form":                 ss.ToForm(),
 		"suppressDeleteButton": true,
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "storage_service/form.html", data)
 }
@@ -74,6 +75,7 @@ func StorageServiceSave(c *gin.Context) {
 			"form":             ss.ToForm(),
 			"objectExistsInDB": objectExistsInDB,
 			"showTestButton":   false,
+			"helpUrl":          GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "storage_service/form.html", data)
 		return
@@ -104,8 +106,9 @@ func StorageServiceTestConnection(c *gin.Context) {
 		result = err.Error()
 	}
 	data := gin.H{
-		"ss":     ss,
-		"result": result,
+		"ss":      ss,
+		"result":  result,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(status, "storage_service/test.html", data)
 }

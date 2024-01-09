@@ -129,8 +129,9 @@ func ValidationJobShowProfiles(c *gin.Context) {
 	}
 	form := valJob.ToForm()
 	data := gin.H{
-		"form":   form,
-		"valJob": valJob,
+		"form":    form,
+		"valJob":  valJob,
+		"helpUrl": GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "validation_job/choose_profile.html", data)
 }
@@ -147,8 +148,9 @@ func ValidationJobSaveProfile(c *gin.Context) {
 	if err != nil {
 		form := valJob.ToForm()
 		data := gin.H{
-			"form":   form,
-			"valJob": valJob,
+			"form":    form,
+			"valJob":  valJob,
+			"helpUrl": GetHelpUrl(c),
 		}
 		c.HTML(http.StatusBadRequest, "validate/choose_profile.html", data)
 		return
@@ -191,6 +193,7 @@ func ValidationJobReview(c *gin.Context) {
 		"jobSummaryJson": string(jobSummaryJson),
 		"jobRunUrl":      "/validation_jobs/run/",
 		"backButtonUrl":  fmt.Sprintf("/validation_jobs/profiles/%s", valJob.ID),
+		"helpUrl":        GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }

@@ -31,6 +31,7 @@ func JobRunShow(c *gin.Context) {
 		"jobSummaryJson": string(jobSummaryJson),
 		"jobRunUrl":      "/jobs/run",
 		"backButtonUrl":  fmt.Sprintf("/jobs/upload/%s", job.ID),
+		"helpUrl":        GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }
