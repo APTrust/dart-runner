@@ -3,7 +3,7 @@
 ## Priority
 
 - [ ] Fix question bug in export settings. Question select lists won't populate until settings are saved.
-- [ ] Clicking Settings > Export saves settings but does not export them.
+- [x] Clicking Settings > Export saves settings but does not export them. It should show the export JSON.
 - [ ] Allow import of DART-native profiles
 - [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
 - [ ] Ensure we can validate loose bags (directories)

@@ -5,7 +5,7 @@
 
 <h2>Export Settings</h2>
 
-<form name="exportSettingsForm" action="/settings/export/save/{{ .form.ObjectID }}" method="post">
+<form name="exportSettingsForm" id="exportSettingsForm" action="/settings/export/save/{{ .form.ObjectID }}" method="post">
 
  {{ template "partials/input_text.html" dict "field" .form.Fields.Name }}
 
@@ -61,6 +61,8 @@
     </div>
   </div>
 
+  <input type="hidden" name="showAfterSave" id="showAfterSave" value="false"/>
+
   <div class="bottom-buttons mb-3">
     <div class="float-left">
       <button type="button" class="btn btn-danger" id="btnDelete" title="Delete these settings.">Delete</button>
@@ -69,10 +71,10 @@
       <a role="button" class="btn btn-secondary" href="/settings/export">Cancel</a>
     </div>
     <div class="float-right">
-      <button role="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON." onclick='loadIntoModal("get", "Settings", "/settings/export/show_json/{{ .settings.ID }}")'>Export</button>
+      <button role="button" type="button" class="btn btn-primary" id="btnExport" title="Export these settings to JSON.">Export</button>
     </div>
     <div class="float-right mr-3">
-      <button type="submit" class="btn btn-primary" id="btnSave">Save</button>
+      <button type="button" class="btn btn-primary" id="btnSave">Save</button>
     </div>
   </div>
 
@@ -100,6 +102,14 @@ $(function(){
             }
           }
         )
+    })
+    $('#btnExport').on('click', function() {
+      $('#showAfterSave').val("true")
+      loadIntoModal('post', 'Settings', document.forms['exportSettingsForm'].action, 'exportSettingsForm')
+    })
+    $('#btnSave').on('click', function() {
+      $('#showAfterSave').val("false")
+      document.forms['exportSettingsForm'].submit()
     })
 })
 </script>

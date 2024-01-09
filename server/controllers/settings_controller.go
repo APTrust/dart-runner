@@ -74,6 +74,11 @@ func SettingsExportSave(c *gin.Context) {
 		return
 	}
 
+	if c.PostForm("showAfterSave") == "true" {
+		SettingsExportShowJson(c)
+		return
+	}
+
 	SetFlashCookie(c, "Settings have been saved.")
 	c.Redirect(http.StatusFound, fmt.Sprintf("/settings/export/edit/%s", exportSettings.ID))
 }
@@ -128,12 +133,16 @@ func SettingsExportShowJson(c *gin.Context) {
 	}
 	displayPasswordWarning := exportSettings.ContainsPlaintextPassword()
 	displayTokenWarning := exportSettings.ContainsPlaintextAPIToken()
+	displayPlainTextWarning := "none"
+	if displayPasswordWarning || displayTokenWarning {
+		displayPlainTextWarning = "block"
+	}
 	data := gin.H{
 		"settings":                exportSettings,
 		"json":                    string(jsonData),
 		"displayPasswordWarning":  displayPasswordWarning,
 		"displayTokenWarning":     displayTokenWarning,
-		"displayPlaintextWarning": displayPasswordWarning || displayTokenWarning,
+		"displayPlaintextWarning": displayPlainTextWarning,
 	}
 	c.HTML(http.StatusOK, "settings/export_result.html", data)
 }
