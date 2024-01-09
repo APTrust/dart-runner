@@ -68,10 +68,9 @@ func DashboardGetReport(c *gin.Context) {
 		errMsg = err.Error()
 	}
 	data := gin.H{
-		"result":  result,
-		"error":   errMsg,
-		"html":    html,
-		"helpUrl": GetHelpUrl(c),
+		"result": result,
+		"error":  errMsg,
+		"html":   html,
 	}
 	c.JSON(status, data)
 }
