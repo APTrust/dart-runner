@@ -246,3 +246,7 @@ svg.fa-file-pdf {
 .is-hidden-file {
     display: none
 }
+
+table.borderless td,table.borderless th{
+    border: none !important;
+}

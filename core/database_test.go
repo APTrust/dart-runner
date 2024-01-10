@@ -99,29 +99,32 @@ func TestArtifactPersistenceOperations(t *testing.T) {
 		ids[i] = artifact.ID
 	}
 
+	// Note that when we retrieve artifacts, they're ordered
+	// by updated_at desc, name asc.
+
 	// Test ArtifactListByJobName()
 	artifacts, err := core.ArtifactListByJobName("Bag 1")
 	require.Nil(t, err)
 	assert.Equal(t, 3, len(artifacts))
-	assert.Equal(t, "File 0", artifacts[0].FileName)
+	assert.Equal(t, "File 4", artifacts[0].FileName)
 	assert.Equal(t, "File 2", artifacts[1].FileName)
-	assert.Equal(t, "File 4", artifacts[2].FileName)
+	assert.Equal(t, "File 0", artifacts[2].FileName)
 
 	artifacts, err = core.ArtifactListByJobName("Bag 2")
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(artifacts))
-	assert.Equal(t, "File 1", artifacts[0].FileName)
-	assert.Equal(t, "File 3", artifacts[1].FileName)
+	assert.Equal(t, "File 3", artifacts[0].FileName)
+	assert.Equal(t, "File 1", artifacts[1].FileName)
 
 	// Test ArtifactListByJobId()
 	artifacts, err = core.ArtifactListByJobID(constants.EmptyUUID)
 	require.Nil(t, err)
 	assert.Equal(t, 5, len(artifacts))
-	assert.Equal(t, "File 0", artifacts[0].FileName)
-	assert.Equal(t, "File 1", artifacts[1].FileName)
+	assert.Equal(t, "File 4", artifacts[0].FileName)
+	assert.Equal(t, "File 3", artifacts[1].FileName)
 	assert.Equal(t, "File 2", artifacts[2].FileName)
-	assert.Equal(t, "File 3", artifacts[3].FileName)
-	assert.Equal(t, "File 4", artifacts[4].FileName)
+	assert.Equal(t, "File 1", artifacts[3].FileName)
+	assert.Equal(t, "File 0", artifacts[4].FileName)
 
 	// Test ArtifactFind()
 	for _, id := range ids {

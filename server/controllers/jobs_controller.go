@@ -44,20 +44,20 @@ func JobIndex(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, request.Errors[0])
 		return
 	}
-	jobs := request.QueryResult.Jobs
-	items := make([]JobListItem, len(jobs))
-	for i, job := range jobs {
-		artifacts, err := core.ArtifactNameIDList(job.ID)
-		if err != nil {
-			core.Dart.Log.Warningf("Error getting artifact list for job %s: %v", job.Name(), err)
-		}
-		item := JobListItem{
-			Job:       job,
-			Artifacts: artifacts,
-		}
-		items[i] = item
-	}
-	request.TemplateData["items"] = items
+	request.TemplateData["jobs"] = request.QueryResult.Jobs
+	// items := make([]JobListItem, len(jobs))
+	// for i, job := range jobs {
+	// 	artifacts, err := core.ArtifactNameIDList(job.ID)
+	// 	if err != nil {
+	// 		core.Dart.Log.Warningf("Error getting artifact list for job %s: %v", job.Name(), err)
+	// 	}
+	// 	item := JobListItem{
+	// 		Job:       job,
+	// 		Artifacts: artifacts,
+	// 	}
+	// 	items[i] = item
+	// }
+	// request.TemplateData["items"] = items
 	c.HTML(http.StatusOK, "job/list.html", request.TemplateData)
 }
 
@@ -70,18 +70,4 @@ func JobNew(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
-}
-
-// GET /jobs/artifact/:id
-func JobArtifactShow(c *gin.Context) {
-	artifact, err := core.ArtifactFind(c.Param("id"))
-	if err != nil {
-		AbortWithErrorModal(c, http.StatusNotFound, err)
-		return
-	}
-	data := gin.H{
-		"artifact": artifact,
-		"helpUrl":  GetHelpUrl(c),
-	}
-	c.HTML(http.StatusOK, "job/artifact.html", data)
 }

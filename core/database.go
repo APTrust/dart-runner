@@ -585,12 +585,12 @@ func ArtifactNameIDList(jobID string) ([]NameIDPair, error) {
 }
 
 func ArtifactListByJobID(jobID string) ([]*Artifact, error) {
-	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where job_id=? order by file_name"
+	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where job_id=? order by updated_at desc, file_name asc"
 	return artifactList(query, jobID)
 }
 
 func ArtifactListByJobName(bagName string) ([]*Artifact, error) {
-	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by file_name"
+	query := "select uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at from artifacts where bag_name=? order by updated_at desc, file_name asc"
 	return artifactList(query, bagName)
 }
 

@@ -16,18 +16,18 @@
     </tr>
   </thead>
   <tbody>
-    {{ range $index, $item := .items }}
+    {{ range $index, $job := .jobs }}
     <tr>
-      <td><a href="/jobs/files/{{ $item.Job.ID }}">{{ $item.Job.Name }}</a></td>
+      <td><a href="/jobs/files/{{ $job.ID }}">{{ $job.Name }}</a></td>
       <td>
-        {{ displayDate $item.Job.Outcome.LastActivity}}<br/>
+        {{ displayDate $job.Outcome.LastActivity}}<br/>
         
         <!-- Packaging Info -->
-        {{ if $item.Job.PackageAttempted }}
-          {{ if $item.Job.PackageSucceeded }}
+        {{ if $job.PackageAttempted }}
+          {{ if $job.PackageSucceeded }}
             <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Packaged 
-              {{ if $item.Job.Outcome.BagItProfileName }}
-              with profile {{ $item.Job.Outcome.BagItProfileName }} 
+              {{ if $job.Outcome.BagItProfileName }}
+              with profile {{ $job.Outcome.BagItProfileName }} 
               {{ end }}
               <br/>
           {{ else }}
@@ -36,8 +36,8 @@
         {{ end }}
 
         <!-- Validation Info -->
-        {{ if $item.Job.ValidationAttempted }}
-          {{ if $item.Job.ValidationSucceeded }}
+        {{ if $job.ValidationAttempted }}
+          {{ if $job.ValidationSucceeded }}
             <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Validation succeeded <br/>
           {{ else }}
             <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i> Validation failed <br/>
@@ -45,27 +45,20 @@
         {{ end }}
 
         <!-- Upload info -->
-        {{ range $a, $uploadTarget := $item.Job.Outcome.SuccessfulUploads }}
+        {{ range $a, $uploadTarget := $job.Outcome.SuccessfulUploads }}
           <i class="fa fa-check mr-2" aria-hidden="true" style="color: green;"></i> Uploaded to {{ $uploadTarget }} <br/>
         {{ end }}
-        {{ range $a, $uploadTarget := $item.Job.Outcome.FailedUploads }}
+        {{ range $a, $uploadTarget := $job.Outcome.FailedUploads }}
           <i class="fa fa-times mr-2" aria-hidden="true" style="color: red;"></i>  Upload to {{ $uploadTarget }} failed <br/>
         {{ end }}
-        {{ $item.Job.Outcome.Message }}
+        {{ $job.Outcome.Message }}
       </td>
       <td>
-        {{ if $item.Job.Outcome.JobWasRun }}
-        <div class="form-group ">
-          <select class="form-control" data-action="show-artifact" data-job-name="{{ $item.Job.Name }}">
-            <option value="">-- View Artifact --</option>
-            {{ range $i, $artifact := $item.Artifacts }}
-            <option value="{{ $artifact.ID }}">{{ $artifact.Name }}</option>
-            {{ end }}
-          </select>
-        </div>
+        {{ if $job.Outcome.JobWasRun }}
+        <a href="/jobs/artifacts/list/{{ $job.ID }}">View Artifacts</a>
         {{ end }}
       </td>
-      <td><a href="javascript:confirmForegroundDeletion('Delete job {{ $item.Job.Name }}? Doing so will also delete associated artifacts like manifests and tag files.', '/jobs/delete/{{ $item.Job.ID }}')" title="Delete job {{ $item.Job.Name }}"><i class="fa fa-times text-danger" aria-hidden="true"></i></a></td>
+      <td><a href="javascript:confirmForegroundDeletion('Delete job {{ $job.Name }}? Doing so will also delete associated artifacts like manifests and tag files.', '/jobs/delete/{{ $job.ID }}')" title="Delete job {{ $job.Name }}"><i class="fa fa-times text-danger" aria-hidden="true"></i></a></td>
     </tr>
     {{ end }}
   </tbody>

@@ -2,7 +2,6 @@ package core_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -27,7 +26,7 @@ func TestNewJobResultArtifact(t *testing.T) {
 	assert.Equal(t, jobResult.JobID, artifact.JobID)
 	assert.Equal(t, "blah-blah-blah", artifact.BagName)
 	assert.Equal(t, constants.ItemTypeJobResult, artifact.ItemType)
-	assert.Equal(t, fmt.Sprintf("Job Result %s", jobResult.JobName), artifact.FileName)
+	assert.Equal(t, "Job Result", artifact.FileName)
 	assert.Equal(t, constants.FileTypeJsonData, artifact.FileType)
 	assert.NotEmpty(t, artifact.UpdatedAt)
 

@@ -2,7 +2,6 @@
 
 ## Priority
 
-- [ ] Display Job artifacts on separate page, possibly with side bar and main pane.
 - [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
 - [ ] Ensure we can validate loose bags (directories)
 - [ ] Ensure we can upload directories (recursive file list?)
@@ -67,3 +66,4 @@
 - [x] Clicking Settings > Export saves settings but does not export them. It should show the export JSON.
 - [x] Allow import of DART-native profiles
 - [x] Context-sensitive help
+- [x] Display Job artifacts on separate page, possibly with side bar and main pane.

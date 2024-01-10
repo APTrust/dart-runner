@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -31,15 +30,17 @@ func NewArtifact() *Artifact {
 // NewJobResultArtifact creates a new Artifact to store a JobResult.
 func NewJobResultArtifact(bagName string, jobResult *JobResult) *Artifact {
 	resultJson, _ := json.MarshalIndent(jobResult, "", "  ")
+	now := time.Now()
 	return &Artifact{
-		ID:        uuid.NewString(),
-		JobID:     jobResult.JobID,
-		BagName:   bagName,
-		ItemType:  constants.ItemTypeJobResult,
-		FileName:  fmt.Sprintf("Job Result %s", jobResult.JobName),
+		ID:       uuid.NewString(),
+		JobID:    jobResult.JobID,
+		BagName:  bagName,
+		ItemType: constants.ItemTypeJobResult,
+		//FileName:  fmt.Sprintf("Job Result %s", now.Format(time.RFC3339)),
+		FileName:  "Job Result",
 		FileType:  constants.FileTypeJsonData,
 		RawData:   string(resultJson),
-		UpdatedAt: time.Now(),
+		UpdatedAt: now,
 	}
 }
 
