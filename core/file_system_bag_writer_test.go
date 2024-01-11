@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -47,7 +46,7 @@ func listFilesRecursive(dir string) ([]string, error) {
 	files := []string{dir}
 	err := filepath.Walk(dir, func(filePath string, f os.FileInfo, err error) error {
 		if f.Mode().IsRegular() {
-			files = append(files, f.Name())
+			files = append(files, filePath)
 		}
 		return nil
 	})
@@ -80,9 +79,7 @@ func TestFSBagWriterAddFile(t *testing.T) {
 	}
 	files := listTestFiles(t)
 	for _, xFileInfo := range files {
-		// Use Sprintf with forward slash instead of path.Join()
-		// because tar file paths should use / even on windows.
-		pathInBag := fmt.Sprintf("data/%s", xFileInfo.Name())
+		pathInBag := filepath.Join("data", xFileInfo.Name())
 		checksums, err := w.AddFile(xFileInfo, pathInBag)
 		assert.Nil(t, err, xFileInfo.FullPath)
 		if !xFileInfo.IsDir() {
@@ -102,38 +99,19 @@ func TestFSBagWriterAddFile(t *testing.T) {
 
 	// Make sure root directory and all files are present.
 	require.Equal(t, len(filesAdded), len(filesInBag))
-	for i, isInArchive := range filesInBag {
+	for i, fileInBag := range filesInBag {
+		if i == 0 {
+			// First file is fs-testbag-2
+			continue
+		}
+		shortPath := strings.Replace(fileInBag, w.OutputPath()+string(os.PathSeparator), "", 1)
 		shouldBeInArchive := filesAdded[i]
-		assert.Equal(t, shouldBeInArchive, isInArchive)
+		assert.Equal(t, shouldBeInArchive, shortPath)
 	}
 }
 
-func TestFSBagWriterAddFileWithClosedWriter(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "fs-testbag-3")
-	defer w.Close()
-	defer os.Remove(tempFileName)
-
-	// Note that we have not opened the writer
-	files := listTestFiles(t)
-	checksums, err := w.AddFile(files[0], files[0].Name())
-	require.NotNil(t, err)
-	assert.Empty(t, checksums)
-	assert.True(t, strings.HasPrefix(err.Error(), "Underlying TarWriter is nil"))
-
-	// Open and close the writer, so the file exists.
-	w.Open()
-	w.Close()
-	require.True(t, util.FileExists(w.OutputPath()))
-
-	checksums, err = w.AddFile(files[0], files[0].Name())
-	require.NotNil(t, err)
-	assert.Empty(t, checksums)
-	assert.True(t, strings.Contains(err.Error(), "tar: write after close"), err.Error())
-
-}
-
 func TestFSBagWriterAddFileWithBadFilePath(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "fs-testbag-4")
+	w, tempFileName := getFSWriter(t, "fs-testbag-3")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 	err := w.Open()
