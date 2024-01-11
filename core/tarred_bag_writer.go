@@ -12,7 +12,7 @@ import (
 )
 
 type TarredBagWriter struct {
-	OutputPath     string
+	outputPath     string
 	rootDirName    string
 	tarWriter      *tar.Writer
 	digestAlgs     []string
@@ -21,7 +21,7 @@ type TarredBagWriter struct {
 
 func NewTarredBagWriter(outputPath string, digestAlgs []string) *TarredBagWriter {
 	return &TarredBagWriter{
-		OutputPath:     outputPath,
+		outputPath:     outputPath,
 		rootDirName:    util.CleanBagName(filepath.Base(outputPath)),
 		digestAlgs:     digestAlgs,
 		rootDirCreated: false,
@@ -35,8 +35,12 @@ func (writer *TarredBagWriter) DigestAlgs() []string {
 	return writer.digestAlgs
 }
 
+func (writer *TarredBagWriter) OutputPath() string {
+	return writer.outputPath
+}
+
 func (writer *TarredBagWriter) Open() error {
-	tarFile, err := os.Create(writer.OutputPath)
+	tarFile, err := os.Create(writer.outputPath)
 	if err != nil {
 		message := fmt.Sprintf("Error creating tar file: %v", err)
 		Dart.Log.Error(message)

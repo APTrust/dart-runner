@@ -31,7 +31,7 @@ func getTarWriter(t *testing.T, filename string) (*core.TarredBagWriter, string)
 	tempFilePath := filepath.Join(os.TempDir(), filename)
 	w := core.NewTarredBagWriter(tempFilePath, digestAlgs)
 	assert.NotNil(t, w)
-	assert.Equal(t, tempFilePath, w.OutputPath)
+	assert.Equal(t, tempFilePath, w.OutputPath())
 	return w, tempFilePath
 }
 
@@ -48,7 +48,7 @@ func TestAndCloseOpen(t *testing.T) {
 	defer os.Remove(tempFileName)
 	err := w.Open()
 	require.Nil(t, err)
-	require.True(t, util.FileExists(w.OutputPath), "Tar file does not exist at %s", w.OutputPath)
+	require.True(t, util.FileExists(w.OutputPath()), "Tar file does not exist at %s", w.OutputPath())
 	err = w.Close()
 	assert.Nil(t, err)
 }
@@ -59,12 +59,12 @@ func TestAddFile(t *testing.T) {
 	defer os.Remove(tempFileName)
 	err := w.Open()
 	assert.Nil(t, err)
-	require.True(t, util.FileExists(w.OutputPath), "Tar file does not exist at %s", w.OutputPath)
+	require.True(t, util.FileExists(w.OutputPath()), "Tar file does not exist at %s", w.OutputPath())
 
 	// Note that the first "file" added to the bag is the root directory,
 	// which has the same name as the bag, minus the .tar extension
 	filesAdded := []string{
-		util.CleanBagName(filepath.Base(w.OutputPath)),
+		util.CleanBagName(filepath.Base(w.OutputPath())),
 	}
 	files := listTestFiles(t)
 	for _, xFileInfo := range files {
@@ -84,7 +84,7 @@ func TestAddFile(t *testing.T) {
 
 	w.Close()
 
-	file, err := os.Open(w.OutputPath)
+	file, err := os.Open(w.OutputPath())
 	if file != nil {
 		defer file.Close()
 	}
@@ -122,7 +122,7 @@ func TestAddFileWithClosedWriter(t *testing.T) {
 	// Open and close the writer, so the file exists.
 	w.Open()
 	w.Close()
-	require.True(t, util.FileExists(w.OutputPath))
+	require.True(t, util.FileExists(w.OutputPath()))
 
 	checksums, err = w.AddFile(files[0], files[0].Name())
 	require.NotNil(t, err)
@@ -137,7 +137,7 @@ func TestAddFileWithBadFilePath(t *testing.T) {
 	defer os.Remove(tempFileName)
 	err := w.Open()
 	assert.Nil(t, err)
-	require.True(t, util.FileExists(w.OutputPath))
+	require.True(t, util.FileExists(w.OutputPath()))
 
 	// We need a valid FileInfo object for our constructor, but...
 	fInfo, err := os.Stat(util.PathToUnitTestBag("example.edu.sample_good.tar"))

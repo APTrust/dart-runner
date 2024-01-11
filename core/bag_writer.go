@@ -23,4 +23,10 @@ type BagWriter interface {
 	// Close closes the underlying writer, flushing remaining data
 	// as necessary.
 	Close() error
+
+	// OutputPath returns the path to the output file or directory.
+	// For a TarredBagWriter, this will be the path to the tar file.
+	// For a FileSystemBagWriter, it will be the path to the directory
+	// containing the manifests and data dir.
+	OutputPath() string
 }
