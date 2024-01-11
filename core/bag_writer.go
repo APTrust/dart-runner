@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -29,4 +30,18 @@ type BagWriter interface {
 	// For a FileSystemBagWriter, it will be the path to the directory
 	// containing the manifests and data dir.
 	OutputPath() string
+}
+
+// GetBagWriter returns a bag writer of the specified type.
+// Valid types include constants.BagWriterTypeFileSystem and
+// constants.BagWriterTypeTar.
+func GetBagWriter(writerType, outputPath string, digestAlgs []string) (BagWriter, error) {
+	switch writerType {
+	case constants.BagWriterTypeFileSystem:
+		return NewFileSystemBagWriter(outputPath, digestAlgs), nil
+	case constants.BagWriterTypeTar:
+		return NewTarredBagWriter(outputPath, digestAlgs), nil
+	default:
+		return nil, constants.ErrUnknownType
+	}
 }

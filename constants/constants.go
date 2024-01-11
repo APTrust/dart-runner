@@ -7,6 +7,8 @@ const (
 	AlgSha512                 = "sha512"
 	BagItProfileBTR           = "btr-v1.0.json"
 	BagItProfileDefault       = "aptrust-v2.2.json"
+	BagWriterTypeTar          = "tar"
+	BagWriterTypeFileSystem   = "filesystem"
 	BTRProfileIdentifier      = "https://github.com/dpscollaborative/btr_bagit_profile/releases/download/1.0/btr-bagit-profile.json"
 	DefaultProfileIdentifier  = "https://raw.githubusercontent.com/APTrust/preservation-services/master/profiles/aptrust-v2.2.json"
 	EmptyProfileIdentifier    = "https://raw.githubusercontent.com/APTrust/dart/tree/master/profiles/empty_profile.json"

@@ -298,6 +298,10 @@ func (b *Bagger) initWriter() bool {
 			b.getPreferredDigestAlg(),
 		}
 	}
+
+	// START HERE
+	// Get the right type of bag writer, based on profile serialization.
+
 	b.writer = NewTarredBagWriter(b.OutputPath, digestAlgs)
 	b.writer.Open()
 	return true
