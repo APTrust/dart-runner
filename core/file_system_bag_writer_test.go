@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"archive/tar"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,57 +8,70 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var digestAlgs = []string{
-	constants.AlgMd5,
-	constants.AlgSha256,
-}
+// var digestAlgs = []string{
+// 	constants.AlgMd5,
+// 	constants.AlgSha256,
+// }
 
-func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
-	files, err := util.RecursiveFileList(util.PathToTestData(), false)
-	require.Nil(t, err)
-	return files
-}
+// func listTestFiles(t *testing.T) []*util.ExtendedFileInfo {
+// 	files, err := util.RecursiveFileList(util.PathToTestData(), false)
+// 	require.Nil(t, err)
+// 	return files
+// }
 
-func getTarWriter(t *testing.T, filename string) (*core.TarredBagWriter, string) {
+// func assertChecksums(t *testing.T, checksums map[string]string, filename string) {
+// 	assert.NotNil(t, checksums, filename)
+// 	for _, alg := range digestAlgs {
+// 		assert.NotEmpty(t, checksums[alg], "Missing %s for %s", alg, filename)
+// 	}
+// }
+
+// Note: digestAlgs, listTestFiles, and assertChecksums are in tarred_bag_writer_test.go
+
+func getFSWriter(t *testing.T, filename string) (*core.FileSystemBagWriter, string) {
 	tempFilePath := filepath.Join(os.TempDir(), filename)
-	w := core.NewTarredBagWriter(tempFilePath, digestAlgs)
+	w := core.NewFileSystemBagWriter(tempFilePath, digestAlgs)
 	assert.NotNil(t, w)
 	assert.Equal(t, tempFilePath, w.OutputPath())
 	return w, tempFilePath
 }
 
-func assertChecksums(t *testing.T, checksums map[string]string, filename string) {
-	assert.NotNil(t, checksums, filename)
-	for _, alg := range digestAlgs {
-		assert.NotEmpty(t, checksums[alg], "Missing %s for %s", alg, filename)
-	}
+func listFilesRecursive(dir string) ([]string, error) {
+	// Include top-level dir in list
+	files := []string{dir}
+	err := filepath.Walk(dir, func(filePath string, f os.FileInfo, err error) error {
+		if f.Mode().IsRegular() {
+			files = append(files, f.Name())
+		}
+		return nil
+	})
+	return files, err
 }
 
-func TestTarredBagWriterAndCloseOpen(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "test1.tar")
+func TestFSBagWriterAndCloseOpen(t *testing.T) {
+	w, tempFileName := getFSWriter(t, "fs-testbag-1")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 	err := w.Open()
 	require.Nil(t, err)
-	require.True(t, util.FileExists(w.OutputPath()), "Tar file does not exist at %s", w.OutputPath())
+	require.True(t, util.FileExists(w.OutputPath()), "Directory does not exist at %s", w.OutputPath())
 	err = w.Close()
 	assert.Nil(t, err)
 }
 
-func TestTarredBagWriterAddFile(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "test2.tar")
+func TestFSBagWriterAddFile(t *testing.T) {
+	w, tempFileName := getFSWriter(t, "fs-testbag-2")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 	err := w.Open()
 	assert.Nil(t, err)
-	require.True(t, util.FileExists(w.OutputPath()), "Tar file does not exist at %s", w.OutputPath())
+	require.True(t, util.FileExists(w.OutputPath()), "Directory does not exist at %s", w.OutputPath())
 
 	// Note that the first "file" added to the bag is the root directory,
 	// which has the same name as the bag, minus the .tar extension
@@ -75,40 +87,29 @@ func TestTarredBagWriterAddFile(t *testing.T) {
 		assert.Nil(t, err, xFileInfo.FullPath)
 		if !xFileInfo.IsDir() {
 			assertChecksums(t, checksums, xFileInfo.FullPath)
-		}
-		filesAdded = append(filesAdded, pathInBag)
-		if len(filesAdded) > 4 {
-			break
+			filesAdded = append(filesAdded, pathInBag)
+			if len(filesAdded) > 4 {
+				break
+			}
 		}
 	}
 
 	w.Close()
 
-	file, err := os.Open(w.OutputPath())
-	if file != nil {
-		defer file.Close()
-	}
-	require.Nil(t, err)
-	filesInArchive := make([]string, 0)
-	reader := tar.NewReader(file)
-	for {
-		header, err := reader.Next()
-		if err != nil {
-			break
-		}
-		filesInArchive = append(filesInArchive, header.Name)
-	}
+	require.True(t, util.FileExists(w.OutputPath()))
+	filesInBag, err := listFilesRecursive(w.OutputPath())
+	require.NoError(t, err)
 
 	// Make sure root directory and all files are present.
-	require.Equal(t, len(filesAdded), len(filesInArchive))
-	for i, isInArchive := range filesInArchive {
+	require.Equal(t, len(filesAdded), len(filesInBag))
+	for i, isInArchive := range filesInBag {
 		shouldBeInArchive := filesAdded[i]
 		assert.Equal(t, shouldBeInArchive, isInArchive)
 	}
 }
 
-func TestTarredBagWriterAddFileWithClosedWriter(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "test3.tar")
+func TestFSBagWriterAddFileWithClosedWriter(t *testing.T) {
+	w, tempFileName := getTarWriter(t, "fs-testbag-3")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 
@@ -131,8 +132,8 @@ func TestTarredBagWriterAddFileWithClosedWriter(t *testing.T) {
 
 }
 
-func TestTarredBagWriterAddFileWithBadFilePath(t *testing.T) {
-	w, tempFileName := getTarWriter(t, "test4.tar")
+func TestFSBagWriterAddFileWithBadFilePath(t *testing.T) {
+	w, tempFileName := getTarWriter(t, "fs-testbag-4")
 	defer w.Close()
 	defer os.Remove(tempFileName)
 	err := w.Open()

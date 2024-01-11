@@ -94,7 +94,7 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	if !writer.rootDirCreated {
 		err := writer.initRootDir(uid, gid)
 		if err != nil {
-			Dart.Log.Errorf("Tar writer can't create root directory header: %v", err)
+			Dart.Log.Errorf("TarredBagWriter can't create root directory header: %v", err)
 			return checksums, err
 		}
 	}
@@ -120,7 +120,7 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	// Write the header entry
 	if err := writer.tarWriter.WriteHeader(header); err != nil {
 		// Most likely error is archive/tar: write after close
-		Dart.Log.Errorf("Tar writer can't write header: %v", err)
+		Dart.Log.Errorf("TarredBagWriter can't write header: %v", err)
 		return checksums, err
 	}
 
@@ -133,7 +133,7 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	// Open the file whose data we're going to add.
 	file, err := os.Open(xFileInfo.FullPath)
 	if err != nil {
-		Dart.Log.Errorf("TarWriter can't open file %s: %v", xFileInfo.FullPath, err)
+		Dart.Log.Errorf("TarredBagWriter can't open file %s: %v", xFileInfo.FullPath, err)
 		return checksums, err
 	}
 	defer file.Close()
@@ -148,7 +148,7 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	multiWriter := io.MultiWriter(writers...)
 	bytesWritten, err := io.Copy(multiWriter, file)
 	if bytesWritten != header.Size {
-		message := fmt.Sprintf("TarWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, header.Size, xFileInfo.FullPath)
+		message := fmt.Sprintf("TarredBagWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, header.Size, xFileInfo.FullPath)
 		Dart.Log.Error(message)
 		return checksums, fmt.Errorf(message)
 	}

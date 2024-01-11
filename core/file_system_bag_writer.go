@@ -1,27 +1,24 @@
 package core
 
 import (
-	"archive/tar"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/APTrust/dart-runner/util"
 )
 
 type FileSystemBagWriter struct {
-	OutputPath     string
+	outputPath     string
 	rootDirName    string
-	tarWriter      *tar.Writer
 	digestAlgs     []string
 	rootDirCreated bool
 }
 
 func NewFileSystemBagWriter(outputPath string, digestAlgs []string) *FileSystemBagWriter {
 	return &FileSystemBagWriter{
-		OutputPath:     outputPath,
+		outputPath:     outputPath,
 		rootDirName:    util.CleanBagName(filepath.Base(outputPath)),
 		digestAlgs:     digestAlgs,
 		rootDirCreated: false,
@@ -35,104 +32,58 @@ func (writer *FileSystemBagWriter) DigestAlgs() []string {
 	return writer.digestAlgs
 }
 
+func (writer *FileSystemBagWriter) OutputPath() string {
+	return writer.outputPath
+}
+
 func (writer *FileSystemBagWriter) Open() error {
-	tarFile, err := os.Create(writer.OutputPath)
-	if err != nil {
-		message := fmt.Sprintf("Error creating tar file: %v", err)
-		Dart.Log.Error(message)
-		return fmt.Errorf(message)
-	}
-	writer.tarWriter = tar.NewWriter(tarFile)
-	return nil
-}
-
-func (writer *FileSystemBagWriter) Close() error {
-	if writer.tarWriter != nil {
-		return writer.tarWriter.Close()
-	}
-	return nil
-}
-
-func (writer *FileSystemBagWriter) initRootDir(uid, gid int) error {
-	header := &tar.Header{
-		Name:     writer.rootDirName,
-		Size:     0,
-		Mode:     0755,
-		ModTime:  time.Now(),
-		Uid:      uid,
-		Gid:      gid,
-		Typeflag: tar.TypeDir,
-	}
-	err := writer.tarWriter.WriteHeader(header)
+	err := os.MkdirAll(writer.outputPath, 0755)
 	if err == nil {
 		writer.rootDirCreated = true
 	}
 	return err
 }
 
+func (writer *FileSystemBagWriter) Close() error {
+	// No-op. This is here to satisfy the BagWriter interface.
+	return nil
+}
+
 // AddFile as a file to a tar archive. Returns a map of checksums
 // where key is the algorithm and value is the digest. E.g.
 // checksums["md5"] = "0987654321"
 func (writer *FileSystemBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
-
+	absPath := filepath.Join(writer.outputPath, pathWithinArchive)
 	checksums := make(map[string]string)
 	hashes := util.GetHashes(writer.digestAlgs)
 
-	if writer.tarWriter == nil {
-		message := "Underlying TarWriter is nil. Has it been opened?"
-		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
-	}
-
-	// This returns actual owner and group id on posix systems,
-	// 0,0 on Windows.
-	uid, gid := xFileInfo.OwnerAndGroup()
-	if !writer.rootDirCreated {
-		err := writer.initRootDir(uid, gid)
-		if err != nil {
-			Dart.Log.Errorf("Tar writer can't create root directory header: %v", err)
-			return checksums, err
-		}
-	}
-
-	header := &tar.Header{
-		Name:    pathWithinArchive,
-		Size:    xFileInfo.Size(),
-		Mode:    int64(xFileInfo.Mode().Perm()),
-		ModTime: xFileInfo.ModTime(),
-		Uid:     uid,
-		Gid:     gid,
-	}
-
-	// Note that because we support only files and directories.
-	// BagIt files probably shouldn't contain links or devices.
+	// For directory entries, there's no content to write.
+	// Make sure the directory exists, then return.
 	if xFileInfo.IsDir() {
-		header.Typeflag = tar.TypeDir
-		header.Size = 0
-	} else {
-		header.Typeflag = tar.TypeReg
+		return checksums, os.MkdirAll(absPath, 0755)
 	}
 
-	// Write the header entry
-	if err := writer.tarWriter.WriteHeader(header); err != nil {
-		// Most likely error is archive/tar: write after close
-		Dart.Log.Errorf("Tar writer can't write header: %v", err)
+	err := os.MkdirAll(filepath.Dir(absPath), 0755)
+	if err != nil {
 		return checksums, err
-	}
-
-	// For directory entries, there's no content to write,
-	// so just stop here.
-	if header.Typeflag == tar.TypeDir {
-		return checksums, nil
 	}
 
 	// Open the file whose data we're going to add.
 	file, err := os.Open(xFileInfo.FullPath)
 	if err != nil {
-		Dart.Log.Errorf("TarWriter can't open file %s: %v", xFileInfo.FullPath, err)
+		Dart.Log.Errorf("FileSystemBagWriter can't open source file %s: %v", xFileInfo.FullPath, err)
 		return checksums, err
 	}
 	defer file.Close()
+
+	// Create a file inside the bag into which we'll copy the contents
+	// of file.
+	outfile, err := os.Create(absPath)
+	if err != nil {
+		Dart.Log.Errorf("FileSystemBagWriter can't open destination file %s: %v", xFileInfo.FullPath, err)
+		return checksums, err
+	}
+	defer outfile.Close()
 
 	// Copy the contents of the file into the tarWriter,
 	// passing it through the hashes along the way.
@@ -140,11 +91,11 @@ func (writer *FileSystemBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pat
 	for i, alg := range writer.digestAlgs {
 		writers[i] = hashes[alg]
 	}
-	writers[len(writers)-1] = writer.tarWriter
+	writers[len(writers)-1] = outfile
 	multiWriter := io.MultiWriter(writers...)
 	bytesWritten, err := io.Copy(multiWriter, file)
-	if bytesWritten != header.Size {
-		message := fmt.Sprintf("TarWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, header.Size, xFileInfo.FullPath)
+	if bytesWritten != xFileInfo.Size() {
+		message := fmt.Sprintf("FileSystemBagWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, xFileInfo.Size(), xFileInfo.FullPath)
 		Dart.Log.Error(message)
 		return checksums, fmt.Errorf(message)
 	}
@@ -153,6 +104,15 @@ func (writer *FileSystemBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pat
 		Dart.Log.Error(message)
 		return checksums, fmt.Errorf(message)
 	}
+
+	// This returns actual owner and group id on posix systems,
+	// 0,0 on Windows.
+	uid, gid := xFileInfo.OwnerAndGroup()
+	if uid != 0 {
+		os.Chown(absPath, uid, gid)
+	}
+	// We should add proper aTime to xFileInfo.
+	os.Chtimes(absPath, xFileInfo.ModTime(), xFileInfo.ModTime())
 
 	// Gather the checksums.
 	for _, alg := range writer.digestAlgs {
