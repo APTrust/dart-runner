@@ -11,18 +11,18 @@ import (
 	"github.com/APTrust/dart-runner/util"
 )
 
-type TarWriter struct {
-	PathToTarFile  string
+type FileSystemBagWriter struct {
+	OutputPath     string
 	rootDirName    string
 	tarWriter      *tar.Writer
 	digestAlgs     []string
 	rootDirCreated bool
 }
 
-func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
-	return &TarWriter{
-		PathToTarFile:  pathToTarFile,
-		rootDirName:    util.CleanBagName(filepath.Base(pathToTarFile)),
+func NewFileSystemBagWriter(outputPath string, digestAlgs []string) *FileSystemBagWriter {
+	return &FileSystemBagWriter{
+		OutputPath:     outputPath,
+		rootDirName:    util.CleanBagName(filepath.Base(outputPath)),
 		digestAlgs:     digestAlgs,
 		rootDirCreated: false,
 	}
@@ -31,12 +31,12 @@ func NewTarWriter(pathToTarFile string, digestAlgs []string) *TarWriter {
 // DigestAlgs returns a list of digest algoritms that the
 // writer calculates as it writes. E.g. ["md5", "sha256"].
 // These are defined in the contants package.
-func (writer *TarWriter) DigestAlgs() []string {
+func (writer *FileSystemBagWriter) DigestAlgs() []string {
 	return writer.digestAlgs
 }
 
-func (writer *TarWriter) Open() error {
-	tarFile, err := os.Create(writer.PathToTarFile)
+func (writer *FileSystemBagWriter) Open() error {
+	tarFile, err := os.Create(writer.OutputPath)
 	if err != nil {
 		message := fmt.Sprintf("Error creating tar file: %v", err)
 		Dart.Log.Error(message)
@@ -46,14 +46,14 @@ func (writer *TarWriter) Open() error {
 	return nil
 }
 
-func (writer *TarWriter) Close() error {
+func (writer *FileSystemBagWriter) Close() error {
 	if writer.tarWriter != nil {
 		return writer.tarWriter.Close()
 	}
 	return nil
 }
 
-func (writer *TarWriter) initRootDir(uid, gid int) error {
+func (writer *FileSystemBagWriter) initRootDir(uid, gid int) error {
 	header := &tar.Header{
 		Name:     writer.rootDirName,
 		Size:     0,
@@ -73,7 +73,7 @@ func (writer *TarWriter) initRootDir(uid, gid int) error {
 // AddFile as a file to a tar archive. Returns a map of checksums
 // where key is the algorithm and value is the digest. E.g.
 // checksums["md5"] = "0987654321"
-func (writer *TarWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
+func (writer *FileSystemBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWithinArchive string) (map[string]string, error) {
 
 	checksums := make(map[string]string)
 	hashes := util.GetHashes(writer.digestAlgs)

@@ -298,7 +298,7 @@ func (b *Bagger) initWriter() bool {
 			b.getPreferredDigestAlg(),
 		}
 	}
-	b.writer = NewTarWriter(b.OutputPath, digestAlgs)
+	b.writer = NewTarredBagWriter(b.OutputPath, digestAlgs)
 	b.writer.Open()
 	return true
 }

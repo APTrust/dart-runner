@@ -399,13 +399,13 @@ func TestSettingsImportRunWithUrl(t *testing.T) {
 	// change once we merge the server branch into master.
 	params := url.Values{}
 	params.Set("importSource", "url")
-	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/server/testdata/files/export_settings_with_questions.json")
+	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/master/testdata/files/export_settings_with_questions.json")
 	testImportSettingsWithQuestions(t, params)
 
 	// Now try importing the settings that have no
 	// questions. In this case, we should go right
 	// to the import result page.
-	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/server/testdata/files/export_settings_no_questions.json")
+	params.Set("txtUrl", "https://raw.githubusercontent.com/APTrust/dart-runner/master/testdata/files/export_settings_no_questions.json")
 	testImportSettingsWithoutQuestions(t, params)
 }
 
