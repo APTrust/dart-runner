@@ -402,7 +402,7 @@ func TestBagItProfileToForm(t *testing.T) {
 	assert.Equal(t, constants.AcceptBagItVersion, form.Fields["AcceptBagItVersion"].Values)
 
 	require.NotNil(t, form.Fields["AcceptSerialization"])
-	assert.Equal(t, constants.AcceptSerialization, form.Fields["AcceptSerialization"].Values)
+	assert.Equal(t, profile.AcceptSerialization, form.Fields["AcceptSerialization"].Values)
 
 	require.NotNil(t, form.Fields["AllowFetchTxt"])
 	assert.Equal(t, strconv.FormatBool(profile.AllowFetchTxt), form.Fields["AllowFetchTxt"].Value)

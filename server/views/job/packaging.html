@@ -53,6 +53,8 @@ $(function() {
   let baggingDir = {{ .baggingDir }}
   let separator = {{ .pathSeparator }}
   let autoSetSerialization = {{ .autoSetSerialization }}
+  let serializationRequired = {{ .serializationRequired }}
+  let emptySerializationOption = 'none (bag as directory)'
 
   let extensionForType = {
     "application/x-7z-compressed": ".7z",
@@ -81,10 +83,43 @@ $(function() {
   $('#Job_BagItSerialization').on('change', setOutputPath)
 
   function setSerialization() {
-    let profileId = $(this).val()
+    let profileId = $('#Job_BagItProfileID').val()
+    if (serializationRequired.includes(profileId)) {
+      // Don't show empty serialization option because serializion 
+      // is required for this profile.
+      removeEmptySerializationOption()
+    } else {
+      addEmptySerializationOption()
+    }
     let serializationFormat = autoSetSerialization[profileId]
     $('#Job_BagItSerialization').val(serializationFormat)
   }
+
+  function listHasEmptySerializationOption() {
+    var hasOption = false
+    $('#Job_BagItSerialization option').each(function(opt) {
+      if ($(this).val() == emptySerializationOption) {
+        hasOption = true
+      }
+    })
+    return hasOption
+  }
+  function addEmptySerializationOption() {
+    if (!listHasEmptySerializationOption()) {
+      var option = `<option value='${emptySerializationOption}'>${emptySerializationOption}</option>`
+      $(option).insertAfter($('#Job_BagItSerialization option')[0])
+    }
+  }
+  function removeEmptySerializationOption() {
+    if (listHasEmptySerializationOption()) {
+      var option = $('#Job_BagItSerialization option[value="none (bag as directory)"]')
+      $(option).remove()
+    }
+  }
+
+  // Run this once on page load, then attach it to the profile
+  // select list so we can watch for changes.
+  setSerialization()
   $('#Job_BagItProfileID').on('change', setSerialization)
 
 })

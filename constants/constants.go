@@ -63,6 +63,8 @@ const (
 	ResultTypeList            = "list"
 	ResultTypeSingle          = "single"
 	ResultTypeUnitialized     = "unintialized"
+	SerialFormatNone          = "none (bag as directory)"
+	SerialFormatTar           = "application/tar"
 	SerializationForbidden    = "forbidden"
 	SerializationOptional     = "optional"
 	SerializationRequired     = "required"
@@ -97,7 +99,17 @@ var AcceptBagItVersion = []string{
 }
 
 var AcceptSerialization = []string{
-	"application/tar",
+	SerialFormatNone,
+	SerialFormatTar,
+}
+
+// BagWriterTypeFor maps a BagIt serialization format to the
+// type of writer that can write that format.
+var BagWriterTypeFor = map[string]string{
+	"":               BagWriterTypeFileSystem,
+	".tar":           BagWriterTypeTar,
+	SerialFormatNone: BagWriterTypeFileSystem,
+	SerialFormatTar:  BagWriterTypeTar,
 }
 
 var SerializationOptions = []string{
