@@ -7,8 +7,10 @@ const (
 	AlgSha512                 = "sha512"
 	BagItProfileBTR           = "btr-v1.0.json"
 	BagItProfileDefault       = "aptrust-v2.2.json"
-	BagWriterTypeTar          = "tar"
+	BagReaderTypeFileSystem   = "filesystem"
+	BagReaderTypeTar          = "tar"
 	BagWriterTypeFileSystem   = "filesystem"
+	BagWriterTypeTar          = "tar"
 	BTRProfileIdentifier      = "https://github.com/dpscollaborative/btr_bagit_profile/releases/download/1.0/btr-bagit-profile.json"
 	DefaultProfileIdentifier  = "https://raw.githubusercontent.com/APTrust/preservation-services/master/profiles/aptrust-v2.2.json"
 	EmptyProfileIdentifier    = "https://raw.githubusercontent.com/APTrust/dart/tree/master/profiles/empty_profile.json"
@@ -110,6 +112,15 @@ var BagWriterTypeFor = map[string]string{
 	".tar":           BagWriterTypeTar,
 	SerialFormatNone: BagWriterTypeFileSystem,
 	SerialFormatTar:  BagWriterTypeTar,
+}
+
+// BagReaderTypeFor maps a BagIt serialization format to the
+// type of reader that can write that format.
+var BagReaderTypeFor = map[string]string{
+	"":               BagReaderTypeFileSystem,
+	".tar":           BagReaderTypeTar,
+	SerialFormatNone: BagReaderTypeFileSystem,
+	SerialFormatTar:  BagReaderTypeTar,
 }
 
 var SerializationOptions = []string{
