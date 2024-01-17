@@ -14,7 +14,7 @@ import (
 )
 
 type Validator struct {
-	MessageChannel     chan *EventMessage
+	MessageChannel     chan *EventMessage `json:"-"`
 	PathToBag          string
 	Profile            *BagItProfile
 	PayloadFiles       *FileMap

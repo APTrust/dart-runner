@@ -200,6 +200,9 @@ func (r *FileSystemBagReader) getPathInBag(fullPath string) string {
 	if runtime.GOOS == "windows" {
 		pathInBag = strings.ReplaceAll(pathInBag, "\\", "/")
 	}
+	if strings.HasPrefix(pathInBag, "/") {
+		pathInBag = strings.Replace(pathInBag, "/", "", 1)
+	}
 	return pathInBag
 }
 
