@@ -54,7 +54,7 @@ func (r *TarredBagReader) ScanMetadata() error {
 	return nil
 }
 
-// ScanPayload scans the entire bad, adding checksums for all files.
+// ScanPayload scans the entire bag, adding checksums for all files.
 func (r *TarredBagReader) ScanPayload() error {
 	r.reader.Seek(0, io.SeekStart)
 	r.tarReader = tar.NewReader(r.reader)
@@ -81,9 +81,7 @@ func (r *TarredBagReader) mergePayloadManifestChecksums() {
 		tagFileRecord := r.validator.TagFiles.Files[name]
 		if tagFileRecord != nil {
 			tagFileRecord.Size = fileRecord.Size
-			for _, cs := range fileRecord.Checksums {
-				tagFileRecord.Checksums = append(tagFileRecord.Checksums, cs)
-			}
+			tagFileRecord.Checksums = append(tagFileRecord.Checksums, fileRecord.Checksums...)
 		}
 	}
 }

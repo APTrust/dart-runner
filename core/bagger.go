@@ -301,7 +301,6 @@ func (b *Bagger) initWriter() bool {
 		}
 	}
 
-	// START HERE
 	// Get the right type of bag writer, based on profile serialization.
 	var err error
 	writerType := constants.BagWriterTypeFor[b.SerializationFormat]
