@@ -13,7 +13,7 @@
 
   <div class="col-3">
     {{ range $i, $artifact := .artifacts }}
-      <div class='row {{ if strStartsWith $artifact.FileName "Job Result" }}mb-3{{ end }}'>
+      <div class='row {{ if strStartsWith $artifact.FileName "Job Result" }}mt-3{{ end }}'>
         <a title="Updated {{ dateTimeUS $artifact.UpdatedAt }}" href="/jobs/artifact/{{ $artifact.ID }}">{{ $artifact.FileName }}</a>
       </div>
     {{ end }}
