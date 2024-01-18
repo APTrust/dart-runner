@@ -1,6 +1,7 @@
 package controllers_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -78,4 +79,16 @@ func TestJobDelete(t *testing.T) {
 	result := core.ObjFind(job.ID)
 	require.NotNil(t, result.Error)
 	assert.Equal(t, "sql: no rows in result set", result.Error.Error())
+}
+
+func TestJobShowJson(t *testing.T) {
+	defer core.ClearDartTable()
+	job := loadTestJob(t)
+	require.NoError(t, core.ObjSave(job))
+
+	data, err := json.Marshal(job)
+	require.Nil(t, err)
+	expected := []string{string(data)}
+
+	DoSimpleGetTest(t, fmt.Sprintf("/jobs/show_json/%s", job.ID), expected)
 }

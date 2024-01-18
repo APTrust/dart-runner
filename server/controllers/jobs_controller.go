@@ -45,19 +45,6 @@ func JobIndex(c *gin.Context) {
 		return
 	}
 	request.TemplateData["jobs"] = request.QueryResult.Jobs
-	// items := make([]JobListItem, len(jobs))
-	// for i, job := range jobs {
-	// 	artifacts, err := core.ArtifactNameIDList(job.ID)
-	// 	if err != nil {
-	// 		core.Dart.Log.Warningf("Error getting artifact list for job %s: %v", job.Name(), err)
-	// 	}
-	// 	item := JobListItem{
-	// 		Job:       job,
-	// 		Artifacts: artifacts,
-	// 	}
-	// 	items[i] = item
-	// }
-	// request.TemplateData["items"] = items
 	c.HTML(http.StatusOK, "job/list.html", request.TemplateData)
 }
 
@@ -70,4 +57,15 @@ func JobNew(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/jobs/files/%s", job.ID))
+}
+
+// GET /jobs/show_json/:id
+func JobShowJson(c *gin.Context) {
+	jobID := c.Param("id")
+	result := core.ObjFind(jobID)
+	if result.Error != nil {
+		AbortWithErrorJSON(c, http.StatusInternalServerError, result.Error)
+		return
+	}
+	c.JSON(http.StatusOK, result.Job())
 }

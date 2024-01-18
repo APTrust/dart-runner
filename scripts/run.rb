@@ -116,6 +116,9 @@ class Runner
     -p 2222:22 -d #{sftp_image_name}`
     if $?.exitstatus == 0
       puts "Started SFTP server with id #{@docker_sftp_id}"
+      puts "To log in and view the contents, use "
+      puts "sftp -P 2222 pw_user@localhost"
+      puts "The password is 'password' without the quotes"
       @sftp_started = true
     else
       puts "Error starting SFTP docker container. Is one already running?"

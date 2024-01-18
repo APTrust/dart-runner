@@ -368,10 +368,8 @@ func (b *Bagger) pathForPayloadFile(fullPath string) string {
 	if filepath.Ext(b.OutputPath) == "" {
 		// Bag is a directory. We don't want to duplicate the
 		// bag name in the path because it's already there.
-		// We want something like this:
-		// /data/file.txt
-		// NOT this:
-		// /bag-name/data/file.txt
+		// We want something like this: /data/file.txt
+		// NOT this: /bag-name/data/file.txt
 		return fmt.Sprintf("data%s", shortPath)
 	}
 	// Else, bag is file and we do want the bag name to

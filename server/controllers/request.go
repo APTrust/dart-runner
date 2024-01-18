@@ -26,7 +26,7 @@ type Request struct {
 
 // Regex to help us extract object type from handler name.
 // E.g. AppSettingIndex -> AppSetting, StorageServiceEdit -> StorageService.
-var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete|GetReport$`)
+var routeSuffix = regexp.MustCompile(`Index|New|Save|Edit|Delete|GetReport|ShowJson$`)
 
 func NewRequest(c *gin.Context) *Request {
 	pathAndQuery := c.Request.URL.Path
