@@ -211,6 +211,12 @@ func initRoutes(router *gin.Engine) {
 	router.POST("/storage_services/test/:id", controllers.StorageServiceTestConnection)
 
 	// Upload Jobs
+	//
+	// These are disabled for now. We've hidden them from the main menu.
+	// We can re-enable upload-only jobs if we restrict
+	// them to uploading files only (no directories, because directory uploads
+	// require considerable work and open up a huge number of potential problems).
+	//
 	router.GET("/upload_jobs/new", controllers.UploadJobNew)
 	router.GET("/upload_jobs/files/:id", controllers.UploadJobShowFiles)
 	router.POST("/upload_jobs/add_file/:id", controllers.UploadJobAddFile)
