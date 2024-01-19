@@ -6,6 +6,9 @@
 - [ ] Ensure we can validate loose bags (directories)
 - [ ] Ensure we can upload directories (recursive file list?)
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
+- [ ] Remove allows upload / allows download from StorageService
+- [ ] When serializing StorageService in job display JSON, redact password
+- [ ] Consider displaying export settings json in collapsible format
 - [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
 - [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
