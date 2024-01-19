@@ -179,8 +179,7 @@ func (r *Runner) RunPackageOp() bool {
 		sourceFiles = append(sourceFiles, files...)
 	}
 	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
-	bagger.SerializationFormat = op.BagItSerialization // tar, loose directory, etc.
-	bagger.MessageChannel = r.MessageChannel           // Careful! This may be nil.
+	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
 	r.saveBaggingArtifacts(bagger)
 	r.Job.ByteCount = bagger.PayloadBytes()

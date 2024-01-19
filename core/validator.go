@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 )
 
 type Validator struct {
-	MessageChannel     chan *EventMessage `json:"-"`
+	MessageChannel     chan *EventMessage `json:""`
 	PathToBag          string
 	Profile            *BagItProfile
 	PayloadFiles       *FileMap
@@ -211,8 +210,7 @@ func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
 // For now, we only support tar files, so this always returns a
 // tar reader.
 func (v *Validator) getReader() (BagReader, error) {
-	bagFileExtension := filepath.Ext(v.PathToBag)
-	return GetBagReader(constants.BagReaderTypeFor[bagFileExtension], v)
+	return NewTarredBagReader(v)
 }
 
 func (v *Validator) validateSerialization() bool {

@@ -25,18 +25,13 @@ func JobShowPackaging(c *gin.Context) {
 		baggingDir = filepath.Join(core.Dart.Paths.Documents, "DART")
 		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)
 	}
-	// The front end needs to know which profiles require serialization
-	// (serializationRequired) and which require a *specific* serialization
-	// format (autosetSerialization).
-	autoSetSerialization, serializationRequired := getSerlializationAutosets()
 	data := gin.H{
-		"job":                   job,
-		"form":                  job.ToForm(),
-		"pathSeparator":         string(os.PathSeparator),
-		"baggingDir":            baggingDir,
-		"autoSetSerialization":  autoSetSerialization,
-		"serializationRequired": serializationRequired,
-		"helpUrl":               GetHelpUrl(c),
+		"job":                  job,
+		"form":                 job.ToForm(),
+		"pathSeparator":        string(os.PathSeparator),
+		"baggingDir":           baggingDir,
+		"autoSetSerialization": getSerlializationAutosets(),
+		"helpUrl":              GetHelpUrl(c),
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }
@@ -112,22 +107,18 @@ func JobSavePackaging(c *gin.Context) {
 	c.Redirect(http.StatusFound, nextPage)
 }
 
-func getSerlializationAutosets() (map[string]string, []string) {
+func getSerlializationAutosets() map[string]string {
 	autosetMap := make(map[string]string)
-	serializationRequired := make([]string, 0)
 	// Typical installation has 3-10 profiles.
 	result := core.ObjList(constants.TypeBagItProfile, "obj_name", 1000, 0)
 	if result.Error != nil {
 		core.Dart.Log.Warningf("Could not load BagIt profiles for serialization auto-set: %s", result.Error.Error())
-		return autosetMap, serializationRequired
+		return autosetMap
 	}
 	for _, profile := range result.BagItProfiles {
-		if profile.Serialization == constants.SerializationRequired {
-			serializationRequired = append(serializationRequired, profile.ID)
-			if len(profile.AcceptSerialization) == 1 {
-				autosetMap[profile.ID] = profile.AcceptSerialization[0]
-			}
+		if profile.Serialization == constants.SerializationRequired && len(profile.AcceptSerialization) == 1 {
+			autosetMap[profile.ID] = profile.AcceptSerialization[0]
 		}
 	}
-	return autosetMap, serializationRequired
+	return autosetMap
 }

@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,14 +14,12 @@ import (
 )
 
 type UploadOperation struct {
-	Errors                 map[string]string  `json:"errors"`
-	PayloadSize            int64              `json:"payloadSize"`
-	Result                 *OperationResult   `json:"result"`
-	SourceFiles            []string           `json:"sourceFiles"`
-	StorageService         *StorageService    `json:"storageService"`
-	MessageChannel         chan *EventMessage `json:"-"`
-	ExpandedSourceList     []string           `json:"expandedSourceList"`
-	sourceHashLastExpanded uint32
+	Errors         map[string]string  `json:"errors"`
+	PayloadSize    int64              `json:"payloadSize"`
+	Result         *OperationResult   `json:"result"`
+	SourceFiles    []string           `json:"sourceFiles"`
+	StorageService *StorageService    `json:"storageService"`
+	MessageChannel chan *EventMessage `json:"-"`
 }
 
 func NewUploadOperation(ss *StorageService, files []string) *UploadOperation {
@@ -67,9 +64,8 @@ func (u *UploadOperation) Validate() bool {
 }
 
 func (u *UploadOperation) CalculatePayloadSize() error {
-	u.expandSourceFileList()
 	u.PayloadSize = 0
-	for _, fileOrDir := range u.ExpandedSourceList {
+	for _, fileOrDir := range u.SourceFiles {
 		stat, err := os.Stat(fileOrDir)
 		if err != nil {
 			Dart.Log.Errorf("UploadOperation.CalculatePayloadSize - can't stat %s: %v", fileOrDir, err)
@@ -94,7 +90,6 @@ func (u *UploadOperation) CalculatePayloadSize() error {
 }
 
 func (u *UploadOperation) DoUpload(messageChannel chan *EventMessage) bool {
-	u.expandSourceFileList()
 	ok := false
 	switch u.StorageService.Protocol {
 	case constants.ProtocolS3:
@@ -129,7 +124,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 		return false
 	}
 	allSucceeded := true
-	for _, sourceFile := range u.ExpandedSourceList {
+	for _, sourceFile := range u.SourceFiles {
 		s3Key := filepath.Base(sourceFile)
 		u.Result.RemoteURL = u.StorageService.URL(s3Key)
 		Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
@@ -165,7 +160,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 // no progress updates.
 func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 	allSucceeded := true
-	for _, file := range u.ExpandedSourceList {
+	for _, file := range u.SourceFiles {
 		var progress *StreamProgress
 		if messageChannel != nil {
 			progress = NewStreamProgress(u.PayloadSize, messageChannel)
@@ -183,61 +178,4 @@ func (u *UploadOperation) useSSL() bool {
 	useSSL := !strings.HasPrefix(u.StorageService.Host, "localhost") && !strings.HasPrefix(u.StorageService.Host, "127.0.0.1")
 	Dart.Log.Infof("Use SSL for upload = %t", useSSL)
 	return useSSL
-}
-
-func (u *UploadOperation) expandSourceFileList() error {
-
-	// START HERE
-
-	// Also note that when uploading loose files to S3, they all go into
-	// the top-level dir. They should instead mirror the local struction.
-	//
-	// SFTP uploads seem to create the necessary directories, but
-	// they're created as files, and then
-	// all of the files go into the top-level directory. Fix that.
-	//
-	// Also, the progress bar for SFTP multifile uploads is schizo.
-	// It's not calculating progress against the total upload size.
-
-	// This function may be called multiple times from
-	// CalculatePayloadSize and DoUpload, to ensure that
-	// required info is present. Before we proceed with
-	// the work, see if we even need to recalculate the
-	// expanded file list.
-	sourceHash := u.currentSourceHash()
-	if sourceHash == u.sourceHashLastExpanded {
-		return nil
-	}
-	u.ExpandedSourceList = make([]string, 0)
-	for _, filePath := range u.SourceFiles {
-		if util.IsDirectory(filePath) {
-			filesInSource, err := listDirRecursive(filePath)
-			if err != nil {
-				return err
-			}
-			u.ExpandedSourceList = append(u.ExpandedSourceList, filesInSource...)
-		} else {
-			u.ExpandedSourceList = append(u.ExpandedSourceList, filePath)
-		}
-		u.sourceHashLastExpanded = sourceHash
-	}
-	return nil
-}
-
-func listDirRecursive(dir string) ([]string, error) {
-	files := make([]string, 0)
-	err := filepath.Walk(dir, func(filePath string, f os.FileInfo, err error) error {
-		if f.Mode().IsRegular() || f.IsDir() {
-			files = append(files, filePath)
-		}
-		return nil
-	})
-	return files, err
-}
-
-func (u *UploadOperation) currentSourceHash() uint32 {
-	h := fnv.New32a()
-	sources := strings.Join(u.SourceFiles, ":")
-	h.Write([]byte(sources))
-	return h.Sum32()
 }

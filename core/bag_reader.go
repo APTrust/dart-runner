@@ -1,7 +1,5 @@
 package core
 
-import "github.com/APTrust/dart-runner/constants"
-
 // BagReader describes the interface that bag readers must implement,
 // whether reading from a file system, tar file, zip file, etc.
 type BagReader interface {
@@ -22,18 +20,4 @@ type BagReader interface {
 
 	// Close closes the underlying reader.
 	Close()
-}
-
-// GetBagReader returns a bag writer of the specified type.
-// Valid types include constants.BagWriterTypeFileSystem and
-// constants.BagWriterTypeTar.
-func GetBagReader(readerType string, validator *Validator) (BagReader, error) {
-	switch readerType {
-	case constants.BagReaderTypeFileSystem:
-		return NewFileSystemBagReader(validator)
-	case constants.BagWriterTypeTar:
-		return NewTarredBagReader(validator)
-	default:
-		return nil, constants.ErrUnknownType
-	}
 }
