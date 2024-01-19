@@ -2,17 +2,11 @@
 
 ## Priority
 
-- [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
-- [ ] Ensure we can validate loose bags (directories)
-- [ ] Ensure we can upload directories (recursive file list?)
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
 - [ ] Remove allows upload / allows download from StorageService
 - [ ] When serializing StorageService in job display JSON, redact password
 - [ ] Consider displaying export settings json in collapsible format
-- [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 - [ ] Automated UI testing (Selenium)
-- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
-- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
 - [ ] Maybe - Add app setting for log level, with options Debug and Info.
 - [ ] Rotate log files at about 5 MB
 - [ ] When opening log file, alert user that file was opened in system text editor, which may appear on another desktop
@@ -29,6 +23,9 @@
 - [ ] Windows code signing
 - [ ] Mac code signing
 - [ ] User acceptance tests
+- [ ] Centralize test code for loading JSON fixtures. (Too much duplication right now.)
+- [ ] Centralize factory code for generating test objects. (Too much duplication right now.)
+- [ ] Code refactor (de-dupe: Code Climate). We currently have lots of duplicate code, especially in tests.
 
 ## Done
 
@@ -70,3 +67,9 @@
 - [x] Allow import of DART-native profiles
 - [x] Context-sensitive help
 - [x] Display Job artifacts on separate page, possibly with side bar and main pane.
+
+## Not Anytime Soon
+
+- [ ] Ensure we can write loose bags (directories) - Writer should implement same interface as TarWriter.
+- [ ] Ensure we can validate loose bags (directories)
+- [ ] Ensure we can upload directories (tried to implement this in file-writer branch - way too many problems)
