@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
@@ -42,11 +43,14 @@ func JobArtifactShow(c *gin.Context) {
 		core.Dart.Log.Warningf("Cannot find job with ID %s: %v", artifact.JobID, err)
 	}
 
+	displayAsFormattedJSON := artifact.FileName == "Job Result" || strings.HasSuffix(artifact.FileName, ".json")
+
 	data := gin.H{
-		"artifact":  artifact,
-		"artifacts": artifacts,
-		"helpUrl":   GetHelpUrl(c),
-		"job":       result.Job(),
+		"artifact":               artifact,
+		"artifacts":              artifacts,
+		"helpUrl":                GetHelpUrl(c),
+		"job":                    result.Job(),
+		"displayAsFormattedJSON": displayAsFormattedJSON,
 	}
 	c.HTML(http.StatusOK, "job/artifact.html", data)
 }

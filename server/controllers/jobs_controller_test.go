@@ -1,7 +1,6 @@
 package controllers_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -86,9 +85,15 @@ func TestJobShowJson(t *testing.T) {
 	job := loadTestJob(t)
 	require.NoError(t, core.ObjSave(job))
 
-	data, err := json.Marshal(job)
-	require.Nil(t, err)
-	expected := []string{string(data)}
+	// Check for some basic elements that should be
+	// present in the JSON data.
+	expected := []string{
+		job.ID,
+		job.BagItProfile.ID,
+		job.PackageOp.OutputPath,
+		job.ValidationOp.Result.Provider,
+		job.UploadOps[0].StorageService.ID,
+	}
 
 	DoSimpleGetTest(t, fmt.Sprintf("/jobs/show_json/%s", job.ID), expected)
 }

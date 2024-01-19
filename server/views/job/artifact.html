@@ -12,6 +12,9 @@
 <div class="row">
 
   <div class="col-3">
+    <div class="row">
+        <a title="View raw job json" href="/jobs/show_json/{{ .job.ID }}">Raw Job Description</a>
+    </div>
     {{ range $i, $artifact := .artifacts }}
       <div class='row {{ if strStartsWith $artifact.FileName "Job Result" }}mt-3{{ end }}'>
         <a title="Updated {{ dateTimeUS $artifact.UpdatedAt }}" href="/jobs/artifact/{{ $artifact.ID }}">{{ $artifact.FileName }}</a>
@@ -62,6 +65,17 @@
   </div>
 
 </div>
+
+<script>
+$(function() {
+  if ({{ .displayAsFormattedJSON }}) {
+    let rawData = JSON.parse({{ .artifact.RawData }})
+    let contentElement = $('#artifactContent')
+    contentElement.removeClass('text-primary')
+    contentElement.jsonViewer(rawData)
+  }
+}) 
+</script>
 
 {{ template "partials/page_footer.html" .}}
 
