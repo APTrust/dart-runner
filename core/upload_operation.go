@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,13 +15,14 @@ import (
 )
 
 type UploadOperation struct {
-	Errors             map[string]string  `json:"errors"`
-	PayloadSize        int64              `json:"payloadSize"`
-	Result             *OperationResult   `json:"result"`
-	SourceFiles        []string           `json:"sourceFiles"`
-	StorageService     *StorageService    `json:"storageService"`
-	MessageChannel     chan *EventMessage `json:"-"`
-	ExpandedSourceList []string           `json:"expandedSourceList"`
+	Errors                 map[string]string  `json:"errors"`
+	PayloadSize            int64              `json:"payloadSize"`
+	Result                 *OperationResult   `json:"result"`
+	SourceFiles            []string           `json:"sourceFiles"`
+	StorageService         *StorageService    `json:"storageService"`
+	MessageChannel         chan *EventMessage `json:"-"`
+	ExpandedSourceList     []string           `json:"expandedSourceList"`
+	sourceHashLastExpanded uint32
 }
 
 func NewUploadOperation(ss *StorageService, files []string) *UploadOperation {
@@ -187,10 +189,6 @@ func (u *UploadOperation) expandSourceFileList() error {
 
 	// START HERE
 
-	// TODO: Set a flag describing whether this has already been done,
-	// so we don't do it over and over. Also, consider using util.RecursiveFileList,
-	// since we're going to have to stat everything anyway.
-	//
 	// Also note that when uploading loose files to S3, they all go into
 	// the top-level dir. They should instead mirror the local struction.
 	//
@@ -201,6 +199,15 @@ func (u *UploadOperation) expandSourceFileList() error {
 	// Also, the progress bar for SFTP multifile uploads is schizo.
 	// It's not calculating progress against the total upload size.
 
+	// This function may be called multiple times from
+	// CalculatePayloadSize and DoUpload, to ensure that
+	// required info is present. Before we proceed with
+	// the work, see if we even need to recalculate the
+	// expanded file list.
+	sourceHash := u.currentSourceHash()
+	if sourceHash == u.sourceHashLastExpanded {
+		return nil
+	}
 	u.ExpandedSourceList = make([]string, 0)
 	for _, filePath := range u.SourceFiles {
 		if util.IsDirectory(filePath) {
@@ -212,6 +219,7 @@ func (u *UploadOperation) expandSourceFileList() error {
 		} else {
 			u.ExpandedSourceList = append(u.ExpandedSourceList, filePath)
 		}
+		u.sourceHashLastExpanded = sourceHash
 	}
 	return nil
 }
@@ -225,4 +233,11 @@ func listDirRecursive(dir string) ([]string, error) {
 		return nil
 	})
 	return files, err
+}
+
+func (u *UploadOperation) currentSourceHash() uint32 {
+	h := fnv.New32a()
+	sources := strings.Join(u.SourceFiles, ":")
+	h.Write([]byte(sources))
+	return h.Sum32()
 }
