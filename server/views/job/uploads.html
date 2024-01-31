@@ -12,6 +12,66 @@
   <input type="hidden" name="direction" value="next"/>
 
 
+  <!-- LOCKSS MOCKUP -->
+  
+  <script>
+  var newAUID = ""
+  function showHideCreate() {
+    if($('#newAU').is(':checked')) {
+      $('#lookupSpan').hide()
+      $('#createSpan').show()
+    } else {
+      $('#createSpan').hide()
+    }
+  }
+  function createNewAU() {
+    // Show spinner for a second
+    // Insert new AU into '#addToAU'
+    // Hide first radio and btnCreate
+    $('#createAUSpinner').show()
+    setTimeout(function() {
+      //var newAUID = 
+    }, 1200)
+  }
+  function showHideLookup() {
+    if($('#existingAU').is(':checked')) {
+      $('#createSpan').hide()
+      $('#lookupSpan').show()
+    } else {
+      $('#lookupSpan').hide()
+    }
+  }
+  </script>
+
+  <div class="form-check mt-5 mb-5">
+    <p>You're sending this bag to one or more LOCKSS services.</p>
+    <input type="radio" name="auOption" id="newAU" onchange="showHideCreate()"/>
+      <label for="newAU">Create a new archival unit for this bag.</label> 
+    <span id="createSpan" class="mr-3" style="display:none"><button  type="button" role="button" id="btnCreateAU" onclick="createNewAU">Create New AU</button></span>
+
+    <div class="spinner-border" role="status" id="createAUSpinner" style="display:none">
+      <span class="sr-only">Loading...</span>
+    </div>
+
+    <br/><br/>
+    <input type="radio" name="auOption" id="existingAU" onchange="showHideLookup()"/>
+      <label for="existingAU">Add this bag to an existing archival unit.</label>
+    <span id="lookupSpan" class="mr-3" style="display:none">
+      <input list="auids" id="addToAU" name="addToAU" />
+      <datalist id="auids">
+        <option value="AU-001"></option>
+        <option value="AU-002"></option>
+        <option value="AU-003"></option>
+        <option value="AU-004"></option>
+        <option value="AU-005"></option>
+      </datalist>
+      <button type="button" role="button" id="btnLookupAU" onclick="lookupAU">Look up AU</button>
+    </span>
+  </div>
+
+
+  <!-- END LOCKSS MOCKUP -->
+
   <div class="float-left mt-5 mb-5" id="btnBackDiv">
     <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
   </div>
