@@ -30,7 +30,12 @@
     // Hide first radio and btnCreate
     $('#createAUSpinner').show()
     setTimeout(function() {
-      //var newAUID = 
+      $('#createAUSpinner').hide()
+      newAUID = `AU-${Math.floor(Math.random() * 10000)}`
+      $('#addToAU').val(newAUID)
+      $('#btnLookupAU').hide()
+      $('#newAUDiv').hide()
+      $('#lookupSpan').show()
     }, 1200)
   }
   function showHideLookup() {
@@ -45,28 +50,35 @@
 
   <div class="form-check mt-5 mb-5">
     <p>You're sending this bag to one or more LOCKSS services.</p>
+
+    <div id="newAUDiv">
     <input type="radio" name="auOption" id="newAU" onchange="showHideCreate()"/>
       <label for="newAU">Create a new archival unit for this bag.</label> 
-    <span id="createSpan" class="mr-3" style="display:none"><button  type="button" role="button" id="btnCreateAU" onclick="createNewAU">Create New AU</button></span>
-
-    <div class="spinner-border" role="status" id="createAUSpinner" style="display:none">
-      <span class="sr-only">Loading...</span>
+      <span id="createSpan" class="mr-3" style="display:none">
+      <button class="btn button-primary" type="button" role="button" id="btnCreateAU" onclick="createNewAU()">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Create New AU
+        </button>  
+      </span>
     </div>
 
-    <br/><br/>
-    <input type="radio" name="auOption" id="existingAU" onchange="showHideLookup()"/>
-      <label for="existingAU">Add this bag to an existing archival unit.</label>
-    <span id="lookupSpan" class="mr-3" style="display:none">
-      <input list="auids" id="addToAU" name="addToAU" />
-      <datalist id="auids">
-        <option value="AU-001"></option>
-        <option value="AU-002"></option>
-        <option value="AU-003"></option>
-        <option value="AU-004"></option>
-        <option value="AU-005"></option>
-      </datalist>
-      <button type="button" role="button" id="btnLookupAU" onclick="lookupAU">Look up AU</button>
-    </span>
+
+    <div id="existingAUDiv">
+      <input type="radio" name="auOption" id="existingAU" onchange="showHideLookup()"/>
+        <label for="existingAU">Add this bag to an existing archival unit.</label>
+      <span id="lookupSpan" class="mr-3" style="display:none">
+        <input list="auids" id="addToAU" name="addToAU" />
+        <datalist id="auids">
+          <option value="AU-001"></option>
+          <option value="AU-002"></option>
+          <option value="AU-003"></option>
+          <option value="AU-004"></option>
+          <option value="AU-005"></option>
+        </datalist>
+        <button type="button" role="button" id="btnLookupAU" onclick="lookupAU">Look up AU</button>
+      </span>
+    </div>
+
   </div>
 
 
