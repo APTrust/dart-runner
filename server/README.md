@@ -4,6 +4,13 @@ DART 3 is currently in ALPHA mode. We encourage you to use it for testing and to
 
 DO NOT USE THE ALPHA VERSION FOR ESSENTIAL PRODUCTION WORKFLOWS! Wait for a stable release build if you want to use this in production.
 
+## Known Issues
+
+Major features are generally known to work in the current alpha build. However, the build has some known issues, including:
+
+* occasional freezing of some dynamic menus and other UI items
+* limited testing on Windows
+
 ## Getting Started
 
 1. Dowload the app
