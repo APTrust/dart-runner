@@ -41,7 +41,7 @@ func build(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		buildWindows(t)
 	} else {
-		buildScript := filepath.Join(util.ProjectRoot(), "scripts", "build.sh")
+		buildScript := filepath.Join(util.ProjectRoot(), "scripts", "build_dart_runner.sh")
 		stdout, stderr, exitCode := util.ExecCommand(buildScript, nil, os.Environ(), nil)
 		assert.NotEmpty(t, stdout)
 		assert.Equal(t, 0, exitCode, string(stderr))
