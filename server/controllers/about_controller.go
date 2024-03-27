@@ -11,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Version value is injected at build time.
+var Version string
+
 // GET /about
 func AboutShow(c *gin.Context) {
 	logFile, err := core.Dart.Paths.LogFile()
@@ -25,7 +28,7 @@ func AboutShow(c *gin.Context) {
 	}
 
 	templateData := gin.H{
-		"version":      "Version goes here",
+		"version":      Version,
 		"appPath":      "App path goes here",
 		"userDataPath": core.Dart.Paths.DataDir,
 		"logFilePath":  logFile,

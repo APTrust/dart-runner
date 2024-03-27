@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z $(ls scripts/build.sh 2> /dev/null) ]; then
+if [ -z $(ls scripts/build_dart_runner.sh 2> /dev/null) ]; then
     echo "Run this script from the project root directory"
     exit
 fi

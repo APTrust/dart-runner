@@ -1,4 +1,4 @@
-//go:build xxx
+//go:build !release
 
 package server
 
@@ -58,4 +58,10 @@ func initTemplates(router *gin.Engine) {
 	} else {
 		router.LoadHTMLGlob("../../server/views/**/*.html")
 	}
+}
+
+// Serve static assets local file system when running in developer mode.
+func initStaticRoutes(router *gin.Engine) {
+	router.StaticFile("/favicon.ico", "./server/assets/img/favicon.ico")
+	router.Static("/assets", "./server/assets")
 }

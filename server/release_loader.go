@@ -1,3 +1,5 @@
+//go:build release
+
 package server
 
 import (
@@ -5,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -53,6 +56,16 @@ func initTemplates(router *gin.Engine) {
 	})
 
 	loadHTMLFromEmbedFS(router, views, "*.html")
+}
+
+// Serve static assets from embedded FS in release build.
+func initStaticRoutes(router *gin.Engine) {
+	router.GET("/favicon.ico", func(c *gin.Context) {
+		c.FileFromFS("assets/img/favicon.ico", http.FS(assets))
+	})
+	router.GET("/assets/*filepath", func(c *gin.Context) {
+		c.FileFromFS(c.Request.URL.Path, http.FS(assets))
+	})
 }
 
 // Next two functions courtest of https://github.com/gin-gonic/gin/issues/2795

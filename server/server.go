@@ -44,8 +44,9 @@ func initRoutes(router *gin.Engine) {
 	// extraneous slashes.
 	router.RedirectFixedPath = true
 
-	router.StaticFile("/favicon.ico", "./server/assets/img/favicon.ico")
-	router.Static("/assets", "./server/assets")
+	// Serve static assets from local file system in dev mode
+	// or from embedded file system in realease build.
+	initStaticRoutes(router)
 
 	// Dashboard
 	router.GET("/", controllers.DashboardShow)
