@@ -17,16 +17,18 @@ Major features are generally known to work in the current alpha build. However, 
 
 | Operating System       | Download Link |
 | ---------------------- | ------------- |
-| Windows (Intel 64-bit) | |
-| Mac (M chips)          | |
-| Mac (Intel chips)      | |
-| Linux (Intel 64-bit)   | |
+| Windows (Intel 64-bit) | https://s3.amazonaws.com/aptrust.public.download/dart3/windows-x64/dart3 |
+| Mac (M chips)          | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-arm/dart3 |
+| Mac (Intel chips)      | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-intel/dart3 |
+| Linux (Intel 64-bit)   | https://s3.amazonaws.com/aptrust.public.download/dart3/linux-x64/dart3 |
 
 2. Open a terminal window and change into the directory containing the dart3 download. 
 
 3. Make the app excetable with this command: `chmod +x dart3`
 
-4. Run the app with this command `./dart3` (Note the leading dot and slash.)
+4. (Non-Mac OS) Run the app with this command `./dart3` (Note the leading dot and slash.)
+
+    (Mac OS) Open Finder and command-click on the dart3 app. You'll see a warning about unsigned code. Click the Open button to run DART anyway.
 
 5. Open a browser and go to __http://localhost:8080__
 
