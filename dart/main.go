@@ -10,7 +10,7 @@ import (
 var Version string
 
 func main() {
-	port := flag.Int("Port", 8080, "Which port should DART listen on?")
+	port := flag.Int("port", 8080, "Which port should DART listen on?")
 	flag.Parse()
 	server.SetVersion(Version)
 	server.Run(*port)
