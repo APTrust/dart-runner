@@ -23,22 +23,22 @@ fi
 #TAG="${TAG:=Alpha-01}"
 VERSION="DART Alpha-01 for $OS (Build $COMMIT $DATE)"
 
-echo "Building MacOS amd64 version in ./dist/mac-x64/dart"
+echo "Building MacOS amd64 version in ./dist/mac-x64/dart3"
 mkdir -p dist/mac
-GOOS=darwin GOARCH=amd64 go build -o dist/mac-x64/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS  dart/main.go
+GOOS=darwin GOARCH=amd64 go build -o dist/mac-x64/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS  dart/main.go
 
-echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart"
+echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart3"
 mkdir -p dist/mac
-GOOS=darwin GOARCH=arm64 go build -o dist/mac-arm64/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=darwin GOARCH=arm64 go build -o dist/mac-arm64/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
 # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
-echo "Building Windows amd64 version in ./dist/windows/dart"
+echo "Building Windows amd64 version in ./dist/windows/dart3"
 mkdir -p dist/windows
-GOOS=windows GOARCH=amd64 go build -o dist/windows/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=windows GOARCH=amd64 go build -o dist/windows/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
-echo "Building Linux amd64 version in ./dist/linux/dart"
+echo "Building Linux amd64 version in ./dist/linux/dart3"
 mkdir -p dist/linux
-GOOS=linux GOARCH=amd64 go build -o dist/linux/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=linux GOARCH=amd64 go build -o dist/linux/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
 # echo "Version info from latest build:"
 # if [[ "$OS" == "Darwin" ]]; then
