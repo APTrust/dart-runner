@@ -1,5 +1,8 @@
 package constants
 
+// Version value is injected at build time.
+var Version string
+
 const (
 	AlgMd5                    = "md5"
 	AlgSha1                   = "sha1"

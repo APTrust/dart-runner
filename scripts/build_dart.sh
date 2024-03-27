@@ -6,7 +6,7 @@ if [ -z $(ls scripts/build_dart.sh 2> /dev/null) ]; then
 fi
 
 COMMIT=$(git rev-parse --short HEAD)
-TAG=$(git describe --tags 2> /dev/null)
+#TAG=$(git describe --tags 2> /dev/null)
 DATE=$(date +%Y-%m-%d)
 OS=$(uname -s)
 ARCH=$(uname -m)
@@ -20,25 +20,25 @@ if [[ "$OS" == *"_NT-"* ]]; then
 	BUILD_TAGS='-tags="release windows"'
 fi
 
-TAG="${TAG:=Alpha-01}"
-VERSION="DART $TAG for $OS (Build $COMMIT $DATE)"
+#TAG="${TAG:=Alpha-01}"
+VERSION="DART Alpha-01 for $OS (Build $COMMIT $DATE)"
 
 echo "Building MacOS amd64 version in ./dist/mac-x64/dart"
 mkdir -p dist/mac
-GOOS=darwin GOARCH=amd64 go build -o dist/mac-x64/dart -ldflags "-X 'controllers.Version=$VERSION'" $BUILD_TAGS  dart/main.go
+GOOS=darwin GOARCH=amd64 go build -o dist/mac-x64/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS  dart/main.go
 
 echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart"
 mkdir -p dist/mac
-GOOS=darwin GOARCH=arm64 go build -o dist/mac-arm64/dart -ldflags "-X 'controllers.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=darwin GOARCH=arm64 go build -o dist/mac-arm64/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
 # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
 echo "Building Windows amd64 version in ./dist/windows/dart"
 mkdir -p dist/windows
-GOOS=windows GOARCH=amd64 go build -o dist/windows/dart -ldflags "-X 'controllers.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=windows GOARCH=amd64 go build -o dist/windows/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
 echo "Building Linux amd64 version in ./dist/linux/dart"
 mkdir -p dist/linux
-GOOS=linux GOARCH=amd64 go build -o dist/linux/dart -ldflags "-X 'controllers.Version=$VERSION'" $BUILD_TAGS dart/main.go
+GOOS=linux GOARCH=amd64 go build -o dist/linux/dart -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
 
 # echo "Version info from latest build:"
 # if [[ "$OS" == "Darwin" ]]; then

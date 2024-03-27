@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -10,11 +11,22 @@ import (
 )
 
 // Run runs the Registry application. This is called from main() to start
-// the app.
-func Run() {
+// the app. Listen on 127.0.0.1, not on 0.0.0.0 because we don't want to
+// accept outside connections.
+func Run(port int) {
+	if port < 1 {
+		port = 8080
+	}
 	core.Dart.RuntimeMode = constants.ModeDartGUI
 	r := InitAppEngine(false)
-	r.Run()
+	r.Run(fmt.Sprintf("127.0.0.1:%d", port))
+}
+
+// SetVersion passes the build version into the core namespace, so
+// other parts of the app have access to it. This value is passed in
+// at build time by the go build command.
+func SetVersion(version string) {
+	constants.Version = version
 }
 
 // InitAppEngine sets up the whole Gin application, loading templates and

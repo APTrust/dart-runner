@@ -7,12 +7,10 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/gin-gonic/gin"
 )
-
-// Version value is injected at build time.
-var Version string
 
 // GET /about
 func AboutShow(c *gin.Context) {
@@ -28,7 +26,7 @@ func AboutShow(c *gin.Context) {
 	}
 
 	templateData := gin.H{
-		"version":      Version,
+		"version":      constants.Version,
 		"appPath":      "App path goes here",
 		"userDataPath": core.Dart.Paths.DataDir,
 		"logFilePath":  logFile,
