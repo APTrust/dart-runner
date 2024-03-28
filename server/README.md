@@ -34,6 +34,8 @@ Major features are generally known to work in the current alpha build. However, 
 
 If you want to run DART on a port other than 8080, start it with this command: `./dart3 -port <number>` where is number is any port number you choose. Number should be above 1024 on most systems, because ports below that may be reserved or require root privileges.
 
+On Mac OS, you will only have to use command-click to open DART3 the first time you use it. After that, it should open like any other program. We'll resolve this issue when we get Apple code signing in place.
+
 ## Platform Rationale
 
 The server component of DART runner will be the successor to DART 2. DART 2 is an Electron app that whose maintenance has been time consuming and difficult. We chose to write DART 3 in Go as a locally-running web app for a number of reasons, including:
@@ -49,6 +51,12 @@ We evaluated a number of platforms similar to Electron that would allow us to us
 
 We decided to go with the simplest and most reliable technologies available, where are a basic web server and whichever browser the user prefers.
 
+## Prerequisites for Development
+
+* Go > 1.20
+* Ruby > 2.0 (to run build and test scripts)
+* Docker (to run Minio and SFTP containers)
+
 ## Notes for Developers
 
 Testing: `./scripts/run.rb tests`
@@ -59,9 +67,24 @@ Running in dev mode: `./scripts/run.rb dart`
 
 Note that running in dev mode also starts a local SFTP server and a Minio server, both in docker containers. DART will print the URLs and credentials for these local services in the console so you can look into them if necessary.
 
-## Prerequisites for Development
+## Releasing
 
-* Go > 1.20
-* Ruby > 2.0 (to run build and test scripts)
-* Docker (to run Minio and SFTP containers)
+Since we're in very early alpha phase, we don't have a formal release process yet. For now, follow these steps:
 
+1. Manually update the version name in the [build script](./scripts/build_dart.rb). Look for the VERSION string.
+2. Build Windows, Mac and Linux versions using `./scripts/build_dart.rb`
+3. Copy the newly built binaries to our S3 bucket:
+
+| Local Binary     | Remote Target |
+| ---------------- | ------------- |
+| dist/linux/dart3 | https://s3.amazonaws.com/aptrust.public.download/dart3/linux-x64/dart3 | 
+| dist/mac-arm64   | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-arm/dart3 | 
+| dist/mac-x64     | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-intel/dart3 | 
+| dist/windows     | https://s3.amazonaws.com/aptrust.public.download/dart3/windows-x64/dart3 | 
+
+## TODOs
+
+* Come up with a meaningful naming scheme for the binaries or for the S3 folders where we make them available. Users should know whether they're downloading version Alpha-01, Alpha-02, etc. We should probably be tagging these releases as well in GitHub.
+* Make naming consistent between local builds and S3 downloads. E.g. mac-x64 vs mac-intel. Choose one or the other.
+* More extensive Windows testing for DART 3.
+* Add builds for Linux arm-64 and Windows arm-64?
