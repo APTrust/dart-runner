@@ -13,12 +13,12 @@ import (
 // Run runs the Registry application. This is called from main() to start
 // the app. Listen on 127.0.0.1, not on 0.0.0.0 because we don't want to
 // accept outside connections.
-func Run(port int) {
+func Run(port int, quietMode bool) {
 	if port < 1 {
 		port = 8080
 	}
 	core.Dart.RuntimeMode = constants.ModeDartGUI
-	r := InitAppEngine(false)
+	r := InitAppEngine(quietMode)
 	r.Run(fmt.Sprintf("127.0.0.1:%d", port))
 }
 
@@ -33,12 +33,13 @@ func SetVersion(version string) {
 // middleware and defining routes. The test suite can use this to get an
 // instance of the Gin engine to bind to.
 //
-// Set param discardStdOut during unit/integration tests to suppress
+// Set param quietMode during unit/integration tests to suppress
 // Gin's STDOUT logging. Those log statements are useful in development,
 // but can be verbose and clutter the test output.
-func InitAppEngine(discardStdOut bool) *gin.Engine {
+func InitAppEngine(quietMode bool) *gin.Engine {
 	var r *gin.Engine
-	if discardStdOut {
+	if quietMode {
+		gin.SetMode(gin.ReleaseMode)
 		r = gin.New()
 		r.Use(gin.Recovery())
 		gin.DefaultWriter = io.Discard

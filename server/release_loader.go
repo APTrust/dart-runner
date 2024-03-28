@@ -4,7 +4,6 @@ package server
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -95,7 +94,7 @@ func loadAndAddToRoot(funcMap template.FuncMap, rootTemplate *template.Template,
 			if _, parseErr := t.Parse(string(data)); parseErr != nil {
 				return parseErr
 			}
-			fmt.Println("    template", path)
+			//fmt.Println("    template", path)
 		}
 		return nil
 	})
