@@ -10,6 +10,10 @@ Major features are generally known to work in the current alpha build. However, 
 
 * occasional freezing of some dynamic menus and other UI items
 * limited testing on Windows
+* on some Macs dragging a folder into a job to be bagged results in the UI showing that the folder has zero files; on other Macs, dragging folders works as intended
+* importing settings from DART2 doesn't work yet
+* trying to package in any format other than BagIt may cause errors
+* loose (untarred) bags are not supported yet
 
 ## Getting Started
 
@@ -46,10 +50,16 @@ The server component of DART runner will be the successor to DART 2. DART 2 is a
 * The rest of the APTrust ecosystem is written in Go, which allows us to reuse proven code for bagging, validation and file transport. This substantially reduces the burden of having to maintain complex code in two different languages (Go and JavaScript) with identical functionality and behavior.
 * Electron apps like DART use substantial resources. Running the DART test suite consumed about 1.5 GB of RAM. DART 3 uses about 14 MB of RAM and considerably less CPU.
 * Electron builds did not always behave the same way as Electron in the development environment. Spending days of developer time to debug these issues was a poor use of developer time.
+* DART 3 now shares a lot of code with Dart Runner, which ensures more consistent behavior between the two apps.
+* The use of Go in DART 3 will eventually allow us to share core code between preservation services, DART, Dart Runner and the [apt-cmd](https://github.com/APTrust/apt-cmd) suite of command-line tools.
 
 We evaluated a number of platforms similar to Electron that would allow us to use Go instead of JavaScript for the heavy work. The most promising of these was [Wails](https://wails.io/), but in our early tests in 2022, we experienced some crashes and blank screens, and we didn't feel the platform was mature enough.
 
 We decided to go with the simplest and most reliable technologies available, where are a basic web server and whichever browser the user prefers.
+
+## Security Notes
+
+Because DART 3 exposes the local file system in the browser, it listens only on 127.0.0.1, which means it will not accept outside connections. 
 
 ## Prerequisites for Development
 
