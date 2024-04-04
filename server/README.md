@@ -57,6 +57,18 @@ We evaluated a number of platforms similar to Electron that would allow us to us
 
 We decided to go with the simplest and most reliable technologies available, where are a basic web server and whichever browser the user prefers.
 
+## Separation of Policy and Implementation
+
+At this point, the DART UI is essentially a policy editor. Its job is to help the user construct a valid description of a job: what is to be packaged, what BagIt profile to use, what metadata to add, and where to send it. Once that description is created, DART serializes it to JSON and passes it off to DART Runner to do the work. DART Runner is the worker that implements the policy.
+
+DART Runner has been in use for several years. We created it to run unattended jobs on servers that had no graphics or windowing system, only a command line. The traditional use case was that a user would create a workflow interactively in DART, then export that workflow to JSON. They would then create a CSV file listing directories to bag up, and they'd tell DART Runner to run everything in the CSV file through the workflow described by the JSON file.
+
+This has worked well in practice for the few people using it. Some users have kicked off bag-and-upload jobs of dozens of terabytes that take weeks to run. It all runs unattended leaving the user is free to work on other things.
+
+While we were maintaining DART 2, we effectively had one policy editor (the DART GUI) and two full implementations of the worker. The DART 2 implementation was written in JavaScript and DART Runner was written in Go. The two worked equally well for bags up to a few gigabytes, but DART Runner worked better for larger bags, particularly in the upload phase, where DART 2 would often stall.
+
+DART 3 brings us down to one policy editor and one implementor, all written in the same language.
+
 ## Security Notes
 
 Because DART 3 exposes the local file system in the browser, it listens only on 127.0.0.1, which means it will not accept outside connections. 
