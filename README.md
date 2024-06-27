@@ -59,6 +59,9 @@ For more dynamic workflows where you want to bag and ship only new and updated i
 
 dart-runner can also help replicate bags between digital repositories using the [Beyond the Repository BagIt format](https://github.com/dpscollaborative/btr_bagit_profile).
 
+## DART User Group
+
+APTrust hosts a [DART User Group](https://aptrust.org/resources/user-groups/dart-user-group/) for the entire digital preservation community. This group will primarily be a [mailing list](https://groups.google.com/a/aptrust.org/g/dart-users), where users can share experiences, ask questions, and support one another. Depending on the level of interest and engagement, we may expand this initiative to include regular virtual meetings and more structured activities in the future.
 
 ## Developer Setup
 
