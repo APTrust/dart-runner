@@ -2,166 +2,191 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/afced50b57b1e02432f6/maintainability)](https://codeclimate.com/github/APTrust/dart-runner/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/afced50b57b1e02432f6/test_coverage)](https://codeclimate.com/github/APTrust/dart-runner/test_coverage)
 
-# What is dart-runner?
+# DART Runner
 
-dart-runner will run [DART](https://github.com/APTrust/dart) jobs and workflows without requiring a UI. This means you can run DART workflows on a server.
+**DART Runner** executes [DART](https://github.com/APTrust/dart) jobs and workflows without a UI, allowing you to run BagIt packaging and file uploads on a server or headless environment.
+
+## Key Features
+
+- **Headless Operation**: No desktop dependencies or GUI required—ideal for servers.
+- **Easy Workflow Definition**: Create or export workflows in the DART UI, then run them anywhere.
+- **Flexible & Scriptable**: Integrate with cron jobs or scripts to automate bag creation and transfers.
 
 ## Downloads
 
-For Mac and Linux beta versions, see  https://aptrust.github.io/dart-docs/users/dart_runner/#downloads
+- **Mac & Linux Beta**: [Download Links](https://aptrust.github.io/dart-docs/users/dart_runner/#downloads)
+- **Windows**: (Coming soon or in progress—adjust as needed)
 
-## Usage
+## Quick Usage
 
-Run `dart-runner --help`, or view the [detailed help page](https://aptrust.github.io/dart-docs/users/dart_runner/).
+For immediate help, run:
 
-## Definitions
+```bash
+dart-runner --help
+```
 
-A [job](https://aptrust.github.io/dart-docs/users/jobs/) is the creation and shipping of a single bag. It typically involves bagging a list of files according to a BagIt profile and then sending that bag to an SFTP or S3-compliant server.
+or see the [Detailed DART Runner Docs](https://aptrust.github.io/dart-docs/users/dart_runner/) for usage, command-line flags, exit codes, and advanced examples.
 
-A [workflow](https://aptrust.github.io/dart-docs/users/workflows/) is a set of jobs that all follow the same pattern. For example, bag 300 folders according to the same BagIt profile and send them all to an S3 bucket in Wasabi.
+## What Are Jobs & Workflows?
 
-[This video](https://aptrust.github.io/dart-docs/videos/) shows examples of jobs and workflows.
+- **Job**: Creates and ships a **single bag** (files + metadata, packaged according to a BagIt profile).
+- **Workflow**: Processes **multiple jobs** that share the same BagIt profile, tag values, and upload settings.
 
-# Why build it?
+For example, a workflow can bag 300 folders and upload them to an S3 bucket.  
+See [Jobs](https://aptrust.github.io/dart-docs/users/jobs/) and [Workflows](https://aptrust.github.io/dart-docs/users/workflows/) in the DART docs for more details.
 
-Many DART users want to define a workflow to bag and ship hundreds or thousands of items and then let that workflow run unattended, either as a one-off process or on a daily/weekly/monthly schedule. This is by far our most requested feature.
+## Why DART Runner?
 
-A server-side job runner can work with existing systems such as Fedora, Hyrax, LOCKSS, Archivematica, etc. to periodically bag and push materials into a remote preservation system.
+DART (the Electron app) can run in a CLI mode but still requires a graphics stack on the machine. That’s not practical for servers. **DART Runner** solves this by providing a minimal binary with no graphics dependencies. After defining and testing a workflow in DART, you can export it and run it via DART Runner on virtually any Windows/Mac/Linux/Unix server.
 
-DART is an Electron app that can run in command-line mode, but the underlying Electron framework requires a UI and windowing system to be present on the OS before it starts up, even when it’s not going to use a graphical interface. This limitation is inherent in Electron, so DART cannot fix it.
+### Typical Workflow Steps
 
-Requiring a graphics system is fine on a desktop or laptop, but not on servers. It means installing more than 1 GB of dependencies, including the entire X window system and a desktop manager like Gnome or KDE. Electron requires the graphics system to be running, consuming considerable resources, even though no other program on the server uses it. (And even though Electron itself doesn't use it when running in command-line mode.)
+1. Define and test your workflow in DART (desktop).
+2. Export the workflow JSON.
+3. Create a CSV listing files/folders to be bagged.
+4. Copy the workflow JSON and CSV to your server.
+5. Run `dart-runner --workflow=my_workflow.json --batch=my_batch.csv --output-dir=/some/dir`.
+6. (Optional) Schedule the runner via cron or another scheduler for ongoing updates.
 
-This is too much to ask just to run DART on a server.
-
-dart-runner will run any DART job or workflow on virtually any Windows, Mac, Linux or Unix computer, with no need for graphics capabilities. Installing the app would require only a single binary (no external libraries or dependencies) and a text-based configuration file.
-
-Running the app would require:
-
-* the application binary
-* the config file
-* access to the files you want to bag (through local disk or network attached storage)
-* access to a network (to send files to remote S3 / SFTP servers)
-
-To run a workflow on your server:
-
-1. Define and test the workflow using the DART GUI on a desktop computer.
-2. Choose your BagIt profile.
-3. Define default tag values.
-4. Define the locations to which bags should be shipped.
-5. Run the workflow to test it.
-6. Create a CSV file (easily done with Excel) to list all of the files/folders to be run through the workflow.
-7. Copy the CSV file and the workflow description (a JSON file exported by DART) to your server and run.
-
-Once you’ve defined a workflow and a CSV list, you can set the workflow to run as a daily/weekly/monthly cron job.
-
-For more dynamic workflows where you want to bag and ship only new and updated items, you can run a script that generates a CSV file of new/updated items and feed that file to the DART Runner application.
-
-dart-runner can also help replicate bags between digital repositories using the [Beyond the Repository BagIt format](https://github.com/dpscollaborative/btr_bagit_profile).
+DART Runner supports advanced usage: replicating bags, daily/weekly archiving, or partial/incremental packaging.
 
 ## DART User Group
 
-APTrust hosts a [DART User Group](https://aptrust.org/resources/user-groups/dart-user-group/) for the entire digital preservation community. This group will primarily be a [mailing list](https://groups.google.com/a/aptrust.org/g/dart-users), where users can share experiences, ask questions, and support one another. Depending on the level of interest and engagement, we may expand this initiative to include regular virtual meetings and more structured activities in the future.
+Join the [DART User Group](https://aptrust.org/resources/user-groups/dart-user-group/) to discuss use cases, ask questions, or get help. This group primarily uses a [mailing list](https://groups.google.com/a/aptrust.org/g/dart-users), with the possibility of virtual meetings if there’s enough interest.
 
-## Developer Setup
+---
 
-* Download the code using `git clone https://github.com/APTrust/dart-runner`.
-* You will need to install [Docker](https://docs.docker.com/get-docker/) to run SFTP tests.
-* You'll need GCC for testing. See the Testing section below.
+# Developer Setup
 
-## VS Code Setup
+If you’d like to build from source or contribute, follow these steps:
 
-If you're using Visual Studio Code, you should install the following:
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/APTrust/dart-runner
+   ```
+2. **Install Dependencies**
 
-* VS Code Go language support. VS Code will prompt you to install the recommended components. Simply follow the recommendations to install Go, the Go language server and a few other standard components.
-* [vscode-gotemplate](https://github.com/casualjim/vscode-gotemplate). This plugin properly handles Go HTML templates. It's not strictly necessary, but without it, VS Code will flag many Go template tags as invalid HTML and your project will be littered with unnecessary "problem" messages.
+   - **Docker**: Required to run SFTP tests.
+   - **Go (1.20+)**: Install from [Go’s website](https://go.dev/).
+   - **GCC**: Needed for race-detection tests. On Windows, see [these instructions](https://code.visualstudio.com/docs/cpp/config-mingw).
+
+3. **Optional: VS Code Setup**
+   - Install VS Code Go language support (extensions will prompt you).
+   - [vscode-gotemplate](https://github.com/casualjim/vscode-gotemplate) handles Go HTML templates, preventing HTML lint errors.
 
 ## Building
 
-`./scripts/build.sh` or `bash ./scripts/build.sh`
+Run either of the following:
 
-## Running
+```bash
+./scripts/build.sh
+```
 
-To run DART interactively:
+or
 
-`ruby ./scripts/run.rb dart`
+```bash
+bash ./scripts/build.sh
+```
 
-This will start DART on http://localhost:8080. It will also start a local Minio server to handle S3 uploads, and a local SFTP server for SFTP uploads. You can upload to these services using the following settings:
+## Running (Local Dev)
 
-### Local Minio Service
+Use Ruby to start DART and local services (S3/SFTP) for interactive testing:
+
+```bash
+ruby ./scripts/run.rb dart
+```
+
+- DART UI is at **http://localhost:8080**
+- Local **Minio** for S3 uploads runs at `127.0.0.1:9899`
+- Local **SFTP** server runs at `127.0.0.1:2222`
+
+### Example Minio Config
 
 ```json
 {
-	"id": "d9ba0629-6870-48a3-9dd7-89e21410453b",
-	"allowsDownload": true,
-	"allowsUpload": true,
-	"bucket": "test",
-	"description": "Local Minio s3 service",
-	"host": "127.0.0.1",
-	"login": "minioadmin",
-	"loginExtra": "",
-	"name": "Local Minio",
-	"password": "minioadmin",
-	"port": 9899,
-	"protocol": "s3"
+  "id": "d9ba0629-6870-48a3-9dd7-89e21410453b",
+  "allowsDownload": true,
+  "allowsUpload": true,
+  "bucket": "test",
+  "description": "Local Minio s3 service",
+  "host": "127.0.0.1",
+  "login": "minioadmin",
+  "loginExtra": "",
+  "name": "Local Minio",
+  "password": "minioadmin",
+  "port": 9899,
+  "protocol": "s3"
 }
 ```
 
-### Local SFTP Service
+### Example SFTP Config
 
-You can connect to this with a password or an SSH key. You should keep both these entries in your local dev/test environment so you can do interactive testing with them. This one uses a key:
+Two sample credentials:
 
-```json
-{
-	"id": "2b0439bc-66d2-4d01-a73d-19d3eb9edf73",
-	"allowsDownload": false,
-	"allowsUpload": true,
-	"bucket": "uploads",
-	"description": "Local SFTP server using SSH key for authentication",
-	"host": "127.0.0.1",
-	"login": "key_user",
-	"loginExtra": "/home/diamond/aptrust/dart-runner/testdata/sftp/sftp_user_key",
-	"name": "Local SFTP (key)",
-	"password": "",
-	"port": 2222,
-	"protocol": "sftp"
-}
-```
-
-And this uses a password:
-
-```json
-{
-	"id": "d250eda9-d761-4c03-ab5b-266bacc40f3f",
-	"allowsDownload": false,
-	"allowsUpload": true,
-	"bucket": "uploads",
-	"description": "Local SFTP service using password authentication",
-	"host": "127.0.0.1",
-	"login": "pw_user",
-	"loginExtra": "",
-	"name": "Local SFTP (password)",
-	"password": "password",
-	"port": 2222,
-	"protocol": "sftp"
-}
-```
+- **SSH Key**:
+  ```json
+  {
+    "id": "2b0439bc-66d2-4d01-a73d-19d3eb9edf73",
+    "allowsDownload": false,
+    "allowsUpload": true,
+    "bucket": "uploads",
+    "description": "Local SFTP server using SSH key",
+    "host": "127.0.0.1",
+    "login": "key_user",
+    "loginExtra": "/home/diamond/aptrust/dart-runner/testdata/sftp/sftp_user_key",
+    "name": "Local SFTP (key)",
+    "password": "",
+    "port": 2222,
+    "protocol": "sftp"
+  }
+  ```
+- **Password**:
+  ```json
+  {
+    "id": "d250eda9-d761-4c03-ab5b-266bacc40f3f",
+    "allowsDownload": false,
+    "allowsUpload": true,
+    "bucket": "uploads",
+    "description": "Local SFTP service using password",
+    "host": "127.0.0.1",
+    "login": "pw_user",
+    "loginExtra": "",
+    "name": "Local SFTP (password)",
+    "password": "password",
+    "port": 2222,
+    "protocol": "sftp"
+  }
+  ```
 
 ## Testing
 
-`ruby ./scripts/run.rb tests`
+```bash
+ruby ./scripts/run.rb tests
+```
 
-Note that in addition to having a recent version of Go (1.20+), running tests requires the following dependencies:
-
-* A recent version of Ruby (3.0+)
-* A recent version of Docker (24+)
-* GCC, the GNU Compiler Collection, to enable race detection during tests. We do test with the `-race` flag. 
-  On Windows, follow [these instructions](https://code.visualstudio.com/docs/cpp/config-mingw) to install GCC,
-  and be sure to add the MINGW bin to your path, so GCC is always accessible.
+- Requires **Docker** (24+), **Ruby** (3.0+), **Go** (1.20+), and **GCC** (for `-race` tests).
 
 ### Post-Build Test
 
-```
+```bash
 ./scripts/build.sh
-./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json --batch=./testdata/files/postbuild_test_batch.csv --output-dir=<DIR>
+./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json \
+                   --batch=./testdata/files/postbuild_test_batch.csv \
+                   --output-dir=<DIR>
 ```
+
+---
+
+## Contributing
+
+Issues and PRs are welcome! See our [contributing guidelines](#) (if you have a dedicated CONTRIBUTING.md) or open an issue in GitHub.
+
+## License
+
+(Include your project’s license info/link here.)
+
+## Further Resources
+
+- **DART** (the GUI app): [GitHub Repo](https://github.com/APTrust/dart) | [User Guide](https://aptrust.github.io/dart-docs/)
+- **DART Runner Docs**: [Official Docs](https://aptrust.github.io/dart-docs/users/dart-runner/)
+- **Batch File Format**: [Reference](https://aptrust.github.io/dart-docs/users/workflows/batch_jobs/)
