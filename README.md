@@ -78,7 +78,9 @@ If you're using Visual Studio Code, you should install the following:
 
 ## Building
 
-`./scripts/build.sh` or `bash ./scripts/build.sh`
+`./scripts/build_dart.sh` to build DART.
+
+`./scripts/build_dart_runner.sh` to build DART Runner.
 
 ## Running
 
@@ -155,13 +157,13 @@ Note that in addition to having a recent version of Go (1.20+), running tests re
 
 * A recent version of Ruby (3.0+)
 * A recent version of Docker (24+)
-* GCC, the GNU Compiler Collection, to enable race detection during tests. We do test with the `-race` flag. 
+* GCC, the GNU Compiler Collection, to enable race detection during tests. We do test with the `-race` flag.
   On Windows, follow [these instructions](https://code.visualstudio.com/docs/cpp/config-mingw) to install GCC,
   and be sure to add the MINGW bin to your path, so GCC is always accessible.
 
 ### Post-Build Test
 
 ```
-./scripts/build.sh
+./scripts/build_dart_runner.sh
 ./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json --batch=./testdata/files/postbuild_test_batch.csv --output-dir=<DIR>
 ```
