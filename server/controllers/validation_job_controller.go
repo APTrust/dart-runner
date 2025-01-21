@@ -220,7 +220,7 @@ func ValidationJobRun(c *gin.Context) {
 
 	result := core.ObjFind(valJob.BagItProfileID)
 	if result.Error != nil {
-		detailedError := fmt.Errorf("BagIt profile not found. %s", err.Error())
+		detailedError := fmt.Errorf("BagIt profile not found. %s", result.Error.Error())
 		AbortWithErrorHTML(c, http.StatusNotFound, detailedError)
 		return
 	}

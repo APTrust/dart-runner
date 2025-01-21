@@ -188,7 +188,7 @@ func BagItProfileSave(c *gin.Context) {
 	if len(profile.TagFilesAllowed) == 1 {
 		rawString := strings.TrimSpace(profile.TagFilesAllowed[0])
 		allowed := strings.Split(rawString, "\n")
-		for i, _ := range allowed {
+		for i := range allowed {
 			allowed[i] = strings.TrimSpace(allowed[i])
 		}
 		profile.TagFilesAllowed = allowed
