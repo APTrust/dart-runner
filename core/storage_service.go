@@ -75,7 +75,7 @@ func (ss *StorageService) Validate() bool {
 		ss.Errors["Login"] = "StorageService requires a login name or access key id."
 	}
 	if strings.TrimSpace(ss.Password) == "" && strings.TrimSpace(ss.LoginExtra) == "" {
-		ss.Errors["Password"] = "StorageService requires a password or secret access key, or the path to your SSH private key in the Login Extra field."
+		ss.Errors["Password"] = "StorageService requires a password or secret access key, or the path to your SSH private key ."
 	}
 	return len(ss.Errors) == 0
 }
@@ -173,9 +173,14 @@ func (ss *StorageService) ToForm() *Form {
 	protocol.AddChoice("s3", "s3")
 	protocol.AddChoice("sftp", "sftp")
 
-	form.AddField("Host", "Host", ss.Host, true)
-	form.AddField("Port", "Port", strconv.Itoa(ss.Port), false)
+	host := form.AddField("Host", "Host", ss.Host, true)
+	host.Attrs["placeholder"] = "Hostname or IP address. E.g. s3.amazonaws.com or 127.0.0.1"
+
+	port := form.AddField("Port", "Port", strconv.Itoa(ss.Port), false)
+	port.Attrs["placeholder"] = "Leave at 0 if you're unsure"
+
 	form.AddField("Bucket", "Bucket", ss.Bucket, true)
+
 	form.AddField("Login", "Login", ss.Login, true)
 	form.AddField("Password", "Password", ss.Password, true)
 	form.AddField("LoginExtra", "Login Extra", ss.LoginExtra, false)

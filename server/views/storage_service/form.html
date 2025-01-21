@@ -46,6 +46,32 @@
 </form>
 {{ end }}
 
+<script>
+  function toggleFieldLabels() {
+    let protocol = document.getElementById("StorageService_Protocol").value
+    if (protocol == "sftp") {
+      setSSFormLabel("Bucket", "Upload Directory ")
+      setSSFormLabel("Login", "Login ")
+      setSSFormLabel("Password", "Password ")
+      setSSFormLabel("LoginExtra", "Path to SSH key (leave blank if you're using password authentication)")
+    } else {
+      setSSFormLabel("Bucket", "Bucket ")
+      setSSFormLabel("Login", "Access Key ID ")
+      setSSFormLabel("Password", "Secret Access Key ")
+      setSSFormLabel("LoginExtra", "Leave this empty for S3")
+    }
+  }
+  function setSSFormLabel(fieldName, value) {
+    let selector = `label[for='StorageService_${fieldName}']`
+    console.log(selector)
+    document.querySelector(selector).firstChild.textContent = value
+  }
+  window.addEventListener("load", (event) => {
+    toggleFieldLabels()
+    document.getElementById("StorageService_Protocol").addEventListener("change", toggleFieldLabels)
+  });
+</script>
+
 {{ template "partials/page_footer.html" .}}
 
 {{ end }}

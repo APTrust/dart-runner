@@ -39,7 +39,9 @@ func SetVersion(version string) {
 func InitAppEngine(quietMode bool) *gin.Engine {
 	var r *gin.Engine
 	if quietMode {
-		gin.SetMode(gin.ReleaseMode)
+		// TODO: Resolve this. Should be debug mode in devel, release mode otherwise.
+		// gin.SetMode(gin.ReleaseMode)
+		gin.SetMode(gin.DebugMode)
 		r = gin.New()
 		r.Use(gin.Recovery())
 		gin.DefaultWriter = io.Discard
