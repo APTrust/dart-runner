@@ -69,6 +69,10 @@ APTrust hosts a [DART User Group](https://aptrust.org/resources/user-groups/dart
 * You will need to install [Docker](https://docs.docker.com/get-docker/) to run SFTP tests.
 * You'll need GCC for testing. See the Testing section below.
 
+
+> [!WARNING]
+> If you run go get -u and/or go mod tidy, you'll get a bad version of NSQ (>=1.3.0) that includes breaking API changes. You will need to manually copy the go.mod and go.sum entries for NSQ 1.2.0 from APTrust's preservation-services repo to make dart-runner build. This issue is documented in https://trello.com/c/XyFzVWk2 and we hope to fix it soon.
+
 ## VS Code Setup
 
 If you're using Visual Studio Code, you should install the following:
