@@ -40,7 +40,7 @@ func ValidationJobShowFiles(c *gin.Context) {
 
 	directory := c.Query("directory")
 	if directory == "" {
-		directory, _ = core.GetAppSetting("Bagging Directory")
+		directory, _ = core.GetAppSetting(constants.BaggingDirectory)
 	}
 	items, err := GetDirList(directory)
 	if err != nil {

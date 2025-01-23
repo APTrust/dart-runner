@@ -482,7 +482,7 @@ func (job *Job) ToForm() *Form {
 
 	// Try to construct default output path if it doesn't already exist.
 	// This happens especially with new jobs created from workflows.
-	baggingDir, _ := GetAppSetting("Bagging Directory")
+	baggingDir, _ := GetAppSetting(constants.BaggingDirectory)
 	if job.PackageOp.OutputPath == "" {
 		jobName := job.Name()
 		if strings.HasPrefix(jobName, "Job of ") {

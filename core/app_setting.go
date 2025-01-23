@@ -19,6 +19,7 @@ type AppSetting struct {
 	ID            string            `json:"id"`
 	Name          string            `json:"name"`
 	Value         string            `json:"value"`
+	Choices       []string          `json:"choices"`
 	Help          string            `json:"help"`
 	Errors        map[string]string `json:"errors"`
 	UserCanDelete bool              `json:"userCanDelete"`
@@ -33,6 +34,7 @@ func NewAppSetting(name, value string) *AppSetting {
 		ID:            uuid.NewString(),
 		Name:          name,
 		Value:         value,
+		Choices:       make([]string, 0),
 		UserCanDelete: true,
 		Errors:        make(map[string]string),
 	}
@@ -74,6 +76,13 @@ func (setting *AppSetting) ToForm() *Form {
 	}
 
 	valueField := form.AddField("Value", "Value", setting.Value, true)
+
+	// If this setting has enumerated choices, add them now.
+	// The label and value will be the same.
+	for _, choice := range setting.Choices {
+		valueField.AddChoice(choice, choice)
+	}
+
 	valueField.Help = setting.Help
 
 	for field, errMsg := range setting.Errors {

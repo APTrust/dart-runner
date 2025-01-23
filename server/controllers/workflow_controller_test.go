@@ -347,7 +347,7 @@ func TestWorkflowBatchValidate_Valid(t *testing.T) {
 
 func testWorkflowRunBatch(t *testing.T, batchUrl string) {
 	// Need to set this for things to work
-	setting := core.NewAppSetting("Bagging Directory", os.TempDir())
+	setting := core.NewAppSetting(constants.BaggingDirectory, os.TempDir())
 	require.NoError(t, core.ObjSave(setting))
 
 	recorder := NewStreamRecorder()

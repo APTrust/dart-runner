@@ -170,7 +170,7 @@ func TestJobToForm(t *testing.T) {
 
 	// Test some specifics of OutputPath
 	baggingDir := filepath.Join("home", "someone", "dart")
-	setting := core.NewAppSetting("Bagging Directory", baggingDir)
+	setting := core.NewAppSetting(constants.BaggingDirectory, baggingDir)
 	assert.NoError(t, core.ObjSave(setting))
 
 	// If no output path is specified, and we have a package name,

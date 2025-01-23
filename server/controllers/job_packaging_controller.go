@@ -20,7 +20,7 @@ func JobShowPackaging(c *gin.Context) {
 		return
 	}
 	job := result.Job()
-	baggingDir, err := core.GetAppSetting("Bagging Directory")
+	baggingDir, err := core.GetAppSetting(constants.BaggingDirectory)
 	if err != nil {
 		baggingDir = filepath.Join(core.Dart.Paths.Documents, "DART")
 		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)

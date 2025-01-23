@@ -46,7 +46,7 @@ func InitSchema() error {
 }
 
 func InitDBForFirstUse() {
-	_, err := GetAppSetting("Bagging Directory")
+	_, err := GetAppSetting(constants.BaggingDirectory)
 	if err == sql.ErrNoRows {
 		paths := util.NewPaths()
 		dir := filepath.Join(paths.Documents, "DART")
@@ -54,10 +54,28 @@ func InitDBForFirstUse() {
 		if err != nil {
 			Dart.Log.Errorf("Could not create Bagging Directory at %s: %v", dir, err)
 		}
-		setting := NewAppSetting("Bagging Directory", dir)
+		setting := NewAppSetting(constants.BaggingDirectory, dir)
+		setting.Help = "Where should DART put the bags it builds? If you're running out of disk space, you can set this to save bags to an external disk."
+		setting.UserCanDelete = false
 		err = ObjSave(setting)
 		if err != nil {
 			Dart.Log.Errorf("Could not save Bagging Directory setting: %v", err)
+		}
+	}
+	_, err = GetAppSetting(constants.ControlCharactersInFileNames)
+	if err == sql.ErrNoRows {
+		setting := NewAppSetting(constants.ControlCharactersInFileNames, constants.ControlCharWarn)
+		setting.Help = "What should DART do if it finds Unicode control characters in the names of files to be bagged? These characters are not allowed in object names or metadata in S3-compatible storage services, and may cause storage to fail. Options: Nothing = ignore the issue. Warn = warn me, but build the bag anyway and let it pass validation. Refuse to Bag = warn me and do not build the bag. Fail Validation = build the bag but make it fail validation."
+		setting.Choices = []string{
+			constants.ControlCharDoNothing,
+			constants.ControlCharWarn,
+			constants.ControlCharRefuseToBag,
+			constants.ControlCharFailValidation,
+		}
+		setting.UserCanDelete = false
+		err = ObjSave(setting)
+		if err != nil {
+			Dart.Log.Errorf("Could not save 'Control Characters in File Names' setting: %v", err)
 		}
 	}
 	result := ObjList(constants.TypeBagItProfile, "obj_name", 100, 0)
@@ -129,7 +147,7 @@ func objSave(obj PersistentObject, validate bool) error {
 		return err
 	}
 	stmt := `insert into dart (uuid, obj_type, obj_name, is_deletable, obj_json, updated_at) values (?,?,?,?,?,?)
-	on conflict do update set obj_name=excluded.obj_name, is_deletable=excluded.is_deletable, 
+	on conflict do update set obj_name=excluded.obj_name, is_deletable=excluded.is_deletable,
 	obj_json=excluded.obj_json, updated_at=excluded.updated_at where uuid=excluded.uuid`
 	_, err = Dart.DB.Exec(stmt, obj.ObjID(), obj.ObjType(), obj.ObjName(), obj.IsDeletable(), string(jsonBytes), time.Now().UTC())
 	return err
@@ -537,8 +555,8 @@ func ObjDelete(obj PersistentObject) error {
 
 func ArtifactSave(a *Artifact) error {
 	stmt := `insert into artifacts (uuid, job_id, bag_name, item_type, file_name, file_type, raw_data, updated_at) values (?,?,?,?,?,?,?,?)
-	on conflict do update set bag_name=excluded.bag_name, item_type=excluded.item_type, 
-	file_name=excluded.file_name, file_type=excluded.file_type, raw_data=excluded.raw_data, 
+	on conflict do update set bag_name=excluded.bag_name, item_type=excluded.item_type,
+	file_name=excluded.file_name, file_type=excluded.file_type, raw_data=excluded.raw_data,
 	updated_at=excluded.updated_at where uuid=excluded.uuid`
 	_, err := Dart.DB.Exec(stmt, a.ID, a.JobID, a.BagName, a.ItemType, a.FileName, a.FileType, a.RawData, time.Now().UTC())
 	return err

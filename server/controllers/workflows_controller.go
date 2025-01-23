@@ -255,7 +255,7 @@ func WorkflowRunBatch(c *gin.Context) {
 		return
 	}
 	parser := core.NewCSVBatchParser(wb.PathToCSVFile, wb.Workflow)
-	outputDir, err := core.GetAppSetting("Bagging Directory")
+	outputDir, err := core.GetAppSetting(constants.BaggingDirectory)
 	if err != nil {
 		AbortWithErrorJSON(c, http.StatusInternalServerError, fmt.Errorf("Cannot find application setting for 'Bagging Directory'"))
 		return
