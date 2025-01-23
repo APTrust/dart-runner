@@ -129,6 +129,20 @@ func RecursiveFileList(dir string, includeIrregulars bool) ([]*ExtendedFileInfo,
 	return files, err
 }
 
+// PathsContainingControlChars returns a list of file paths in xFileInfoList
+// that contain illegal control characters. How these files are handled
+// during bagging and validation depends on the value of the AppSetting
+// "Control Characters in File Names"
+func PathsContainingControlChars(xFileInfoList []*ExtendedFileInfo) []string {
+	paths := make([]string, 0)
+	for _, info := range xFileInfoList {
+		if ContainsControlCharacter(info.FullPath) {
+			paths = append(paths, info.FullPath)
+		}
+	}
+	return paths
+}
+
 // GetDirectoryStats returns the file count, directory count and total
 // number of bytes found recursively under directory dir.
 func GetDirectoryStats(dir string) *DirectoryStats {

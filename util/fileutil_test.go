@@ -115,6 +115,22 @@ func TestRecursiveFileList(t *testing.T) {
 	}
 }
 
+func TestPathsContainingControlChars(t *testing.T) {
+	files := []*util.ExtendedFileInfo{
+		{FullPath: "/this/is/okay"},
+		{FullPath: "/this/has/\u000Cbad_char"},
+		{FullPath: "/this/is/also/okay"},
+		{FullPath: "/another/\u000Fbad_char"},
+		{FullPath: "/yet/another/okay"},
+		{FullPath: "/yet/another/bad_\u0090char"},
+	}
+	badPaths := util.PathsContainingControlChars(files)
+	require.Equal(t, 3, len(badPaths))
+	assert.Equal(t, "/this/has/\u000Cbad_char", badPaths[0])
+	assert.Equal(t, "/another/\u000Fbad_char", badPaths[1])
+	assert.Equal(t, "/yet/another/bad_\u0090char", badPaths[2])
+}
+
 func TestGetDirectoryStats(t *testing.T) {
 	dir := filepath.Join(util.ProjectRoot(), "server", "views")
 	dirStats := util.GetDirectoryStats(dir)
