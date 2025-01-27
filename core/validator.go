@@ -197,7 +197,7 @@ func (v *Validator) checkIllegalControlCharacters() bool {
 		Dart.Log.Warningf("Job wants to validate a whose file names contain control characters, but validator can't find AppSetting '%s'. Validator will ignore control characters.", constants.ControlCharactersInFileNames)
 		return true
 	}
-	if setting == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
+	if setting != constants.ControlCharIgnore { //} == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
 		message := []string{"The following file names include control characters that may be invalid on some platforms: "}
 		message = append(message, badPaths...)
 		if setting == constants.ControlCharFailValidation {
@@ -205,7 +205,9 @@ func (v *Validator) checkIllegalControlCharacters() bool {
 			v.Errors["File Names"] = strings.Join(message, " | ")
 			return false
 		} else {
-			// Setting says warn, so warn and pass.
+			// Setting says warn or refuse to bag, so let this pass,
+			// but include a warning. Note that "refuse to bag"
+			// applies to the bagger, not the validator.
 			v.Warnings["File Names"] = strings.Join(message, " | ")
 		}
 	}

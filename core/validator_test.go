@@ -2,9 +2,12 @@ package core_test
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
 	"github.com/stretchr/testify/assert"
@@ -285,4 +288,94 @@ func TestValidator_IllegalControlCharacter(t *testing.T) {
 	// lax and puts the burden on the bagger to ensure
 	// good practices. Sections 5 and 6 give some guidance:
 	// https://datatracker.ietf.org/doc/html/rfc8493
+
+	// Get the app setting for how to deal with control chars,
+	// so we can manipulate it in our tests. This setting won't
+	// exists in tests, because we start with a blank database.
+	_, err := core.GetAppSetting(constants.ControlCharactersInFileNames)
+	require.NotNil(t, err)
+	setting := core.NewAppSetting(constants.ControlCharactersInFileNames, constants.ControlCharIgnore)
+	require.Nil(t, core.ObjSave(setting))
+
+	// Get rid of this when we're done.
+	defer func() {
+		assert.NoError(t, core.ObjDelete(setting))
+	}()
+
+	// Create a temp tempFile to bag. The tempFile name contains a
+	// control character. This tempFile name contains the unicode
+	// bell character.
+	tempFile, err := os.CreateTemp("", "\u0007-bell*")
+	require.Nil(t, err)
+	tempFile.Write([]byte("DART test file"))
+	tempFile.Close()
+
+	sourceFiles, err := util.RecursiveFileList(tempFile.Name(), false)
+	require.Nil(t, err)
+
+	// Bagger should ignore the control char in this file name
+	// because setting says Ignore.
+	bagger := getBagger(t, "control-char-bag.tar", APTProfile, sourceFiles)
+	bagger.Profile.SetTagValue("aptrust-info.txt", "Title", "Test Bag with Control Characters")
+	ok := bagger.Run()
+	assert.True(t, ok)
+	assert.Empty(t, bagger.Errors)
+	assert.Empty(t, bagger.Warnings)
+
+	// Now let's test some validation scenarios.
+	// Validation should succeed with no warning when
+	// AppSetting says to ignore control chars.
+	validator, err := core.NewValidator(bagger.OutputPath, bagger.Profile)
+	require.NoError(t, err)
+	err = validator.ScanBag()
+	require.NoError(t, err)
+	ok = validator.Validate()
+	assert.True(t, ok)
+	assert.Empty(t, validator.Errors)
+	assert.Empty(t, validator.Warnings)
+
+	// When set to warn, bag should be valid, and we
+	// get a warning.
+	setting.Value = constants.ControlCharWarn
+	require.Nil(t, core.ObjSave(setting))
+	validator, err = core.NewValidator(bagger.OutputPath, bagger.Profile)
+	require.NoError(t, err)
+	err = validator.ScanBag()
+	require.NoError(t, err)
+	ok = validator.Validate()
+	assert.True(t, ok)
+	assert.Empty(t, validator.Errors)
+	assert.Equal(t, 1, len(validator.Warnings))
+	assert.True(t, strings.Contains(validator.Warnings["File Names"], filepath.Base(tempFile.Name())))
+
+	// This will also pass, because the setting "Refuse to Bag"
+	// applies only to the bagger, not to the validator.
+	// But it should include a warning, since the user has
+	// indicated concern about control chars.
+	setting.Value = constants.ControlCharRefuseToBag
+	require.Nil(t, core.ObjSave(setting))
+	validator, err = core.NewValidator(bagger.OutputPath, bagger.Profile)
+	require.NoError(t, err)
+	err = validator.ScanBag()
+	require.NoError(t, err)
+	ok = validator.Validate()
+	assert.True(t, ok)
+	assert.Empty(t, validator.Errors)
+	assert.Equal(t, 1, len(validator.Warnings))
+	assert.True(t, strings.Contains(validator.Warnings["File Names"], filepath.Base(tempFile.Name())))
+
+	// This should fail validation with an error, not
+	// a warning.
+	setting.Value = constants.ControlCharFailValidation
+	require.Nil(t, core.ObjSave(setting))
+	validator, err = core.NewValidator(bagger.OutputPath, bagger.Profile)
+	require.NoError(t, err)
+	err = validator.ScanBag()
+	require.NoError(t, err)
+	ok = validator.Validate()
+	assert.False(t, ok) // failed!
+	assert.Empty(t, validator.Warnings)
+	assert.Equal(t, 1, len(validator.Errors))
+	assert.True(t, strings.Contains(validator.Errors["File Names"], filepath.Base(tempFile.Name())))
+
 }
