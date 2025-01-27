@@ -23,6 +23,7 @@ type Validator struct {
 	Tags               []*Tag
 	UnparsableTagFiles []string
 	Errors             map[string]string
+	Warnings           map[string]string
 	mapForType         map[string]*FileMap
 	IgnoreOxumMismatch bool
 }
@@ -42,6 +43,7 @@ func NewValidator(pathToBag string, profile *BagItProfile) (*Validator, error) {
 		Tags:               make([]*Tag, 0),
 		UnparsableTagFiles: make([]string, 0),
 		Errors:             make(map[string]string),
+		Warnings:           make(map[string]string),
 		IgnoreOxumMismatch: false,
 	}
 	validator.mapForType = map[string]*FileMap{
@@ -81,6 +83,10 @@ func (v *Validator) Validate() bool {
 	}
 
 	// Scan the bag.
+
+	if !v.checkIllegalControlCharacters() {
+		return v.finish()
+	}
 
 	v.checkRequiredManifests()
 	v.checkRequiredTagManifests()
@@ -170,6 +176,40 @@ func (v *Validator) ScanBag() error {
 	}
 
 	return reader.ScanPayload()
+}
+
+// See if any of the files to be bagged contain illegal control
+// characters in their full file path.
+func (v *Validator) checkIllegalControlCharacters() bool {
+	badPaths := make([]string, 0)
+	for path, _ := range v.PayloadFiles.Files {
+		if util.ContainsControlCharacter(path) {
+			badPaths = append(badPaths, path)
+		}
+	}
+	if len(badPaths) == 0 {
+		return true
+	}
+	// Okay, we have one or more bad paths. What does the
+	// app setting say we should do?
+	setting, err := GetAppSetting(constants.ControlCharactersInFileNames)
+	if err != nil {
+		Dart.Log.Warningf("Job wants to validate a whose file names contain control characters, but validator can't find AppSetting '%s'. Validator will ignore control characters.", constants.ControlCharactersInFileNames)
+		return true
+	}
+	if setting == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
+		message := []string{"The following file names include control characters that may be invalid on some platforms: "}
+		message = append(message, badPaths...)
+		if setting == constants.ControlCharFailValidation {
+			// Setting says Fail, so let's record an error and fail.
+			v.Errors["File Names"] = strings.Join(message, " | ")
+			return false
+		} else {
+			// Setting says warn, so warn and pass.
+			v.Warnings["File Names"] = strings.Join(message, " | ")
+		}
+	}
+	return true
 }
 
 func (v *Validator) AssertOxumsMatch() error {

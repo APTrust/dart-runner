@@ -65,9 +65,9 @@ func InitDBForFirstUse() {
 	_, err = GetAppSetting(constants.ControlCharactersInFileNames)
 	if err == sql.ErrNoRows {
 		setting := NewAppSetting(constants.ControlCharactersInFileNames, constants.ControlCharWarn)
-		setting.Help = "What should DART do if it finds Unicode control characters in the names of files to be bagged? These characters are not allowed in object names or metadata in S3-compatible storage services, and may cause storage to fail. Options: Nothing = ignore the issue. Warn = warn me, but build the bag anyway and let it pass validation. Refuse to Bag = warn me and do not build the bag. Fail Validation = build the bag but make it fail validation."
+		setting.Help = "What should DART do if it finds Unicode control characters in the names of files to be bagged? These characters are not allowed in object names or metadata in S3-compatible storage services, and may cause storage to fail. Options: Ignore = ignore the issue. Warn = warn me, but build the bag anyway and let it pass validation. Refuse to Bag = warn me and do not build the bag. Fail Validation = build the bag but make it fail validation."
 		setting.Choices = []string{
-			constants.ControlCharDoNothing,
+			constants.ControlCharIgnore,
 			constants.ControlCharWarn,
 			constants.ControlCharRefuseToBag,
 			constants.ControlCharFailValidation,

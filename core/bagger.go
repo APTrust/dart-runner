@@ -29,6 +29,7 @@ type Bagger struct {
 	TagManifests      *FileMap
 	ManifestArtifacts map[string]string
 	TagFileArtifacts  map[string]string
+	Warnings          map[string]string
 	writer            BagWriter
 	pathPrefix        string
 	bagName           string
@@ -48,12 +49,16 @@ func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.Exte
 		ManifestArtifacts: make(map[string]string),
 		TagFileArtifacts:  make(map[string]string),
 		Errors:            make(map[string]string),
+		Warnings:          make(map[string]string),
 	}
 }
 
 // Run builds the bag and returns the number of files bagged.
 func (b *Bagger) Run() bool {
 	b.reset()
+	if !b.checkIllegalControlCharacters() {
+		return b.finish()
+	}
 	b.calculatePathPrefix()
 	b.calculateBagName()
 	Dart.Log.Infof("Starting to build bag %s", b.bagName)
@@ -136,6 +141,35 @@ func (b *Bagger) reset() {
 	b.totalFileCount = int64(len(b.FilesToBag) + len(b.Profile.TagFileNames()) + len(b.Profile.ManifestsRequired))
 	b.currentFileNum = 0
 	b.Errors = make(map[string]string)
+	b.Warnings = make(map[string]string)
+}
+
+// See if any of the files to be bagged contain illegal control
+// characters in their full file path.
+func (b *Bagger) checkIllegalControlCharacters() bool {
+	badPaths := util.PathsContainingControlChars(b.FilesToBag)
+	if len(badPaths) == 0 {
+		return true
+	}
+	// Okay, we have one or more bad paths. What does the
+	// app setting say we should do?
+	setting, err := GetAppSetting(constants.ControlCharactersInFileNames)
+	if err != nil {
+		Dart.Log.Warningf("Job wants to bag files whose names contain control characters, but bagger can't find AppSetting '%s'. Bagger will create the bag.", constants.ControlCharactersInFileNames)
+		return true
+	}
+	if setting == constants.ControlCharRefuseToBag {
+		message := []string{"AppSetting says not to bag files with illegal control characters, and the following file names include control characters that may be invalid on some platforms: "}
+		message = append(message, badPaths...)
+		b.Errors["File Names"] = strings.Join(message, " | ")
+		return false
+	}
+	if setting == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
+		message := []string{"The following file names include control characters that may be invalid on some platforms: "}
+		message = append(message, badPaths...)
+		b.Warnings["File Names"] = strings.Join(message, " | ")
+	}
+	return true
 }
 
 func (b *Bagger) addPayloadFiles() bool {

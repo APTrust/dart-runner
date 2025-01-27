@@ -34,6 +34,74 @@ func TestBaggerRun_BTR(t *testing.T) {
 	testBaggerRun(t, "btr_bag.tar", BTRProfile)
 }
 
+// Test bagger paths that contain control chars and different settings
+// for how to deal with them.
+func TestBaggerRunWithControlCharacters(t *testing.T) {
+	// Get the app setting for how to deal with control chars,
+	// so we can manipulate it in our tests. This setting won't
+	// exists in tests, because we start with a blank database.
+	_, err := core.GetAppSetting(constants.ControlCharactersInFileNames)
+	require.NotNil(t, err)
+	setting := core.NewAppSetting(constants.ControlCharactersInFileNames, constants.ControlCharIgnore)
+	require.Nil(t, core.ObjSave(setting))
+
+	// Get rid of this when we're done.
+	defer func() {
+		assert.NoError(t, core.ObjDelete(setting))
+	}()
+
+	// Create a temp tempFile to bag. The tempFile name contains a
+	// control character. This tempFile name contains the unicode
+	// bell character.
+	tempFile, err := os.CreateTemp("", "\u0007-bell*")
+	require.Nil(t, err)
+	tempFile.Write([]byte("DART test file"))
+	tempFile.Close()
+
+	sourceFiles, err := util.RecursiveFileList(tempFile.Name(), false)
+	require.Nil(t, err)
+
+	// Bagger should ignore the control char in this file name
+	// because setting says Ignore.
+	bagger := getBagger(t, "control-char-bag.tar", APTProfile, sourceFiles)
+	ok := bagger.Run()
+	assert.True(t, ok)
+	assert.Empty(t, bagger.Errors)
+	assert.Empty(t, bagger.Warnings)
+
+	// Bagging should succeed with a warning.
+	setting.Value = constants.ControlCharWarn
+	require.Nil(t, core.ObjSave(setting))
+	bagger = getBagger(t, "control-char-bag.tar", APTProfile, sourceFiles)
+	ok = bagger.Run()
+	assert.True(t, ok)
+	assert.Empty(t, bagger.Errors)
+	assert.Equal(t, 1, len(bagger.Warnings))
+	assert.True(t, strings.Contains(bagger.Warnings["File Names"], tempFile.Name()))
+
+	// Once again, bagging should succeed with a warning.
+	setting.Value = constants.ControlCharFailValidation
+	require.Nil(t, core.ObjSave(setting))
+	bagger = getBagger(t, "control-char-bag.tar", APTProfile, sourceFiles)
+	ok = bagger.Run()
+	assert.True(t, ok)
+	assert.Empty(t, bagger.Errors)
+	assert.Equal(t, 1, len(bagger.Warnings))
+	assert.True(t, strings.Contains(bagger.Warnings["File Names"], tempFile.Name()))
+
+	// Bagging should fail with this setting.
+	// Because of failure, message shows up in Errors,
+	// not in Warnings.
+	setting.Value = constants.ControlCharRefuseToBag
+	require.Nil(t, core.ObjSave(setting))
+	bagger = getBagger(t, "control-char-bag.tar", APTProfile, sourceFiles)
+	ok = bagger.Run()
+	assert.False(t, ok)
+	assert.Equal(t, 1, len(bagger.Errors))
+	assert.Empty(t, bagger.Warnings)
+	assert.True(t, strings.Contains(bagger.Errors["File Names"], tempFile.Name()))
+}
+
 func testBaggerRun(t *testing.T, bagName, profileName string) {
 	files, err := util.RecursiveFileList(util.PathToTestData(), false)
 	require.Nil(t, err)
