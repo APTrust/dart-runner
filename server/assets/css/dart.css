@@ -1,4 +1,4 @@
-/* 
+/*
 First, fix the font size.
 The Yeti defaults are too small.
 https://bootswatch.com/4/yeti/
@@ -193,7 +193,7 @@ ul.ui-autocomplete {
     /* border: 1px solid #4285F4; */
 }
 
-/* 
+/*
     Increase default fontawesome font size in file-browser-item
 */
 .file-browser-item {

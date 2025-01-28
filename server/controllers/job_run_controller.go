@@ -57,7 +57,7 @@ func JobRunExecute(c *gin.Context) {
 	// server-sent events.
 	//
 	// A JavaScript listener on the client displays the messages
-	// as the come in, and it adjusts the progress bars on
+	// as they come in, and it adjusts the progress bars on
 	// the "job run" page.
 	messageChannel := make(chan *core.EventMessage)
 	go func() {

@@ -71,6 +71,8 @@ func (v *Validator) TagManifestAlgs() ([]string, error) {
 // If this returns false, check the errors in Validator.Errors.
 // That collection should contain an exhaustive list of errors,
 // though it maxes out at 30 checksum validation errors.
+//
+// Caller needs to call ScanBag() before calling Validate().
 func (v *Validator) Validate() bool {
 	// Make sure BagItProfile is present and valid.
 	if !v.Profile.Validate() {
@@ -82,25 +84,9 @@ func (v *Validator) Validate() bool {
 		return v.finish()
 	}
 
-	// Scan the bag.
-
-	if !v.checkIllegalControlCharacters() {
-		return v.finish()
-	}
-
-	v.checkRequiredManifests()
-	v.checkRequiredTagManifests()
-	v.checkForbiddenManifests()
-	v.checkForbiddenTagManifests()
-	v.checkRequiredTagFiles()
-	v.checkForbiddenTagFiles()
-	v.validateTags()
-
-	// Do this at the validation stage whether user says to
-	// ignore mismatch or not. Ignoring only allows us to do
-	// a full scan during the ScanBag() stage.
-	v.AssertOxumsMatch()
-
+	// Set up a callback to stream events back to the front end UI,
+	// if we happen to be running in DART GUI mode. Note that we
+	// may be running in dart-runner CLI mode, where there's not GUI.
 	currentFileNum := 0
 	estimatedFileCount := len(v.PayloadFiles.Files) + int(v.TagFiles.FileCount())
 	callback := func(eventType, message string) {
@@ -119,6 +105,27 @@ func (v *Validator) Validate() bool {
 		v.MessageChannel <- eventMessage
 		currentFileNum += 1
 	}
+
+	cb := callback
+	if v.MessageChannel == nil {
+		cb = nil
+	}
+	if !v.checkIllegalControlCharacters(cb) {
+		return v.finish()
+	}
+
+	v.checkRequiredManifests()
+	v.checkRequiredTagManifests()
+	v.checkForbiddenManifests()
+	v.checkForbiddenTagManifests()
+	v.checkRequiredTagFiles()
+	v.checkForbiddenTagFiles()
+	v.validateTags()
+
+	// Do this at the validation stage whether user says to
+	// ignore mismatch or not. Ignoring only allows us to do
+	// a full scan during the ScanBag() stage.
+	v.AssertOxumsMatch()
 
 	// Validate payload checksums
 	algs, _ := v.PayloadManifestAlgs()
@@ -180,7 +187,7 @@ func (v *Validator) ScanBag() error {
 
 // See if any of the files to be bagged contain illegal control
 // characters in their full file path.
-func (v *Validator) checkIllegalControlCharacters() bool {
+func (v *Validator) checkIllegalControlCharacters(callback func(string, string)) bool {
 	badPaths := make([]string, 0)
 	for path, _ := range v.PayloadFiles.Files {
 		if util.ContainsControlCharacter(path) {
@@ -197,18 +204,26 @@ func (v *Validator) checkIllegalControlCharacters() bool {
 		Dart.Log.Warningf("Job wants to validate a whose file names contain control characters, but validator can't find AppSetting '%s'. Validator will ignore control characters.", constants.ControlCharactersInFileNames)
 		return true
 	}
-	if setting != constants.ControlCharIgnore { //} == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
-		message := []string{"The following file names include control characters that may be invalid on some platforms: "}
+	if setting != constants.ControlCharIgnore {
+		message := []string{"AppSetting says to invalidate bags containing file names with illegal control characters. The following file names include control characters that may be invalid on some platforms: "}
 		message = append(message, badPaths...)
+		messageStr := strings.Join(message, " | ")
+
+		// If we're running in GUI mode, the callback to send messages
+		// to the front end will not be nil.
+		if callback != nil {
+			callback(constants.EventTypeWarning, messageStr)
+		}
+
 		if setting == constants.ControlCharFailValidation {
 			// Setting says Fail, so let's record an error and fail.
-			v.Errors["File Names"] = strings.Join(message, " | ")
+			v.Errors["File Names"] = messageStr
 			return false
 		} else {
 			// Setting says warn or refuse to bag, so let this pass,
 			// but include a warning. Note that "refuse to bag"
 			// applies to the bagger, not the validator.
-			v.Warnings["File Names"] = strings.Join(message, " | ")
+			v.Warnings["File Names"] = messageStr
 		}
 	}
 	return true
