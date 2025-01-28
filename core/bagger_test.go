@@ -36,6 +36,11 @@ func TestBaggerRun_BTR(t *testing.T) {
 
 // Test bagger paths that contain control chars and different settings
 // for how to deal with them.
+//
+// Note that the file "testdata/files/back\bspace2.txt" (which looks like
+// "backspace2.txt" in a file browser) contains an illegal control
+// character and can be used in interactive tests of the Control Char
+// AppSetting.
 func TestBaggerRunWithControlCharacters(t *testing.T) {
 	// Get the app setting for how to deal with control chars,
 	// so we can manipulate it in our tests. This setting won't
