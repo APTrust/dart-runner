@@ -62,6 +62,17 @@ func AppSettingNew(c *gin.Context) {
 // POST /app_settings/new
 func AppSettingSave(c *gin.Context) {
 	setting := &core.AppSetting{}
+
+	// When saving, if user is editing an existing setting,
+	// retrieve the DB object and edit that, so we don't lose
+	// properties like Help and Choices.
+	id := c.Params.ByName("id")
+	if id != "" {
+		result := core.ObjFind(id)
+		if result.Error == nil && result.AppSetting() != nil {
+			setting = result.AppSetting()
+		}
+	}
 	err := c.Bind(setting)
 	if err != nil {
 		AbortWithErrorHTML(c, http.StatusBadRequest, err)
