@@ -167,7 +167,9 @@ func (b *Bagger) checkIllegalControlCharacters() bool {
 	if setting == constants.ControlCharWarn || setting == constants.ControlCharFailValidation {
 		message := []string{"The following file names include control characters that may be invalid on some platforms: "}
 		message = append(message, badPaths...)
-		b.Warnings["File Names"] = strings.Join(message, " | ")
+		messageStr := strings.Join(message, " | ")
+		b.Warnings["File Names"] = messageStr
+		b.warn(messageStr)
 	}
 	return true
 }
@@ -450,4 +452,13 @@ func (b *Bagger) info(message string) {
 
 	b.MessageChannel <- eventMessage
 	b.currentFileNum += 1
+}
+
+func (b *Bagger) warn(message string) {
+	Dart.Log.Info(message)
+	if b.MessageChannel == nil {
+		return
+	}
+	eventMessage := WarningEvent(constants.StagePackage, message)
+	b.MessageChannel <- eventMessage
 }

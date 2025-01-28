@@ -205,24 +205,15 @@ func (v *Validator) checkIllegalControlCharacters(callback func(string, string))
 		return true
 	}
 	if setting != constants.ControlCharIgnore {
-		action := "warn"
-		if setting == constants.ControlCharFailValidation {
-			action = "invalidate"
-		}
 		message := []string{
-			fmt.Sprintf("AppSetting says to %s on bags containing file names with illegal control characters. The following file names include control characters that may be invalid on some platforms: ", action),
+			"AppSetting says to warn on bags containing file names with illegal control characters. The following file names include control characters that may be invalid on some platforms: ",
 		}
 		message = append(message, badPaths...)
 		messageStr := strings.Join(message, " | ")
 
-		// If we're running in GUI mode, the callback to send messages
-		// to the front end will not be nil.
-		if callback != nil {
-			callback(constants.EventTypeWarning, messageStr)
-		}
-
 		if setting == constants.ControlCharFailValidation {
 			// Setting says Fail, so let's record an error and fail.
+			// Note that errors automatically go to the Web UI if it's available.
 			v.Errors["File Names"] = messageStr
 			return false
 		} else {
@@ -230,6 +221,11 @@ func (v *Validator) checkIllegalControlCharacters(callback func(string, string))
 			// but include a warning. Note that "refuse to bag"
 			// applies to the bagger, not the validator.
 			v.Warnings["File Names"] = messageStr
+			// If we're running in GUI mode, the callback to send messages
+			// to the front end will not be nil.
+			if callback != nil {
+				callback(constants.EventTypeWarning, messageStr)
+			}
 		}
 	}
 	return true
