@@ -205,7 +205,13 @@ func (v *Validator) checkIllegalControlCharacters(callback func(string, string))
 		return true
 	}
 	if setting != constants.ControlCharIgnore {
-		message := []string{"AppSetting says to invalidate bags containing file names with illegal control characters. The following file names include control characters that may be invalid on some platforms: "}
+		action := "warn"
+		if setting == constants.ControlCharFailValidation {
+			action = "invalidate"
+		}
+		message := []string{
+			fmt.Sprintf("AppSetting says to %s on bags containing file names with illegal control characters. The following file names include control characters that may be invalid on some platforms: ", action),
+		}
 		message = append(message, badPaths...)
 		messageStr := strings.Join(message, " | ")
 
