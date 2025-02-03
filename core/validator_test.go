@@ -179,7 +179,7 @@ func TestValidator_BadTags(t *testing.T) {
 	assert.Equal(t, "file is missing from bag: custom_tags/tag_file_xyz.pdf", v.Errors["custom_tags/tag_file_xyz.pdf"])
 	assert.Equal(t, "Required tag 'aptrust-info.txt/Title' is present but has no value.", v.Errors["aptrust-info.txt/Title"])
 	assert.Equal(t, "Tag 'aptrust-info.txt/Access' has illegal value 'acksess'. Allowed values are: Consortia,Institution,Restricted", v.Errors["aptrust-info.txt/Access"])
-	assert.Equal(t, "Tag 'aptrust-info.txt/Storage-Option' has illegal value 'Cardboard-Box'. Allowed values are: Standard,Glacier-OH,Glacier-OR,Glacier-VA,Glacier-Deep-OH,Glacier-Deep-OR,Glacier-Deep-VA,Wasabi-OR,Wasabi-VA", v.Errors["aptrust-info.txt/Storage-Option"])
+	assert.Equal(t, "Tag 'aptrust-info.txt/Storage-Option' has illegal value 'Cardboard-Box'. Allowed values are: Standard,Glacier-OH,Glacier-OR,Glacier-VA,Glacier-Deep-OH,Glacier-Deep-OR,Glacier-Deep-VA,Wasabi-OR,Wasabi-TX,Wasabi-VA", v.Errors["aptrust-info.txt/Storage-Option"])
 	assert.Equal(t, "Digest This-checksum-is-bad-on-purpose.-The-validator-should-catch-it!! in manifest-sha256.txt does not match digest cf9cbce80062932e10ee9cd70ec05ebc24019deddfea4e54b8788decd28b4bc7 in payload file: data/datastream-descMetadata", v.Errors["data/datastream-descMetadata"])
 	assert.Equal(t, "file is missing from bag: data/file-not-in-bag", v.Errors["data/file-not-in-bag"])
 
