@@ -26,7 +26,7 @@ Major features are generally known to work in the current alpha build. However, 
 | Mac (Intel chips)      | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-intel/dart3 |
 | Linux (Intel 64-bit)   | https://s3.amazonaws.com/aptrust.public.download/dart3/linux-x64/dart3 |
 
-2. Open a terminal window and change into the directory containing the dart3 download. 
+2. Open a terminal window and change into the directory containing the dart3 download.
 
 3. Make the app excetable with this command: `chmod +x dart3`
 
@@ -34,9 +34,9 @@ Major features are generally known to work in the current alpha build. However, 
 
     (Mac OS) Open Finder and command-click on the dart3 app. You'll see a warning about unsigned code. Click the Open button to run DART anyway.
 
-5. Open a browser and go to __http://localhost:8080__
+5. Open a browser and go to __http://localhost:8444__
 
-If you want to run DART on a port other than 8080, start it with this command: `./dart3 -port <number>` where is number is any port number you choose. Number should be above 1024 on most systems, because ports below that may be reserved or require root privileges.
+If you want to run DART on a port other than 8444, start it with this command: `./dart3 -port <number>` where is number is any port number you choose. Number should be above 1024 on most systems, because ports below that may be reserved or require root privileges.
 
 On Mac OS, you will only have to use command-click to open DART3 the first time you use it. After that, it should open like any other program. We'll resolve this issue when we get Apple code signing in place.
 
@@ -71,7 +71,7 @@ DART 3 brings us down to one policy editor and one implementor, all written in t
 
 ## Security Notes
 
-Because DART 3 exposes the local file system in the browser, it listens only on 127.0.0.1, which means it will not accept outside connections. 
+Because DART 3 exposes the local file system in the browser, it listens only on 127.0.0.1, which means it will not accept outside connections.
 
 ## Prerequisites for Development
 
@@ -99,10 +99,10 @@ Since we're in very early alpha phase, we don't have a formal release process ye
 
 | Local Binary     | Remote Target |
 | ---------------- | ------------- |
-| dist/linux/dart3 | https://s3.amazonaws.com/aptrust.public.download/dart3/linux-x64/dart3 | 
-| dist/mac-arm64   | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-arm/dart3 | 
-| dist/mac-x64     | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-intel/dart3 | 
-| dist/windows     | https://s3.amazonaws.com/aptrust.public.download/dart3/windows-x64/dart3 | 
+| dist/linux/dart3 | https://s3.amazonaws.com/aptrust.public.download/dart3/linux-x64/dart3 |
+| dist/mac-arm64   | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-arm/dart3 |
+| dist/mac-x64     | https://s3.amazonaws.com/aptrust.public.download/dart3/mac-intel/dart3 |
+| dist/windows     | https://s3.amazonaws.com/aptrust.public.download/dart3/windows-x64/dart3 |
 
 ## TODOs
 

@@ -92,7 +92,7 @@ To run DART interactively:
 
 `ruby ./scripts/run.rb dart`
 
-This will start DART on http://localhost:8080. It will also start a local Minio server to handle S3 uploads, and a local SFTP server for SFTP uploads. You can upload to these services using the following settings:
+This will start DART on http://localhost:8444. It will also start a local Minio server to handle S3 uploads, and a local SFTP server for SFTP uploads. You can upload to these services using the following settings:
 
 ### Local Minio Service
 

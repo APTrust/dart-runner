@@ -33,10 +33,10 @@ class Runner
 
   def run_dart
     begin
-      @dart_pid = Process.spawn(ENV, "go run -race dart/main.go", chdir: project_root)
+      @dart_pid = Process.spawn(ENV, "go run -race dart/main.go -port 8444", chdir: project_root)
       sleep(1)
       puts "\n\n\n"
-      puts "DART is running at http://localhost:8080"
+      puts "DART is running at http://localhost:8444"
       start_minio
       start_sftp
       puts "\n"
@@ -75,7 +75,7 @@ class Runner
     else
       puts "Error starting Minio docker container. Is one already running?"
       puts @docker_minio_id
-    end    
+    end
   end
 
   def stop_minio

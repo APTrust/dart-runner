@@ -15,7 +15,7 @@ import (
 // accept outside connections.
 func Run(port int, quietMode bool) {
 	if port < 1 {
-		port = 8080
+		port = 8444
 	}
 	core.Dart.RuntimeMode = constants.ModeDartGUI
 	r := InitAppEngine(quietMode)
