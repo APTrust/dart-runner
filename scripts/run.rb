@@ -69,9 +69,31 @@ class Runner
       puts "Minio is running on localhost:9899. User/Pwd: minioadmin/minioadmin"
       puts "Minio console available at http://127.0.0.1:9001"
       @minio_started = true
-      # Make our two test buckets
+      # Make our two test buckets, plus receiving and
+      # restoration buckets for test.edu.
       `docker exec -it #{@docker_minio_id} mkdir /data/test`
       `docker exec -it #{@docker_minio_id} mkdir /data/dart-runner.test`
+      `docker exec -it #{@docker_minio_id} mkdir /data/preservation-or`
+      `docker exec -it #{@docker_minio_id} mkdir /data/preservation-va`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-oh`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-or`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-va`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-deep-oh`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-deep-or`
+      `docker exec -it #{@docker_minio_id} mkdir /data/glacier-deep-va`
+      `docker exec -it #{@docker_minio_id} mkdir /data/wasabi-or`
+      `docker exec -it #{@docker_minio_id} mkdir /data/wasabi-tx`
+      `docker exec -it #{@docker_minio_id} mkdir /data/wasabi-va`
+      `docker exec -it #{@docker_minio_id} mkdir /data/receiving`
+      `docker exec -it #{@docker_minio_id} mkdir /data/staging`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.receiving.test.test.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.restore.test.test.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.receiving.test.institution1.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.restore.test.institution1.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.receiving.test.institution2.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.restore.test.institution2.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.receiving.test.example.edu`
+      `docker exec -it #{@docker_minio_id} mkdir /data/aptrust.restore.test.example.edu`
     else
       puts "Error starting Minio docker container. Is one already running?"
       puts @docker_minio_id
