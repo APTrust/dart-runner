@@ -1,5 +1,7 @@
 # TO DO
 
+**Note:** The items listed under Priority, Later, and Not Anytime Soon are now being tracked in the Trello DART board. We're leaving this document in place for now for reference purposes. Items in the Done section are not documented elsewhere and will need to be verified as we move toward user acceptance tests.
+
 ## Priority
 
 - [ ] BUG - Job Metadata page won't load if packaging format is not BagIt
@@ -30,7 +32,7 @@
 ## Done
 
 - [x] Fix Windows paths in bagging
-- [x] Fix Windows integration tests 
+- [x] Fix Windows integration tests
 - [x] Fix auto generation of output file path on job packaging screen
 - [x] Fix web font load error
 - [x] Fix invalid JSON "EOF" being returned to job run page
@@ -49,7 +51,7 @@
 - [x] Build Dashboard & APTrust client
 - [x] Add paging to list pages. Show only 25-50 items at a time.
 - [x] Improve job results display: bagging profile and all uploads (succeeded & failed)
-- [x] Delete artifacts when deleting job 
+- [x] Delete artifacts when deleting job
 - [x] Fix output path autofill on job packaging page
 - [x] Move Minio to Docker (requires substantial changes to post-build tests)
 - [x] Autofill other properties on job package page (e.g. if profile only allows tar, autoselect tar as serialization format)
@@ -59,7 +61,7 @@
 - [x] Implement validation-only jobs.
 - [x] Implement upload-only jobs.
 - [x] Replace calls to window.confirm() and window.alert() with a custom dialog because user may inadvertantly silence these dialogs.
-- [x] Replace history.back() with proper back links! 
+- [x] Replace history.back() with proper back links!
 - [x] Ensure that jobs won't initiate if already running (prevent double-get request)
 - [x] Display workflow batch error if user doesn't choose a CSV file
 - [x] Fix question bug in export settings. Question select lists won't populate until settings are saved.
