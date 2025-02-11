@@ -30,34 +30,89 @@ if [[ "$OS" == *"_NT-"* ]]; then
 fi
 
 #TAG="${TAG:=Alpha-01}"
-VERSION="DART Alpha-01 for $OS (Build $COMMIT $DATE)"
 
+VERSION="DART Alpha-01 for Darwin x64 (Build $COMMIT $DATE)"
 echo "Building MacOS amd64 version in ./dist/mac-x64/dart3"
-mkdir -p dist/mac
-GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o dist/mac-x64/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS  dart/main.go
+mkdir -p dist/mac-x64
+GOOS=darwin \
+	GOARCH=amd64 \
+	CGO_ENABLED=0 \
+	go build -o dist/mac-x64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
 
+VERSION="DART Alpha-01 for Darwin arm64 (Build $COMMIT $DATE)"
 echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart3"
-mkdir -p dist/mac
-GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/mac-arm64/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+mkdir -p dist/mac-arm64
+GOOS=darwin \
+	GOARCH=arm64 \
+	CGO_ENABLED=0 \
+	go build -o dist/mac-arm64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
+
 
 # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
-echo "Building Windows amd64 version in ./dist/windows/dart3"
-mkdir -p dist/windows
-GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o dist/windows/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+VERSION="DART Alpha-01 for Windows x64 (Build $COMMIT $DATE)"
+echo "Building Windows amd64 version in ./dist/windows-x64/dart3"
+mkdir -p dist/windows-x64
+GOOS=windows \
+	GOARCH=amd64 \
+	CGO_ENABLED=0 \
+	go build -o dist/windows-x64/dart3.exe \
+	-ldflags "-X 'main.Version=$VERSION' -H=windowsgui" \
+	$BUILD_TAGS dart/main.go
 
-echo "Building Linux amd64 version in ./dist/linux/dart3"
-mkdir -p dist/linux
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dist/linux/dart3 -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS dart/main.go
+VERSION="DART Alpha-01 for Windows arm64 (Build $COMMIT $DATE)"
+echo "Building Windows arm64 version in ./dist/windows-arm64/dart3"
+mkdir -p dist/windows-arm64
+GOOS=windows \
+	GOARCH=arm64 \
+	CGO_ENABLED=0 \
+	go build -o dist/windows-arm64/dart3.exe \
+	-ldflags "-X 'main.Version=$VERSION' -H=windowsgui" \
+	$BUILD_TAGS dart/main.go
 
-# echo "Version info from latest build:"
-# if [[ "$OS" == "Darwin" ]]; then
-#     if [[ "$ARCH" == "x86_64" ]]; then
-#         dist/mac-x64/dart --version
-#     else
-#         dist/mac-arm64/dart --version
-#     fi
-# elif [[ "$OS" == "Linux" ]]; then
-#     dist/linux/dart --version
-# else
-#     dist/windows/dart --version
-# fi
+
+VERSION="DART Alpha-01 for Linux x64 (Build $COMMIT $DATE)"
+echo "Building Linux amd64 version in ./dist/linux-x64/dart3"
+mkdir -p dist/linux-x64
+GOOS=linux \
+	GOARCH=amd64 \
+	CGO_ENABLED=0 \
+	go build -o dist/linux-x64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
+
+
+VERSION="DART Alpha-01 for Linux arm64 (Build $COMMIT $DATE)"
+echo "Building Linux arm64 version in ./dist/linux-arm64/dart3"
+mkdir -p dist/linux-arm64
+GOOS=linux \
+	GOARCH=arm64 \
+	CGO_ENABLED=0 \
+	go build -o dist/linux-arm64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
+
+
+echo "Version info from latest build:"
+if [[ "$OS" == "Darwin" ]]; then
+    if [[ "$ARCH" == "x86_64" ]]; then
+        dist/mac-x64/dart3 --version
+    else
+        dist/mac-arm64/dart3 --version
+    fi
+elif [[ "$OS" == "Linux" ]]; then
+    if [[ "$ARCH" == "x86_64" ]]; then
+        dist/linux-x64/dart3 --version
+    else
+        dist/linux-arm64/dart3 --version
+    fi
+else
+    if [[ "$ARCH" == "x86_64" ]]; then
+        dist/windows-x64/dart3.exe --version
+    else
+        dist/windows-arm64/dart3.exe --version
+    fi
+fi
