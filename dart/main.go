@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -19,6 +18,10 @@ var Version string
 
 func main() {
 	systray.Run(onReady, onExit)
+}
+
+func onExit() {
+	// cleanup
 }
 
 func onReady() {
@@ -46,15 +49,14 @@ func onReady() {
 	systray.SetTitle("DART3")
 	mQuit := systray.AddMenuItem("Quit", "Quit DART3")
 
-	// Sets the icon of a menu item. Only available on Mac and Windows.
-	mQuit.SetIcon(icon)
+	go func() {
+		<-mQuit.ClickedCh
+		systray.Quit()
+	}()
+
 	go server.Run(*port, true)
 	time.Sleep(1000 * time.Millisecond)
 	openBrowser(fmt.Sprintf("http://localhost:%d", *port))
-}
-
-func onExit() {
-	// cleanup
 }
 
 func openBrowser(url string) {
@@ -76,8 +78,9 @@ func openBrowser(url string) {
 	}
 }
 
+// TODO: embed this instead of loading it?
 func getIcon(s string) []byte {
-	b, err := ioutil.ReadFile(s)
+	b, err := os.ReadFile(s)
 	if err != nil {
 		fmt.Print(err)
 	}

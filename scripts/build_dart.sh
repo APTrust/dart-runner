@@ -36,7 +36,7 @@ echo "Building MacOS amd64 version in ./dist/mac-x64/dart3"
 mkdir -p dist/mac-x64/dart3.app/Contents/MacOS
 mkdir -p dist/mac-x64/dart3.app/Contents/Resources
 cp server/build_support/macos/Info.plist dist/mac-x64/dart3.app/Contents/Info.plist
-cp server/build_support/macos/icons/* dist/mac-x64/dart3.app/Contents/Resources/
+cp server/build_support/macos/icons/icon.icns dist/mac-x64/dart3.app/Contents/Resources/icon.icns
 GOOS=darwin \
 	GOARCH=amd64 \
 	CGO_ENABLED=1 \
