@@ -31,31 +31,31 @@ fi
 
 #TAG="${TAG:=Alpha-01}"
 
-VERSION="DART Alpha-01 for Darwin x64 (Build $COMMIT $DATE)"
-echo "Building MacOS amd64 version in ./dist/mac-x64/dart3"
-mkdir -p dist/mac-x64/dart3.app/Contents/MacOS
-mkdir -p dist/mac-x64/dart3.app/Contents/Resources
-cp server/build_support/macos/Info.plist dist/mac-x64/dart3.app/Contents/Info.plist
-cp server/build_support/macos/icons/icon.icns dist/mac-x64/dart3.app/Contents/Resources/icon.icns
-GOOS=darwin \
-	GOARCH=amd64 \
-	CGO_ENABLED=1 \
-	go build -o dist/mac-x64/dart3.app/Contents/MacOS/dart3 \
-	-ldflags "-X 'main.Version=$VERSION'" \
-	$BUILD_TAGS dart/main.go
+# VERSION="DART Alpha-01 for Darwin x64 (Build $COMMIT $DATE)"
+# echo "Building MacOS amd64 version in ./dist/mac-x64/dart3"
+# mkdir -p dist/mac-x64/dart3.app/Contents/MacOS
+# mkdir -p dist/mac-x64/dart3.app/Contents/Resources
+# cp server/build_support/macos/Info.plist dist/mac-x64/dart3.app/Contents/Info.plist
+# cp server/build_support/macos/icons/icon.icns dist/mac-x64/dart3.app/Contents/Resources/icon.icns
+# GOOS=darwin \
+# 	GOARCH=amd64 \
+# 	CGO_ENABLED=1 \
+# 	go build -o dist/mac-x64/dart3.app/Contents/MacOS/dart3 \
+# 	-ldflags "-X 'main.Version=$VERSION'" \
+# 	$BUILD_TAGS dart/main.go
 
-VERSION="DART Alpha-01 for Darwin arm64 (Build $COMMIT $DATE)"
-echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart3"
-mkdir -p dist/mac-arm64/dart3.app/Contents/MacOS
-mkdir -p dist/mac-arm64/dart3.app/Contents/Resources
-cp server/build_support/macos/Info.plist dist/mac-arm64/dart3.app/Contents/Info.plist
-cp server/build_support/macos/icons/* dist/mac-arm64/dart3.app/Contents/Resources/
-GOOS=darwin \
-	GOARCH=arm64 \
-	CGO_ENABLED=1 \
-	go build -o dist/mac-arm64/dart3.app/Contents/MacOS/dart3 \
-	-ldflags "-X 'main.Version=$VERSION'" \
-	$BUILD_TAGS dart/main.go
+# VERSION="DART Alpha-01 for Darwin arm64 (Build $COMMIT $DATE)"
+# echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart3"
+# mkdir -p dist/mac-arm64/dart3.app/Contents/MacOS
+# mkdir -p dist/mac-arm64/dart3.app/Contents/Resources
+# cp server/build_support/macos/Info.plist dist/mac-arm64/dart3.app/Contents/Info.plist
+# cp server/build_support/macos/icons/* dist/mac-arm64/dart3.app/Contents/Resources/
+# GOOS=darwin \
+# 	GOARCH=arm64 \
+# 	CGO_ENABLED=1 \
+# 	go build -o dist/mac-arm64/dart3.app/Contents/MacOS/dart3 \
+# 	-ldflags "-X 'main.Version=$VERSION'" \
+# 	$BUILD_TAGS dart/main.go
 
 
 # # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
@@ -80,26 +80,26 @@ GOOS=darwin \
 # 	$BUILD_TAGS dart/main.go
 
 
-# VERSION="DART Alpha-01 for Linux x64 (Build $COMMIT $DATE)"
-# echo "Building Linux amd64 version in ./dist/linux-x64/dart3"
-# mkdir -p dist/linux-x64
-# GOOS=linux \
-# 	GOARCH=amd64 \
-# 	CGO_ENABLED=0 \
-# 	go build -o dist/linux-x64/dart3 \
-# 	-ldflags "-X 'main.Version=$VERSION'" \
-# 	$BUILD_TAGS dart/main.go
+VERSION="DART Alpha-01 for Linux x64 (Build $COMMIT $DATE)"
+echo "Building Linux amd64 version in ./dist/linux-x64/dart3"
+mkdir -p dist/linux-x64
+GOOS=linux \
+	GOARCH=amd64 \
+	CGO_ENABLED=1 \
+	go build -o dist/linux-x64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
 
 
-# VERSION="DART Alpha-01 for Linux arm64 (Build $COMMIT $DATE)"
-# echo "Building Linux arm64 version in ./dist/linux-arm64/dart3"
-# mkdir -p dist/linux-arm64
-# GOOS=linux \
-# 	GOARCH=arm64 \
-# 	CGO_ENABLED=0 \
-# 	go build -o dist/linux-arm64/dart3 \
-# 	-ldflags "-X 'main.Version=$VERSION'" \
-# 	$BUILD_TAGS dart/main.go
+VERSION="DART Alpha-01 for Linux arm64 (Build $COMMIT $DATE)"
+echo "Building Linux arm64 version in ./dist/linux-arm64/dart3"
+mkdir -p dist/linux-arm64
+GOOS=linux \
+	GOARCH=arm64 \
+	CGO_ENABLED=1 \
+	go build -o dist/linux-arm64/dart3 \
+	-ldflags "-X 'main.Version=$VERSION'" \
+	$BUILD_TAGS dart/main.go
 
 
 echo "Version info from latest build:"
