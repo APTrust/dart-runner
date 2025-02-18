@@ -21,8 +21,8 @@
 
     <!-- div id="jobProfileContainer" style='display: {{if eq "BagIt" .form.Fields.PackageFormat.Value }} block {{ else }} none {{ end }};' -->
     <div id="jobProfileContainer" style='display:block;'>
-        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
-        {{ template "partials/input_select.html" dict "field" .form.Fields.BagItSerialization }}
+      {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
+      {{ template "partials/input_select.html" dict "field" .form.Fields.BagItSerialization }}
     </div>
   </div>
 
@@ -33,58 +33,57 @@
 
   {{ template "partials/input_hidden.html" dict "field" .form.Fields.ID }}
 
-  <input type="hidden" name="direction" value="next"/>
+  <input type="hidden" name="direction" value="next" />
 
 
   <div class="float-left" id="btnBackDiv">
     <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
   </div>
-  
+
   <div class="float-right" id="btnNextDiv">
     <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
   </div>
-  
+
 
 </form>
 
 <script>
-$(function() {
+  $(function () {
 
-  let baggingDir = {{ .baggingDir }}
-  let separator = {{ .pathSeparator }}
-  let autoSetSerialization = {{ .autoSetSerialization }}
+    let baggingDir = {{ .baggingDir }}
+    let separator = {{ .pathSeparator }}
+    let autoSetSerialization = {{ .autoSetSerialization }}
 
-  let extensionForType = {
-    "application/x-7z-compressed": ".7z",
-    "application/tar": ".tar",
-    "application/x-tar": ".tar",
-    "application/zip": ".zip",
-    "application/gzip": ".gz",
-    "application/x-rar-compressed": ".rar",
-    "application/tar+gzip": ".tgz"
-  }
+    let extensionForType = {
+      "application/x-7z-compressed": ".7z",
+      "application/tar": ".tar",
+      "application/x-tar": ".tar",
+      "application/zip": ".zip",
+      "application/gzip": ".tar.gz",
+      "application/x-rar-compressed": ".rar",
+    }
 
   function setOutputPath() {
-    var packageName = $('#Job_PackageName').val()
-    var mimeType = $('#Job_BagItSerialization').val();
-    var extension = extensionForType[mimeType] || ''
-    if (packageName && !packageName.endsWith(extension)) {
-      packageName += extension;
+      var packageName = $('#Job_PackageName').val()
+      var mimeType = $('#Job_BagItSerialization').val();
+      var extension = extensionForType[mimeType] || ''
+      if (packageName && !packageName.endsWith(extension)) {
+        packageName += extension;
+      }
+      // In case user switched to a package format that's not serialized.
+      if (extension == '') {
+        packageName = packageName.replace(/\.\w+$/, '')
+      }
+      $('#Job_OutputPath').val(`${baggingDir}${separator}${packageName}`)
     }
-    // In case user switched to a package format that's not serialized.
-    if (extension == '') {
-      packageName = packageName.replace(/\.\w+$/, '')
-    }
-    $('#Job_OutputPath').val(`${baggingDir}${separator}${packageName}`)
-  }
   $('#Job_PackageName').on('keyup', setOutputPath)
   $('#Job_BagItSerialization').on('change', setOutputPath)
 
   function setSerialization() {
-    let profileId = $(this).val()
-    let serializationFormat = autoSetSerialization[profileId]
-    $('#Job_BagItSerialization').val(serializationFormat)
-  }
+      let profileId = $(this).val()
+      let serializationFormat = autoSetSerialization[profileId]
+      $('#Job_BagItSerialization').val(serializationFormat)
+    }
   $('#Job_BagItProfileID').on('change', setSerialization)
 
 })
