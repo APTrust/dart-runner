@@ -17,17 +17,16 @@ import (
 func TestGzipWriter_Write(t *testing.T) {
 
 	// Use PathToTestData()
-	inputFile := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
-	outputFile, err := os.CreateTemp("", "gzip-test*.tar.gz")
+	tarFile := path.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
+	gzipFile, err := os.CreateTemp("", "gzip-test*.tar.gz")
 	require.Nil(t, err)
 
-	defer os.Remove(outputFile.Name())
+	defer os.Remove(gzipFile.Name())
 
 	// Close the temp file, so our writer can open it.
-	require.Nil(t, outputFile.Close())
+	require.Nil(t, gzipFile.Close())
 
-	gzipWriter := core.NewGzipWriter(inputFile)
-	bytesWritten, err := gzipWriter.ZipToFile(outputFile.Name())
+	bytesWritten, err := core.GzipCompress(tarFile, gzipFile.Name())
 	require.Nil(t, err)
 
 	// Original file was about 25k, so this many bytes were
@@ -36,24 +35,23 @@ func TestGzipWriter_Write(t *testing.T) {
 
 	// ... but fewer bytes end up in the resulting gzip file
 	// because the data has been compressed.
-	fileInfo, err := os.Stat(outputFile.Name())
+	fileInfo, err := os.Stat(gzipFile.Name())
 	require.Nil(t, err)
 	assert.Equal(t, int64(3608), fileInfo.Size())
 
-	tmpFile, err := os.CreateTemp("", "gzip-test*.tar")
+	unzippedFile, err := os.CreateTemp("", "gzip-test*.tar")
 	require.Nil(t, err)
-	defer os.Remove(tmpFile.Name())
-	require.Nil(t, tmpFile.Close())
+	require.Nil(t, unzippedFile.Close())
+	// defer os.Remove(unzippedFile.Name())
 
 	// Unzip the file and make compare its checksum to the
 	// original so we can be sure they're the same.
-	zipReader := core.NewGzipReader(outputFile.Name())
-	bytesCopied, err := zipReader.UnzipToFile(tmpFile.Name())
+	bytesCopied, err := core.GzipInflate(gzipFile.Name(), unzippedFile.Name())
 	require.Nil(t, err)
 	assert.Equal(t, int64(23552), bytesCopied)
 
-	originalChecksum := GetSha256(t, inputFile)
-	unzippedChecksum := GetSha256(t, tmpFile.Name())
+	originalChecksum := GetSha256(t, tarFile)
+	unzippedChecksum := GetSha256(t, unzippedFile.Name())
 	assert.Equal(t, originalChecksum, unzippedChecksum)
 }
 
