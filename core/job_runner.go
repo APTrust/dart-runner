@@ -44,6 +44,12 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 	}
 	runner.writeStageOutcome(constants.StageValidation, runner.Job.ValidationOp.Result.Info, true)
 
+	if !runner.RunPostValidationOps() {
+		runner.writeStageOutcome(constants.StageUpload, "One or more uploads failed", false)
+		runner.writeExitMessagesAndSaveResults()
+		return constants.ExitRuntimeErr
+	}
+
 	if !runner.RunUploadOps() {
 		runner.writeStageOutcome(constants.StageUpload, "One or more uploads failed", false)
 		runner.writeExitMessagesAndSaveResults()
@@ -112,6 +118,10 @@ func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
 		return constants.ExitRuntimeErr
 	}
 	if !runner.RunValidationOp() {
+		runner.printExitMessages()
+		return constants.ExitRuntimeErr
+	}
+	if !runner.RunPostValidationOps() {
 		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
@@ -244,7 +254,7 @@ func (r *Runner) RunValidationOp() bool {
 }
 
 func (r *Runner) RunUploadOps() bool {
-	if r.Job.UploadOps == nil || len(r.Job.UploadOps) == 0 {
+	if len(r.Job.UploadOps) == 0 {
 		return true
 	}
 	// Run upload ops in sequence. If any fails, continue
@@ -268,6 +278,30 @@ func (r *Runner) RunUploadOps() bool {
 		}
 		if r.MessageChannel != nil {
 			r.writeStageOutcome(constants.StageUpload, op.StorageService.Name, ok)
+		}
+	}
+	return allSucceeded
+}
+
+func (r *Runner) RunPostValidationOps() bool {
+	if r.Job.PostValidationOps == nil || len(r.Job.PostValidationOps) == 0 {
+		return true
+	}
+	// Run upload ops in sequence. If any fails, continue
+	// with remaining uploads.
+	allSucceeded := true
+	for _, op := range r.Job.PostValidationOps {
+		op.Result.Start()
+		err := op.Run(r.MessageChannel)
+		if err != nil {
+			key := fmt.Sprintf("PostValidateOperation.%s", op.Command)
+			op.Result.Finish(map[string]string{key: err.Error()})
+			allSucceeded = false
+			r.writeStageOutcome(constants.StagePostValidation, op.Command, false)
+			continue
+		} else {
+			op.Result.Finish(op.Errors)
+			r.writeStageOutcome(constants.StagePostValidation, op.Command, true)
 		}
 	}
 	return allSucceeded

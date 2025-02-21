@@ -38,18 +38,19 @@ type JobOutcomeSummary struct {
 }
 
 type Job struct {
-	ID               string               `json:"id"`
-	BagItProfile     *BagItProfile        `json:"bagItProfile"`
-	ByteCount        int64                `json:"byteCount"`
-	DirCount         int64                `json:"dirCount"`
-	Errors           map[string]string    `json:"errors"`
-	PayloadFileCount int64                `json:"fileCount"` // still fileCount in JSON for legacy compatibility
-	TotalFileCount   int64                `json:"totalFileCount"`
-	PackageOp        *PackageOperation    `json:"packageOp"`
-	UploadOps        []*UploadOperation   `json:"uploadOps"`
-	ValidationOp     *ValidationOperation `json:"validationOp"`
-	WorkflowID       string               `json:"workflowId"`
-	ArtifactsDir     string               `json:"artifactsDir"`
+	ID                string                     `json:"id"`
+	BagItProfile      *BagItProfile              `json:"bagItProfile"`
+	ByteCount         int64                      `json:"byteCount"`
+	DirCount          int64                      `json:"dirCount"`
+	Errors            map[string]string          `json:"errors"`
+	PayloadFileCount  int64                      `json:"fileCount"` // still fileCount in JSON for legacy compatibility
+	TotalFileCount    int64                      `json:"totalFileCount"`
+	PackageOp         *PackageOperation          `json:"packageOp"`
+	PostValidationOps []*PostValidationOperation `json:"postValidationOps"`
+	UploadOps         []*UploadOperation         `json:"uploadOps"`
+	ValidationOp      *ValidationOperation       `json:"validationOp"`
+	WorkflowID        string                     `json:"workflowId"`
+	ArtifactsDir      string                     `json:"artifactsDir"`
 }
 
 // NewJob creates a new Job with a unique ID.
