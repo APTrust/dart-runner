@@ -2,10 +2,12 @@ package core
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/APTrust/dart-runner/util"
@@ -15,6 +17,7 @@ type TarredBagWriter struct {
 	outputPath     string
 	rootDirName    string
 	tarWriter      *tar.Writer
+	gzipwriter     *gzip.Writer
 	digestAlgs     []string
 	rootDirCreated bool
 }
@@ -46,12 +49,35 @@ func (writer *TarredBagWriter) Open() error {
 		Dart.Log.Error(message)
 		return fmt.Errorf(message)
 	}
-	writer.tarWriter = tar.NewWriter(tarFile)
+	if strings.HasSuffix(writer.outputPath, ".gz") {
+		writer.gzipwriter = gzip.NewWriter(tarFile)
+		writer.tarWriter = tar.NewWriter(writer.gzipwriter)
+	} else {
+		writer.tarWriter = tar.NewWriter(tarFile)
+	}
 	return nil
 }
 
 func (writer *TarredBagWriter) Close() error {
-	if writer.tarWriter != nil {
+	// When using an underlying gzip writer, we must flush
+	// the final writes of the tar writer to gzip, and then
+	// flush the gzip writer. Otherwise, the .gz file will
+	// be missing its last few bytes, and attempts to gunzip
+	// will result in an unexpected EOF error.
+	if writer.gzipwriter != nil {
+		err := writer.tarWriter.Flush()
+		if err != nil {
+			return err
+		}
+		err = writer.gzipwriter.Flush()
+		if err != nil {
+			return err
+		}
+		err = writer.gzipwriter.Close()
+		if err != nil {
+			return err
+		}
+	} else if writer.tarWriter != nil {
 		return writer.tarWriter.Close()
 	}
 	return nil
@@ -164,5 +190,8 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 		checksums[alg] = fmt.Sprintf("%x", hash.Sum(nil))
 	}
 
+	if writer.gzipwriter != nil {
+		writer.gzipwriter.Flush()
+	}
 	return checksums, nil
 }
