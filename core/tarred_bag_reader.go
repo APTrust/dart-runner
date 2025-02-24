@@ -2,6 +2,7 @@ package core
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -14,22 +15,54 @@ import (
 // TarredBagReader reads a tarred BagIt file to collect metadata for
 // bagit and ingest processing. See ProcessNextEntry() below.
 type TarredBagReader struct {
-	validator *Validator
-	reader    io.ReadSeekCloser
-	tarReader *tar.Reader
+	validator  *Validator
+	fileReader io.ReadSeekCloser
+	tarReader  *tar.Reader
+	gzipReader *gzip.Reader
 }
 
 // NewTarredBagReader creates a new TarredBagReader.
 func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
+	var gzipReader *gzip.Reader
 	file, err := os.Open(validator.PathToBag)
 	if err != nil {
 		Dart.Log.Errorf("TarredBagReader can't open file %s: %v", validator.PathToBag, err)
 		return nil, err
 	}
+	// Note that gzipReader will be nil unless PathToBag ends with "".gz"
+	if strings.HasSuffix(validator.PathToBag, ".gz") {
+		gzipReader, err = gzip.NewReader(file)
+		if err != nil {
+			Dart.Log.Errorf("TarredBagReader can't create gzip reader for file %s: %v", validator.PathToBag, err)
+			return nil, err
+		}
+	}
 	return &TarredBagReader{
-		reader:    file,
-		validator: validator,
+		fileReader: file,
+		gzipReader: gzipReader, // may be nil
+		validator:  validator,
 	}, nil
+}
+
+// rewindReader goes back to the beginning of the underlying
+// reader, and resets the tar reader to read from there.
+// Note that the underlying reader may be a file or a gzip
+// reader.
+func (r *TarredBagReader) rewindReader() {
+	// Rewind the underlying file so we can scan from
+	// the beginning.
+	if r.fileReader != nil {
+		r.fileReader.Seek(0, io.SeekStart)
+	}
+
+	// If we have a gzip reader, reset that to read
+	// the file we just rewound, from the beginning.
+	if r.gzipReader != nil {
+		r.gzipReader.Reset(r.fileReader)
+		r.tarReader = tar.NewReader(r.gzipReader)
+	} else {
+		r.tarReader = tar.NewReader(r.fileReader)
+	}
 }
 
 // ScanMetadata does the following:
@@ -38,8 +71,7 @@ func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 // * parses all payload and tag manifests
 // * parses all parsable tag files
 func (r *TarredBagReader) ScanMetadata() error {
-	r.reader.Seek(0, io.SeekStart)
-	r.tarReader = tar.NewReader(r.reader)
+	r.rewindReader()
 	for {
 		err := r.processMetaEntry()
 		if err == io.EOF {
@@ -56,8 +88,7 @@ func (r *TarredBagReader) ScanMetadata() error {
 
 // ScanPayload scans the entire bag, adding checksums for all files.
 func (r *TarredBagReader) ScanPayload() error {
-	r.reader.Seek(0, io.SeekStart)
-	r.tarReader = tar.NewReader(r.reader)
+	r.rewindReader()
 	for {
 		err := r.processPayloadEntry()
 		if err == io.EOF {
@@ -265,7 +296,7 @@ func (r *TarredBagReader) parseTagFile(pathInBag string) {
 // If you neglect this call in a long-running
 // worker process, you'll run the system out of filehandles.
 func (r *TarredBagReader) Close() {
-	if r.reader != nil {
-		r.reader.Close()
+	if r.fileReader != nil {
+		r.fileReader.Close()
 	}
 }
