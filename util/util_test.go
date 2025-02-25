@@ -368,6 +368,11 @@ func TestCleanBagName(t *testing.T) {
 	assert.Equal(t, expected, util.CleanBagName("some.file.b001.of200.tar"))
 	assert.Equal(t, expected, util.CleanBagName("some.file.b1.of2.tar"))
 	assert.Equal(t, expected, util.CleanBagName("some.file.tar"))
+
+	assert.Equal(t, expected, util.CleanBagName("some.file.b001.of200.tar.gz"))
+	assert.Equal(t, expected, util.CleanBagName("some.file.b1.of2.tar.gz"))
+	assert.Equal(t, expected, util.CleanBagName("some.file.tar.gz"))
+
 	assert.Equal(t, expected, util.CleanBagName("some.file"))
 }
 
