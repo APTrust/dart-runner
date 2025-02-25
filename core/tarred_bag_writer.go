@@ -49,6 +49,7 @@ func (writer *TarredBagWriter) Open() error {
 		Dart.Log.Error(message)
 		return fmt.Errorf(message)
 	}
+	// Gzip bags are tested in core_test.TestBaggerRun_Gzip.
 	if strings.HasSuffix(writer.outputPath, ".gz") {
 		writer.gzipwriter = gzip.NewWriter(tarFile)
 		writer.tarWriter = tar.NewWriter(writer.gzipwriter)

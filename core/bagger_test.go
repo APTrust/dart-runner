@@ -34,6 +34,10 @@ func TestBaggerRun_BTR(t *testing.T) {
 	testBaggerRun(t, "btr_bag.tar", BTRProfile)
 }
 
+func TestBaggerRun_Gzip(t *testing.T) {
+	testBaggerRun(t, "gzip_bag.tar.gz", emptyProfile)
+}
+
 // Test bagger paths that contain control chars and different settings
 // for how to deal with them.
 //
@@ -158,6 +162,8 @@ func testBaggerRun(t *testing.T, bagName, profileName string) {
 		assert.Equal(t, filepath.Join(os.TempDir(), "apt_bag_artifacts"), bagger.ArtifactsDir())
 	} else if strings.Contains(bagger.OutputPath, "btr") {
 		assert.Equal(t, filepath.Join(os.TempDir(), "btr_bag_artifacts"), bagger.ArtifactsDir())
+	} else if strings.Contains(bagger.OutputPath, "gzip") {
+		assert.Equal(t, filepath.Join(os.TempDir(), "gzip_bag_artifacts"), bagger.ArtifactsDir())
 	}
 }
 
