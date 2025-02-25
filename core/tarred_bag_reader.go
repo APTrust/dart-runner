@@ -29,7 +29,8 @@ func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 		Dart.Log.Errorf("TarredBagReader can't open file %s: %v", validator.PathToBag, err)
 		return nil, err
 	}
-	// Note that gzipReader will be nil unless PathToBag ends with "".gz"
+	// Note that gzipReader will be nil unless PathToBag ends with ".gz"
+	// Tested in core_test.TestBaggerRun_Gzip.
 	if strings.HasSuffix(validator.PathToBag, ".gz") {
 		gzipReader, err = gzip.NewReader(file)
 		if err != nil {
@@ -123,7 +124,7 @@ func (r *TarredBagReader) processMetaEntry() error {
 	if err != nil {
 		return err
 	}
-	if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeRegA {
+	if header.Typeflag == tar.TypeReg {
 		pathInBag, err := util.TarPathToBagPath(header.Name)
 		if err != nil {
 			return err
@@ -150,7 +151,7 @@ func (r *TarredBagReader) processPayloadEntry() error {
 	if err != nil {
 		return err
 	}
-	if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeRegA {
+	if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeGNUSparse {
 		err = r.ensureFileRecord(header)
 	}
 	return nil
