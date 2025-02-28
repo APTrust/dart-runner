@@ -14,6 +14,10 @@
 
 <!-- { {> bannerAlert message = alertMessage } } -->
 
+{{ if .workflow }}
+    <div class="mb-3">Workflow: <strong>{{ .workflow.Name }}</strong></div>
+{{ end }}
+
 <form method="post" action="/jobs/packaging/{{ .job.ID }}" id="{{ .job.ID }}">
 
   <div style="display: {{ if .job.WorkflowID }} none {{ else }} block {{ end }};">
@@ -65,8 +69,17 @@
 
   function setOutputPath() {
       var packageName = $('#Job_PackageName').val()
+
+      {{ if .workflow }}
+      // Workflow overrides.
+      var mimeType = "{{ .workflow.Serialization }}" || $('#Job_BagItSerialization').val()
+      var extension = extensionForType[mimeType] || ''
+      {{ else }}
       var mimeType = $('#Job_BagItSerialization').val();
       var extension = extensionForType[mimeType] || ''
+      {{ end }}
+
+
       if (packageName && !packageName.endsWith(extension)) {
         packageName += extension;
       }

@@ -6,9 +6,9 @@
     <div class="col-12">
         <h2>Files
         <span style="font-size: 1rem;"
-            data-toggle="popover" 
-            data-trigger="hover" 
-            title="Choosing Files" 
+            data-toggle="popover"
+            data-trigger="hover"
+            title="Choosing Files"
             data-content="Click the name of a folder to open it. Drag any file or folder icon to the right to include it in this job.">
             <i class="fas fa-question-circle text-primary"></i></span>
         </h2>
@@ -23,7 +23,9 @@
 
 
     <div class="col-8">
-
+        {{ if .workflow }}
+            <div class="mb-3">Workflow: <strong>{{ .workflow.Name }}</strong></div>
+        {{ end }}
         <div id="dropZone" class="drop-zone">
             <div class="text-center upload-icon-div" id="uploadIcon">
                 <p>{{ .dragDropInstructions }}</p>
@@ -65,7 +67,7 @@
                     </div>
 
                 </div>
-            </div>            
+            </div>
 
         </div>
     </div>
@@ -86,7 +88,7 @@
 
 <script>
     // NOTE!!!
-    // 
+    //
     // Trying to log e.dataTransfer to the console results
     // in e.dataTransfer being set to null. This is a long-standing
     // bug (or security feature?).
@@ -112,7 +114,7 @@
             // TODO: Display the item in the drop zone.
             // Also consider a mechanism to specify the item
             // as payload file (99.99999% of the time) or as
-            // a custom tag file. 
+            // a custom tag file.
             //
             // See https://github.com/APTrust/dart/issues/550
             let url = {{ .addFileUrl }}

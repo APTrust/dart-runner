@@ -4,7 +4,11 @@
 
 <h2>Review and Run</h2>
 
-<!-- 
+{{ if .workflow }}
+    <div class="mb-3">Workflow: <strong>{{ .workflow.Name }}</strong></div>
+{{ end }}
+
+<!--
 This template contains the HTML and JavaScript to display
 job details and progress.
 -->

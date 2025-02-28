@@ -23,10 +23,22 @@ func JobShowUpload(c *gin.Context) {
 		AbortWithErrorHTML(c, http.StatusInternalServerError, err)
 		return
 	}
+
+	var workflow *core.Workflow
+	if job.WorkflowID != "" {
+		result := core.ObjFind(job.WorkflowID)
+		if result.Error != nil {
+			core.Dart.Log.Warningf("While running workflow job, JobMetadataController could not find workflow with id %s", job.WorkflowID)
+		} else {
+			workflow = result.Workflow()
+		}
+	}
+
 	data := gin.H{
-		"job":     job,
-		"form":    form,
-		"helpUrl": GetHelpUrl(c),
+		"job":      job,
+		"form":     form,
+		"helpUrl":  GetHelpUrl(c),
+		"workflow": workflow,
 	}
 	c.HTML(http.StatusOK, "job/uploads.html", data)
 }

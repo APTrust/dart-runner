@@ -126,7 +126,7 @@ func TestWorkflowExportJson(t *testing.T) {
 	jsonBytes, err := workflow.ExportJson()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, jsonBytes)
-	assert.Equal(t, 10036, len(jsonBytes))
+	assert.Equal(t, 10059, len(jsonBytes))
 }
 
 func TestWorkflowHasPlaintextPasswords(t *testing.T) {

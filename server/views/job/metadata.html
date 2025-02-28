@@ -4,6 +4,10 @@
 
 <h2>Bag Metadata</h2>
 
+{{ if .workflow }}
+    <div class="mb-3">Workflow: <strong>{{ .workflow.Name }}</strong></div>
+{{ end }}
+
 
 <div style="height: 50px;">
   <div>
@@ -15,7 +19,6 @@
     </div>
   </div>
 </div>
-
 
 <div>
   <form method="post" action="/jobs/metadata/{{ .job.ID }}" id="{{ .job.ID }}">
@@ -66,12 +69,12 @@
       <div class="float-left mb-5" id="btnBackDiv">
         <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='previous'" class="btn btn-primary" role="button">&lt;&lt; Back</button>
       </div>
-      
+
       <div class="float-right mb-5" id="btnNextDiv">
         <button type="submit" onclick="document.forms['{{ .job.ID }}'].direction.value='next'" class="btn btn-primary" role="button">Next &gt;&gt;</button>
       </div>
-    
-     
+
+
   </form>
 </div>
 
@@ -92,7 +95,7 @@ function toggleTags() {
 }
 
 function attachDeleteHandlers() {
-  var deletableTags = $('*[data-was-added-for-job="true"]') 
+  var deletableTags = $('*[data-was-added-for-job="true"]')
   deletableTags.each(function(index, element){
     let tagId = element.id //dataset['tagId']
     //let label = $(`label[for="tagId"]`)

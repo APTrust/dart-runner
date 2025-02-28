@@ -27,11 +27,23 @@ func JobShowMetadata(c *gin.Context) {
 	}
 	job := result.Job()
 	tagFiles := GetTagFileForms(job, false)
+
+	var workflow *core.Workflow
+	if job.WorkflowID != "" {
+		result := core.ObjFind(job.WorkflowID)
+		if result.Error != nil {
+			core.Dart.Log.Warningf("While running workflow job, JobMetadataController could not find workflow with id %s", job.WorkflowID)
+		} else {
+			workflow = result.Workflow()
+		}
+	}
+
 	data := gin.H{
 		"job":      job,
 		"form":     job.ToForm(),
 		"tagFiles": tagFiles,
 		"helpUrl":  GetHelpUrl(c),
+		"workflow": workflow,
 	}
 	c.HTML(http.StatusOK, "job/metadata.html", data)
 }

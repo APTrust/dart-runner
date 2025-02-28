@@ -19,6 +19,9 @@
 
     {{ template "partials/input_select.html" dict "field" .form.Fields.PackageFormat }}
 
+    {{ template "partials/input_select.html" dict "field" .form.Fields.Serialization }}
+
+
   <div id="jobProfileContainer" style='display: {{ if eq .form.Fields.PackageFormat.Value "BagIt"}} block {{else}} none {{ end }};'>
     {{ template "partials/input_select.html" dict "field" .form.Fields.BagItProfileID }}
   </div>

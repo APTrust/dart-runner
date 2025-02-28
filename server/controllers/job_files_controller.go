@@ -39,6 +39,15 @@ func JobShowFiles(c *gin.Context) {
 	templateData["nextButtonUrl"] = fmt.Sprintf("/jobs/packaging/%s", job.ID)
 	templateData["addFileUrl"] = fmt.Sprintf("/jobs/add_file/%s", job.ID)
 
+	if job.WorkflowID != "" {
+		result := core.ObjFind(job.WorkflowID)
+		if result.Error != nil {
+			core.Dart.Log.Warningf("While running workflow job, JobFilesController could not find workflow with id %s", job.WorkflowID)
+		} else {
+			templateData["workflow"] = result.Workflow()
+		}
+	}
+
 	c.HTML(http.StatusOK, "job/files.html", templateData)
 }
 

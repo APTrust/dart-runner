@@ -17,6 +17,7 @@ type Workflow struct {
 	Errors            map[string]string `json:"-"`
 	Name              string            `json:"name"`
 	PackageFormat     string            `json:"packageFormat"`
+	Serialization     string            `json:"serialization"`
 	StorageServiceIDs []string          `json:"storageServiceIds"`
 	StorageServices   []*StorageService `json:"storageServices"`
 }
@@ -50,6 +51,7 @@ func WorkFlowFromJob(job *Job) (*Workflow, error) {
 	}
 	if job.PackageOp != nil {
 		workflow.PackageFormat = job.PackageOp.PackageFormat
+		workflow.Serialization = job.PackageOp.BagItSerialization
 	}
 	// Load a fresh copy of the BagIt profile, because the copy in the
 	// job may have custom tag values assigned.
@@ -127,6 +129,10 @@ func (w *Workflow) ToForm() *Form {
 	// in future if we support OCFL.
 	packageFormatField := form.AddField("PackageFormat", "Package Format", w.PackageFormat, true)
 	packageFormatField.Choices = MakeChoiceList(constants.PackageFormats, w.PackageFormat)
+
+	serialization := form.AddField("Serialization", "Serialization", w.Serialization, true)
+	serialization.Choices = MakeChoiceList(constants.AcceptSerialization, w.Serialization)
+	serialization.Help = "How should this bag be serialized or compressed?"
 
 	selectedProfileIds := make([]string, 0)
 	if w.BagItProfile != nil {

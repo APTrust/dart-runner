@@ -24,6 +24,16 @@ func JobRunShow(c *gin.Context) {
 	jobSummary := core.NewJobSummary(job)
 	jobSummaryJson, _ := json.MarshalIndent(jobSummary, "", "  ")
 
+	var workflow *core.Workflow
+	if job.WorkflowID != "" {
+		result := core.ObjFind(job.WorkflowID)
+		if result.Error != nil {
+			core.Dart.Log.Warningf("While running workflow job, JobMetadataController could not find workflow with id %s", job.WorkflowID)
+		} else {
+			workflow = result.Workflow()
+		}
+	}
+
 	data := gin.H{
 		"jobID":          job.ID,
 		"workflowID":     job.WorkflowID,
@@ -32,6 +42,7 @@ func JobRunShow(c *gin.Context) {
 		"jobRunUrl":      "/jobs/run",
 		"backButtonUrl":  fmt.Sprintf("/jobs/upload/%s", job.ID),
 		"helpUrl":        GetHelpUrl(c),
+		"workflow":       workflow,
 	}
 	c.HTML(http.StatusOK, "job/run.html", data)
 }

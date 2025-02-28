@@ -25,6 +25,17 @@ func JobShowPackaging(c *gin.Context) {
 		baggingDir = filepath.Join(core.Dart.Paths.Documents, "DART")
 		core.Dart.Log.Warningf("Bagging Directory not set. Defaulting to %s", baggingDir)
 	}
+
+	var workflow *core.Workflow
+	if job.WorkflowID != "" {
+		result := core.ObjFind(job.WorkflowID)
+		if result.Error != nil {
+			core.Dart.Log.Warningf("While running workflow job, JobPackagingController could not find workflow with id %s", job.WorkflowID)
+		} else {
+			workflow = result.Workflow()
+		}
+	}
+
 	data := gin.H{
 		"job":                  job,
 		"form":                 job.ToForm(),
@@ -32,6 +43,7 @@ func JobShowPackaging(c *gin.Context) {
 		"baggingDir":           baggingDir,
 		"autoSetSerialization": getSerlializationAutosets(),
 		"helpUrl":              GetHelpUrl(c),
+		"workflow":             workflow,
 	}
 	c.HTML(http.StatusOK, "job/packaging.html", data)
 }

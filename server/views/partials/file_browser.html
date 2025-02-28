@@ -59,18 +59,18 @@
                 {{ $cssClass = "file-browser-item is-hidden-file" }}
             {{ end }}
 
-            {{ if $item.FileInfo.IsDir }} 
+            {{ if $item.FileInfo.IsDir }}
             <div class="{{ $cssClass }}" draggable="true" data-full-path="{{ $item.FullPath }}" data-item-type="directory" title="{{ $item.FileInfo.Name }} - Click link to open. Click icon to drag and drop."><i class="far fa-folder"></i>
                 <a class="file-link" href="?directory={{ $item.FullPath }}&showHiddenFiles={{ $showHiddenFiles }}">{{ $item.FileInfo.Name }}</a>
-            </div>    
+            </div>
             {{ else }}
-            <div class="{{ $cssClass }}" draggable="true" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>    
+            <div class="{{ $cssClass }}" draggable="true" title="{{ $item.FileInfo.Name }}" data-full-path="{{ $item.FullPath }}" data-item-type="file">{{ fileIconFor $item.FileInfo.Name }}{{ truncateMiddle $item.FileInfo.Name 36 }}</div>
             {{ end }}
 
         {{ end }}
 
         {{ if not .items }}
-        <div class="file-browser-item">Directory is empty</div>    
+        <div class="file-browser-item">Directory is empty</div>
         {{ end }}
 
     </div>
