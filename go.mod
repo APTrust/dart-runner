@@ -4,6 +4,9 @@ go 1.22.0
 
 toolchain go1.23.3
 
+// Force use of nsq v1.2.0 because v1.3.0 has breaking changes.
+replace github.com/nsqio/nsq => github.com/nsqio/nsq v1.2.0
+
 require (
 	github.com/APTrust/preservation-services v0.0.0-20250121215436-e111cbb1f03f
 	github.com/brianvoe/gofakeit/v6 v6.28.0
