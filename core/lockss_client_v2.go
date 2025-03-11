@@ -6,7 +6,13 @@ import (
 )
 
 func init() {
-	RegisterRepoClient(constants.PluginNameLOCKSSClientv2, constants.PluginIdLOCKSSClientv2, RemoteRepoClientLOCKSS)
+
+	// Don't register this for the alpa.
+	// We don't want it to appear in the client list because
+	// it's not ready yet. If that changes, we can uncomment
+	// the line below.
+
+	// RegisterRepoClient(constants.PluginNameLOCKSSClientv2, constants.PluginIdLOCKSSClientv2, RemoteRepoClientLOCKSS)
 }
 
 // LOCKSSClientV2 is a remote repository client that can talk to
