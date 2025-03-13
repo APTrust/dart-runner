@@ -1,7 +1,6 @@
 module github.com/APTrust/dart-runner
 
 go 1.22.0
-
 toolchain go1.23.3
 
 // Force use of nsq v1.2.0 because v1.3.0 has breaking changes.
@@ -20,8 +19,8 @@ require (
 	github.com/pkg/sftp v1.13.7
 	github.com/stretchr/stew v0.0.0-20130812190256-80ef0842b48b
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.32.0
-	golang.org/x/text v0.21.0
+	golang.org/x/crypto v0.35.0
+	golang.org/x/text v0.22.0
 	modernc.org/sqlite v1.34.5
 )
 
@@ -67,8 +66,8 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.61.9 // indirect
