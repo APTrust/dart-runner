@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var aptrustProfile = "aptrust-v2.2.json"
+var aptrustProfile = "aptrust-v2.3.json"
 var btrProfile = "btr-v1.0.json"
 var emptyProfile = "empty_profile.json"
 

@@ -58,7 +58,7 @@ func TestNewBagItProfile(t *testing.T) {
 
 // This also implicitly tests BagItProfileFromJson
 func TestBagItProfileLoad(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 
 	// Spot check
 	assert.Equal(t, "support@aptrust.org", profile.BagItProfileInfo.ContactEmail)
@@ -87,7 +87,7 @@ func TestBagItProfileLoad(t *testing.T) {
 }
 
 func TestGetTagDef(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 
 	tagDef := profile.GetTagDef("aptrust-info.txt", "Access")
 	require.NotNil(t, tagDef)
@@ -99,7 +99,7 @@ func TestGetTagDef(t *testing.T) {
 }
 
 func TestGetTagByFQName(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 
 	tagDef := profile.GetTagByFullyQualifiedName("aptrust-info.txt/Access")
 	require.NotNil(t, tagDef)
@@ -119,7 +119,7 @@ func TestTagFileNames(t *testing.T) {
 		"bag-info.txt",
 		"bagit.txt",
 	}
-	apt := loadProfile(t, "aptrust-v2.2.json")
+	apt := loadProfile(t, "aptrust-v2.3.json")
 	aptActual := apt.TagFileNames()
 	assert.Equal(t, len(aptExpected), len(aptActual))
 	for i, _ := range aptExpected {
@@ -139,7 +139,7 @@ func TestTagFileNames(t *testing.T) {
 }
 
 func TestGetTagFileContents(t *testing.T) {
-	apt := loadProfile(t, "aptrust-v2.2.json")
+	apt := loadProfile(t, "aptrust-v2.3.json")
 
 	descriptionTag, err := apt.FirstMatchingTag("TagName", "Description")
 	require.Nil(t, err)
@@ -164,7 +164,7 @@ func TestGetTagFileContents(t *testing.T) {
 }
 
 func TestMultipleTagValues(t *testing.T) {
-	apt := loadProfile(t, "aptrust-v2.2.json")
+	apt := loadProfile(t, "aptrust-v2.3.json")
 
 	rights1 := &core.TagDefinition{
 		TagFile:   "bag-info.txt",
@@ -191,7 +191,7 @@ func TestMultipleTagValues(t *testing.T) {
 }
 
 func TestSetTagValue(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 
 	profile.SetTagValue("bag-info.txt", "Payload-Oxum", "12345.2")
 	tag := profile.GetTagDef("bag-info.txt", "Payload-Oxum")
@@ -205,7 +205,7 @@ func TestSetTagValue(t *testing.T) {
 }
 
 func TestFlagUserAddedTagFiles(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 	profile.FlagUserAddedTagFiles()
 	for _, tagDef := range profile.Tags {
 		assert.False(t, tagDef.IsUserAddedFile)
@@ -245,7 +245,7 @@ func TestFlagUserAddedTagFiles(t *testing.T) {
 }
 
 func TestCloneProfile(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 
 	clone := core.BagItProfileClone(profile)
 	assert.Equal(t, profile.AcceptBagItVersion, clone.AcceptBagItVersion)
@@ -291,7 +291,7 @@ func TestCloneProfile(t *testing.T) {
 
 func TestBagItProfilePersistence(t *testing.T) {
 	defer core.ClearDartTable()
-	aptProfile := loadProfile(t, "aptrust-v2.2.json")
+	aptProfile := loadProfile(t, "aptrust-v2.3.json")
 	btrProfile := loadProfile(t, "btr-v1.0.json")
 	emptyProfile := loadProfile(t, "empty_profile.json")
 
@@ -371,7 +371,7 @@ func TestBagItProfileValidation(t *testing.T) {
 }
 
 func TestTagsInFile(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 	tags := profile.TagsInFile("bagit.txt")
 	require.Equal(t, 2, len(tags))
 	assert.Equal(t, "BagIt-Version", tags[0].TagName)
@@ -392,7 +392,7 @@ func TestTagsInFile(t *testing.T) {
 }
 
 func TestBagItProfileToForm(t *testing.T) {
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 	form := profile.ToForm()
 
 	require.NotNil(t, form.Fields["ID"])
@@ -472,7 +472,7 @@ func TestBagItProfileToForm(t *testing.T) {
 func TestBagItProfilePersistentObject(t *testing.T) {
 	defer core.ClearDartTable()
 
-	profile := loadProfile(t, "aptrust-v2.2.json")
+	profile := loadProfile(t, "aptrust-v2.3.json")
 	assert.Equal(t, constants.TypeBagItProfile, profile.ObjType())
 	assert.Equal(t, profile.ID, profile.ObjID())
 	assert.True(t, util.LooksLikeUUID(profile.ObjID()))
@@ -498,7 +498,7 @@ func TestNewBagItProfileCreationForm(t *testing.T) {
 	defer core.ClearDartTable()
 
 	profilesToLoad := []string{
-		"aptrust-v2.2.json",
+		"aptrust-v2.3.json",
 		"btr-v1.0.json",
 		"empty_profile.json",
 	}
