@@ -34,8 +34,10 @@ type StorageService struct {
 
 func NewStorageService() *StorageService {
 	return &StorageService{
-		ID:     uuid.NewString(),
-		Errors: make(map[string]string),
+		AllowsDownload: true,
+		AllowsUpload:   true,
+		ID:             uuid.NewString(),
+		Errors:         make(map[string]string),
 	}
 }
 

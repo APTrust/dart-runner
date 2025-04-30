@@ -96,6 +96,12 @@ func TestStorageServiceHostAndPort(t *testing.T) {
 	assert.Equal(t, "example.com:9999", ss.HostAndPort())
 }
 
+func TestStorageServiceAllowDefaults(t *testing.T) {
+	ss := core.NewStorageService()
+	assert.True(t, ss.AllowsDownload)
+	assert.True(t, ss.AllowsUpload)
+}
+
 func getSampleStorageService() *core.StorageService {
 	return &core.StorageService{
 		ID:             uuid.NewString(),
