@@ -428,7 +428,10 @@ func TestCopyMap(t *testing.T) {
 }
 
 func TestSplitAndTrim(t *testing.T) {
-	str := " one  \r\n   two   \r\n    three  \r\n"
+	// Should split and trim lines containing non-empty
+	// values. Empty lines, like the one after "two"
+	// should be discarded.
+	str := " one  \r\n   two   \r\n \r\n    three  \r\n"
 	values := util.SplitAndTrim(str, "\n")
 	assert.Equal(t, "one", values[0])
 	assert.Equal(t, "two", values[1])
