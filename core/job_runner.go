@@ -197,6 +197,9 @@ func (r *Runner) RunPackageOp() bool {
 	r.Job.TotalFileCount = bagger.GetTotalFilesBagged()
 	r.setResultFileInfo(op.Result, op.OutputPath, bagger.Errors)
 	op.Result.Finish(bagger.Errors)
+	if ok {
+		op.Result.Info = "Bag created"
+	}
 	return ok
 }
 
