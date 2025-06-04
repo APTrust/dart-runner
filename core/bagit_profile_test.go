@@ -418,7 +418,7 @@ func TestBagItProfileToForm(t *testing.T) {
 	require.NotNil(t, form.Fields["IsBuiltIn"])
 	assert.Equal(t, "true", form.Fields["IsBuiltIn"].Value)
 
-	aptrustAlgs := []string{"md5", "sha256"}
+	aptrustAlgs := []string{"md5", "sha1", "sha256", "sha512"}
 	require.NotNil(t, form.Fields["ManifestsAllowed"])
 	assert.Equal(t, aptrustAlgs, form.Fields["ManifestsAllowed"].Values)
 
