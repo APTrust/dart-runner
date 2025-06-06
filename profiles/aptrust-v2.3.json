@@ -21,7 +21,7 @@
         "bagItProfileVersion": "",
         "contactEmail": "support@aptrust.org",
         "contactName": "A. Diamond",
-        "externalDescription": "BagIt profile for ingesting content into APTrust. Updated March 27, 2025.",
+        "externalDescription": "BagIt profile for ingesting content into APTrust. Updated June 6, 2025.",
         "sourceOrganization": "aptrust.org",
         "version": "2.3"
     },
@@ -87,7 +87,7 @@
             "id": "567451b6-1f30-4bda-b66b-9a657426d5e5",
             "tagFile": "bag-info.txt",
             "tagName": "Source-Organization",
-            "required": true,
+            "required": false,
             "values": [],
             "defaultValue": null,
             "userValue": "Test University",

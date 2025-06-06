@@ -128,10 +128,9 @@ func TestValidator_MissingBagInfoFile(t *testing.T) {
 	require.Nil(t, err)
 	isValid := v.Validate()
 	assert.False(t, isValid)
-	assert.Equal(t, 3, len(v.Errors))
+	assert.Equal(t, 2, len(v.Errors))
 
 	assert.Equal(t, "Required tag is missing: aptrust-info.txt/Storage-Option", v.Errors["aptrust-info.txt/Storage-Option"])
-	assert.Equal(t, "Required tag is missing: bag-info.txt/Source-Organization", v.Errors["bag-info.txt/Source-Organization"])
 	assert.Equal(t, "Required tag is missing: aptrust-info.txt/Access", v.Errors["aptrust-info.txt/Access"])
 
 	// This bag is valid with the empty profile, because it doesn't
