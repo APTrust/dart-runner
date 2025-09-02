@@ -236,3 +236,11 @@ func TestParseCSV(t *testing.T) {
 	assert.True(t, found)
 	assert.Equal(t, "Camembert", tagTwo.Value)
 }
+
+func TestPathToDevNull(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		assert.Equal(t, "NUL", util.PathToDevNull())
+	} else {
+		assert.Equal(t, "/dev/null", util.PathToDevNull())
+	}
+}

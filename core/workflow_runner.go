@@ -14,22 +14,23 @@ import (
 
 // WorkflowRunner runs all jobs in CSVFile through Workflow.
 type WorkflowRunner struct {
-	Workflow     *Workflow
-	CSVFile      *WorkflowCSVFile
-	OutputDir    string
-	Cleanup      bool
-	Concurrency  int
-	SuccessCount int
-	FailureCount int
-	parseError   error
-	jobChannel   chan *Job
-	waitGroup    sync.WaitGroup
-	outMutex     sync.Mutex
-	errMutex     sync.Mutex
-	fCountMutex  sync.Mutex
-	sCountMutex  sync.Mutex
-	stdErrWriter *bytes.Buffer
-	stdOutWriter *bytes.Buffer
+	Workflow      *Workflow
+	CSVFile       *WorkflowCSVFile
+	OutputDir     string
+	Cleanup       bool
+	SkipArtifacts bool
+	Concurrency   int
+	SuccessCount  int
+	FailureCount  int
+	parseError    error
+	jobChannel    chan *Job
+	waitGroup     sync.WaitGroup
+	outMutex      sync.Mutex
+	errMutex      sync.Mutex
+	fCountMutex   sync.Mutex
+	sCountMutex   sync.Mutex
+	stdErrWriter  *bytes.Buffer
+	stdOutWriter  *bytes.Buffer
 }
 
 // NewWorkflowRunner creates a new WorkFlowRunner object. Param workflowFile
@@ -70,7 +71,7 @@ type WorkflowRunner struct {
 // on a high-performance file server). But in most cases where you're
 // reading from and writing to a single local disk, you'll want to set
 // this to 1.
-func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup bool, concurrency int) (*WorkflowRunner, error) {
+func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup, skipArtifacts bool, concurrency int) (*WorkflowRunner, error) {
 	if concurrency < 1 {
 		return nil, fmt.Errorf("concurrency must be >= 1")
 	}
@@ -94,12 +95,13 @@ func NewWorkflowRunner(workflowFile, csvFile, outputDir string, cleanup bool, co
 	// just before the job is going to be executed. The 10-20k
 	// goes out of scope as soon as the job completes.
 	runner := &WorkflowRunner{
-		Workflow:    workflow,
-		CSVFile:     workflowCSVFile,
-		OutputDir:   outputDir,
-		Cleanup:     cleanup,
-		Concurrency: concurrency,
-		jobChannel:  make(chan *Job, concurrency*2),
+		Workflow:      workflow,
+		CSVFile:       workflowCSVFile,
+		OutputDir:     outputDir,
+		Cleanup:       cleanup,
+		SkipArtifacts: skipArtifacts,
+		Concurrency:   concurrency,
+		jobChannel:    make(chan *Job, concurrency*2),
 	}
 	// Create one or more workers to run jobs.
 	for i := 0; i < concurrency; i++ {
@@ -148,12 +150,13 @@ func NewWorkflowRunnerWithMessageChannel(workflowID, csvFile, outputDir string, 
 
 	// See note in NewWorkflowRunner above about creating workflow runner.
 	runner := &WorkflowRunner{
-		Workflow:    workflow,
-		CSVFile:     workflowCSVFile,
-		OutputDir:   outputDir,
-		Cleanup:     cleanup,
-		Concurrency: 1,
-		jobChannel:  make(chan *Job, 1),
+		Workflow:      workflow,
+		CSVFile:       workflowCSVFile,
+		OutputDir:     outputDir,
+		Cleanup:       cleanup,
+		SkipArtifacts: false,
+		Concurrency:   1,
+		jobChannel:    make(chan *Job, 1),
 	}
 	go runner.listenForJobs(messageChannel)
 	return runner, nil
@@ -206,7 +209,7 @@ func (r *WorkflowRunner) listenForJobs(messageChannel chan *EventMessage) {
 		if messageChannel != nil {
 			retVal = RunJobWithMessageChannel(job, r.Cleanup, messageChannel)
 		} else {
-			retVal = RunJob(job, r.Cleanup, false)
+			retVal = RunJob(job, r.Cleanup, r.SkipArtifacts, false)
 		}
 		if retVal == constants.ExitOK {
 			r.sCountMutex.Lock()

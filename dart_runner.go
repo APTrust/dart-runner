@@ -43,7 +43,7 @@ func RunJob(opts *core.Options) int {
 		fmt.Fprintf(os.Stderr, "Error creating job: %s\n", err.Error())
 		return constants.ExitRuntimeErr
 	}
-	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload, true)
+	return core.RunJob(params.ToJob(), opts.DeleteAfterUpload, opts.SkipArtifacts, true)
 }
 
 func RunWorkflow(opts *core.Options) int {
@@ -52,6 +52,7 @@ func RunWorkflow(opts *core.Options) int {
 		opts.BatchFilePath,
 		opts.OutputDir,
 		opts.DeleteAfterUpload,
+		opts.SkipArtifacts,
 		opts.Concurrency,
 	)
 	if err != nil {

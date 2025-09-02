@@ -28,7 +28,7 @@ func getRunnerTestJob(t *testing.T, bagName string) *core.Job {
 
 func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	job := getRunnerTestJob(t, bagName)
-	outputDir := path.Dir(job.PackageOp.OutputPath)
+	//outputDir := path.Dir(job.PackageOp.OutputPath)
 	defer func() {
 		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 2) {
 			os.Remove(job.PackageOp.OutputPath)
@@ -39,7 +39,7 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 	}()
 
 	require.True(t, job.Validate(), job.Errors)
-	retVal := core.RunJob(job, withCleanup, false)
+	retVal := core.RunJob(job, withCleanup, false, false)
 	assert.Equal(t, constants.ExitOK, retVal)
 
 	assert.True(t, job.PackageOp.Result.Succeeded())
@@ -55,10 +55,53 @@ func testJobRunner(t *testing.T, bagName string, withCleanup bool) {
 		assert.Contains(t, lastUpload.Result.Info, "Bag file(s) remain")
 	}
 
-	assertArtifactsWereSaved(t, job, outputDir)
+	assertArtifactsWereSaved(t, job)
 }
 
-func assertArtifactsWereSaved(t *testing.T, job *core.Job, outputDir string) {
+func testJobRunnerWithoutArtifacts(t *testing.T, bagName string, withCleanup bool) {
+	job := getRunnerTestJob(t, bagName)
+	//outputDir := path.Dir(job.PackageOp.OutputPath)
+	defer func() {
+		if withCleanup && util.LooksSafeToDelete(job.PackageOp.OutputPath, 12, 2) {
+			os.Remove(job.PackageOp.OutputPath)
+			fileName := strings.TrimSuffix(filepath.Base(job.PackageOp.OutputPath), path.Ext(job.PackageOp.OutputPath))
+			artifactsDir := filepath.Join(path.Dir(job.PackageOp.OutputPath), fileName+"_artifacts")
+			os.RemoveAll(artifactsDir)
+		}
+	}()
+
+	require.True(t, job.Validate(), job.Errors)
+	retVal := core.RunJob(job, withCleanup, true, false)
+	assert.Equal(t, constants.ExitOK, retVal)
+
+	assert.True(t, job.PackageOp.Result.Succeeded())
+	assert.True(t, job.ValidationOp.Result.Succeeded())
+	for _, op := range job.UploadOps {
+		assert.True(t, op.Result.Succeeded())
+	}
+
+	lastUpload := job.UploadOps[len(job.UploadOps)-1]
+	if withCleanup {
+		assert.Contains(t, lastUpload.Result.Info, "was deleted at")
+	} else {
+		assert.Contains(t, lastUpload.Result.Info, "Bag file(s) remain")
+	}
+
+	assertArtifactsWereNotSaved(t, job)
+}
+
+func assertArtifactsWereNotSaved(t *testing.T, job *core.Job) {
+	for _, alg := range job.BagItProfile.ManifestsRequired {
+		manifestName := fmt.Sprintf("manifest-%s.txt", alg)
+		pathToManifest := filepath.Join(job.ArtifactsDir, manifestName)
+		assert.False(t, util.FileExists(pathToManifest), pathToManifest)
+	}
+	assert.False(t, util.FileExists(filepath.Join(job.ArtifactsDir, "bagit.txt")), filepath.Join(job.ArtifactsDir, "bagit.txt"))
+	assert.False(t, util.FileExists(filepath.Join(job.ArtifactsDir, "bag-info.txt")), filepath.Join(job.ArtifactsDir, "bag-info.txt"))
+	assert.False(t, util.FileExists(job.ArtifactsDir))
+}
+
+func assertArtifactsWereSaved(t *testing.T, job *core.Job) {
 	// In GUI mode, artifacts go into the SQLite DB
 	if core.Dart.RuntimeMode == constants.ModeDartGUI {
 		artifacts, err := core.ArtifactListByJobID(job.ID)
@@ -104,4 +147,12 @@ func TestJobRunnerWithCleanup(t *testing.T) {
 
 func TestJobRunnerNoCleanup(t *testing.T) {
 	testJobRunner(t, "bag_without_cleanup.tar", false)
+}
+
+func TestJobRunnerWithCleanupNoArtifacts(t *testing.T) {
+	testJobRunnerWithoutArtifacts(t, "bag_with_cleanup_no_artifacts.tar", true)
+}
+
+func TestJobRunnerNoCleanupNoArtifacts(t *testing.T) {
+	testJobRunnerWithoutArtifacts(t, "bag_no_cleanup_no_artifacts.tar", false)
 }

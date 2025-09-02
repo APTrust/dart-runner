@@ -301,3 +301,12 @@ func ParseCSV(pathToCSVFile string) ([]string, []*NameValuePairList, error) {
 	}
 	return fieldNames, allRecords, nil
 }
+
+// PathToDevNull returns NUL on Windows
+// and /dev/null on Posix platforms.
+func PathToDevNull() string {
+	if runtime.GOOS == "windows" {
+		return "NUL"
+	}
+	return "/dev/null"
+}

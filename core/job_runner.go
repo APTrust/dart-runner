@@ -30,7 +30,9 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
 	}
-	if !runner.RunPackageOp() {
+	// DART calls RunJobWithMessageChannel instead of RunJob. For DART,
+	// we always want to save artifacts. They go into the SQLite DB.
+	if !runner.RunPackageOp(false) {
 		runner.writeStageOutcome(constants.StagePackage, runner.Job.PackageOp.Result.Info, false)
 		runner.writeExitMessagesAndSaveResults()
 		return constants.ExitRuntimeErr
@@ -107,13 +109,13 @@ func (r *Runner) writeStageOutcome(stage, message string, succeeded bool) {
 	r.MessageChannel <- eventMessage
 }
 
-func RunJob(job *Job, deleteOnSuccess, printOutput bool) int {
+func RunJob(job *Job, deleteOnSuccess, skipArtifacts, printOutput bool) int {
 	runner := &Runner{Job: job}
 	if !runner.ValidateJob() {
 		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
-	if !runner.RunPackageOp() {
+	if !runner.RunPackageOp(skipArtifacts) {
 		runner.printExitMessages()
 		return constants.ExitRuntimeErr
 	}
@@ -162,7 +164,7 @@ func (r *Runner) ValidateJob() bool {
 	return r.Job.Validate()
 }
 
-func (r *Runner) RunPackageOp() bool {
+func (r *Runner) RunPackageOp(skipArtifacts bool) bool {
 	if r.Job.PackageOp == nil {
 		return true
 	}
@@ -191,7 +193,11 @@ func (r *Runner) RunPackageOp() bool {
 	bagger := NewBagger(op.OutputPath, r.Job.BagItProfile, sourceFiles)
 	bagger.MessageChannel = r.MessageChannel // Careful! This may be nil.
 	ok := bagger.Run()
-	r.saveBaggingArtifacts(bagger)
+	if !skipArtifacts {
+		r.saveBaggingArtifacts(bagger)
+	} else {
+		r.Job.ArtifactsDir = "~artifacts not saved~"
+	}
 	r.Job.ByteCount = bagger.PayloadBytes()
 	r.Job.PayloadFileCount = bagger.PayloadFileCount()
 	r.Job.TotalFileCount = bagger.GetTotalFilesBagged()

@@ -3,6 +3,7 @@ package core_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,12 +37,20 @@ func runnerCleanup() {
 	os.Remove(filepath.Join(os.TempDir(), "RunnerTestUtil.tar"))
 }
 
-func TestWorkflowRunner(t *testing.T) {
+func TestWorkflowRunnerWithArtifacts(t *testing.T) {
+	testWorkflowRunner(t, false)
+}
+
+func TestWorkflowRunnerWithoutArtifacts(t *testing.T) {
+	testWorkflowRunner(t, true)
+}
+
+func testWorkflowRunner(t *testing.T, skipArtifacts bool) {
 	workflowFile := filepath.Join(util.PathToTestData(), "files", "runner_test_workflow.json")
 	batchFile := createBatchFile(t)
 	defer runnerCleanup()
 
-	runner, err := core.NewWorkflowRunner(workflowFile, batchFile, os.TempDir(), false, 3)
+	runner, err := core.NewWorkflowRunner(workflowFile, batchFile, os.TempDir(), false, skipArtifacts, 3)
 	require.Nil(t, err)
 	require.NotNil(t, runner)
 
@@ -52,6 +61,12 @@ func TestWorkflowRunner(t *testing.T) {
 	runner.SetStdErr(stdErr)
 	stdOut := new(bytes.Buffer)
 	runner.SetStdOut(stdOut)
+
+	// Clean up old artifacts before we test.
+	// Our test below wants to know whether the
+	// current run created or omitted them as
+	// instructed.
+	deleteOldArtifacts(t, runner.OutputDir)
 
 	retVal := runner.Run()
 	assert.Equal(t, retVal, constants.ExitOK)
@@ -87,5 +102,27 @@ func TestWorkflowRunner(t *testing.T) {
 			assert.True(t, strings.HasPrefix(opResult.RemoteURL, "s3://localhost:9899/dart-runner.test/RunnerTest"))
 			assert.True(t, strings.HasSuffix(opResult.RemoteURL, ".tar"))
 		}
+	}
+
+	matches, err := filepath.Glob(filepath.Join(runner.OutputDir, "*_artifacts"))
+	require.Nil(t, err)
+	for _, m := range matches {
+		fmt.Println(m)
+	}
+	if skipArtifacts {
+		assert.Empty(t, matches)
+	} else {
+		assert.NotEmpty(t, matches)
+	}
+}
+
+// deleteOldArtifacts deletes artifact directories and
+// their contents that may have lingered from prior tests.
+func deleteOldArtifacts(t *testing.T, outputDir string) {
+	artifactDirs, err := filepath.Glob(filepath.Join(outputDir, "*_artifacts"))
+	require.Nil(t, err)
+	for _, dir := range artifactDirs {
+		err = os.RemoveAll(dir)
+		require.Nil(t, err)
 	}
 }
