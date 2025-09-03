@@ -36,6 +36,9 @@ Options
                  makes sense for workflows. For a single job, you can omit
                  this.
 
+  --skip-artifacts  Don't save artifacts (tag files and manifests) to a
+                 separate directory when creating bags.
+
   --help         Show this help document.
 
 

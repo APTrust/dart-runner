@@ -1,5 +1,22 @@
 # Change Log
 
+## v1.0 - 2025-09-03
+
+* Added --skip-artifacts command-line option to skip saving artifacts (tag files and manifests) to seperate directory when bagging. https://trello.com/c/r7FEBuAK
+
+## v0.99-beta - 2025-06-06
+
+* Fixes to APTrust BagIt profile version 2.3
+* Started automatically saving bag artifacts (tag files and manifests) to separate folder for each bag created.
+
+## v0.98-beta - 2025-02-28
+
+* Added Wasabi-TX as valid storage option for APTrust bags.
+
+## v0.97-beta - 2025-01-22
+
+* Updated Go dependencies to fix security vulnerabilities.
+
 ## v0.96-beta - 2023-03-09
 
 * Fixed [DART runner writes incorrect tag values in workflow batch mode](https://github.com/APTrust/dart-runner/issues/9). This was a serious bug caused by race condition that we anticipated but handled incorrectly in versions 0.95 and earlier.

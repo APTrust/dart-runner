@@ -86,6 +86,13 @@ If you're using Visual Studio Code, you should install the following:
 
 `./scripts/build_dart_runner.sh` to build DART Runner.
 
+**Note:** Before creating a release build of DART Runner:
+
+  * Update changelog.md with all changes.
+  * Commit all changes
+  * Tag the commit with the new release number. This is essential, because the build script injects the latest git tag as the version number, and the app will print that tag/version number when the user runs `dart-runner -version`
+
+
 ## Running
 
 To run DART interactively:
@@ -167,7 +174,28 @@ Note that in addition to having a recent version of Go (1.20+), running tests re
 
 ### Post-Build Test
 
-```
+```bash
+# Build the binary
 ./scripts/build_dart_runner.sh
-./dist/dart-runner --workflow=./testdata/files/postbuild_test_workflow.json --batch=./testdata/files/postbuild_test_batch.csv --output-dir=<DIR>
+
+# Start DART services, including Minio.
+# Run this in a separate terminal window, since it
+# will continue to run until killed with Ctrl-C.
+./scripts/run.rb dart
+
+# Run a workflow that does not create artifacts
+./dist/mac-arm64/dart-runner \
+	--workflow=./testdata/files/postbuild_test_workflow.json \
+	--batch=./testdata/files/postbuild_test_batch.csv \
+	--delete=false \
+	--output-dir=<DIR>
+
+
+# Run a workflow that creates artifacts
+./dist/mac-arm64/dart-runner \
+	--workflow=./testdata/files/postbuild_test_workflow.json \
+	--batch=./testdata/files/postbuild_test_batch.csv \
+	--delete=false \
+	--skip-artifacts=true \
+	--output-dir=<DIR>
 ```
