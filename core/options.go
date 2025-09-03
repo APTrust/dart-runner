@@ -27,7 +27,7 @@ func ParseOptions() *Options {
 	outputDir := flag.String("output-dir", "", "Path to output directory")
 	concurrency := flag.Int("concurrency", 1, "Number of jobs to run simultaneously")
 	deleteAfterUpload := flag.Bool("delete", true, "Delete bags after upload? true|false - Default = true.")
-	skipArtifacts := flag.Bool("skip-artifacts", true, "Skip saving artifacts? true|false - Default = false.")
+	skipArtifacts := flag.Bool("skip-artifacts", false, "Skip saving artifacts? true|false - Default = false.")
 	showHelp := flag.Bool("help", false, "Show help.")
 	version := flag.Bool("version", false, "Show version and exit.")
 
