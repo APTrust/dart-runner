@@ -31,7 +31,7 @@ func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 	}
 	// Note that gzipReader will be nil unless PathToBag ends with ".gz"
 	// Tested in core_test.TestBaggerRun_Gzip.
-	if strings.HasSuffix(validator.PathToBag, ".gz") {
+	if strings.HasSuffix(validator.PathToBag, ".gz") || strings.HasSuffix(validator.PathToBag, ".tgz") {
 		gzipReader, err = gzip.NewReader(file)
 		if err != nil {
 			Dart.Log.Errorf("TarredBagReader can't create gzip reader for file %s: %v", validator.PathToBag, err)

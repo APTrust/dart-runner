@@ -60,6 +60,43 @@ func TestTarredBagScanner(t *testing.T) {
 	tarReaderTestTags(t, expected.Tags, validator.Tags)
 }
 
+func TestTarredBagScannerWithGzip(t *testing.T) {
+	expected := loadValidatorFromJson(t, "tagsample_good_metadata.json")
+	require.NotNil(t, expected)
+
+	gzippedBags := []string{
+		"example.edu.tagsample_good.tar.gz",
+		"example.edu.tagsample_good.tgz",
+	}
+
+	for _, bag := range gzippedBags {
+		profile := loadProfile(t, "aptrust-v2.2.json")
+		pathToBag := util.PathToUnitTestBag(bag)
+		validator, err := core.NewValidator(pathToBag, profile)
+		require.Nil(t, err)
+		reader, err := core.NewTarredBagReader(validator)
+		require.Nil(t, err)
+
+		// Scan the metadata...
+		err = reader.ScanMetadata()
+		require.Nil(t, err)
+
+		// And the payload...
+		err = reader.ScanPayload()
+		require.Nil(t, err)
+
+		// The scanner should have loaded the validator with
+		// the same info as in our JSON file (except PathToBag,
+		// which will differ on each machine).
+		tarReaderTestFileMaps(t, expected.PayloadFiles, validator.PayloadFiles)
+		tarReaderTestFileMaps(t, expected.PayloadManifests, validator.PayloadManifests)
+		tarReaderTestFileMaps(t, expected.TagFiles, validator.TagFiles)
+		tarReaderTestFileMaps(t, expected.TagManifests, validator.TagManifests)
+
+		tarReaderTestTags(t, expected.Tags, validator.Tags)
+	}
+}
+
 func tarReaderTestFileMaps(t *testing.T, expected, actual *core.FileMap) {
 	require.Equal(t, len(expected.Files), len(actual.Files))
 	for expectedName, expectedRecord := range expected.Files {
