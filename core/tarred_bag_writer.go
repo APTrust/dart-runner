@@ -50,7 +50,7 @@ func (writer *TarredBagWriter) Open() error {
 		return fmt.Errorf(message)
 	}
 	// Gzip bags are tested in core_test.TestBaggerRun_Gzip.
-	if strings.HasSuffix(writer.outputPath, ".gz") {
+	if strings.HasSuffix(writer.outputPath, ".gz") || strings.HasSuffix(writer.outputPath, ".tgz") {
 		writer.gzipwriter = gzip.NewWriter(tarFile)
 		writer.tarWriter = tar.NewWriter(writer.gzipwriter)
 	} else {
