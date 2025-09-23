@@ -166,7 +166,14 @@ func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 			progress = NewStreamProgress(u.PayloadSize, messageChannel)
 			messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
 		}
-		SFTPUpload(u.StorageService, file, progress)
+		_, err := SFTPUpload(u.StorageService, file, progress)
+		if err != nil {
+			key := fmt.Sprintf("%s - %s", u.StorageService.Name, file)
+			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", file, err.Error())
+			allSucceeded = false
+		} else {
+			Dart.Log.Infof("Finished SFTP upload of file %s to %s", file, u.StorageService.Name)
+		}
 	}
 	return allSucceeded
 }
