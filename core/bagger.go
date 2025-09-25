@@ -18,38 +18,40 @@ import (
 var bagitTxt embed.FS
 
 type Bagger struct {
-	Profile           *BagItProfile
-	OutputPath        string
-	FilesToBag        []*util.ExtendedFileInfo
-	Errors            map[string]string
-	MessageChannel    chan *EventMessage
-	PayloadFiles      *FileMap
-	PayloadManifests  *FileMap
-	TagFiles          *FileMap
-	TagManifests      *FileMap
-	ManifestArtifacts map[string]string
-	TagFileArtifacts  map[string]string
-	Warnings          map[string]string
-	writer            BagWriter
-	pathPrefix        string
-	bagName           string
-	currentFileNum    int64
-	totalFileCount    int64
+	Profile             *BagItProfile
+	OutputPath          string
+	FilesToBag          []*util.ExtendedFileInfo
+	Errors              map[string]string
+	MessageChannel      chan *EventMessage
+	PayloadFiles        *FileMap
+	PayloadManifests    *FileMap
+	TagFiles            *FileMap
+	TagManifests        *FileMap
+	ManifestArtifacts   map[string]string
+	TagFileArtifacts    map[string]string
+	Warnings            map[string]string
+	SerializationFormat string
+	writer              BagWriter
+	pathPrefix          string
+	bagName             string
+	currentFileNum      int64
+	totalFileCount      int64
 }
 
 func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.ExtendedFileInfo) *Bagger {
 	return &Bagger{
-		Profile:           profile,
-		OutputPath:        outputPath,
-		FilesToBag:        filesToBag,
-		PayloadFiles:      NewFileMap(constants.FileTypePayload),
-		PayloadManifests:  NewFileMap(constants.FileTypeManifest),
-		TagFiles:          NewFileMap(constants.FileTypeTag),
-		TagManifests:      NewFileMap(constants.FileTypeTagManifest),
-		ManifestArtifacts: make(map[string]string),
-		TagFileArtifacts:  make(map[string]string),
-		Errors:            make(map[string]string),
-		Warnings:          make(map[string]string),
+		Profile:             profile,
+		OutputPath:          outputPath,
+		FilesToBag:          filesToBag,
+		PayloadFiles:        NewFileMap(constants.FileTypePayload),
+		PayloadManifests:    NewFileMap(constants.FileTypeManifest),
+		SerializationFormat: constants.SerialFormatTar,
+		TagFiles:            NewFileMap(constants.FileTypeTag),
+		TagManifests:        NewFileMap(constants.FileTypeTagManifest),
+		ManifestArtifacts:   make(map[string]string),
+		TagFileArtifacts:    make(map[string]string),
+		Errors:              make(map[string]string),
+		Warnings:            make(map[string]string),
 	}
 }
 
@@ -334,7 +336,17 @@ func (b *Bagger) initWriter() bool {
 			b.getPreferredDigestAlg(),
 		}
 	}
-	b.writer = NewTarredBagWriter(b.OutputPath, digestAlgs)
+
+	// Get the right type of bag writer, based on profile serialization.
+	var err error
+	writerType := constants.BagWriterTypeFor[b.SerializationFormat]
+	b.writer, err = GetBagWriter(writerType, b.OutputPath, digestAlgs)
+	if err != nil {
+		Dart.Log.Errorf("Bagger cannot find writer for serialization type %s: %v", b.SerializationFormat, err)
+		return false
+	} else {
+		Dart.Log.Errorf("Bagger chose writer for serialization type %s: %v", b.SerializationFormat, err)
+	}
 	b.writer.Open()
 	return true
 }
@@ -391,11 +403,28 @@ func (b *Bagger) pathForPayloadFile(fullPath string) string {
 	if !strings.HasPrefix(shortPath, "/") {
 		shortPath = "/" + shortPath
 	}
+	if filepath.Ext(b.OutputPath) == "" {
+		// Bag is a directory. We don't want to duplicate the
+		// bag name in the path because it's already there.
+		// We want something like this:
+		// /data/file.txt
+		// NOT this:
+		// /bag-name/data/file.txt
+		return fmt.Sprintf("data%s", shortPath)
+	}
+	// Else, bag is file and we do want the bag name to
+	// appear in the tar header path. It should be something
+	// like bag-name/data/file.txt.
 	return fmt.Sprintf("%s/data%s", b.bagName, shortPath)
 }
 
 func (b *Bagger) pathForTagFile(fullPath string) string {
 	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+	if filepath.Ext(b.OutputPath) == "" {
+		// Bag is a directory. See note above.
+		return shortPath
+	}
+	// Bag is file. See note above.
 	return fmt.Sprintf("%s/%s", b.bagName, shortPath)
 }
 

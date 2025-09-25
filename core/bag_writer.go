@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
 )
 
@@ -23,4 +24,18 @@ type BagWriter interface {
 	// Close closes the underlying writer, flushing remaining data
 	// as necessary.
 	Close() error
+}
+
+// GetBagWriter returns a bag writer of the specified type.
+// Valid types include constants.BagWriterTypeFileSystem and
+// constants.BagWriterTypeTar.
+func GetBagWriter(writerType, outputPath string, digestAlgs []string) (BagWriter, error) {
+	switch writerType {
+	case constants.BagWriterTypeFileSystem:
+		return NewFileSystemBagWriter(outputPath, digestAlgs), nil
+	case constants.BagWriterTypeTar:
+		return NewTarredBagWriter(outputPath, digestAlgs), nil
+	default:
+		return nil, constants.ErrUnknownType
+	}
 }
