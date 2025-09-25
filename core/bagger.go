@@ -39,13 +39,17 @@ type Bagger struct {
 }
 
 func NewBagger(outputPath string, profile *BagItProfile, filesToBag []*util.ExtendedFileInfo) *Bagger {
+	serializationFormat := constants.SerialFormatTar
+	if path.Ext(outputPath) == "" {
+		serializationFormat = constants.SerialFormatNone
+	}
 	return &Bagger{
 		Profile:             profile,
 		OutputPath:          outputPath,
 		FilesToBag:          filesToBag,
 		PayloadFiles:        NewFileMap(constants.FileTypePayload),
 		PayloadManifests:    NewFileMap(constants.FileTypeManifest),
-		SerializationFormat: constants.SerialFormatTar,
+		SerializationFormat: serializationFormat,
 		TagFiles:            NewFileMap(constants.FileTypeTag),
 		TagManifests:        NewFileMap(constants.FileTypeTagManifest),
 		ManifestArtifacts:   make(map[string]string),
@@ -345,7 +349,7 @@ func (b *Bagger) initWriter() bool {
 		Dart.Log.Errorf("Bagger cannot find writer for serialization type %s: %v", b.SerializationFormat, err)
 		return false
 	} else {
-		Dart.Log.Errorf("Bagger chose writer for serialization type %s: %v", b.SerializationFormat, err)
+		Dart.Log.Infof("Bagger chose writer for serialization type %s: %v", b.SerializationFormat, err)
 	}
 	b.writer.Open()
 	return true
