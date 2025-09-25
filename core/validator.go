@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -265,11 +266,11 @@ func (v *Validator) manifestAlgs(fileMap *FileMap) ([]string, error) {
 	return algs, nil
 }
 
-// In future, this will return a reader based on the file type.
-// For now, we only support tar files, so this always returns a
-// tar reader.
+// Returns the type of reader (tar or file system) required to
+// read the bag specified in PathToBag.
 func (v *Validator) getReader() (BagReader, error) {
-	return NewTarredBagReader(v)
+	bagFileExtension := filepath.Ext(v.PathToBag)
+	return GetBagReader(constants.BagReaderTypeFor[bagFileExtension], v)
 }
 
 func (v *Validator) validateSerialization() bool {

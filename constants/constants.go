@@ -11,6 +11,8 @@ const (
 	BaggingDirectory              = "Bagging Directory"
 	BagItProfileBTR               = "btr-v1.0.json"
 	BagItProfileDefault           = "aptrust-v2.2.json"
+	BagReaderTypeFileSystem       = "filesystem"
+	BagReaderTypeTar              = "tar"
 	BagWriterTypeTar              = "tar"
 	BagWriterTypeFileSystem       = "filesystem"
 	BTRProfileIdentifier          = "https://github.com/dpscollaborative/btr_bagit_profile/releases/download/1.0/btr-bagit-profile.json"
@@ -117,12 +119,25 @@ var AcceptSerialization = []string{
 	"application/gzip",
 }
 
+// BagReaderTypeFor maps a BagIt serialization format to the
+// type of reader that can write that format.
+var BagReaderTypeFor = map[string]string{
+	"":               BagReaderTypeFileSystem,
+	".tar":           BagReaderTypeTar,
+	".tar.gz":        BagReaderTypeTar,
+	".gz":            BagReaderTypeTar,
+	".tgz":           BagReaderTypeTar,
+	SerialFormatNone: BagReaderTypeFileSystem,
+	SerialFormatTar:  BagReaderTypeTar,
+}
+
 // BagWriterTypeFor maps a BagIt serialization format to the
 // type of writer that can write that format.
 var BagWriterTypeFor = map[string]string{
 	"":               BagWriterTypeFileSystem,
 	".tar":           BagWriterTypeTar,
 	".tar.gz":        BagWriterTypeTar,
+	".gz":            BagWriterTypeTar,
 	".tgz":           BagWriterTypeTar,
 	SerialFormatNone: BagWriterTypeFileSystem,
 	SerialFormatTar:  BagWriterTypeTar,
