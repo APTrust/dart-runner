@@ -159,20 +159,47 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 // the uploader will send progress updates through it. Otherwise,
 // no progress updates.
 func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
-	allSucceeded := true
-	for _, file := range u.SourceFiles {
-		var progress *StreamProgress
-		if messageChannel != nil {
-			progress = NewStreamProgress(u.PayloadSize, messageChannel)
-			messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
+
+	// Set up StreamProgress so the uploader can send status
+	// info back to the progress bar. We only do this when
+	// messageChannel is not nil, which means we're running
+	// the DART 3 GUI. For command-line/unattended Dart Runner
+	// jobs, Dart Runner will pass nil as messageChannel param.
+	var progress *StreamProgress
+	if messageChannel != nil {
+		progress = NewStreamProgress(u.PayloadSize, messageChannel)
+		messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
+	}
+
+	// Set up an SFTP client. This may fail under certain conditions.
+	sftpClient, err := NewSFTPClient(u.StorageService, progress)
+	if err != nil {
+		if sftpClient != nil {
+			sftpClient.Close()
 		}
-		_, err := SFTPUpload(u.StorageService, file, progress)
+		u.Errors[u.StorageService.Name] = fmt.Sprintf("Error initializing SFTP client for %s : %s", u.StorageService.Name, err.Error())
+		return false
+	}
+
+	// If we got this far, we have a connection.
+	// Make sure to clean it up.
+	defer sftpClient.Close()
+
+	// Okay, now we're set up to start uploading.
+	// The allSucceeded flag will let us know later if there
+	// were any errors.
+	allSucceeded := true
+
+	for _, fileOrDirectoryPath := range u.SourceFiles {
+		// Now, do the upload. Note that we may be uploading
+		// a single file or an entire directory tree.
+		err = sftpClient.Upload(fileOrDirectoryPath, filepath.Base(fileOrDirectoryPath))
 		if err != nil {
-			key := fmt.Sprintf("%s - %s", u.StorageService.Name, file)
-			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", file, err.Error())
+			key := fmt.Sprintf("%s - %s", u.StorageService.Name, fileOrDirectoryPath)
+			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", fileOrDirectoryPath, err.Error())
 			allSucceeded = false
 		} else {
-			Dart.Log.Infof("Finished SFTP upload of file %s to %s", file, u.StorageService.Name)
+			Dart.Log.Infof("Finished SFTP upload of file/directory %s to %s", fileOrDirectoryPath, u.StorageService.Name)
 		}
 	}
 	return allSucceeded

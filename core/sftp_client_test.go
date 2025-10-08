@@ -11,11 +11,15 @@ import (
 
 // Note: SFTP tests require the SFTP server to be running.
 // scripts/test.rb will start up the server in a docker container.
+
+// TODO: Verify that all files are present on the SFTP server
+// and that permissions are correct.
+
 func TestSftpUpload_Password(t *testing.T) {
 	ss := getSftpStorageService()
 
 	//sshClient, err := core.SSHConnect(ss)
-	sftp, err := core.NewSFTPClient(ss)
+	sftp, err := core.NewSFTPClient(ss, nil)
 
 	require.Nil(t, err)
 	require.NotNil(t, sftp)
@@ -30,7 +34,7 @@ func TestSftpUpload_SSHKey(t *testing.T) {
 	ss.Password = "not-a-valid-password"
 	ss.LoginExtra = filepath.Join(util.PathToTestData(), "sftp", "sftp_user_key")
 
-	sftp, err := core.NewSFTPClient(ss)
+	sftp, err := core.NewSFTPClient(ss, nil)
 
 	require.Nil(t, err)
 	require.NotNil(t, sftp)

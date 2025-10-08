@@ -11,7 +11,10 @@ import (
 )
 
 type SFTPClient struct {
-	client *sftp.Client
+	client             *sftp.Client
+	totalBytesToUpload int64
+	bytesUploadedSoFar int64
+	uploadProgress     *StreamProgress
 }
 
 // GetSFTPAuthMethod returns an authentication method to be used
@@ -39,8 +42,29 @@ func GetSFTPAuthMethod(ss *StorageService) (ssh.AuthMethod, error) {
 	return ssh.Password(ss.Password), nil
 }
 
-// NewSFTPClient creates a new SFTP client connection
-func NewSFTPClient(ss *StorageService) (*SFTPClient, error) {
+// GetUploadPayloadSize returns the number of bytes to be uploaded
+// from pathToDir and all of its subdirectories. This counts bytes for
+// regular files only, excluding directories, symlinks, pipes, devices
+// and anything else that cannot be copied as a simple byte stream
+// across an SFTP connection.
+func GetUploadPayloadSize(pathToDir string) (int64, error) {
+	byteCount := int64(0)
+	err := filepath.Walk(pathToDir, func(filePath string, f os.FileInfo, err error) error {
+		if f.Mode().IsRegular() {
+			byteCount += f.Size()
+		}
+		return nil
+	})
+	return byteCount, err
+}
+
+// NewSFTPClient creates a new SFTP client connection that
+// will connect to the specified StorageService.
+// If param uploadProgress is not nil, this will
+// update the progress bar as each file is uploaded. Param
+// uploadProgress should be nil unless we're running in DART 3 GUI
+// mode.
+func NewSFTPClient(ss *StorageService, uploadProgress *StreamProgress) (*SFTPClient, error) {
 	authMethod, err := GetSFTPAuthMethod(ss)
 	if err != nil {
 		return nil, err
@@ -68,7 +92,14 @@ func NewSFTPClient(ss *StorageService) (*SFTPClient, error) {
 		return nil, fmt.Errorf("failed to create SFTP client: %w", err)
 	}
 
-	return &SFTPClient{client: client}, nil
+	sftpClient := &SFTPClient{
+		client:             client,
+		totalBytesToUpload: int64(0),
+		bytesUploadedSoFar: int64(0),
+		uploadProgress:     uploadProgress,
+	}
+
+	return sftpClient, nil
 }
 
 // Close closes the SFTP client connection
@@ -76,23 +107,28 @@ func (sc *SFTPClient) Close() error {
 	return sc.client.Close()
 }
 
-// Upload uploads a file or directory from source to destination on the remote server
+// Upload uploads a file or directory from source to destination
+// on the remote server.
 func (sc *SFTPClient) Upload(source, destination string) error {
-	// Get file info to determine if source is a file or directory
 	info, err := os.Stat(source)
 	if err != nil {
 		return fmt.Errorf("failed to stat source: %w", err)
 	}
 
+	sc.totalBytesToUpload = int64(0)
+	sc.bytesUploadedSoFar = int64(0)
 	if info.IsDir() {
+		sc.totalBytesToUpload, err = GetUploadPayloadSize(source)
+		if err != nil {
+			return err
+		}
 		return sc.uploadDirectory(source, destination)
 	}
-	return sc.uploadFile(source, destination, info)
+	return sc.uploadFile(source, destination, info, 1)
 }
 
 // uploadFile uploads a single file to the remote server
-func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo) error {
-	// Open local file
+func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo, fileNumber int) error {
 	srcFile, err := os.Open(localPath)
 	if err != nil {
 		return fmt.Errorf("failed to open local file: %w", err)
@@ -118,12 +154,19 @@ func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo)
 		return fmt.Errorf("failed to set file permissions: %w", err)
 	}
 
-	fmt.Printf("Uploaded file: %s -> %s\n", localPath, remotePath)
+	// Housekeeping
+	sc.bytesUploadedSoFar += info.Size()
+	if sc.uploadProgress != nil {
+		sc.uploadProgress.SetTotalBytesCompleted(sc.bytesUploadedSoFar)
+	}
+
+	Dart.Log.Infof("Uploaded file: %s -> %s", localPath, remotePath)
 	return nil
 }
 
 // uploadDirectory recursively uploads a directory to the remote server
 func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
+	fileNumber := 0
 	// Walk through the local directory
 	return filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -133,7 +176,7 @@ func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
 		// Calculate relative path
 		relPath, err := filepath.Rel(localPath, path)
 		if err != nil {
-			return fmt.Errorf("failed to get relative path: %w", err)
+			return fmt.Errorf("failed to get relative path for local path %s: %w", localPath, err)
 		}
 
 		// Convert to forward slashes for remote path
@@ -143,22 +186,28 @@ func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
 			// Create directory on remote server
 			err = sc.client.MkdirAll(remoteDest)
 			if err != nil {
-				return fmt.Errorf("failed to create remote directory: %w", err)
+				return fmt.Errorf("failed to create remote directory %s: %w", remoteDest, err)
 			}
 
 			// Preserve directory permissions
 			err = sc.client.Chmod(remoteDest, info.Mode())
 			if err != nil {
-				return fmt.Errorf("failed to set directory permissions: %w", err)
+				return fmt.Errorf("failed to set directory permissions on %s: %w", remoteDest, err)
 			}
 
 			fmt.Printf("Created directory: %s\n", remoteDest)
-		} else {
+		} else if info.Mode().IsRegular() {
 			// Upload file
-			err = sc.uploadFile(path, remoteDest, info)
+			err = sc.uploadFile(path, remoteDest, info, fileNumber)
+			fileNumber += 1
 			if err != nil {
-				return err
+				detailedErr := fmt.Errorf("SFTP client: error uploading %s: %w", path, err)
+				return detailedErr
+			} else {
+				Dart.Log.Infof("SFTP client: uploaded %s", path)
 			}
+		} else {
+			Dart.Log.Warningf("SFTP client is skipping upload of %s because it's not a regular file", path)
 		}
 
 		return nil
