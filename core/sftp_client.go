@@ -195,7 +195,7 @@ func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
 				return fmt.Errorf("failed to set directory permissions on %s: %w", remoteDest, err)
 			}
 
-			fmt.Printf("Created directory: %s\n", remoteDest)
+			Dart.Log.Infof("SFTP client created remote directory: %s\n", remoteDest)
 		} else if info.Mode().IsRegular() {
 			// Upload file
 			err = sc.uploadFile(path, remoteDest, info, fileNumber)
