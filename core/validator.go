@@ -235,7 +235,7 @@ func (v *Validator) checkIllegalControlCharacters(callback func(string, string))
 func (v *Validator) AssertOxumsMatch() error {
 	tags := v.GetTags("bag-info.txt", "Payload-Oxum")
 	if len(tags) > 0 && v.PayloadFiles.Oxum() != tags[0].Value {
-		err := fmt.Errorf("Payload-Oxum does not match payload")
+		err := fmt.Errorf("Payload-Oxum does not match payload. Tag file says %s, but validator calculated %s", tags[0].Value, v.PayloadFiles.Oxum())
 		v.Errors["Payload-Oxum"] = err.Error()
 		return err
 	}

@@ -89,9 +89,9 @@ func TestValidator_BadOxum(t *testing.T) {
 		v := getValidator(t, "example.edu.sample_bad_oxum.tar", profile)
 		err := v.ScanBag()
 		require.NotNil(t, err)
-		assert.Equal(t, errMsg, err.Error())
+		assert.True(t, strings.HasPrefix(err.Error(), errMsg))
 		assert.Equal(t, 1, len(v.Errors))
-		assert.Equal(t, errMsg, v.Errors["Payload-Oxum"])
+		assert.True(t, strings.HasPrefix(v.Errors["Payload-Oxum"], errMsg))
 	}
 }
 
@@ -233,7 +233,7 @@ func TestValidator_BTRExtraFile(t *testing.T) {
 	err := v.ScanBag()
 	require.NotNil(t, err)
 	assert.Equal(t, 1, len(v.Errors))
-	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+	assert.True(t, strings.HasPrefix(v.Errors["Payload-Oxum"], "Payload-Oxum does not match payload"))
 
 	// Validator should flag the bad file explicitly if
 	// we set IgnoreOxumMismatch to true.
@@ -245,7 +245,7 @@ func TestValidator_BTRExtraFile(t *testing.T) {
 	assert.False(t, isValid)
 	assert.Equal(t, 2, len(v.Errors))
 	assert.Equal(t, "file is missing from manifest-sha512.txt: data/nsqd.dat", v.Errors["data/nsqd.dat"])
-	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+	assert.True(t, strings.HasPrefix(v.Errors["Payload-Oxum"], "Payload-Oxum does not match payload"))
 }
 
 func TestValidator_BTRMissingPayloadFile(t *testing.T) {
@@ -253,7 +253,7 @@ func TestValidator_BTRMissingPayloadFile(t *testing.T) {
 	err := v.ScanBag()
 	require.NotNil(t, err)
 	assert.Equal(t, 1, len(v.Errors))
-	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
+	assert.True(t, strings.HasPrefix(v.Errors["Payload-Oxum"], "Payload-Oxum does not match payload"))
 
 	// Get a more specific error with IgnoreOxumMismatch to true.
 	v = getValidator(t, "test.edu.btr_bad_missing_payload_file.tar", btrProfile)
@@ -264,8 +264,7 @@ func TestValidator_BTRMissingPayloadFile(t *testing.T) {
 	assert.False(t, isValid)
 	assert.Equal(t, 2, len(v.Errors))
 	assert.Equal(t, "file is missing from bag: data/netutil/listen.go", v.Errors["data/netutil/listen.go"])
-	assert.Equal(t, "Payload-Oxum does not match payload", v.Errors["Payload-Oxum"])
-
+	assert.True(t, strings.HasPrefix(v.Errors["Payload-Oxum"], "Payload-Oxum does not match payload"))
 }
 
 func TestValidator_BTRMissingTags(t *testing.T) {
