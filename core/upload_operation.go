@@ -193,7 +193,8 @@ func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 	for _, fileOrDirectoryPath := range u.SourceFiles {
 		// Now, do the upload. Note that we may be uploading
 		// a single file or an entire directory tree.
-		err = sftpClient.Upload(fileOrDirectoryPath, filepath.Base(fileOrDirectoryPath))
+		dest := filepath.Join(u.StorageService.Bucket, filepath.Base(fileOrDirectoryPath))
+		err = sftpClient.Upload(fileOrDirectoryPath, filepath.ToSlash(dest))
 		if err != nil {
 			key := fmt.Sprintf("%s - %s", u.StorageService.Name, fileOrDirectoryPath)
 			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", fileOrDirectoryPath, err.Error())
