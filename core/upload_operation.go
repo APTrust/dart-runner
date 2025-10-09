@@ -45,7 +45,7 @@ func (u *UploadOperation) Validate() bool {
 			u.Errors[ssKeyName] = errMsg
 		}
 	}
-	if u.SourceFiles == nil || len(u.SourceFiles) == 0 {
+	if len(u.SourceFiles) == 0 {
 		u.Errors["UploadOperation.SourceFiles"] = "UploadOperation requires one or more files to upload"
 	}
 	missingFiles := make([]string, 0)
@@ -125,34 +125,83 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 	}
 	allSucceeded := true
 	for _, sourceFile := range u.SourceFiles {
-		s3Key := filepath.Base(sourceFile)
-		u.Result.RemoteURL = u.StorageService.URL(s3Key)
-		Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
-		putOptions := minio.PutObjectOptions{}
-		if messageChannel != nil {
-			progress := NewStreamProgress(u.PayloadSize, messageChannel)
-			putOptions = minio.PutObjectOptions{
-				Progress: progress,
-			}
-			messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
-		}
-		uploadInfo, err := client.FPutObject(
-			context.Background(),
-			u.StorageService.Bucket,
-			s3Key,
-			sourceFile,
-			putOptions,
-		)
+		info, err := os.Stat(sourceFile)
 		if err != nil {
-			key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
-			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
+			u.Errors[sourceFile] = fmt.Sprintf("Error accessing file %s: %s", sourceFile, err.Error())
 			allSucceeded = false
+			continue
+		}
+		if info.IsDir() {
+			err = u.sendDirectoryToS3(client, sourceFile, messageChannel)
+			if err != nil {
+				allSucceeded = false
+			}
 		} else {
-			u.Result.RemoteChecksum = uploadInfo.ETag
-			Dart.Log.Infof("Finished S3 upload of file %s; got e-tag %s", sourceFile, uploadInfo.ETag)
+			s3Key := filepath.Base(sourceFile)
+			succeeded := u.sendFileToS3(client, sourceFile, s3Key, messageChannel)
+			if !succeeded {
+				allSucceeded = false
+			}
 		}
 	}
 	return allSucceeded
+}
+
+// uploadDirectory recursively uploads a directory to the remote server
+func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile string, messageChannel chan *EventMessage) error {
+	return filepath.Walk(sourceFile, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		relPath, err := filepath.Rel(sourceFile, path)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path for local path %s: %w", sourceFile, err)
+		}
+		// Create the S3 key for this file and then upload it.
+		s3Key := filepath.ToSlash(relPath)
+		if info.Mode().IsRegular() {
+			succeeded := u.sendFileToS3(client, sourceFile, s3Key, messageChannel)
+			if !succeeded {
+				key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
+				return fmt.Errorf(u.Errors[key])
+			}
+		} else {
+			Dart.Log.Warningf("S3 client is skipping upload of %s because it's not a regular file", path)
+		}
+
+		return nil
+	})
+}
+
+func (u *UploadOperation) sendFileToS3(client *minio.Client, sourceFile, s3Key string, messageChannel chan *EventMessage) bool {
+	succeeded := true
+	u.Result.RemoteURL = u.StorageService.URL(s3Key)
+	Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
+	putOptions := minio.PutObjectOptions{}
+	if messageChannel != nil {
+		progress := NewStreamProgress(u.PayloadSize, messageChannel)
+		putOptions = minio.PutObjectOptions{
+			Progress: progress,
+		}
+		messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
+	}
+	uploadInfo, err := client.FPutObject(
+		context.Background(),
+		u.StorageService.Bucket,
+		s3Key,
+		sourceFile,
+		putOptions,
+	)
+	if err != nil {
+		key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
+		u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
+		Dart.Log.Error(u.Errors[key])
+		succeeded = false
+	} else {
+		u.Result.RemoteChecksum = uploadInfo.ETag
+		Dart.Log.Infof("Finished S3 upload of file %s; got e-tag %s", sourceFile, uploadInfo.ETag)
+	}
+	return succeeded
 }
 
 // upload an item to SFTP server. If messageChannel is not nil,
