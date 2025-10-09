@@ -174,6 +174,7 @@ func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile str
 	})
 }
 
+// sendFileToS3 sends a single file to the remote S3 service
 func (u *UploadOperation) sendFileToS3(client *minio.Client, sourceFile, s3Key string, messageChannel chan *EventMessage) bool {
 	succeeded := true
 	u.Result.RemoteURL = u.StorageService.URL(s3Key)
