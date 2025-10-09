@@ -161,7 +161,7 @@ func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile str
 		// Create the S3 key for this file and then upload it.
 		s3Key := filepath.ToSlash(filepath.Join(s3KeyPrefix, relPath))
 		if info.Mode().IsRegular() {
-			succeeded := u.sendFileToS3(client, sourceFile, s3Key, messageChannel)
+			succeeded := u.sendFileToS3(client, path, s3Key, messageChannel)
 			if !succeeded {
 				key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
 				return fmt.Errorf(u.Errors[key])
