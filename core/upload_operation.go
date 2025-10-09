@@ -149,6 +149,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 
 // uploadDirectory recursively uploads a directory to the remote server
 func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile string, messageChannel chan *EventMessage) error {
+	s3KeyPrefix := filepath.Base(sourceFile)
 	return filepath.Walk(sourceFile, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -158,7 +159,7 @@ func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile str
 			return fmt.Errorf("failed to get relative path for local path %s: %w", sourceFile, err)
 		}
 		// Create the S3 key for this file and then upload it.
-		s3Key := filepath.ToSlash(relPath)
+		s3Key := filepath.ToSlash(filepath.Join(s3KeyPrefix, relPath))
 		if info.Mode().IsRegular() {
 			succeeded := u.sendFileToS3(client, sourceFile, s3Key, messageChannel)
 			if !succeeded {
