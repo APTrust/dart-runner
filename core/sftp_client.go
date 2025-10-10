@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -115,6 +116,11 @@ func (sc *SFTPClient) Upload(source, destination string) error {
 		return fmt.Errorf("failed to stat source: %w", err)
 	}
 
+	err = sc.ensureDestinationRootExists(destination)
+	if err != nil {
+		return err
+	}
+
 	sc.totalBytesToUpload = int64(0)
 	sc.bytesUploadedSoFar = int64(0)
 	if info.IsDir() {
@@ -124,11 +130,44 @@ func (sc *SFTPClient) Upload(source, destination string) error {
 		}
 		return sc.uploadDirectory(source, destination)
 	}
-	return sc.uploadFile(source, destination, info, 1)
+	return sc.uploadFile(source, destination, info)
+}
+
+// ensureDestinationRootExists ensures that the target root directory exists
+// on the remote SFTP server. The StorageService.Bucket attribute contains the
+// remote bucket name for S3 storage services, and the remote upload directory
+// name for SFTP storage services. If StorageService.Bucket contains a directory
+// name that does not exist on the remote server, any attempt to store a file
+// in that directory will fail.
+//
+// SFTP servers typically map user logins to individual user home directories.
+// This means most users *should* be able to leave StorageService.BucketName
+// empty for SFTP services. If the user happens to have a non-empty bucket name,
+// we want to make sure it's there to receive whatever files we send.
+//
+// Note that uploadDirectory automatically creates directories as necessary,
+// but uploadFile does not, so we do that here.
+func (sc *SFTPClient) ensureDestinationRootExists(destination string) error {
+	remoteParentDir := filepath.Dir(destination)
+	if remoteParentDir == "" {
+		return nil // nothing to do
+	}
+	_, err := sc.client.Lstat(remoteParentDir)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		err = sc.client.MkdirAll(remoteParentDir)
+		if err != nil {
+			return fmt.Errorf("failed to create remote directory %s: %w", remoteParentDir, err)
+		} else {
+			Dart.Log.Infof("SFTP client created remote directory %s", remoteParentDir)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error checking whether parent directory %s exists on remote server: %w", remoteParentDir, err)
+	}
+	return nil
 }
 
 // uploadFile uploads a single file to the remote server
-func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo, fileNumber int) error {
+func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo) error {
 	srcFile, err := os.Open(localPath)
 	if err != nil {
 		return fmt.Errorf("failed to open local file: %w", err)
@@ -166,7 +205,6 @@ func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo,
 
 // uploadDirectory recursively uploads a directory to the remote server
 func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
-	fileNumber := 0
 	// Walk through the local directory
 	return filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -198,8 +236,7 @@ func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
 			Dart.Log.Infof("SFTP client created remote directory: %s\n", remoteDest)
 		} else if info.Mode().IsRegular() {
 			// Upload file
-			err = sc.uploadFile(path, remoteDest, info, fileNumber)
-			fileNumber += 1
+			err = sc.uploadFile(path, remoteDest, info)
 			if err != nil {
 				detailedErr := fmt.Errorf("SFTP client: error uploading %s: %w", path, err)
 				return detailedErr
