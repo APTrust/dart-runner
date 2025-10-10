@@ -246,7 +246,10 @@ func (ss *StorageService) testS3Connection() error {
 }
 
 func (ss *StorageService) testSFTPConnection() error {
-	_, err := SFTPConnect(ss)
+	client, err := NewSFTPClient(ss, nil)
+	if err == nil {
+		client.Close()
+	}
 	return err
 }
 

@@ -7,8 +7,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/APTrust/dart-runner/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,6 +31,28 @@ import (
 
 // TODO: Verify that all files are present on the SFTP server
 // and that permissions are correct.
+
+const (
+	sftpUserName = "pw_user"
+	sftpPassword = "password"
+	sftpHost     = "127.0.0.1"
+	sftpPort     = 2222
+	tarFileSize  = int64(23552)
+)
+
+func getSftpStorageService() *core.StorageService {
+	return &core.StorageService{
+		ID:           uuid.NewString(),
+		Name:         "Local SFTP test service",
+		AllowsUpload: true,
+		Bucket:       "uploads",
+		Host:         sftpHost,
+		Login:        sftpUserName,
+		Password:     sftpPassword,
+		Port:         sftpPort,
+		Protocol:     constants.ProtocolSFTP,
+	}
+}
 
 func TestSftpUpload_Password(t *testing.T) {
 	ss := getSftpStorageService()
