@@ -6,13 +6,17 @@ import (
 
 type OperationResult struct {
 	Attempt          int               `json:"attempt"`
+	BytesUploaded    int64             `json:"bytesUploaded"`
 	Completed        time.Time         `json:"completed"`
 	Errors           map[string]string `json:"errors"`
+	EtagMap          map[string]string `json:"etagMap"`
 	FileMTime        time.Time         `json:"fileMtime"`
 	FilePath         string            `json:"filepath"`
 	FileSize         int64             `json:"filesize"`
+	FilesUploaded    int64             `json:"filesUploaded"`
 	Info             string            `json:"info"`
 	Operation        string            `json:"operation"`
+	PayloadSize      int64             `json:"payloadSize"`
 	Provider         string            `json:"provider"`
 	RemoteTargetName string            `json:"remoteTargetName"`
 	RemoteChecksum   string            `json:"remoteChecksum"`
@@ -24,6 +28,7 @@ type OperationResult struct {
 func NewOperationResult(operation, provider string) *OperationResult {
 	return &OperationResult{
 		Errors:    make(map[string]string),
+		EtagMap:   make(map[string]string),
 		Operation: operation,
 		Provider:  provider,
 	}
@@ -31,14 +36,17 @@ func NewOperationResult(operation, provider string) *OperationResult {
 
 func (r *OperationResult) Reset() {
 	r.Started = time.Time{}
+	r.BytesUploaded = 0
 	r.Completed = time.Time{}
 	r.FileSize = 0
+	r.FilesUploaded = 0
 	r.FileMTime = time.Time{}
 	r.RemoteChecksum = ""
 	r.RemoteURL = ""
 	r.Info = ""
 	r.Warning = ""
 	r.Errors = make(map[string]string)
+	r.EtagMap = make(map[string]string)
 }
 
 func (r *OperationResult) Start() {

@@ -14,6 +14,9 @@ func TestOperationResult(t *testing.T) {
 	assert.NotNil(t, result.Errors)
 	assert.Empty(t, result.Errors)
 
+	assert.NotNil(t, result.EtagMap)
+	assert.Empty(t, result.EtagMap)
+
 	assert.Empty(t, result.Started)
 	assert.Empty(t, result.Completed)
 	assert.EqualValues(t, 0, result.FileSize)

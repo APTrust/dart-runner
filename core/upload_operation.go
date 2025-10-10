@@ -1,7 +1,6 @@
 package core
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,8 +8,6 @@ import (
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/util"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type UploadOperation struct {
@@ -108,109 +105,54 @@ func (u *UploadOperation) DoUpload(messageChannel chan *EventMessage) bool {
 	return ok
 }
 
-// upload an item to s3 bucket. If messageChannel is not nil,
-// the uploader will send progress updates through it. Otherwise,
-// no progress updates.
 func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
-	accessKeyId := u.StorageService.GetLogin()
-	secretKey := u.StorageService.GetPassword()
-	options := &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyId, secretKey, ""),
-		Secure: u.useSSL(),
-	}
-	client, err := minio.New(u.StorageService.HostAndPort(), options)
+	// Set up an S3 client. This may fail under certain conditions.
+	s3Client, err := NewS3Client(u.StorageService, u.useSSL(), messageChannel)
 	if err != nil {
-		u.Errors[u.StorageService.Name] = fmt.Sprintf("Error connecting to S3: %s", err.Error())
+		u.Errors[u.StorageService.Name] = fmt.Sprintf("Error initializing SFTP client for %s : %s", u.StorageService.Name, err.Error())
 		return false
 	}
+
+	// Okay, now we're set up to start uploading.
+	// The allSucceeded flag will let us know later if there
+	// were any errors.
 	allSucceeded := true
-	for _, sourceFile := range u.SourceFiles {
-		info, err := os.Stat(sourceFile)
+
+	for _, fileOrDirectoryPath := range u.SourceFiles {
+		// Now, do the upload. Note that we may be uploading
+		// a single file or an entire directory tree.
+		dest := filepath.Join(u.StorageService.Bucket, filepath.Base(fileOrDirectoryPath))
+		err = s3Client.Upload(fileOrDirectoryPath, filepath.ToSlash(dest))
 		if err != nil {
-			u.Errors[sourceFile] = fmt.Sprintf("Error accessing file %s: %s", sourceFile, err.Error())
+			key := fmt.Sprintf("%s - %s", u.StorageService.Name, fileOrDirectoryPath)
+			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", fileOrDirectoryPath, err.Error())
 			allSucceeded = false
-			continue
-		}
-		if info.IsDir() {
-			err = u.sendDirectoryToS3(client, sourceFile, messageChannel)
-			if err != nil {
-				allSucceeded = false
-			}
 		} else {
-			s3Key := filepath.Base(sourceFile)
-			succeeded := u.sendFileToS3(client, sourceFile, s3Key, messageChannel)
-			if !succeeded {
-				allSucceeded = false
-			}
+			Dart.Log.Infof("Finished SFTP upload of file/directory %s to %s", fileOrDirectoryPath, u.StorageService.Name)
 		}
+		// Record result data. Note that the legacy RemoteChecksum and
+		// RemoteURL captured a single value. Now that we're doing
+		// multi-file uploads, we have to capture a map of values in
+		// u.Result.EtagMap. If we just uploaded a single file, setting
+		// the first etag and url into RemoteChecksum and RemoteURL
+		// will mimic legacy behavior for those using Dart Runner in the
+		// old legacy (single file) way.
+		for url, etag := range s3Client.EtagMap() {
+			u.Result.RemoteChecksum = etag
+			u.Result.RemoteURL = url
+			u.Result.EtagMap[url] = etag
+		}
+		u.Result.PayloadSize = s3Client.PayloadSize()
+		u.Result.BytesUploaded = s3Client.BytesUploaded()
+		u.Result.FilesUploaded = s3Client.FilesUploaded()
 	}
 	return allSucceeded
-}
-
-// uploadDirectory recursively uploads a directory to the remote server
-func (u *UploadOperation) sendDirectoryToS3(client *minio.Client, sourceFile string, messageChannel chan *EventMessage) error {
-	s3KeyPrefix := filepath.Base(sourceFile)
-	return filepath.Walk(sourceFile, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		relPath, err := filepath.Rel(sourceFile, path)
-		if err != nil {
-			return fmt.Errorf("failed to get relative path for local path %s: %w", sourceFile, err)
-		}
-		// Create the S3 key for this file and then upload it.
-		s3Key := filepath.ToSlash(filepath.Join(s3KeyPrefix, relPath))
-		if info.Mode().IsRegular() {
-			succeeded := u.sendFileToS3(client, path, s3Key, messageChannel)
-			if !succeeded {
-				key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
-				return fmt.Errorf(u.Errors[key])
-			}
-		} else {
-			Dart.Log.Warningf("S3 client is skipping upload of %s because it's not a regular file", path)
-		}
-
-		return nil
-	})
-}
-
-// sendFileToS3 sends a single file to the remote S3 service
-func (u *UploadOperation) sendFileToS3(client *minio.Client, sourceFile, s3Key string, messageChannel chan *EventMessage) bool {
-	succeeded := true
-	u.Result.RemoteURL = u.StorageService.URL(s3Key)
-	Dart.Log.Infof("Starting S3 upload %s to %s", sourceFile, u.Result.RemoteURL)
-	putOptions := minio.PutObjectOptions{}
-	if messageChannel != nil {
-		progress := NewStreamProgress(u.PayloadSize, messageChannel)
-		putOptions = minio.PutObjectOptions{
-			Progress: progress,
-		}
-		messageChannel <- StartEvent(constants.StageUpload, fmt.Sprintf("Uploading to %s", u.StorageService.Name))
-	}
-	uploadInfo, err := client.FPutObject(
-		context.Background(),
-		u.StorageService.Bucket,
-		s3Key,
-		sourceFile,
-		putOptions,
-	)
-	if err != nil {
-		key := fmt.Sprintf("%s - %s", u.StorageService.Name, s3Key)
-		u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", sourceFile, err.Error())
-		Dart.Log.Error(u.Errors[key])
-		succeeded = false
-	} else {
-		u.Result.RemoteChecksum = uploadInfo.ETag
-		Dart.Log.Infof("Finished S3 upload of file %s; got e-tag %s", sourceFile, uploadInfo.ETag)
-	}
-	return succeeded
 }
 
 // upload an item to SFTP server. If messageChannel is not nil,
 // the uploader will send progress updates through it. Otherwise,
 // no progress updates.
 func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
-
 	// Set up StreamProgress so the uploader can send status
 	// info back to the progress bar. We only do this when
 	// messageChannel is not nil, which means we're running
@@ -253,6 +195,10 @@ func (u *UploadOperation) sendToSFTP(messageChannel chan *EventMessage) bool {
 		} else {
 			Dart.Log.Infof("Finished SFTP upload of file/directory %s to %s", fileOrDirectoryPath, u.StorageService.Name)
 		}
+		// Record result data.
+		u.Result.PayloadSize = sftpClient.PayloadSize()
+		u.Result.BytesUploaded = sftpClient.BytesUploaded()
+		u.Result.FilesUploaded = sftpClient.FilesUploaded()
 	}
 	return allSucceeded
 }
