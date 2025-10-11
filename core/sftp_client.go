@@ -98,6 +98,7 @@ func NewSFTPClient(ss *StorageService, uploadProgress *StreamProgress) (*SFTPCli
 		client:             client,
 		totalBytesToUpload: int64(0),
 		bytesUploaded:      int64(0),
+		filesUploaded:      int64(0),
 		uploadProgress:     uploadProgress,
 	}
 
@@ -124,6 +125,7 @@ func (sc *SFTPClient) Upload(source, destination string) error {
 
 	sc.totalBytesToUpload = int64(0)
 	sc.bytesUploaded = int64(0)
+	sc.filesUploaded = int64(0)
 	if info.IsDir() {
 		sc.totalBytesToUpload, err = GetUploadPayloadSize(source)
 		if err != nil {
@@ -196,6 +198,7 @@ func (sc *SFTPClient) uploadFile(localPath, remotePath string, info os.FileInfo)
 
 	// Housekeeping
 	sc.bytesUploaded += info.Size()
+	sc.filesUploaded += 1
 	if sc.uploadProgress != nil {
 		sc.uploadProgress.SetTotalBytesCompleted(sc.bytesUploaded)
 	}
@@ -242,7 +245,6 @@ func (sc *SFTPClient) uploadDirectory(localPath, remotePath string) error {
 				detailedErr := fmt.Errorf("SFTP client: error uploading %s: %w", path, err)
 				return detailedErr
 			} else {
-				sc.filesUploaded += 1
 				Dart.Log.Infof("SFTP client: uploaded %s", path)
 			}
 		} else {

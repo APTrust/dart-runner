@@ -65,12 +65,22 @@ func testS3UploadFile(t *testing.T, s3Client *core.S3Client) {
 	destPath := filepath.Base(fileToUpload())
 	err := s3Client.Upload(fileToUpload(), destPath)
 	require.Nil(t, err)
+
+	assert.Equal(t, int64(1), s3Client.FilesUploaded())
+	assert.Equal(t, int64(23552), s3Client.BytesUploaded())
+	assert.Equal(t, 1, len(s3Client.EtagMap()))
 }
 
 func testS3UploadDir(t *testing.T, s3Client *core.S3Client) {
 	destPath := filepath.Base(dirToUpload())
 	err := s3Client.Upload(dirToUpload(), destPath)
 	require.Nil(t, err)
+
+	fileCount, err := fileCount(dirToUpload())
+	require.Nil(t, err)
+	assert.Equal(t, int64(fileCount), s3Client.FilesUploaded())
+	assert.True(t, s3Client.BytesUploaded() > int64(25000))
+	assert.Equal(t, fileCount, len(s3Client.EtagMap()))
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader

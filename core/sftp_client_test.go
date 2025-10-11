@@ -40,20 +40,6 @@ const (
 	tarFileSize  = int64(23552)
 )
 
-func getSftpStorageService() *core.StorageService {
-	return &core.StorageService{
-		ID:           uuid.NewString(),
-		Name:         "Local SFTP test service",
-		AllowsUpload: true,
-		Bucket:       "uploads",
-		Host:         sftpHost,
-		Login:        sftpUserName,
-		Password:     sftpPassword,
-		Port:         sftpPort,
-		Protocol:     constants.ProtocolSFTP,
-	}
-}
-
 func TestSftpUpload_Password(t *testing.T) {
 	ss := getSftpStorageService()
 
@@ -82,6 +68,20 @@ func TestSftpUpload_SSHKey(t *testing.T) {
 	testSFTPUploadDir(t, sftp)
 }
 
+func TestSFTPUploadFileWithProgressBar(t *testing.T) {
+	fileToUpload := fileToUpload()
+	payloadSize, err := core.GetUploadPayloadSize(fileToUpload)
+	require.Nil(t, err)
+	testSFTPUploadWithProgressBar(t, "file", payloadSize)
+}
+
+func TestSFTPUploadDirectoryWithProgressBar(t *testing.T) {
+	dirToUpload := dirToUpload()
+	payloadSize, err := core.GetUploadPayloadSize(dirToUpload)
+	require.Nil(t, err)
+	testSFTPUploadWithProgressBar(t, "directory", payloadSize)
+}
+
 func fileToUpload() string {
 	return filepath.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
 }
@@ -106,26 +106,19 @@ func testSFTPUploadFile(t *testing.T, sftp *core.SFTPClient) {
 	destPath := filepath.Base(fileToUpload())
 	err := sftp.Upload(fileToUpload(), filepath.Join("uploads", destPath))
 	require.Nil(t, err)
+	assert.Equal(t, int64(1), sftp.FilesUploaded())
+	assert.Equal(t, int64(23552), sftp.BytesUploaded())
 }
 
 func testSFTPUploadDir(t *testing.T, sftp *core.SFTPClient) {
 	destPath := filepath.Base(dirToUpload())
 	err := sftp.Upload(dirToUpload(), filepath.Join("uploads", destPath))
 	require.Nil(t, err)
-}
 
-func TestSFTPUploadFileWithProgressBar(t *testing.T) {
-	fileToUpload := fileToUpload()
-	payloadSize, err := core.GetUploadPayloadSize(fileToUpload)
+	fileCount, err := fileCount(dirToUpload())
 	require.Nil(t, err)
-	testSFTPUploadWithProgressBar(t, "file", payloadSize)
-}
-
-func TestSFTPUploadDirectoryWithProgressBar(t *testing.T) {
-	dirToUpload := dirToUpload()
-	payloadSize, err := core.GetUploadPayloadSize(dirToUpload)
-	require.Nil(t, err)
-	testSFTPUploadWithProgressBar(t, "directory", payloadSize)
+	assert.Equal(t, int64(fileCount), sftp.FilesUploaded())
+	assert.True(t, sftp.BytesUploaded() > int64(25000))
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader
@@ -205,4 +198,18 @@ func testSFTPUploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize i
 	}
 
 	wg.Wait()
+}
+
+func getSftpStorageService() *core.StorageService {
+	return &core.StorageService{
+		ID:           uuid.NewString(),
+		Name:         "Local SFTP test service",
+		AllowsUpload: true,
+		Bucket:       "uploads",
+		Host:         sftpHost,
+		Login:        sftpUserName,
+		Password:     sftpPassword,
+		Port:         sftpPort,
+		Protocol:     constants.ProtocolSFTP,
+	}
 }
