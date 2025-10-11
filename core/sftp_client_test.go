@@ -63,8 +63,8 @@ func TestSftpUpload_Password(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, sftp)
 
-	testUploadFile(t, sftp)
-	testUploadDir(t, sftp)
+	testSFTPUploadFile(t, sftp)
+	testSFTPUploadDir(t, sftp)
 }
 
 func TestSftpUpload_SSHKey(t *testing.T) {
@@ -78,8 +78,8 @@ func TestSftpUpload_SSHKey(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, sftp)
 
-	testUploadFile(t, sftp)
-	testUploadDir(t, sftp)
+	testSFTPUploadFile(t, sftp)
+	testSFTPUploadDir(t, sftp)
 }
 
 func fileToUpload() string {
@@ -102,36 +102,36 @@ func fileCount(dir string) (int, error) {
 
 }
 
-func testUploadFile(t *testing.T, sftp *core.SFTPClient) {
+func testSFTPUploadFile(t *testing.T, sftp *core.SFTPClient) {
 	destPath := filepath.Base(fileToUpload())
 	err := sftp.Upload(fileToUpload(), filepath.Join("uploads", destPath))
 	require.Nil(t, err)
 }
 
-func testUploadDir(t *testing.T, sftp *core.SFTPClient) {
+func testSFTPUploadDir(t *testing.T, sftp *core.SFTPClient) {
 	destPath := filepath.Base(dirToUpload())
 	err := sftp.Upload(dirToUpload(), filepath.Join("uploads", destPath))
 	require.Nil(t, err)
 }
 
-func TestUploadFileWithProgressBar(t *testing.T) {
-	fileToUpload := filepath.Join(util.PathToTestData(), "bags", "example.edu.sample_good.tar")
+func TestSFTPUploadFileWithProgressBar(t *testing.T) {
+	fileToUpload := fileToUpload()
 	payloadSize, err := core.GetUploadPayloadSize(fileToUpload)
 	require.Nil(t, err)
-	testUploadWithProgressBar(t, "file", payloadSize)
+	testSFTPUploadWithProgressBar(t, "file", payloadSize)
 }
 
-func TestUploadDirectoryWithProgressBar(t *testing.T) {
-	fileToUpload := filepath.Join(util.PathToTestData(), "profiles")
-	payloadSize, err := core.GetUploadPayloadSize(fileToUpload)
+func TestSFTPUploadDirectoryWithProgressBar(t *testing.T) {
+	dirToUpload := dirToUpload()
+	payloadSize, err := core.GetUploadPayloadSize(dirToUpload)
 	require.Nil(t, err)
-	testUploadWithProgressBar(t, "directory", payloadSize)
+	testSFTPUploadWithProgressBar(t, "directory", payloadSize)
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader
 // pushes messages into the progress reader's message channel.
 // See comments inline...
-func testUploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int64) {
+func testSFTPUploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int64) {
 	iReadSomething := false
 	messageChannel := make(chan *core.EventMessage)
 
@@ -199,9 +199,9 @@ func testUploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int64
 	wg.Add(1)
 
 	if fileOrDir == "file" {
-		testUploadFile(t, sftp)
+		testSFTPUploadFile(t, sftp)
 	} else {
-		testUploadDir(t, sftp)
+		testSFTPUploadDir(t, sftp)
 	}
 
 	wg.Wait()
