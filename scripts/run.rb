@@ -8,7 +8,6 @@ class Runner
   def initialize
     @start_time = Time.now
     @minio_pid = 0
-    @dart_pid = 0
     @docker_sftp_id = ''
     @sftp_started = false
   end
@@ -29,35 +28,6 @@ class Runner
       puts "😡 FAILED 😡"
     end
     exit(exit_code)
-  end
-
-  def run_dart
-    begin
-      @dart_pid = Process.spawn(ENV, "go run -race dart/main.go -port 8444", chdir: project_root)
-      sleep(1)
-      puts "\n\n\n"
-      puts "DART is running at http://localhost:8444"
-      start_minio
-      start_sftp
-      puts "\n"
-      puts "Control-C will stop DART, SFTP and Minio\n\n"
-      Process.wait @dart_pid
-    rescue SystemExit, Interrupt
-      puts "\nEt tu, Brute! Then fall, Caesar."
-    end
-  end
-
-  def stop_dart
-    if !@dart_pid
-        puts "Pid for DART is zero. Can't kill that..."
-        return
-    end
-    puts "Stopping DART service (pid #{@dart_pid})"
-    begin
-      Process.kill('TERM', @dart_pid)
-    rescue
-      puts "Could not kill DART. :("
-    end
   end
 
   def start_minio
@@ -173,9 +143,6 @@ class Runner
   end
 
   def stop_all_services
-    if @dart_pid > 0
-      stop_dart
-    end
     stop_minio
     stop_sftp
   end
@@ -207,8 +174,8 @@ class Runner
   def show_help
     puts "To run unit and integration tests:"
     puts "    run.rb tests\n"
-    puts "To run DART, SFTP and Minio for interactive testing:"
-    puts "    run.rb dart\n"
+    puts "To start SFTP and Minio containers for interactive testing:"
+    puts "    run.rb services\n"
   end
 end
 
@@ -219,8 +186,14 @@ if __FILE__ == $0
   action = ARGV[0]
   if action == "tests"
     runner.run_tests
-  elsif action == "dart"
-    runner.run_dart
+  elsif action = "services"
+    runner.start_minio
+    runner.start_sftp
+    puts "Control-C to quit"
+    while true
+      # Wait for keyboard interrupt from user.
+      # That will stop the services.
+    end
   else
     runner.show_help
   end

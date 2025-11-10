@@ -82,8 +82,6 @@ If you're using Visual Studio Code, you should install the following:
 
 ## Building
 
-`./scripts/build_dart.sh` to build DART.
-
 `./scripts/build_dart_runner.sh` to build DART Runner.
 
 **Note:** Before creating a release build of DART Runner:
@@ -92,14 +90,9 @@ If you're using Visual Studio Code, you should install the following:
   * Commit all changes
   * Tag the commit with the new release number. This is essential, because the build script injects the latest git tag as the version number, and the app will print that tag/version number when the user runs `dart-runner -version`
 
+## Interactive Testing
 
-## Running
-
-To run DART interactively:
-
-`ruby ./scripts/run.rb dart`
-
-This will start DART on http://localhost:8444. It will also start a local Minio server to handle S3 uploads, and a local SFTP server for SFTP uploads. You can upload to these services using the following settings:
+Running `./scripts/run.rb services` will start local Docker instances of Minio and SFTP. You run test jobs from the command line against these services. These services also allow you to interactively debug tests like TestUploadRun in core/upload_job_test.go.
 
 ### Local Minio Service
 
@@ -177,11 +170,6 @@ Note that in addition to having a recent version of Go (1.20+), running tests re
 ```bash
 # Build the binary
 ./scripts/build_dart_runner.sh
-
-# Start DART services, including Minio.
-# Run this in a separate terminal window, since it
-# will continue to run until killed with Ctrl-C.
-./scripts/run.rb dart
 
 # Run a workflow that does not create artifacts
 ./dist/mac-arm64/dart-runner \

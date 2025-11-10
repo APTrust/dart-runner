@@ -94,8 +94,8 @@ func TestUploadJobPersistence(t *testing.T) {
 // containers have to be running. They will be if you run
 // tests via `./scripts/run.rb tests`.
 //
-// To debug this test, start the Minio and SFTP containers
-// using `./scripts/run.rb dart`, and then debug this.
+// To debug this test, you must first start the Minio
+// and SFTP containers using `./scripts/run/rb services`.
 func TestUploadRun(t *testing.T) {
 	defer core.ClearDartTable()
 	localMinioService, err := core.LoadStorageServiceFixture("storage_service_local_minio.json")
