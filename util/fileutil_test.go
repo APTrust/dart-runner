@@ -132,7 +132,8 @@ func TestPathsContainingControlChars(t *testing.T) {
 }
 
 func TestGetDirectoryStats(t *testing.T) {
-	dir := filepath.Join(util.ProjectRoot(), "server", "views")
+	// dir := filepath.Join(util.ProjectRoot(), "core")
+	dir := util.ProjectRoot()
 	dirStats := util.GetDirectoryStats(dir)
 	require.Empty(t, dirStats.Error)
 	assert.Equal(t, dir, dirStats.FullPath)
@@ -148,11 +149,11 @@ func TestGetDirectoryStats(t *testing.T) {
 	}
 	assert.Contains(t, dirStats.Error, expectedErr)
 
-	file := filepath.Join(util.ProjectRoot(), "server", "views", "partials", "nav.html")
+	file := filepath.Join(util.ProjectRoot(), "core", "storage_service.go")
 	dirStats = util.GetDirectoryStats(file)
 	assert.Empty(t, dirStats.Error)
 	assert.Equal(t, file, dirStats.FullPath)
-	assert.Equal(t, "nav.html", dirStats.BaseName)
+	assert.Equal(t, "storage_service.go", dirStats.BaseName)
 	assert.Equal(t, 0, dirStats.DirCount)
 	assert.Equal(t, 1, dirStats.FileCount)
 

@@ -150,22 +150,22 @@ func getExpectedTagLists() [][]*core.Tag {
 		{
 			TagFile: "bag-info.txt",
 			TagName: "Bag-Name",
-			Value:   "RunnerTestServer",
+			Value:   "RunnerTestFiles",
 		},
 		{
 			TagFile: "bag-info.txt",
 			TagName: "Root-Directory",
-			Value:   "./server/controllers",
+			Value:   "./testdata/files",
 		},
 		{
 			TagFile: "aptrust-info.txt",
 			TagName: "Title",
-			Value:   "Runner Test - Server Files",
+			Value:   "Runner Test - Test Files",
 		},
 		{
 			TagFile: "aptrust-info.txt",
 			TagName: "Description",
-			Value:   "Go source files from DART runner: bagit directory. These files are bagged as part of the DART runner workflow tests.",
+			Value:   "Project test files",
 		},
 		{
 			TagFile: "aptrust-info.txt",

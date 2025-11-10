@@ -187,7 +187,7 @@ func TestWorkflowBatchCommand(t *testing.T) {
 	}
 
 	outputFiles := []string{
-		"RunnerTestServer.tar",
+		"RunnerTestFiles.tar",
 		"RunnerTestCore.tar",
 		"RunnerTestUtil.tar",
 	}
@@ -210,8 +210,8 @@ func testOutputFile(t *testing.T, homeDir, file string) {
 	require.NoError(t, err)
 
 	objInfo, err := client.StatObject(context.Background(), "dart-runner.test", file, minio.StatObjectOptions{})
-	require.NoError(t, err)
-	require.NotNil(t, objInfo)
+	require.NoError(t, err, file)
+	require.NotNil(t, objInfo, file)
 
 	assert.True(t, objInfo.Size > int64(10000), file)
 	assert.WithinDuration(t, time.Now(), objInfo.LastModified, 30*time.Second)
