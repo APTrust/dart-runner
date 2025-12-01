@@ -186,7 +186,7 @@ if __FILE__ == $0
   action = ARGV[0]
   if action == "tests"
     runner.run_tests
-  elsif action = "services"
+  elsif action == "services"
     runner.start_minio
     runner.start_sftp
     puts "Control-C to quit"
