@@ -348,7 +348,7 @@ func (job *Job) RuntimeErrors() map[string]string {
 			job.Errors[key] = value
 		}
 	}
-	if job.UploadOps != nil && len(job.UploadOps) > 0 {
+	if len(job.UploadOps) > 0 {
 		opNum := 1
 		for _, uploadOp := range job.UploadOps {
 			for key, value := range uploadOp.Errors {
@@ -434,6 +434,23 @@ func (job *Job) String() string {
 
 func (job *Job) GetErrors() map[string]string {
 	return job.Errors
+}
+
+// ClearErrors clears all error messages from this job.
+// This is required when re-running jobs that previously
+// failed. Otherwise, stale error messages linger even
+// after the job succeeds.
+func (job *Job) ClearErrors() {
+	job.Errors = make(map[string]string)
+	if job.PackageOp != nil {
+		job.PackageOp.Errors = make(map[string]string)
+	}
+	if job.ValidationOp != nil {
+		job.ValidationOp.Errors = make(map[string]string)
+	}
+	for i := range job.UploadOps {
+		job.UploadOps[i].Errors = make(map[string]string)
+	}
 }
 
 func (job *Job) UpdatePayloadStats() {

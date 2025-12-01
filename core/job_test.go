@@ -312,3 +312,29 @@ func TestJobOutcome(t *testing.T) {
 	assert.Equal(t, job.UploadOps[0].StorageService.Name, outcome.FailedUploads[0])
 
 }
+
+func TestJobClearErrors(t *testing.T) {
+	job := core.NewJob()
+	job.Errors["err0"] = "Job error"
+	job.PackageOp.Errors["err1"] = "Package error"
+	job.ValidationOp.Errors["err2"] = "Validation error"
+
+	ss := core.NewStorageService()
+	files := make([]string, 0)
+	job.UploadOps = append(job.UploadOps, core.NewUploadOperation(ss, files))
+	job.UploadOps = append(job.UploadOps, core.NewUploadOperation(ss, files))
+	job.UploadOps[0].Errors["err3"] = "Upload error 1"
+	job.UploadOps[1].Errors["err4"] = "Upload error 2"
+
+	assert.True(t, len(job.Errors) > 0)
+	assert.True(t, len(job.PackageOp.Errors) > 0)
+	assert.True(t, len(job.ValidationOp.Errors) > 0)
+	assert.True(t, len(job.UploadOps[0].Errors) > 0)
+	assert.True(t, len(job.UploadOps[1].Errors) > 0)
+
+	job.ClearErrors()
+	assert.Equal(t, len(job.PackageOp.Errors), 0)
+	assert.Equal(t, len(job.ValidationOp.Errors), 0)
+	assert.Equal(t, len(job.UploadOps[0].Errors), 0)
+	assert.Equal(t, len(job.UploadOps[1].Errors), 0)
+}
