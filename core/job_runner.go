@@ -62,7 +62,7 @@ func RunJobWithMessageChannel(job *Job, deleteOnSuccess bool, messageChannel cha
 	} else {
 		runner.setNoCleanupMessage()
 	}
-	runner.writeStageOutcome(constants.StageUpload, "All uploads completed", true)
+	runner.writeStageOutcome(constants.StageUpload, "All uploads succeeded", true)
 
 	runner.writeExitMessagesAndSaveResults()
 
