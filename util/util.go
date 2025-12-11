@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -242,7 +243,7 @@ func PathTo(program string) (string, error) {
 	}
 	stdout, stderr, exitcode := ExecCommand(cmd, args, os.Environ(), nil)
 	if exitcode != 0 {
-		return "", fmt.Errorf(string(stderr))
+		return "", errors.New(string(stderr))
 	}
 	// Windows where.exe can return multiple lines if the
 	// system has multiple copies of an executable in the path.
