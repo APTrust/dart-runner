@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -97,12 +98,12 @@ func (writer *FileSystemBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pat
 	if bytesWritten != xFileInfo.Size() {
 		message := fmt.Sprintf("FileSystemBagWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, xFileInfo.Size(), xFileInfo.FullPath)
 		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
+		return checksums, errors.New(message)
 	}
 	if err != nil {
 		message := fmt.Sprintf("Error copying %s into tar archive: %v", xFileInfo.FullPath, err)
 		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
+		return checksums, errors.New(message)
 	}
 
 	// This returns actual owner and group id on posix systems,

@@ -3,6 +3,7 @@ package core
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -47,7 +48,7 @@ func (writer *TarredBagWriter) Open() error {
 	if err != nil {
 		message := fmt.Sprintf("Error creating tar file: %v", err)
 		Dart.Log.Error(message)
-		return fmt.Errorf(message)
+		return errors.New(message)
 	}
 	// Gzip bags are tested in core_test.TestBaggerRun_Gzip.
 	if strings.HasSuffix(writer.outputPath, ".gz") || strings.HasSuffix(writer.outputPath, ".tgz") {
@@ -112,7 +113,7 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	if writer.tarWriter == nil {
 		message := "Underlying TarWriter is nil. Has it been opened?"
 		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
+		return checksums, errors.New(message)
 	}
 
 	// This returns actual owner and group id on posix systems,
@@ -177,12 +178,12 @@ func (writer *TarredBagWriter) AddFile(xFileInfo *util.ExtendedFileInfo, pathWit
 	if bytesWritten != header.Size {
 		message := fmt.Sprintf("TarredBagWriter.addToArchive() copied only %d of %d bytes for file %s", bytesWritten, header.Size, xFileInfo.FullPath)
 		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
+		return checksums, errors.New(message)
 	}
 	if err != nil {
 		message := fmt.Sprintf("Error copying %s into tar archive: %v", xFileInfo.FullPath, err)
 		Dart.Log.Error(message)
-		return checksums, fmt.Errorf(message)
+		return checksums, errors.New(message)
 	}
 
 	// Gather the checksums.
