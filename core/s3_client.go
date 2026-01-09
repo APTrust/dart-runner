@@ -150,3 +150,22 @@ func (c *S3Client) EtagMap() map[string]string {
 	}
 	return etagMap
 }
+
+// ListBuckets returns a list of existing S3 buckets.
+func (c *S3Client) ListBuckets() ([]minio.BucketInfo, error) {
+	return c.minioClient.ListBuckets(context.Background())
+}
+
+// ListObjects lists the objects in the specified bucket.
+func (c *S3Client) ListObjects(bucketName, prefix string, opts minio.ListObjectsOptions) []minio.ObjectInfo {
+	objects := make([]minio.ObjectInfo, 0)
+	for object := range c.minioClient.ListObjects(context.Background(), bucketName, opts) {
+		objects = append(objects, object)
+	}
+	return objects
+}
+
+// GetObject returns the object with the specified bucket name and key.
+func (c *S3Client) GetObject(bucket, key string, opts minio.GetObjectOptions) (*minio.Object, error) {
+	return c.minioClient.GetObject(context.Background(), bucket, key, opts)
+}

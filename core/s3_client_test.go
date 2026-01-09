@@ -9,9 +9,14 @@ import (
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
 	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Note: S3 tests require a local Minio server to be running.
+// See core/sftp_client_test.go for instructions on starting
+// the Minio server using scripts/test.rb or scripts/run.rb.
 
 func TestS3FileUpload(t *testing.T) {
 	ss := getS3StorageService()
@@ -154,4 +159,144 @@ func testS3UploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int
 	}
 
 	wg.Wait()
+}
+
+func TestListBuckets(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	buckets, err := s3Client.ListBuckets()
+	require.Nil(t, err)
+	require.NotNil(t, buckets)
+
+	// The local Minio instance should have at least one bucket
+	// (the test bucket defined in getS3StorageService)
+	assert.True(t, len(buckets) > 0, "Expected at least one bucket")
+
+	// Check that we can find our test bucket
+	foundTestBucket := false
+	for _, bucket := range buckets {
+		if bucket.Name == ss.Bucket {
+			foundTestBucket = true
+			assert.NotEmpty(t, bucket.CreationDate)
+			break
+		}
+	}
+	assert.True(t, foundTestBucket, "Expected to find test bucket: %s", ss.Bucket)
+}
+
+func TestListObjects(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// First, upload a test file so we have something to list
+	filename := fileToUpload()
+	key := filepath.Base(filename)
+	err = s3Client.Upload(filename, key)
+	require.Nil(t, err)
+
+	// Now list objects in the bucket
+	opts := minio.ListObjectsOptions{
+		Recursive: true,
+	}
+	objects := s3Client.ListObjects(ss.Bucket, "", opts)
+	require.NotNil(t, objects)
+
+	// We should have at least one object (the one we just uploaded)
+	assert.True(t, len(objects) > 0, "Expected at least one object in bucket")
+
+	// Find our uploaded file
+	foundUploadedFile := false
+	for _, obj := range objects {
+		if obj.Key == key {
+			foundUploadedFile = true
+			assert.Equal(t, key, obj.Key)
+			assert.True(t, obj.Size > 0, "Expected object size to be greater than 0")
+			assert.NotEmpty(t, obj.ETag)
+			assert.NotEmpty(t, obj.LastModified)
+			break
+		}
+	}
+	assert.True(t, foundUploadedFile, "Expected to find uploaded file: %s", key)
+}
+
+func TestListObjectsWithPrefix(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// Upload a test directory with multiple files
+	dirname := dirToUpload()
+	key := filepath.Base(dirname)
+	err = s3Client.Upload(dirname, key)
+	require.Nil(t, err)
+
+	// List objects with the directory prefix
+	opts := minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    key,
+	}
+	objects := s3Client.ListObjects(ss.Bucket, key, opts)
+	require.NotNil(t, objects)
+
+	// We should have multiple objects from the uploaded directory
+	assert.True(t, len(objects) > 1, "Expected multiple objects with prefix")
+
+	// All objects should start with our prefix
+	for _, obj := range objects {
+		assert.True(t, strings.HasPrefix(obj.Key, key), "Expected object key to have prefix: %s", key)
+	}
+}
+
+func TestGetObject(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// Upload a test file first
+	filename := fileToUpload()
+	key := filepath.Base(filename)
+	err = s3Client.Upload(filename, key)
+	require.Nil(t, err)
+
+	// Now retrieve the object
+	opts := minio.GetObjectOptions{}
+	obj, err := s3Client.GetObject(ss.Bucket, key, opts)
+	require.Nil(t, err)
+	require.NotNil(t, obj)
+
+	// Verify we can read the object's metadata
+	stat, err := obj.Stat()
+	require.Nil(t, err)
+	assert.Equal(t, key, stat.Key)
+	assert.True(t, stat.Size > 0, "Expected object size to be greater than 0")
+	assert.NotEmpty(t, stat.ETag)
+
+	// Close the object when we're done
+	err = obj.Close()
+	require.Nil(t, err)
+}
+
+func TestGetObjectNonExistent(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// Try to get an object that doesn't exist
+	nonExistentKey := "non-existent-file-" + uuid.NewString() + ".txt"
+	opts := minio.GetObjectOptions{}
+	obj, err := s3Client.GetObject(ss.Bucket, nonExistentKey, opts)
+	require.Nil(t, err)
+	require.NotNil(t, obj)
+
+	// The error won't occur until we try to read from or stat the object
+	_, err = obj.Stat()
+	require.NotNil(t, err, "Expected error when getting non-existent object")
 }
