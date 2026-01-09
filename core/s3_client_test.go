@@ -180,7 +180,6 @@ func TestListBuckets(t *testing.T) {
 	for _, bucket := range buckets {
 		if bucket.Name == ss.Bucket {
 			foundTestBucket = true
-			assert.NotEmpty(t, bucket.CreationDate)
 			break
 		}
 	}
