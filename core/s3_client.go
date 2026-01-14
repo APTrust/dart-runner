@@ -157,9 +157,9 @@ func (c *S3Client) ListBuckets() ([]minio.BucketInfo, error) {
 }
 
 // ListObjects lists the objects in the specified bucket.
-func (c *S3Client) ListObjects(bucketName, prefix string, opts minio.ListObjectsOptions) []minio.ObjectInfo {
+func (c *S3Client) ListObjects(ctx context.Context, bucketName, prefix string, opts minio.ListObjectsOptions) []minio.ObjectInfo {
 	objects := make([]minio.ObjectInfo, 0)
-	for object := range c.minioClient.ListObjects(context.Background(), bucketName, opts) {
+	for object := range c.minioClient.ListObjects(ctx, bucketName, opts) {
 		objects = append(objects, object)
 	}
 	return objects

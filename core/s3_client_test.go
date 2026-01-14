@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"context"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -202,7 +203,7 @@ func TestListObjects(t *testing.T) {
 	opts := minio.ListObjectsOptions{
 		Recursive: true,
 	}
-	objects := s3Client.ListObjects(ss.Bucket, "", opts)
+	objects := s3Client.ListObjects(context.Background(), ss.Bucket, "", opts)
 	require.NotNil(t, objects)
 
 	// We should have at least one object (the one we just uploaded)
@@ -240,7 +241,7 @@ func TestListObjectsWithPrefix(t *testing.T) {
 		Recursive: true,
 		Prefix:    key,
 	}
-	objects := s3Client.ListObjects(ss.Bucket, key, opts)
+	objects := s3Client.ListObjects(context.Background(), ss.Bucket, key, opts)
 	require.NotNil(t, objects)
 
 	// We should have multiple objects from the uploaded directory
