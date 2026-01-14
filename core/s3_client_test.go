@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"context"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -203,7 +202,7 @@ func TestListObjects(t *testing.T) {
 	opts := minio.ListObjectsOptions{
 		Recursive: true,
 	}
-	objects := s3Client.ListObjects(context.Background(), ss.Bucket, "", opts)
+	objects := s3Client.ListObjects(ss.Bucket, "", opts)
 	require.NotNil(t, objects)
 
 	// We should have at least one object (the one we just uploaded)
@@ -241,13 +240,44 @@ func TestListObjectsWithPrefix(t *testing.T) {
 		Recursive: true,
 		Prefix:    key,
 	}
-	objects := s3Client.ListObjects(context.Background(), ss.Bucket, key, opts)
+	objects := s3Client.ListObjects(ss.Bucket, key, opts)
 	require.NotNil(t, objects)
 
 	// We should have multiple objects from the uploaded directory
 	assert.True(t, len(objects) > 1, "Expected multiple objects with prefix")
 
 	// All objects should start with our prefix
+	for _, obj := range objects {
+		assert.True(t, strings.HasPrefix(obj.Key, key), "Expected object key to have prefix: %s", key)
+	}
+}
+
+func TestListObjectsWithMaxKeys(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// Upload a test directory with multiple files to ensure we have enough objects
+	dirname := dirToUpload()
+	key := filepath.Base(dirname)
+	err = s3Client.Upload(dirname, key)
+	require.Nil(t, err)
+
+	// List objects with MaxKeys set to limit the number of results
+	maxKeys := 2
+	opts := minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    key,
+		MaxKeys:   maxKeys,
+	}
+	objects := s3Client.ListObjects(ss.Bucket, key, opts)
+	require.NotNil(t, objects)
+
+	// Verify that we only get the specified maximum number of keys
+	assert.Equal(t, maxKeys, len(objects), "Expected exactly %d objects due to MaxKeys setting", maxKeys)
+
+	// Verify that the objects we got have the correct prefix
 	for _, obj := range objects {
 		assert.True(t, strings.HasPrefix(obj.Key, key), "Expected object key to have prefix: %s", key)
 	}

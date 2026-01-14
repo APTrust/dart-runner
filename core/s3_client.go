@@ -157,11 +157,22 @@ func (c *S3Client) ListBuckets() ([]minio.BucketInfo, error) {
 }
 
 // ListObjects lists the objects in the specified bucket.
-func (c *S3Client) ListObjects(ctx context.Context, bucketName, prefix string, opts minio.ListObjectsOptions) []minio.ObjectInfo {
+func (c *S3Client) ListObjects(bucketName, prefix string, opts minio.ListObjectsOptions) []minio.ObjectInfo {
+	// Note that MaxKeys is useless in the Minio client according to
+	// harshavardhana's incredibly obnoxious response at
+	// https://github.com/minio/minio-go/issues/1536
+	ctx, cancel := context.WithCancel(context.Background())
 	objects := make([]minio.ObjectInfo, 0)
+	count := 0
 	for object := range c.minioClient.ListObjects(ctx, bucketName, opts) {
 		objects = append(objects, object)
+		count++
+		if opts.MaxKeys > 0 && count == opts.MaxKeys {
+			cancel()
+			break
+		}
 	}
+	cancel()
 	return objects
 }
 
