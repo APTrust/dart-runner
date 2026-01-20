@@ -1,5 +1,10 @@
 # Change Log
 
+## v1.0.1 - 2026-01-20
+
+* Added support for S3 downloads. That feature is available only in DART 3.
+* Fixed incorrect workflow/batch documentation. https://github.com/APTrust/dart-runner/issues/17.
+
 ## v1.0 - 2025-09-03
 
 * Added --skip-artifacts command-line option to skip saving artifacts (tag files and manifests) to seperate directory when bagging. https://trello.com/c/r7FEBuAK
