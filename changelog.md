@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.2 - 2026-01-27
+
+* Fixed an issue that caused bagging failure with job output directory does not exist. https://trello.com/c/IlDtpuFq
+
 ## v1.0.1 - 2026-01-20
 
 * Added support for S3 downloads. That feature is available only in DART 3.
