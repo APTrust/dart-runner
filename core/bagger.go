@@ -73,6 +73,8 @@ func (b *Bagger) Run() bool {
 		return b.finish()
 	}
 
+	b.EnsureOutputDirExists()
+
 	if !b.initWriter() {
 		return b.finish()
 	}
@@ -370,6 +372,24 @@ func (b *Bagger) getPreferredDigestAlg() string {
 	}
 	// Still nothing? LOC recommends sha512, so that's what you get.
 	return constants.AlgSha512
+}
+
+// EnsureOutputDirExists ensures that the output directory into which
+// we are about to write a bag actually exists. If the user set an
+// invalid path under DART's BaggingDirectory, or if they deleted that
+// directory, or if they just entered a non-existent path as the job's
+// OutputPath, they'll see an error saying "Underlying TarWriter is nil"
+// which doesn't help the average user at all. If they want to put a
+// bag in OutputPath, let's just make sure the directory exists.
+// This is in response to https://trello.com/c/IlDtpuFq
+func (b *Bagger) EnsureOutputDirExists() {
+	dir := b.OutputPath
+	if !util.IsDirectory(dir) {
+		dir = filepath.Dir(b.OutputPath)
+	}
+	if !util.FileExists(dir) {
+		os.MkdirAll(dir, 0755)
+	}
 }
 
 func (b *Bagger) calculatePathPrefix() {

@@ -2,9 +2,12 @@ package core_test
 
 import (
 	"os"
+	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -197,4 +200,25 @@ func assertAllPayloadFilesPresent(t *testing.T, expected []*util.ExtendedFileInf
 		fileRecord := actual[shortPath]
 		assert.NotNil(t, fileRecord, shortPath)
 	}
+}
+
+func TestEnsureOutputDirExists(t *testing.T) {
+	tempDir := path.Join(os.TempDir(), strconv.FormatInt(time.Now().UnixNano(), 10), "bag.tar")
+	defer os.Remove(tempDir)
+
+	bagger := core.NewBagger(tempDir, nil, nil)
+	assert.False(t, util.FileExists(tempDir))
+
+	bagger.EnsureOutputDirExists()
+	assert.False(t, util.FileExists(tempDir))
+
+	tempDir2 := path.Join(os.TempDir(), strconv.FormatInt(time.Now().UnixNano(), 10), "untarred_bag")
+	defer os.Remove(tempDir2)
+
+	bagger = core.NewBagger(tempDir, nil, nil)
+	assert.False(t, util.FileExists(tempDir2))
+
+	bagger.EnsureOutputDirExists()
+	assert.False(t, util.FileExists(tempDir2))
+
 }
