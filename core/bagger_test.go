@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -61,6 +62,13 @@ func TestBaggerRunWithControlCharacters(t *testing.T) {
 	defer func() {
 		assert.NoError(t, core.ObjDelete(setting))
 	}()
+
+	// Windows won't even let us create a file with this
+	// control character, so we have to skip this test
+	// on Windows.
+	if runtime.GOOS == "windows" {
+		return
+	}
 
 	// Create a temp tempFile to bag. The tempFile name contains a
 	// control character. This tempFile name contains the unicode

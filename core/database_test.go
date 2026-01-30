@@ -3,6 +3,7 @@ package core_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/APTrust/dart-runner/constants"
 	"github.com/APTrust/dart-runner/core"
@@ -95,6 +96,9 @@ func TestArtifactPersistenceOperations(t *testing.T) {
 			artifact.BagName = "Bag 2"
 		}
 		err := core.ArtifactSave(artifact)
+		// We need a delay here, or timestamps won't
+		// sort correctly in the queries below.
+		time.Sleep(50 * time.Millisecond)
 		require.Nil(t, err)
 		ids[i] = artifact.ID
 	}

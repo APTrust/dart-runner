@@ -75,7 +75,7 @@ func testWorkflowRunner(t *testing.T, skipArtifacts bool) {
 	stdErrBytes, _ := io.ReadAll(stdErr)
 
 	assert.NotEmpty(t, stdOutBytes)
-	assert.Empty(t, stdErrBytes)
+	assert.Empty(t, stdErrBytes, string(stdErrBytes))
 
 	// STDOUT should have three JSON objects,
 	// each one representing the result of a job.
