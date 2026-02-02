@@ -38,13 +38,13 @@ mkdir -p dist/mac-arm64
 GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/mac-arm64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
 # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
-echo "Building Windows amd64 version in ./dist/windows-x64/dart-runner"
+echo "Building Windows amd64 version in ./dist/windows-x64/dart-runner.exe"
 mkdir -p dist/windows-x64
-GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o dist/windows-x64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o dist/windows-x64/dart-runner.exe -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
-echo "Building Windows arm64 version in ./dist/windows-arm64/dart-runner"
+echo "Building Windows arm64 version in ./dist/windows-arm64/dart-runner.exe"
 mkdir -p dist/windows-arm64
-GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -o dist/windows-arm64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -o dist/windows-arm64/dart-runner.exe -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
 
 echo "Building Linux amd64 version in ./dist/linux-x64/dart-runner"
 mkdir -p dist/linux-x64
