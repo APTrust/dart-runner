@@ -8,7 +8,7 @@ dart-runner will run [DART](https://github.com/APTrust/dart) jobs and workflows 
 
 ## Downloads
 
-For Mac and Linux beta versions, see  https://aptrust.github.io/dart-docs/users/dart_runner/#downloads
+To download the latest version for Mac, Windows, or Linux, see  https://aptrust.github.io/dart-docs/runner/#downloads
 
 ## Usage
 
