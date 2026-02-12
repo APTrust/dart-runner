@@ -108,6 +108,7 @@ func testSFTPUploadFile(t *testing.T, sftp *core.SFTPClient) {
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), sftp.FilesUploaded())
 	assert.Equal(t, int64(23552), sftp.BytesUploaded())
+	assert.Equal(t, int64(23552), sftp.PayloadSize())
 }
 
 func testSFTPUploadDir(t *testing.T, sftp *core.SFTPClient) {
@@ -119,6 +120,7 @@ func testSFTPUploadDir(t *testing.T, sftp *core.SFTPClient) {
 	require.Nil(t, err)
 	assert.Equal(t, int64(fileCount), sftp.FilesUploaded())
 	assert.True(t, sftp.BytesUploaded() > int64(25000))
+	assert.True(t, sftp.PayloadSize() > int64(25000))
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader

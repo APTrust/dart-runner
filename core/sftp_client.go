@@ -133,6 +133,12 @@ func (sc *SFTPClient) Upload(source, destination string) error {
 		}
 		return sc.uploadDirectory(source, destination)
 	}
+	stats, err := os.Stat(source)
+	if err != nil {
+		Dart.Log.Warningf("Can't get file size for %v. Upload percentage will not be calculated correctly.", err)
+	} else {
+		sc.totalBytesToUpload = stats.Size()
+	}
 	return sc.uploadFile(source, destination, info)
 }
 

@@ -72,6 +72,12 @@ func (c *S3Client) Upload(source, destination string) error {
 		}
 		return c.uploadDirectory(source)
 	}
+	stats, err := os.Stat(source)
+	if err != nil {
+		Dart.Log.Warningf("Can't get file size for %v. Upload percentage will not be calculated correctly.", err)
+	} else {
+		c.totalBytesToUpload = stats.Size()
+	}
 	s3Key := filepath.Base(source)
 	return c.uploadFile(source, s3Key)
 }

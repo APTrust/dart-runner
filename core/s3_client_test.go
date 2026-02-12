@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -32,7 +33,8 @@ func TestS3FileUploadWithProgress(t *testing.T) {
 	fileToUpload := fileToUpload()
 	payloadSize, err := core.GetUploadPayloadSize(fileToUpload)
 	require.Nil(t, err)
-	testSFTPUploadWithProgressBar(t, "file", payloadSize)
+	assert.Greater(t, payloadSize, int64(100))
+	testS3UploadWithProgressBar(t, "file")
 }
 
 func TestS3DirectoryUpload(t *testing.T) {
@@ -49,7 +51,8 @@ func TestS3DirectoryUploadWithProgress(t *testing.T) {
 	dirToUpload := dirToUpload()
 	payloadSize, err := core.GetUploadPayloadSize(dirToUpload)
 	require.Nil(t, err)
-	testSFTPUploadWithProgressBar(t, "directory", payloadSize)
+	assert.Greater(t, payloadSize, int64(100))
+	testS3UploadWithProgressBar(t, "directory")
 }
 
 func getS3StorageService() *core.StorageService {
@@ -73,6 +76,7 @@ func testS3UploadFile(t *testing.T, s3Client *core.S3Client) {
 
 	assert.Equal(t, int64(1), s3Client.FilesUploaded())
 	assert.Equal(t, int64(23552), s3Client.BytesUploaded())
+	assert.Equal(t, int64(23552), s3Client.PayloadSize())
 	assert.Equal(t, 1, len(s3Client.EtagMap()))
 }
 
@@ -85,13 +89,15 @@ func testS3UploadDir(t *testing.T, s3Client *core.S3Client) {
 	require.Nil(t, err)
 	assert.Equal(t, int64(fileCount), s3Client.FilesUploaded())
 	assert.True(t, s3Client.BytesUploaded() > int64(25000))
+	assert.True(t, s3Client.PayloadSize() > int64(25000))
 	assert.Equal(t, fileCount, len(s3Client.EtagMap()))
 }
 
 // This is a tricky test. We want to make sure the SFTP uploader
 // pushes messages into the progress reader's message channel.
 // See comments inline...
-func testS3UploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int64) {
+func testS3UploadWithProgressBar(t *testing.T, fileOrDir string) {
+	mutex := sync.Mutex{}
 	iReadSomething := false
 	messageChannel := make(chan *core.EventMessage)
 
@@ -100,7 +106,9 @@ func testS3UploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int
 	// messages into this channel with info about the upload progress.
 	defer func() {
 		close(messageChannel)
+		mutex.Lock()
 		assert.True(t, iReadSomething)
+		mutex.Unlock()
 	}()
 
 	// We have to set up a WaitGroup to prevent a data race.
@@ -132,8 +140,21 @@ func testS3UploadWithProgressBar(t *testing.T, fileOrDir string, payloadSize int
 	go func() {
 		messageCount := 0
 		for msg := range messageChannel {
+
+			// Set this flag, so the final test in the deferred
+			// goroutine above will know that a message was sent
+			// and read.
+			mutex.Lock()
 			iReadSomething = true
-			assert.True(t, strings.HasPrefix(msg.Message, "Sent"))
+			mutex.Unlock()
+
+			// Make sure the message says that we are uploading
+			// data to some S3 endpoint, or that we have sent
+			// some number of bytes.
+			sentOrUploading := strings.HasPrefix(msg.Message, "Sent") || strings.HasPrefix(msg.Message, "Uploading")
+			assert.True(t, sentOrUploading, msg.Message)
+
+			fmt.Println(msg.Message)
 			messageCount += 1
 			if messageCount == expectedMessageCount {
 				wg.Done()
