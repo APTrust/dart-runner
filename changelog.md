@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.3 - [Not released yet]
+
+* Fixed totalBytesToUpload in S3 client and SFTP client. When uploading directories, this had been set properly, but when uploading files, it had been set to zero, resulting in the DART front end incorrectly reporting uploads being over one million percent complete.
+
 ## v1.0.2 - 2026-01-27
 
 * Fixed an issue that caused bagging failure with job output directory does not exist. https://trello.com/c/IlDtpuFq
