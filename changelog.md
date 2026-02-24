@@ -3,6 +3,7 @@
 ## v1.0.3 - [Not released yet]
 
 * Fixed totalBytesToUpload in S3 client and SFTP client. When uploading directories, this had been set properly, but when uploading files, it had been set to zero, resulting in the DART front end incorrectly reporting uploads being over one million percent complete.
+* Fixed long-running DART jobs: send leaner, more consistent stream of events to the front-end. https://trello.com/c/oPPNjCus.
 
 ## v1.0.2 - 2026-01-27
 
