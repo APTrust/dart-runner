@@ -183,8 +183,27 @@ func (b *Bagger) checkIllegalControlCharacters() bool {
 }
 
 func (b *Bagger) addPayloadFiles() bool {
-	for _, xFileInfo := range b.FilesToBag {
-		b.info(fmt.Sprintf("Adding %s", xFileInfo.FullPath))
+	previousPercentComplete := 0
+	payloadFileCount := len(b.FilesToBag)
+
+	for currentFileNumber, xFileInfo := range b.FilesToBag {
+		// This change addresses https://trello.com/c/oPPNjCus
+		// in which jobs that have to bag huge numbers of files
+		// hang indefinitely. The problem here was that we were
+		// sending an event to the front end for each file added
+		// to the bag. When bagging over 100k files, this causes
+		// the browser to crash. With this change, we send an
+		// event only when the completion percentage goes up by
+		// at least one, e.g. 59% -> 60%. This ensures we send no
+		// more than one hundred events to the front end, no matter
+		// how big the bag is.
+		b.currentFileNum = int64(currentFileNumber)
+		currentPercent := int(float64(currentFileNumber) * 100 / float64(payloadFileCount))
+		if currentPercent > previousPercentComplete {
+			b.info(fmt.Sprintf("Adding payload files: %d%% complete", currentPercent))
+			previousPercentComplete = currentPercent
+		}
+
 		pathInBag := b.pathForPayloadFile(xFileInfo.FullPath)
 		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
@@ -351,7 +370,7 @@ func (b *Bagger) initWriter() bool {
 		Dart.Log.Errorf("Bagger cannot find writer for serialization type %s: %v", b.SerializationFormat, err)
 		return false
 	} else {
-		Dart.Log.Infof("Bagger chose writer for serialization type %s: %v", b.SerializationFormat, err)
+		Dart.Log.Infof("Bagger chose writer for serialization type %s", b.SerializationFormat)
 	}
 	b.writer.Open()
 	return true
@@ -462,7 +481,7 @@ func (b *Bagger) finish() bool {
 			b.Errors["BagWriter"] = fmt.Sprintf("Error closing bag writer: %s", err.Error())
 		}
 	}
-	Dart.Log.Infof("Finished bag %s", b.bagName)
+	Dart.Log.Infof("Finished writing bag %s", b.bagName)
 	if len(b.Errors) > 0 {
 		Dart.Log.Errorf("Bagging %s failed with the following errors:", b.bagName)
 	}
@@ -504,7 +523,6 @@ func (b *Bagger) info(message string) {
 	}
 
 	b.MessageChannel <- eventMessage
-	b.currentFileNum += 1
 }
 
 func (b *Bagger) warn(message string) {

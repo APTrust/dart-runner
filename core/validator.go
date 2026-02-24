@@ -167,6 +167,40 @@ func (v *Validator) ScanBag() error {
 		return err
 	}
 	defer reader.Close()
+
+	// Set up a callback to stream events back to the front end UI,
+	// if we happen to be running in DART GUI mode.
+	currentFileNum := 0
+	estimatedFileCount := len(v.PayloadFiles.Files) + int(v.TagFiles.FileCount())
+	callback := func(eventType, message string) {
+		pctComplete := 0
+		if estimatedFileCount > 0 && currentFileNum > 0 {
+			pctComplete = int(float64(currentFileNum) * 100 / float64(estimatedFileCount))
+		}
+		eventMessage := &EventMessage{
+			EventType: eventType,
+			Stage:     constants.StageValidation,
+			Message:   message,
+			Total:     int64(estimatedFileCount),
+			Current:   int64(currentFileNum),
+			Percent:   pctComplete,
+		}
+		v.MessageChannel <- eventMessage
+		currentFileNum += 1
+		Dart.Log.Infof("%s", message)
+	}
+
+	// Set the callback on the reader if MessageChannel is available
+	if v.MessageChannel != nil {
+		switch r := reader.(type) {
+		case *FileSystemBagReader:
+			r.progressCallback = callback
+		case *TarredBagReader:
+			r.progressCallback = callback
+		}
+		callback(constants.EventTypeInit, "Starting bag validation...")
+	}
+
 	err = reader.ScanMetadata()
 	if err != nil {
 		return err

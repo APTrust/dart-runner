@@ -128,7 +128,7 @@ func (u *UploadOperation) sendToS3(messageChannel chan *EventMessage) bool {
 			u.Errors[key] = fmt.Sprintf("Error copying %s to S3: %s", fileOrDirectoryPath, err.Error())
 			allSucceeded = false
 		} else {
-			Dart.Log.Infof("Finished SFTP upload of file/directory %s to %s", fileOrDirectoryPath, u.StorageService.Name)
+			Dart.Log.Infof("Finished S3 upload of file/directory %s to %s", fileOrDirectoryPath, u.StorageService.Name)
 		}
 		// Record result data. Note that the legacy RemoteChecksum and
 		// RemoteURL captured a single value. Now that we're doing

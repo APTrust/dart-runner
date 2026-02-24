@@ -13,8 +13,9 @@ import (
 
 // FileSystemBagReader reads loose (unserialized) bags.
 type FileSystemBagReader struct {
-	validator *Validator
-	fileList  []*util.ExtendedFileInfo
+	validator        *Validator
+	fileList         []*util.ExtendedFileInfo
+	progressCallback func(string, string)
 }
 
 // NewFileSystemBagReader returns a reader that can parse loose
@@ -33,7 +34,9 @@ func NewFileSystemBagReader(validator *Validator) (*FileSystemBagReader, error) 
 // * parses all payload and tag manifests
 // * parses all parsable tag files
 func (r *FileSystemBagReader) ScanMetadata() error {
-	for _, xFileInfo := range r.fileList {
+	totalFiles := len(r.fileList)
+	lastPercent := -1
+	for i, xFileInfo := range r.fileList {
 		if xFileInfo.IsDir() {
 			continue
 		}
@@ -42,13 +45,22 @@ func (r *FileSystemBagReader) ScanMetadata() error {
 			Dart.Log.Errorf("FileSystemBagReader.ScanMetadata error reading %s: %v", xFileInfo.FullPath, err)
 			return err
 		}
+		if r.progressCallback != nil && totalFiles > 0 {
+			currentPercent := int(float64(i+1) * 100 / float64(totalFiles))
+			if currentPercent > lastPercent {
+				r.progressCallback(constants.EventTypeInfo, fmt.Sprintf("Scanning metadata: %s", xFileInfo.FullPath))
+				lastPercent = currentPercent
+			}
+		}
 	}
 	return nil
 }
 
 // ScanPayload scans the entire bag, adding checksums for all files.
 func (r *FileSystemBagReader) ScanPayload() error {
-	for _, xFileInfo := range r.fileList {
+	totalFiles := len(r.fileList)
+	lastPercent := -1
+	for i, xFileInfo := range r.fileList {
 		err := r.processPayloadEntry(xFileInfo)
 		if err == io.EOF {
 			Dart.Log.Debugf("FileSystemBagReader.ScanPayload finished reading payload in %s", xFileInfo.FullPath)
@@ -57,6 +69,13 @@ func (r *FileSystemBagReader) ScanPayload() error {
 		if err != nil {
 			Dart.Log.Errorf("FileSystemBagReader.ScanPayload error reading %s: %v", xFileInfo.FullPath, err)
 			return err
+		}
+		if r.progressCallback != nil && totalFiles > 0 {
+			currentPercent := int(float64(i+1) * 100 / float64(totalFiles))
+			if currentPercent > lastPercent {
+				r.progressCallback(constants.EventTypeInfo, fmt.Sprintf("Scanning payload: %s", xFileInfo.FullPath))
+				lastPercent = currentPercent
+			}
 		}
 	}
 	r.mergePayloadManifestChecksums()

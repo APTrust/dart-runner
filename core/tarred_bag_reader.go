@@ -15,10 +15,13 @@ import (
 // TarredBagReader reads a tarred BagIt file to collect metadata for
 // bagit and ingest processing. See ProcessNextEntry() below.
 type TarredBagReader struct {
-	validator  *Validator
-	fileReader io.ReadSeekCloser
-	tarReader  *tar.Reader
-	gzipReader *gzip.Reader
+	validator        *Validator
+	fileReader       io.ReadSeekCloser
+	tarReader        *tar.Reader
+	gzipReader       *gzip.Reader
+	progressCallback func(string, string)
+	totalBytes       int64
+	processedBytes   int64
 }
 
 // NewTarredBagReader creates a new TarredBagReader.
@@ -38,10 +41,17 @@ func NewTarredBagReader(validator *Validator) (*TarredBagReader, error) {
 			return nil, err
 		}
 	}
+	// Get file size for progress reporting
+	fileInfo, err := file.Stat()
+	var totalBytes int64
+	if err == nil {
+		totalBytes = fileInfo.Size()
+	}
 	return &TarredBagReader{
 		fileReader: file,
 		gzipReader: gzipReader, // may be nil
 		validator:  validator,
+		totalBytes: totalBytes,
 	}, nil
 }
 
@@ -73,6 +83,8 @@ func (r *TarredBagReader) rewindReader() {
 // * parses all parsable tag files
 func (r *TarredBagReader) ScanMetadata() error {
 	r.rewindReader()
+	r.processedBytes = 0
+	lastPercent := -1
 	for {
 		err := r.processMetaEntry()
 		if err == io.EOF {
@@ -83,6 +95,13 @@ func (r *TarredBagReader) ScanMetadata() error {
 			Dart.Log.Errorf("TarredBagReader.ScanMetadata error reading %s: %v", r.validator.PathToBag, err)
 			return err
 		}
+		if r.progressCallback != nil && r.totalBytes > 0 {
+			currentPercent := int(float64(r.processedBytes) * 100 / float64(r.totalBytes))
+			if currentPercent > lastPercent {
+				r.progressCallback(constants.EventTypeInfo, fmt.Sprintf("Scanning metadata (%.0f%% of archive)", float64(currentPercent)))
+				lastPercent = currentPercent
+			}
+		}
 	}
 	return nil
 }
@@ -90,6 +109,8 @@ func (r *TarredBagReader) ScanMetadata() error {
 // ScanPayload scans the entire bag, adding checksums for all files.
 func (r *TarredBagReader) ScanPayload() error {
 	r.rewindReader()
+	r.processedBytes = 0
+	lastPercent := -1
 	for {
 		err := r.processPayloadEntry()
 		if err == io.EOF {
@@ -99,6 +120,13 @@ func (r *TarredBagReader) ScanPayload() error {
 		if err != nil {
 			Dart.Log.Errorf("TarredBagReader.ScanPayload error reading %s: %v", r.validator.PathToBag, err)
 			return err
+		}
+		if r.progressCallback != nil && r.totalBytes > 0 {
+			currentPercent := int(float64(r.processedBytes) * 100 / float64(r.totalBytes))
+			if currentPercent > lastPercent {
+				r.progressCallback(constants.EventTypeInfo, fmt.Sprintf("Scanning payload (%.0f%% of archive)", float64(currentPercent)))
+				lastPercent = currentPercent
+			}
 		}
 	}
 	r.mergePayloadManifestChecksums()
@@ -124,6 +152,7 @@ func (r *TarredBagReader) processMetaEntry() error {
 	if err != nil {
 		return err
 	}
+	r.processedBytes += header.Size
 	if header.Typeflag == tar.TypeReg {
 		pathInBag, err := util.TarPathToBagPath(header.Name)
 		if err != nil {
@@ -151,6 +180,7 @@ func (r *TarredBagReader) processPayloadEntry() error {
 	if err != nil {
 		return err
 	}
+	r.processedBytes += header.Size
 	if header.Typeflag == tar.TypeReg || header.Typeflag == tar.TypeGNUSparse {
 		err = r.ensureFileRecord(header)
 	}
