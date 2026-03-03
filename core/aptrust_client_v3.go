@@ -180,6 +180,7 @@ func (client *APTrustClientV3) connect() error {
 		client.version,
 		client.config.GetUserID(),
 		client.config.GetAPIToken(),
+		"member-api",
 		Dart.Log,
 	)
 	client.registry = registryClient

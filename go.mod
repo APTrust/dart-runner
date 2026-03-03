@@ -6,7 +6,7 @@ go 1.24.11
 replace github.com/nsqio/nsq => github.com/nsqio/nsq v1.2.0
 
 require (
-	github.com/APTrust/preservation-services v0.0.0-20250121215436-e111cbb1f03f
+	github.com/APTrust/preservation-services v0.0.0-20260303193921-0cefb01f4e00
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/gin-gonic/gin v1.10.0
@@ -15,7 +15,7 @@ require (
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/sftp v1.13.7
 	github.com/stretchr/stew v0.0.0-20130812190256-80ef0842b48b
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.47.0
 	golang.org/x/text v0.33.0
 	modernc.org/sqlite v1.34.5
@@ -36,7 +36,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/go-redis/redis/v7 v7.4.1 // indirect
-	github.com/goccy/go-json v0.10.4 // indirect
+	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
@@ -55,7 +55,7 @@ require (
 	github.com/nsqio/go-diskqueue v0.0.0-20180306152900-74cfbc9de839 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/nsqio/nsq v1.2.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
