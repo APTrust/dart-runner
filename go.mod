@@ -11,7 +11,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
-	github.com/minio/minio-go/v7 v7.0.97
+	github.com/minio/minio-go/v7 v7.0.98
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/sftp v1.13.7
 	github.com/stretchr/stew v0.0.0-20130812190256-80ef0842b48b
@@ -63,6 +63,7 @@ require (
 	github.com/tinylib/msgp v1.6.3 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
 	golang.org/x/net v0.49.0 // indirect
