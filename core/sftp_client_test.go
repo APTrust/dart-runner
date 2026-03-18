@@ -20,8 +20,8 @@ import (
 // container.
 //
 // If you want to run these tests manually, you can start the
-// SFTP and Minio servers using the run.rb script from the
-// DART repo: `./scripts/run.rb services`
+// SFTP and Minio servers using the run.sh script from the
+// DART repo: `./scripts/run.sh services`
 //
 // Also note that if you're manually checking files on the SFTP
 // server, the SFTP password user and the SFTP key user are

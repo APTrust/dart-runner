@@ -92,7 +92,7 @@ If you're using Visual Studio Code, you should install the following:
 
 ## Interactive Testing
 
-Running `./scripts/run.rb services` will start local Docker instances of Minio and SFTP. You run test jobs from the command line against these services. These services also allow you to interactively debug tests like TestUploadRun in core/upload_job_test.go.
+Running `./scripts/run.sh services` will start local Docker instances of Minio and SFTP. You run test jobs from the command line against these services. These services also allow you to interactively debug tests like TestUploadRun in core/upload_job_test.go.
 
 ### Local Minio Service
 
@@ -155,7 +155,7 @@ And this uses a password:
 
 ## Testing
 
-`ruby ./scripts/run.rb tests`
+`ruby ./scripts/run.sh tests`
 
 Note that in addition to having a recent version of Go (1.20+), running tests requires the following dependencies:
 

@@ -17,7 +17,7 @@ import (
 
 // Note: S3 tests require a local Minio server to be running.
 // See core/sftp_client_test.go for instructions on starting
-// the Minio server using scripts/test.rb or scripts/run.rb.
+// the Minio server using scripts/run.sh.
 
 func TestS3FileUpload(t *testing.T) {
 	ss := getS3StorageService()

@@ -92,7 +92,7 @@ func TestUploadJobPersistence(t *testing.T) {
 
 // Note that for this to work, our local Minio and SFTP
 // containers have to be running. They will be if you run
-// tests via `./scripts/run.rb tests`.
+// tests via `./scripts/run.sh tests`.
 //
 // To debug this test, you must first start the Minio
 // and SFTP containers using `./scripts/run/rb services`.
