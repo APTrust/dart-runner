@@ -49,9 +49,10 @@ const (
 	ItemTypeJobResult             = "job result"
 	ItemTypeManifest              = "manifest"
 	ItemTypeTagFile               = "tag file"
-	MaxLogFileSize                = int64(10 * 1024 * 1024) // 10 MB
-	MaxS3ObjectSize               = int64(5497558138880)    // 5TB
-	MaxServerSideCopySize         = int64(5368709120)       // 5GB
+	MaxLogFileSize                = int64(10 * 1024 * 1024)               // 10 MB
+	MaxS3ObjectSize               = int64(50 * 1000 * 1000 * 1000 * 1000) // 50TB
+	MaxS3RequestSize              = int64(5497558138880)                  // 5TB
+	MaxServerSideCopySize         = int64(5368709120)                     // 5GB
 	MaxValidationErrors           = 30
 	ModeAptCmd                    = "apt-cmd"
 	ModeDartGUI                   = "dart-gui"

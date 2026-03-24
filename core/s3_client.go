@@ -3,6 +3,8 @@ package core
 import (
 	"context"
 	"fmt"
+	"io"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -20,6 +22,12 @@ type S3Client struct {
 	filesUploaded      int64
 	etags              map[string]string
 }
+
+const (
+	minChunkSize    = 64 * 1024 * 1024       // 64 MiB
+	maxChunkSize    = 5 * 1024 * 1024 * 1024 // 5 GiB (S3 max part size)
+	targetPartCount = 10000
+)
 
 // NewS3Client creates a new S3 client. If useSSL is true (and it
 // should be in all environments outside local dev) this will connect
@@ -185,4 +193,66 @@ func (c *S3Client) ListObjects(bucketName, prefix string, opts minio.ListObjects
 // GetObject returns the object with the specified bucket name and key.
 func (c *S3Client) GetObject(bucket, key string, opts minio.GetObjectOptions) (*minio.Object, error) {
 	return c.minioClient.GetObject(context.Background(), bucket, key, opts)
+}
+
+// ComputeChunkSize computes the chunk size for retrieving a large
+// object (> 5TB) from S3.
+func (c *S3Client) ComputeChunkSize(objectSize int64) int64 {
+	chunkSize := int64(math.Ceil(float64(objectSize / targetPartCount)))
+	if chunkSize < minChunkSize {
+		chunkSize = minChunkSize
+	}
+	if chunkSize > maxChunkSize {
+		chunkSize = maxChunkSize
+	}
+	return chunkSize
+}
+
+// GetLargeObject returns a ReadCloser to download large objects
+// (> 5TB) from S3.
+func (c *S3Client) GetLargeObject(bucket, key string) (io.ReadCloser, error) {
+	info, err := c.minioClient.StatObject(context.Background(), bucket, key, minio.StatObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	chunkSize := c.ComputeChunkSize(info.Size)
+	pr, pw := io.Pipe()
+
+	go func() {
+		var writeErr error
+		var offset int64
+
+		for offset < info.Size {
+			end := offset + chunkSize - 1
+			if end >= info.Size {
+				end = info.Size - 1
+			}
+
+			opts := minio.GetObjectOptions{}
+			if err := opts.SetRange(offset, end); err != nil {
+				writeErr = err
+				break
+			}
+
+			obj, err := c.minioClient.GetObject(context.Background(), bucket, key, opts)
+			if err != nil {
+				writeErr = err
+				break
+			}
+
+			if _, err := io.Copy(pw, obj); err != nil {
+				obj.Close()
+				writeErr = err
+				break
+			}
+			obj.Close()
+
+			offset = end + 1
+		}
+
+		pw.CloseWithError(writeErr)
+	}()
+
+	return pr, nil
 }

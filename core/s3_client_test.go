@@ -2,6 +2,8 @@ package core_test
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -350,4 +352,75 @@ func TestGetObjectNonExistent(t *testing.T) {
 	// The error won't occur until we try to read from or stat the object
 	_, err = obj.Stat()
 	require.NotNil(t, err, "Expected error when getting non-existent object")
+}
+
+func TestComputeChunkSize(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	const (
+		minChunk  int64 = 64 * 1024 * 1024
+		maxChunk  int64 = 5 * 1024 * 1024 * 1024
+		partCount int64 = 10000
+	)
+
+	// Zero-size object: integer division yields 0, clamped to minChunkSize.
+	assert.Equal(t, minChunk, s3Client.ComputeChunkSize(0))
+
+	// Small object: integer division still yields 0, clamped to minChunkSize.
+	assert.Equal(t, minChunk, s3Client.ComputeChunkSize(100))
+
+	// Object exactly at the minChunkSize * targetPartCount boundary:
+	// division yields exactly minChunkSize, no clamping.
+	assert.Equal(t, minChunk, s3Client.ComputeChunkSize(minChunk*partCount))
+
+	// Object large enough to produce a chunk between min and max bounds.
+	// objectSize = minChunk * partCount * 2 → chunkSize = minChunk * 2 = 128 MiB.
+	objectSize := minChunk * partCount * 2
+	expected := objectSize / partCount
+	assert.Equal(t, expected, s3Client.ComputeChunkSize(objectSize))
+
+	// Very large object: raw chunk would exceed maxChunkSize, clamped to maxChunkSize.
+	assert.Equal(t, maxChunk, s3Client.ComputeChunkSize((maxChunk+1)*partCount))
+}
+
+func TestGetLargeObject(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// Upload a test file so there is something to retrieve.
+	filename := fileToUpload()
+	key := filepath.Base(filename)
+	err = s3Client.Upload(filename, key)
+	require.Nil(t, err)
+
+	// GetLargeObject should stream the full file content.
+	rc, err := s3Client.GetLargeObject(ss.Bucket, key)
+	require.Nil(t, err)
+	require.NotNil(t, rc)
+	defer rc.Close()
+
+	got, err := io.ReadAll(rc)
+	require.Nil(t, err)
+
+	expected, err := os.ReadFile(filename)
+	require.Nil(t, err)
+	assert.Equal(t, expected, got)
+}
+
+func TestGetLargeObjectNonExistent(t *testing.T) {
+	ss := getS3StorageService()
+	s3Client, err := core.NewS3Client(ss, false, nil)
+	require.Nil(t, err)
+	require.NotNil(t, s3Client)
+
+	// StatObject will fail immediately for a non-existent key.
+	nonExistentKey := "non-existent-large-object-" + uuid.NewString() + ".bin"
+	rc, err := s3Client.GetLargeObject(ss.Bucket, nonExistentKey)
+	assert.NotNil(t, err)
+	assert.Nil(t, rc)
 }
