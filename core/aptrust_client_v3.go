@@ -230,15 +230,15 @@ var workItemsTemplate = `
     </tr>
   </thead>
   <tbody>
-    {{ $repoBaseUrl := .repoBaseUrl }}
-    {{ range $index, $item := .items }}
+    {{- $repoBaseUrl := .repoBaseUrl -}}
+    {{- range $index, $item := .items }}
     <tr>
-      <td><a href="{{ $repoBaseUrl }}/work_items/show/{{ $item.ID }}" target="_blank">{{ $item.Name }}</a></td>
+      <td><a href="javascript:openExternalUrl('{{ $repoBaseUrl }}/work_items/show/{{ $item.ID }}')">{{ $item.Name }}</a></td>
       <td>{{ $item.Stage }}</td>
       <td>{{ $item.Status }}</td>
 	  <td>{{ $item.UpdatedAt.Format "2006-01-02" }}</td>
     </tr>
-    {{ end }}
+    {{- end }}
   </tbody>
 </table>
 `
@@ -253,14 +253,14 @@ var intellectualObjectsTemplate = `
     </tr>
   </thead>
   <tbody>
-    {{ $repoBaseUrl := .repoBaseUrl }}
-    {{ range $index, $item := .items }}
+    {{- $repoBaseUrl := .repoBaseUrl -}}
+    {{- range $index, $item := .items }}
     <tr>
-      <td><a href="{{ $repoBaseUrl }}/objects/show/{{ $item.ID }}" target="_blank">{{ $item.Identifier }}</a></td>
+      <td><a href="javascript:openExternalUrl('{{ $repoBaseUrl }}/objects/show/{{ $item.ID }}')">{{ $item.Identifier }}</a></td>
       <td>{{ $item.StorageOption }}</td>
 	  <td>{{ $item.UpdatedAt.Format "2006-01-02" }}</td>
     </tr>
-    {{ end }}
+    {{- end }}
   </tbody>
 </table>
 `
