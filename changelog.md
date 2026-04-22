@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.4 - [Not Released Yet]
+
+* Fixed HTML in output from APTrust Repo client, so that links can open when running Wails front end.
+
 ## v1.0.3 - 2026-03-24
 
 * Fixed totalBytesToUpload in S3 client and SFTP client. When uploading directories, this had been set properly, but when uploading files, it had been set to zero, resulting in the DART front end incorrectly reporting uploads being over one million percent complete.
