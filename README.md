@@ -187,3 +187,14 @@ Note that in addition to having a recent version of Go (1.20+), running tests re
 	--skip-artifacts=true \
 	--output-dir=<DIR>
 ```
+
+## Releasing
+
+To create a new release:
+
+1. Tag the release with a new version number using `git tag -a <version>`
+2. Make sure your APTrust AWS credentials are in your environment. See ./scripts/release.sh for the environment variable names.
+3. Run `./scripts/release.sh --pre-check <version>`
+4. If all is good, run `./scripts/release.sh <version>`
+5. Update links and checksums as instructed by release.sh.
+6. Test the new release links to ensure that downloads work.
