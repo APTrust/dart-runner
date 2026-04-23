@@ -1,6 +1,6 @@
 # Change Log
 
-## v1.0.4 - [Not Released Yet]
+## v1.0.4 - 2026-04-23
 
 * Fixed HTML in output from APTrust Repo client, so that links can open when running Wails front end.
 
