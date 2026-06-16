@@ -230,3 +230,13 @@ func TestEnsureOutputDirExists(t *testing.T) {
 	assert.False(t, util.FileExists(tempDir2))
 
 }
+
+// Test for https://github.com/APTrust/dart-runner/issues/18
+func TestPathForFileMethods(t *testing.T) {
+	bagger := core.Bagger{}
+	bagger.PathPrefix = "/"
+
+	assert.Equal(t, "data/core/bagger.go", bagger.PathForPayloadFile("core/bagger.go"))
+	assert.Equal(t, "core/bagger.go", bagger.PathForTagFile("core/bagger.go"))
+
+}

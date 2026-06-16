@@ -23,6 +23,7 @@ type Bagger struct {
 	FilesToBag          []*util.ExtendedFileInfo
 	Errors              map[string]string
 	MessageChannel      chan *EventMessage
+	PathPrefix          string
 	PayloadFiles        *FileMap
 	PayloadManifests    *FileMap
 	TagFiles            *FileMap
@@ -32,7 +33,6 @@ type Bagger struct {
 	Warnings            map[string]string
 	SerializationFormat string
 	writer              BagWriter
-	pathPrefix          string
 	bagName             string
 	currentFileNum      int64
 	totalFileCount      int64
@@ -204,7 +204,7 @@ func (b *Bagger) addPayloadFiles() bool {
 			previousPercentComplete = currentPercent
 		}
 
-		pathInBag := b.pathForPayloadFile(xFileInfo.FullPath)
+		pathInBag := b.PathForPayloadFile(xFileInfo.FullPath)
 		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[xFileInfo.FullPath] = err.Error()
@@ -266,7 +266,7 @@ func (b *Bagger) writeManifest(whichKind, alg string) (string, string, bool) {
 		subjectFileType = constants.FileTypeTag
 	}
 	filename := fmt.Sprintf("%s-%s.txt", prefix, alg)
-	pathInBag := b.pathForTagFile(filename)
+	pathInBag := b.PathForTagFile(filename)
 	tempFilePath := ""
 	outputFile, err := os.CreateTemp("", fmt.Sprintf("%s-%d", filename, time.Now().UnixNano()))
 	if outputFile != nil {
@@ -319,7 +319,7 @@ func (b *Bagger) addTagFiles() bool {
 			return false
 		}
 		xFileInfo := util.NewExtendedFileInfo(tempFilePath, fileInfo)
-		pathInBag := b.pathForTagFile(tagFileName)
+		pathInBag := b.PathForTagFile(tagFileName)
 		checksums, err := b.writer.AddFile(xFileInfo, pathInBag)
 		if err != nil {
 			b.Errors[tagFileName] = fmt.Sprintf("Error writing tag file to bag: %s", err.Error())
@@ -416,7 +416,7 @@ func (b *Bagger) calculatePathPrefix() {
 	for i, xFileInfo := range b.FilesToBag {
 		paths[i] = xFileInfo.FullPath
 	}
-	b.pathPrefix = util.FindCommonPrefix(paths)
+	b.PathPrefix = util.FindCommonPrefix(paths)
 }
 
 func (b *Bagger) setBagInfoAutoValues() {
@@ -438,8 +438,8 @@ func (b *Bagger) calculateBagName() {
 	b.bagName = strings.TrimSuffix(b.bagName, ".tar")
 }
 
-func (b *Bagger) pathForPayloadFile(fullPath string) string {
-	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+func (b *Bagger) PathForPayloadFile(fullPath string) string {
+	shortPath := strings.TrimPrefix(fullPath, b.PathPrefix)
 	if runtime.GOOS == "windows" {
 		shortPath = strings.ReplaceAll(shortPath, "\\", "/")
 	}
@@ -461,8 +461,8 @@ func (b *Bagger) pathForPayloadFile(fullPath string) string {
 	return fmt.Sprintf("%s/data%s", b.bagName, shortPath)
 }
 
-func (b *Bagger) pathForTagFile(fullPath string) string {
-	shortPath := strings.Replace(fullPath, b.pathPrefix, "", 1)
+func (b *Bagger) PathForTagFile(fullPath string) string {
+	shortPath := strings.TrimPrefix(fullPath, b.PathPrefix)
 	if filepath.Ext(b.OutputPath) == "" {
 		// Bag is a directory. See note above.
 		return shortPath

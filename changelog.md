@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.5 - [Not Released Yet]
+
+* Fixed https://github.com/APTrust/dart-runner/issues/18, which caused Dart Runner to create invalid paths in a bag's data directory under certain very specific conditions.
+
 ## v1.0.4 - 2026-04-23
 
 * Fixed HTML in output from APTrust Repo client, so that links can open when running Wails front end.

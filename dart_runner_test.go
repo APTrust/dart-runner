@@ -1,9 +1,12 @@
 package main_test
 
 import (
+	"archive/tar"
 	// "encoding/json"
 	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	//"strings"
@@ -32,6 +35,51 @@ func init() {
 func TestRunJob(t *testing.T) {
 	opts := optsForJobParams(t)
 	assert.Equal(t, constants.ExitOK, main.RunJob(opts))
+}
+
+// Test for https://github.com/APTrust/dart-runner/issues/18
+func TestSingleRelativePathBug(t *testing.T) {
+	filesDir, _, outputDir := dirs(t)
+	jobParamsJson, err := util.ReadFile(filepath.Join(filesDir, "job_params_relative_path.json"))
+	require.Nil(t, err)
+	opts := &core.Options{
+		OutputDir:        outputDir,
+		WorkflowFilePath: fmt.Sprintf("%s/postbuild_bag_only_workflow.json", filesDir),
+		StdinData:        jobParamsJson,
+	}
+	require.Equal(t, constants.ExitOK, main.RunJob(opts))
+
+	// Bag name RelativePaths.tar comes from job_params_relative_path.json
+	tarredBag := path.Join(outputDir, "RelativePaths.tar")
+
+	f, err := os.Open(tarredBag)
+	require.Nil(t, err)
+	defer f.Close()
+
+	tr := tar.NewReader(f)
+	foundExpected := false
+	foundBadPath := false
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		require.Nil(t, err)
+		// This is the file we SHOULD find if
+		// https://github.com/APTrust/dart-runner/issues/18
+		// is fixed.
+		if hdr.Name == "RelativePaths/data/core/bagger.go" {
+			foundExpected = true
+		}
+		// If this file appears in the bag, then
+		// https://github.com/APTrust/dart-runner/issues/18
+		// is not fixed, or we've had a regression.
+		if hdr.Name == "RelativePaths/data/corebagger.go" {
+			foundBadPath = true
+		}
+	}
+	assert.True(t, foundExpected, "expected RelativePaths/data/core/bagger.go in tar")
+	assert.False(t, foundBadPath, "RelativePaths/data/corebagger.go should not exist in tar")
 }
 
 func TestRunWorkflow(t *testing.T) {

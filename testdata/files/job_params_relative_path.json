@@ -1,0 +1,23 @@
+{
+    "packageName": "RelativePaths",
+    "files": [
+        "core"
+    ],
+    "tags": [
+        {
+            "tagFile": "aptrust-info.txt",
+            "tagName": "Title",
+            "value": "Bag with bad file path"
+        },
+        {
+            "tagFile": "aptrust-info.txt",
+            "tagName": "Description",
+            "value": "You can't bag files that don't exist"
+        },
+        {
+            "tagFile": "aptrust-info.txt",
+            "tagName": "Access",
+            "value": "Institution"
+        }
+    ]
+}
