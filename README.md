@@ -175,6 +175,9 @@ If you see an error saying **go: no such tool "covdata"**, try running the tests
 # Build the binary
 ./scripts/build_dart_runner.sh
 
+# Start docker services (minio, sftp)
+./scripts/run.sh services
+
 # Run a workflow that does not create artifacts
 ./dist/mac-arm64/dart-runner \
 	--workflow=./testdata/files/postbuild_test_workflow.json \
