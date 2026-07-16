@@ -1,9 +1,10 @@
 # Change Log
 
-## v1.0.5 - [Not Released Yet]
+## v1.0.5 - 2026-07-16
 
 * Fixed https://github.com/APTrust/dart-runner/issues/18, which caused Dart Runner to create invalid paths in a bag's data directory under certain very specific conditions.
 * Fixed https://github.com/APTrust/dart-runner/issues/21, which caused Dart Runner to create invalid paths in a bag's manifest files when creating loose (untarred) bags.
+* Updated dependencies golang.org/x/crypto 0.47 -> 0.54 and golang.org/x/net 0.49 -> 0.56 to fix security issues.
 
 ## v1.0.4 - 2026-04-23
 
