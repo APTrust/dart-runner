@@ -111,7 +111,7 @@ func (fm *FileMap) WriteManifest(writer io.Writer, fileType, alg, trimFromPath s
 		if cs == nil {
 			return fmt.Errorf("Missing %s digest for %s [%s]", alg, filename, fileType)
 		}
-		trimmedFileName := strings.Replace(filename, trimFromPath, "", 1)
+		trimmedFileName := strings.TrimPrefix(filename, trimFromPath)
 		entry := fmt.Sprintf("%s  %s\n", cs.Digest, trimmedFileName)
 		n, err := writer.Write([]byte(entry))
 		if err != nil {
