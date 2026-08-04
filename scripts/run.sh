@@ -36,7 +36,14 @@ make_test_dirs() {
 
 start_minio() {
     echo "Starting Minio container"
-    DOCKER_MINIO_ID=$(docker run -p 9899:9000 -p 9001:9001 -v ~/tmp/minio:/data --user "$(id -u):$(id -g)" -e MINIO_ROOT_USER="$MINIO_USER" -e MINIO_ROOT_PASSWORD="$MINIO_PASSWORD" -d quay.io/minio/minio server /data --console-address ":9001")
+    local user_args=()
+    # On Mac & Linux, run Minio server as current user so it doesn't
+    # write files as root. On Windows (MINGW), we need to run it without
+    # the user flags.
+    if [[ "$(uname -s)" != *MINGW* ]]; then
+        user_args=(--user "$(id -u):$(id -g)")
+    fi
+    DOCKER_MINIO_ID=$(docker run -p 9899:9000 -p 9001:9001 -v ~/tmp/minio:/data "${user_args[@]}" -e MINIO_ROOT_USER="$MINIO_USER" -e MINIO_ROOT_PASSWORD="$MINIO_PASSWORD" -d quay.io/minio/minio server /data --console-address ":9001")
     local exit_code=$?
     DOCKER_MINIO_ID=$(echo "$DOCKER_MINIO_ID" | tr -d '[:space:]')
     if [ $exit_code -eq 0 ]; then
