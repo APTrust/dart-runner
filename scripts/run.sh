@@ -36,7 +36,7 @@ make_test_dirs() {
 
 start_minio() {
     echo "Starting Minio container"
-    DOCKER_MINIO_ID=$(docker run -p 9899:9000 -p 9001:9001 -v ~/tmp/minio:/data -e MINIO_ROOT_USER="$MINIO_USER" -e MINIO_ROOT_PASSWORD="$MINIO_PASSWORD" -d quay.io/minio/minio server /data --console-address ":9001")
+    DOCKER_MINIO_ID=$(docker run -p 9899:9000 -p 9001:9001 -v ~/tmp/minio:/data --user "$(id -u):$(id -g)" -e MINIO_ROOT_USER="$MINIO_USER" -e MINIO_ROOT_PASSWORD="$MINIO_PASSWORD" -d quay.io/minio/minio server /data --console-address ":9001")
     local exit_code=$?
     DOCKER_MINIO_ID=$(echo "$DOCKER_MINIO_ID" | tr -d '[:space:]')
     if [ $exit_code -eq 0 ]; then
