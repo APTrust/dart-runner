@@ -4,11 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+)
+
+const (
+	sshDialTimeout      = 10 * time.Second
+	sshHandshakeTimeout = 10 * time.Second
+	sftpInitTimeout     = 10 * time.Second
 )
 
 type SFTPClient struct {
@@ -77,21 +85,48 @@ func NewSFTPClient(ss *StorageService, uploadProgress *StreamProgress) (*SFTPCli
 		Auth: []ssh.AuthMethod{
 			authMethod,
 		},
+		Timeout:         sshHandshakeTimeout,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Use proper host key checking in production
 	}
 
 	// Connect to SSH server
 	addr := fmt.Sprintf("%s:%d", ss.Host, ss.Port)
-	conn, err := ssh.Dial("tcp", addr, config)
+	rawConn, err := net.DialTimeout("tcp", addr, sshDialTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to SSH server: %w", err)
 	}
-
-	// Create SFTP client
-	client, err := sftp.NewClient(conn)
+	_ = rawConn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
+	sshConn, chans, reqs, err := ssh.NewClientConn(rawConn, addr, config)
 	if err != nil {
+		rawConn.Close()
+		return nil, fmt.Errorf("failed SSH handshake: %w", err)
+	}
+	_ = rawConn.SetDeadline(time.Time{})
+	conn := ssh.NewClient(sshConn, chans, reqs)
+
+	// Create SFTP client with explicit timeout so tests fail fast if the
+	// server accepts SSH auth but stalls before completing SFTP setup.
+	type sftpInitResult struct {
+		client *sftp.Client
+		err    error
+	}
+	resultCh := make(chan sftpInitResult, 1)
+	go func() {
+		client, err := sftp.NewClient(conn)
+		resultCh <- sftpInitResult{client: client, err: err}
+	}()
+
+	var client *sftp.Client
+	select {
+	case result := <-resultCh:
+		if result.err != nil {
+			conn.Close()
+			return nil, fmt.Errorf("failed to create SFTP client: %w", result.err)
+		}
+		client = result.client
+	case <-time.After(sftpInitTimeout):
 		conn.Close()
-		return nil, fmt.Errorf("failed to create SFTP client: %w", err)
+		return nil, fmt.Errorf("timed out creating SFTP client after %s", sftpInitTimeout)
 	}
 
 	sftpClient := &SFTPClient{
