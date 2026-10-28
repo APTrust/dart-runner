@@ -1,6 +1,6 @@
 module github.com/APTrust/dart-runner
 
-go 1.25.0
+go 1.26.10
 
 // Force use of nsq v1.2.0 because v1.3.0 has breaking changes.
 replace github.com/nsqio/nsq => github.com/nsqio/nsq v1.2.0

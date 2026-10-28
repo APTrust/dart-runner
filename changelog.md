@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.6 - 2026-10-28
+
+* Updated to Golang 1.26.10.
+
 ## v1.0.5 - 2026-07-16
 
 * Fixed https://github.com/APTrust/dart-runner/issues/18, which caused Dart Runner to create invalid paths in a bag's data directory under certain very specific conditions.
