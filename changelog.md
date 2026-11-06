@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.0.7 - 2026-11-06
+
+* Fixed "import settings" errors described in https://github.com/APTrust/dart-runner/issues/23. This issue affected DART only. It did not affect command-line usage of Dart Runner.
+
 ## v1.0.6 - 2026-10-28
 
 * Updated to Golang 1.26.10.
