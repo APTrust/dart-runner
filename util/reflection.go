@@ -167,7 +167,7 @@ func resolveFieldName(structType reflect.Type, name string) string {
 			continue
 		}
 		jsonName := strings.Split(f.Tag.Get("json"), ",")[0]
-		if jsonName == name {
+		if jsonName == name && jsonName != "-" {
 			return f.Name
 		}
 		if caseInsensitiveMatch == "" && (strings.EqualFold(f.Name, name) || (jsonName != "" && jsonName != "-" && strings.EqualFold(jsonName, name))) {

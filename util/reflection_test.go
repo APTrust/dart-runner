@@ -54,6 +54,7 @@ type TaggedStruct struct {
 	Allows   bool   `json:"allowsUpload"`
 	Ratio    float64
 	Tags     []string `json:"tags"`
+	Skipped  string   `json:"-"`
 	internal string
 }
 
@@ -83,6 +84,11 @@ func TestSetValueErrors(t *testing.T) {
 	assert.ErrorIs(t, err, constants.ErrNoSuchField)
 	err = util.SetStringValue(s, "", "x")
 	assert.ErrorIs(t, err, constants.ErrNoSuchField)
+
+	// json:"-" is not a field name.
+	err = util.SetStringValue(s, "-", "x")
+	assert.ErrorIs(t, err, constants.ErrNoSuchField)
+	assert.Empty(t, s.Skipped)
 
 	// Unexported fields are not settable.
 	err = util.SetStringValue(s, "internal", "x")
