@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/APTrust/dart-runner/constants"
+	"github.com/APTrust/dart-runner/util"
 	"github.com/google/uuid"
 )
 
@@ -155,7 +156,69 @@ func (settings *ExportSettings) Validate() bool {
 	return true
 }
 
+// SetValueFromResponse copies the user's response to an ExportQuestion
+// into the field the question points to.
+//
+// For AppSettings, RemoteRepositories and StorageServices, question.Field
+// is the name of a struct field. It may be the Go name ("UserID") or the
+// JSON name ("userId"), since settings exported from DART 2 use JSON
+// names. The response is converted to the field's type (string, bool or
+// int) before it's set.
+//
+// For BagItProfiles, question.Field is the ID of a tag definition, and
+// the response is copied to that tag's DefaultValue.
 func (settings *ExportSettings) SetValueFromResponse(question *ExportQuestion, response string) error {
-	// TODO: Implement this.
+	if question == nil {
+		return fmt.Errorf("%w: question is nil", constants.ErrInvalidOperation)
+	}
+	var obj interface{}
+	switch question.ObjType {
+	case constants.TypeAppSetting:
+		for _, setting := range settings.AppSettings {
+			if setting != nil && setting.ID == question.ObjID {
+				obj = setting
+				break
+			}
+		}
+	case constants.TypeBagItProfile:
+		return settings.setTagValueFromResponse(question, response)
+	case constants.TypeRemoteRepository:
+		for _, repo := range settings.RemoteRepositories {
+			if repo != nil && repo.ID == question.ObjID {
+				obj = repo
+				break
+			}
+		}
+	case constants.TypeStorageService:
+		for _, ss := range settings.StorageServices {
+			if ss != nil && ss.ID == question.ObjID {
+				obj = ss
+				break
+			}
+		}
+	default:
+		return fmt.Errorf("%w: question %q has unknown object type %q", constants.ErrUnknownType, question.Prompt, question.ObjType)
+	}
+	if obj == nil {
+		return fmt.Errorf("%w: question %q refers to %s %s, which is not in these settings", constants.ErrNoSuchField, question.Prompt, question.ObjType, question.ObjID)
+	}
+	if err := util.SetValueFromString(obj, question.Field, response); err != nil {
+		return fmt.Errorf("cannot apply answer to question %q: %w", question.Prompt, err)
+	}
 	return nil
+}
+
+func (settings *ExportSettings) setTagValueFromResponse(question *ExportQuestion, response string) error {
+	for _, profile := range settings.BagItProfiles {
+		if profile == nil || (question.ObjID != "" && profile.ID != question.ObjID) {
+			continue
+		}
+		for _, tag := range profile.Tags {
+			if tag != nil && tag.ID == question.Field {
+				tag.DefaultValue = response
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("%w: question %q refers to tag %s in BagIt profile %s, which is not in these settings", constants.ErrNoSuchField, question.Prompt, question.Field, question.ObjID)
 }

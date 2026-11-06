@@ -2,7 +2,11 @@ package core_test
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/APTrust/dart-runner/constants"
@@ -262,4 +266,114 @@ func TestContainsPlaintextAPIToken(t *testing.T) {
 	repo2.APIToken = "patrickstar"
 	assert.True(t, settings.ContainsPlaintextAPIToken())
 
+}
+
+func loadExportSettingsWithQuestions(t *testing.T) *core.ExportSettings {
+	data, err := os.ReadFile(filepath.Join(util.PathToTestData(), "files", "export_settings_with_questions.json"))
+	require.Nil(t, err)
+	settings := &core.ExportSettings{}
+	require.Nil(t, json.Unmarshal(data, settings))
+	return settings
+}
+
+func TestExportSettingsSetValueFromResponse(t *testing.T) {
+	settings := loadExportSettingsWithQuestions(t)
+	require.NotEmpty(t, settings.Questions)
+
+	responses := map[string]string{
+		"Login":          "user@example.com",
+		"Port":           "9899",
+		"AllowsDownload": "no",
+		"Value":          "dingo",
+		"UserID":         "marge@example.com",
+	}
+	for _, q := range settings.Questions {
+		response, ok := responses[q.Field]
+		if !ok {
+			response = "tag value " + q.Field
+		}
+		require.Nil(t, settings.SetValueFromResponse(q, response), q.Prompt)
+	}
+
+	ss := findStorageService(settings, "00000000-6870-48a3-9dd7-89e21410453b")
+	assert.Equal(t, "user@example.com", ss.Login)
+	assert.Equal(t, 9899, ss.Port)
+	sftp := findStorageService(settings, "00000000-d761-4c03-ab5b-266bacc40f3f")
+	assert.False(t, sftp.AllowsDownload)
+	for _, repo := range settings.RemoteRepositories {
+		if repo.ID == "00000000-9d6a-466e-91f0-541cf9894232" {
+			assert.Equal(t, "marge@example.com", repo.UserID)
+		}
+	}
+	for _, setting := range settings.AppSettings {
+		if setting.ID == "00000000-4fd5-4543-9742-6d7b4469dde8" {
+			assert.Equal(t, "dingo", setting.Value)
+		}
+	}
+	for _, profile := range settings.BagItProfiles {
+		for _, tag := range profile.Tags {
+			if tag.ID == "00000000-6d9c-4825-92cf-e472fb05f3d4" {
+				assert.Equal(t, "tag value "+tag.ID, tag.DefaultValue)
+			}
+		}
+	}
+}
+
+// DART 2 exports use JSON-style field names in questions
+// (login, port, allowsDownload, value, userId).
+func TestExportSettingsSetValueFromResponseDart2FieldNames(t *testing.T) {
+	settings := loadExportSettingsWithQuestions(t)
+	for _, q := range settings.Questions {
+		if q.ObjType != constants.TypeBagItProfile {
+			q.Field = strings.ToLower(q.Field[:1]) + q.Field[1:]
+			if q.Field == "userID" {
+				q.Field = "userId"
+			}
+		}
+	}
+	for _, q := range settings.Questions {
+		response := "x"
+		switch q.Field {
+		case "port":
+			response = "22"
+		case "allowsDownload":
+			response = "true"
+		}
+		require.Nil(t, settings.SetValueFromResponse(q, response), q.Field)
+	}
+	ss := findStorageService(settings, "00000000-6870-48a3-9dd7-89e21410453b")
+	assert.Equal(t, "x", ss.Login)
+	assert.Equal(t, 22, ss.Port)
+}
+
+func TestExportSettingsSetValueFromResponseErrors(t *testing.T) {
+	settings := loadExportSettingsWithQuestions(t)
+	q := *settings.Questions[0] // StorageService Login question
+
+	bad := q
+	bad.Field = "NoSuchField"
+	assert.ErrorIs(t, settings.SetValueFromResponse(&bad, "x"), constants.ErrNoSuchField)
+
+	bad = q
+	bad.ObjID = "11111111-1111-1111-1111-111111111111"
+	assert.ErrorIs(t, settings.SetValueFromResponse(&bad, "x"), constants.ErrNoSuchField)
+
+	bad = q
+	bad.Field = "Port"
+	assert.NotNil(t, settings.SetValueFromResponse(&bad, "not a number"))
+
+	bad = q
+	bad.ObjType = "Bogus"
+	assert.ErrorIs(t, settings.SetValueFromResponse(&bad, "x"), constants.ErrUnknownType)
+
+	assert.NotNil(t, settings.SetValueFromResponse(nil, "x"))
+}
+
+func findStorageService(settings *core.ExportSettings, id string) *core.StorageService {
+	for _, ss := range settings.StorageServices {
+		if ss.ID == id {
+			return ss
+		}
+	}
+	return nil
 }
