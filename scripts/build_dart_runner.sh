@@ -27,32 +27,37 @@ if [[ "$OS" == *"_NT-"* ]]; then
 fi
 
 TAG="${TAG:=Beta 0.1}"
-VERSION="DART Runner $TAG for $OS (Build $COMMIT $DATE)"
+
+# The version string names the OS each binary is built for, not the OS
+# this script runs on.
+version_for() {
+    echo "DART Runner $TAG for $1 (Build $COMMIT $DATE)"
+}
 
 echo "Building MacOS amd64 version in ./dist/mac-x64/dart-runner"
 mkdir -p dist/mac-x64
-GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o dist/mac-x64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o dist/mac-x64/dart-runner -ldflags "-X 'main.Version=$(version_for Darwin)'" $BUILD_TAGS
 
 echo "Building MacOS arm-64 (M-chip) version in ./dist/mac-arm64/dart-runner"
 mkdir -p dist/mac-arm64
-GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/mac-arm64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o dist/mac-arm64/dart-runner -ldflags "-X 'main.Version=$(version_for Darwin)'" $BUILD_TAGS
 
 # Note: When running `./scripts/run tests`, post_build_test.go uses its own special build command for Windows.
 echo "Building Windows amd64 version in ./dist/windows-x64/dart-runner.exe"
 mkdir -p dist/windows-x64
-GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o dist/windows-x64/dart-runner.exe -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o dist/windows-x64/dart-runner.exe -ldflags "-X 'main.Version=$(version_for Windows)'" $BUILD_TAGS
 
 echo "Building Windows arm64 version in ./dist/windows-arm64/dart-runner.exe"
 mkdir -p dist/windows-arm64
-GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -o dist/windows-arm64/dart-runner.exe -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -o dist/windows-arm64/dart-runner.exe -ldflags "-X 'main.Version=$(version_for Windows)'" $BUILD_TAGS
 
 echo "Building Linux amd64 version in ./dist/linux-x64/dart-runner"
 mkdir -p dist/linux-x64
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dist/linux-x64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dist/linux-x64/dart-runner -ldflags "-X 'main.Version=$(version_for Linux)'" $BUILD_TAGS
 
 echo "Building Linux arm64 version in ./dist/linux-arm64/dart-runner"
 mkdir -p dist/linux-arm64
-GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o dist/linux-arm64/dart-runner -ldflags "-X 'main.Version=$VERSION'" $BUILD_TAGS
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o dist/linux-arm64/dart-runner -ldflags "-X 'main.Version=$(version_for Linux)'" $BUILD_TAGS
 
 echo "Version info from latest build:"
 if [[ "$OS" == "Darwin" ]]; then
